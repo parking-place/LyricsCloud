@@ -9,8 +9,11 @@
 - 제품 기획, 15개 PC·모바일 목업, 구현 기술 결정 기준선
 - `0.0.0`부터 `1.0.0`까지의 버전·Phase 실행 계획
 - 사람과 AI Agent를 위한 저장소 안내 및 협업 골격
+- 승인된 ADR-0001~0009와 Node.js/pnpm workspace
+- Docker Compose 기반 web·collaboration·worker·PostgreSQL·migration 개발환경
+- 15개 route 중립 화면과 liveness/readiness endpoint
+- 빈 작업 사본·빈 Docker volume, 장애 회복, 데이터 지속·초기화, 보안·PC·모바일 기준선 검증 보고서
 
 ### Not yet implemented
 
-- 실행 가능한 애플리케이션, 데이터베이스, Docker 서비스, 테스트 및 배포 구성
-
+- Google 로그인과 실제 제품 화면, 업무 데이터 schema, CRDT 동기화

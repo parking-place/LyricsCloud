@@ -1,0 +1,101 @@
+name: lyricscloud
+
+x-app: &app
+  build:
+    context: .
+    dockerfile: infra/docker/Dockerfile.dev
+  init: true
+  restart: unless-stopped
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    CI: "true"
+    NODE_ENV: development
+    DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set in .env}
+  volumes:
+    - .:/workspace
+    - workspace_node_modules:/workspace/node_modules
+    - pnpm_store:/pnpm/store
+  networks: [app]
+
+services:
+  postgres:
+    image: postgres:18-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB must be set in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER must be set in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks: [app]
+
+  migrate:
+    <<: *app
+    restart: "no"
+    command: ["pnpm", "migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    <<: *app
+    command: ["pnpm", "--filter", "@lyricscloud/web", "dev"]
+    ports:
+      - "${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-8080}:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  collaboration:
+    <<: *app
+    command: ["pnpm", "--filter", "@lyricscloud/collaboration", "dev"]
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set in .env}
+      COLLABORATION_PORT: 3001
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health/ready').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    <<: *app
+    command: ["pnpm", "--filter", "@lyricscloud/worker", "dev"]
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set in .env}
+      WORKER_HEALTH_PORT: 3002
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/health/ready').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+networks:
+  app:
+    internal: false
+
+volumes:
+  postgres_data:
+  backup_data:
+  workspace_node_modules:
+  pnpm_store:

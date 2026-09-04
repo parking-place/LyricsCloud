@@ -1,4 +1,3 @@
-# Shared configuration boundary
+# Configuration package boundary
 
-workspace 전체의 TypeScript strict, lint, formatting, unit test 설정을 공유할 예정입니다. 구체 도구와 버전은 `0.0.0`에서 lockfile과 함께 확정합니다.
-
+환경 설정을 프로세스 시작 시 검증하고 잘못된 값 대신 키 이름만 보고합니다. 모든 실행 서비스는 이 계약을 공유합니다.

@@ -1,0 +1,17 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+node_modules
+.next
+dist
+coverage
+data
+var
+backups
+exports
+logs
+test-results
+playwright-report
+0.Plans/Mock-up 그림판

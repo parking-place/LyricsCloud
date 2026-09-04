@@ -25,9 +25,15 @@
 - 모바일 확인:
 - 권한·실패·빈 상태 확인:
 
+## Git 인계
+
+- Phase branch:
+- 마지막 원격 commit:
+- [ ] Phase 완료 산출물을 원격 branch에 push했습니다.
+- [ ] 원격 branch가 위 commit을 가리키는지 확인했습니다.
+
 ## 인계
 
 - 남은 위험:
 - 다음 작업:
 - `STATUS.md` 갱신 여부:
-

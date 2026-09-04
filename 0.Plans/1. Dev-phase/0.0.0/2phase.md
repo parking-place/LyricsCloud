@@ -1,6 +1,6 @@
 # 0.0.0 Phase 2 — ADR 결정 게이트
 
-- 상태: **대기**
+- 상태: **완료**
 - 버전 상태: [../STATUS.md](../STATUS.md)
 
 ## 목표
@@ -42,18 +42,18 @@ Implementation-Stack에서 선택된 Docker 자체 운영과 실시간 자동 �
 
 ## 작업 체크리스트
 
-- [ ] LC-000-P2-01 — ADR-0001에 DEC-01-D와 DEC-10-C의 로컬·홈랩 실행 토폴로지 대안을 기록한다.
-- [ ] LC-000-P2-02 — ADR-0002에 Google OAuth, 애플리케이션 세션, 사용자 식별자, 로그아웃 책임을 기록한다.
-- [ ] LC-000-P2-03 — ADR-0003에 직접 SQL, query builder, ORM 대안과 migration·transaction·테스트 영향을 기록한다.
-- [ ] LC-000-P2-04 — ADR-0004에 DEC-06-C의 사용자 범위, 동시 편집 의미, 오프라인 병합 기대치를 명시한다.
-- [ ] LC-000-P2-05 — ADR-0005에 CRDT 후보별 한글 IME, CodeMirror 연동, 영속화, 압축, 복구 특성을 비교한다.
-- [ ] LC-000-P2-06 — ADR-0006에 리버스 프록시와 TLS 인증서 갱신, 웹소켓 전달, 업로드 제한 책임을 비교한다.
-- [ ] LC-000-P2-07 — ADR-0007에 계정별 IndexedDB 경계, 로그아웃 정리, PWA update 중 dirty 문서 보호를 기록한다.
-- [ ] LC-000-P2-08 — ADR-0008에 backup 저장소, 암호화·키 분리, 보존 기간과 별도 환경 복원 방식을 기록한다.
-- [ ] LC-000-P2-09 — ADR-0009에 오류·성능 수집 범위와 제목·본문·태그·토큰 redaction 규칙을 기록한다.
-- [ ] LC-000-P2-10 — 각 ADR에 선택 이유, 기각 대안, 보안 영향, 데이터 이동 비용, 철회 절차를 적는다.
-- [ ] LC-000-P2-11 — 사용자에게 승인받은 ADR만 Accepted로 표시하고 나머지는 Proposed 상태로 남긴다.
-- [ ] LC-000-P2-12 — 승인 결과와 적용 시작 버전을 STATUS에 연결할 수 있는 요약표를 만든다.
+- [x] LC-000-P2-01 — ADR-0001에 DEC-01-D와 DEC-10-C의 로컬·홈랩 실행 토폴로지 대안을 기록한다.
+- [x] LC-000-P2-02 — ADR-0002에 Google OAuth, 애플리케이션 세션, 사용자 식별자, 로그아웃 책임을 기록한다.
+- [x] LC-000-P2-03 — ADR-0003에 직접 SQL, query builder, ORM 대안과 migration·transaction·테스트 영향을 기록한다.
+- [x] LC-000-P2-04 — ADR-0004에 DEC-06-C의 사용자 범위, 동시 편집 의미, 오프라인 병합 기대치를 명시한다.
+- [x] LC-000-P2-05 — ADR-0005에 CRDT 후보별 한글 IME, CodeMirror 연동, 영속화, 압축, 복구 특성을 비교한다.
+- [x] LC-000-P2-06 — ADR-0006에 리버스 프록시와 TLS 인증서 갱신, 웹소켓 전달, 업로드 제한 책임을 비교한다.
+- [x] LC-000-P2-07 — ADR-0007에 계정별 IndexedDB 경계, 로그아웃 정리, PWA update 중 dirty 문서 보호를 기록한다.
+- [x] LC-000-P2-08 — ADR-0008에 backup 저장소, 암호화·키 분리, 보존 기간과 별도 환경 복원 방식을 기록한다.
+- [x] LC-000-P2-09 — ADR-0009에 오류·성능 수집 범위와 제목·본문·태그·토큰 redaction 규칙을 기록한다.
+- [x] LC-000-P2-10 — 각 ADR에 선택 이유, 기각 대안, 보안 영향, 데이터 이동 비용, 철회 절차를 적는다.
+- [x] LC-000-P2-11 — 사용자에게 승인받은 ADR만 Accepted로 표시하고 나머지는 Proposed 상태로 남긴다.
+- [x] LC-000-P2-12 — 승인 결과와 적용 시작 버전을 STATUS에 연결할 수 있는 요약표를 만든다.
 
 ## 검증 방법
 
@@ -68,14 +68,14 @@ Implementation-Stack에서 선택된 Docker 자체 운영과 실시간 자동 �
 
 ## 완료 조건
 
-- [ ] 실행 토폴로지 ADR이 Accepted 상태다.
-- [ ] 인증과 세션 ADR이 Accepted 상태다.
-- [ ] 데이터 접근·migration ADR이 Accepted 상태다.
-- [ ] DEC-06-C 해석과 CRDT 경계 ADR이 Accepted 상태다.
-- [ ] 프록시·TLS ADR이 Accepted 상태다.
-- [ ] PWA·로컬 저장 ADR이 Accepted 상태다.
-- [ ] 백업·복원과 본문 비수집 관측 ADR이 Accepted 상태다.
-- [ ] 미승인 패키지는 후속 구현의 전제로 사용되지 않았다.
+- [x] 실행 토폴로지 ADR이 Accepted 상태다.
+- [x] 인증과 세션 ADR이 Accepted 상태다.
+- [x] 데이터 접근·migration ADR이 Accepted 상태다.
+- [x] DEC-06-C 해석과 CRDT 경계 ADR이 Accepted 상태다.
+- [x] 프록시·TLS ADR이 Accepted 상태다.
+- [x] PWA·로컬 저장 ADR이 Accepted 상태다.
+- [x] 백업·복원과 본문 비수집 관측 ADR이 Accepted 상태다.
+- [x] 미승인 패키지는 후속 구현의 전제로 사용되지 않았다.
 
 ## 산출물
 

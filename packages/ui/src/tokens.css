@@ -1,0 +1,24 @@
+:root {
+  --lc-breakpoint-mobile: 390px;
+  --lc-breakpoint-tablet: 1024px;
+  --lc-canvas-max: 1440px;
+  --lc-space-1: 0.25rem;
+  --lc-space-2: 0.5rem;
+  --lc-space-3: 0.75rem;
+  --lc-space-4: 1rem;
+  --lc-space-6: 1.5rem;
+  --lc-space-8: 2rem;
+  --lc-bg: #f8f7f4;
+  --lc-surface: #ffffff;
+  --lc-text: #25231f;
+  --lc-muted: #6b675f;
+  --lc-accent: #6750a4;
+  --lc-safe-top: env(safe-area-inset-top, 0px);
+  --lc-safe-right: env(safe-area-inset-right, 0px);
+  --lc-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --lc-safe-left: env(safe-area-inset-left, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root { --lc-bg: #171613; --lc-surface: #22211d; --lc-text: #f3f0e9; --lc-muted: #b9b3a8; --lc-accent: #cbb7ff; }
+}

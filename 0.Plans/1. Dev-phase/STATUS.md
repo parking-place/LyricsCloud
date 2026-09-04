@@ -4,35 +4,36 @@
 
 ```yaml
 current_version: "0.0.0"
-current_phase: "1phase.md"
-state: "ready"
-owner: "unassigned"
-started_at: null
+current_phase: "5phase.md"
+state: "review"
+owner: "Codex"
+started_at: "2026-09-04 19:10:49 +0900"
 updated_at: "2026-09-04"
-next_action: "0.0.0/1phase.md의 기준선·추적표 검증만 완료한 뒤 다음 Phase 진입 판정"
+next_action: "GitHub 인증 설정 후 phase/0.0.0-baseline을 push하고 원격 commit을 확인"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
 
 ## 기준선 판정
 
-- `Sketch.md`: 로드맵 작성을 위한 1차 분석 완료, 0.0.0 Phase 1 승인 전
-- `Mock-up`: 15개 README와 PC·모바일 30개 정적 화면의 1차 분석 완료, 수정하지 않음, Phase 1 전수 추적 승인 전
+- `Sketch.md`: 71개 1.0 요구사항과 5개 사용자 흐름으로 Phase 1 기준선 승인 완료
+- `Mock-up`: 15개 README와 PC·모바일 30개 정적 화면을 화면 추적·20개 차이 항목에 연결, 원본은 수정하지 않음
 - `Implementation-Stack.md`: 13개 DEC에서 각각 하나 선택, `FINAL-APPROVAL` 선택 확인
 - `Implementation-Stack.md`의 문장형 상태는 아직 `사용자 선택 전`이지만 체크박스와 최종 승인을 현재 선택의 원본으로 판정함
 - `DEC-10` 선택 메모: 서버·DB를 먼저 로컬 Docker에서 개발하고 이후 홈랩으로 이관하며 개인 셀프호스팅이 가능해야 함
 - `CHECK-03`은 미선택이며 DEC-10 외 선택 메모가 없으므로 그 밖의 예외·우선순위는 기록되지 않은 것으로 판정함
-- `DEC-02-A`와 `DEC-06-C`의 결합은 “같은 사용자의 기기·탭 자동 병합, 다른 사용자 공유 제외”를 현재 계획 해석으로 사용하되 `ADR-0004` Accepted 전에는 구현 확정으로 보지 않음
+- `DEC-02-A`와 `DEC-06-C`의 결합은 Accepted `ADR-0004`에 따라 “같은 사용자의 기기·탭 자동 병합, 다른 사용자 공유 제외”로 확정
 - 기술·제품·운영 결정의 소유권과 확정 Phase는 [`Decision-Ownership.md`](./Decision-Ownership.md)를 따르며, 색인에 있는 `Proposed` 항목을 승인된 결정으로 간주하지 않음
-- 실행 가능한 애플리케이션·Docker·DB·CI: 미구현
-- 로컬 Git 저장소와 GitHub 원격: 미초기화, 0.0.0 Phase 5에서 추적 대상과 권한을 확인한 뒤 진행
-- 버전별 실행 계획, 요구사항 추적표와 프로젝트 디렉터리: 사전 초안 생성 완료, 각 0.0.0 Phase에서 검토·승인 예정
+- 실행 가능한 중립 애플리케이션·Docker·PostgreSQL·migration·검사: 빈 작업 사본과 빈 volume을 포함해 구현·검증 완료
+- Docker Desktop의 Windows 예약 포트 `3000–3299`를 피해 기본 host web 포트를 `8080`으로 확정, liveness/readiness 200 확인
+- 로컬 Git 저장소와 `origin/main`: 연결 확인, branch protection·secret scanning·required checks는 권한 보유자 체크리스트로 인계
+- 버전별 실행 계획, 요구사항 추적표와 프로젝트 디렉터리: 0.0.0 전 Phase 검토·승인 완료
 
 ## 버전 진행표
 
 | 버전 | 상태 | 현재/완료 Phase | 진입 조건 |
 |---|---|---|---|
-| 0.0.0 | ready | 1phase 대기 | 기준 문서와 본 로드맵 확인 |
+| 0.0.0 | review | Phase 1~5 로컬 검증 완료, 원격 push 대기 | 원격 Phase 브랜치 commit 확인 |
 | 0.1.0 | planned | 없음 | 0.0.0 완료 |
 | 0.2.0 | planned | 없음 | 0.1.0 완료 |
 | 0.3.0 | planned | 없음 | 0.2.0 완료 |
@@ -52,19 +53,19 @@ next_action: "0.0.0/1phase.md의 기준선·추적표 검증만 완료한 뒤 �
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | ready |
+| Codex | 0.0.0 / Phase 5 | Git 원격 인계 | `phase/0.0.0-baseline` | GitHub 인증 | 2026-09-04 19:10:49 +0900 | review |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
-- [ ] `ADR-0001` — 웹·협업·worker 프로세스 및 workspace 토폴로지
-- [ ] `ADR-0002` — Google OIDC, 세션, 비공개·초대 허용 목록
-- [ ] `ADR-0003` — PostgreSQL 접근 계층, migration, 소유권·RLS 전달
-- [ ] `ADR-0004` — 자동 병합의 사용자 범위와 CRDT 문서 의미
-- [ ] `ADR-0005` — CRDT transport, WebSocket, 영속화, 평문 검색 투영, snapshot
-- [ ] `ADR-0006` — 자체 운영 프록시, TLS, WebSocket 전달, 배포 지역
-- [ ] `ADR-0007` — 온라인 우선 PWA, 계정별 로컬 저장, 업데이트
-- [ ] `ADR-0008` — 매일 논리 백업의 저장소, 암호화, 키, 보존, 복원
-- [ ] `ADR-0009` — 창작물 본문을 제거하는 오류·성능 관측
+- [x] `ADR-0001` — 웹·협업·worker 프로세스 및 workspace 토폴로지
+- [x] `ADR-0002` — Google OIDC, 세션, 비공개·초대 허용 목록
+- [x] `ADR-0003` — PostgreSQL 접근 계층, migration, 소유권·RLS 전달
+- [x] `ADR-0004` — 자동 병합의 사용자 범위와 CRDT 문서 의미
+- [x] `ADR-0005` — CRDT transport, WebSocket, 영속화, 평문 검색 투영, snapshot
+- [x] `ADR-0006` — 자체 운영 프록시, TLS, WebSocket 전달, 배포 지역
+- [x] `ADR-0007` — 온라인 우선 PWA, 계정별 로컬 저장, 업데이트
+- [x] `ADR-0008` — 매일 논리 백업의 저장소, 암호화, 키, 보존, 복원
+- [x] `ADR-0009` — 창작물 본문을 제거하는 오류·성능 관측
 
 ## 기획상 발견 사항
 
@@ -84,15 +85,19 @@ next_action: "0.0.0/1phase.md의 기준선·추적표 검증만 완료한 뒤 �
 
 ## 다음 작업
 
-1. [`0.0.0/1phase.md`](./0.0.0/1phase.md)의 작업 ID를 Issue 또는 작업 기록에 연결합니다.
-2. 활성 작업 표에 담당자와 Phase 1에서 수정할 경로를 기록합니다.
-3. 사전 생성된 추적표·화면 매핑·차이 목록을 전수 검토하고 누락을 보완합니다.
-4. Phase 1 완료 조건을 승인한 뒤에만 Phase 2의 ADR 작업을 시작합니다.
+1. GitHub 인증을 설정하고 `git push -u origin phase/0.0.0-baseline`을 실행합니다.
+2. 원격 branch가 로컬 HEAD를 가리키는지 확인한 뒤 0.0.0 Phase 5를 완료 처리합니다.
+3. [`0.1.0/1phase.md`](./0.1.0/1phase.md)의 작업 ID와 담당 경로를 등록합니다.
+4. [`0.0.0 기준선 통합 검증 보고서`](../../docs/runbooks/0.0.0-release-readiness.md)의 승인 어댑터·환경·health 계약을 확인하고 0.1.0 범위만 시작합니다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-04 | 0.0.0 / Phase 2 | Codex | ADR-0001~0009 작성 및 사용자 승인으로 Accepted | ADR 색인·개별 문서 상태 일치, 각 대안·보안·철회 경로 기록 | 아키텍처 중립 골격 |
+| 2026-09-04 | 0.0.0 / Phase 3 | Codex | workspace, 15 route, 중립 타입, config·health, 반응형 token과 경계 검사 구현 | Node 24.20.0 임시 도구로 `pnpm check` 통과 | Docker 개발환경 |
+| 2026-09-04 | 0.0.0 / Phase 4 | Codex | Compose 5개 서비스, PostgreSQL 18.6, migration·health·volume·host 8080 개발환경 검증 | 로컬·container check/test/build, DB 지속·초기화, 정상/실패 health, Playwright PC·모바일 통과 | 0.0.0 통합 게이트 |
+| 2026-09-04 | 0.0.0 / Phase 1 | Codex | 71개 요구사항, 15개 화면, 5개 흐름, 20개 목업 차이, 복구 계층·제외 범위 기준선 확정 | 고유 REQ 71개(AUTH 5, SONG 11, LYRIC 17, RHYME 10, PROMPT 14, COMMON 14), 고유 작업 ID 576개 확인 | ADR-0001~0009 승인 게이트 |
 | 2026-09-04 | 계획 초안 준비 | Codex | 전체 로드맵, Phase 문서, 프로젝트 후보 구조 생성 | `scripts/validate-plans.ps1` 통과: 13개 버전·65개 Phase·576개 작업 ID·71개 §49 요구사항; Phase 수용 검토는 미실행 | 0.0.0/1phase 시작 |
 
 ## 인계 기록 형식

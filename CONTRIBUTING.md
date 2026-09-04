@@ -1,6 +1,6 @@
 # LyricsCloud 기여 가이드
 
-현재 작업 폴더는 아직 Git 저장소가 아닙니다. 아래 브랜치·커밋·PR 규칙은 [`0.0.0/5phase.md`](<./0.Plans/1. Dev-phase/0.0.0/5phase.md>)에서 로컬 Git 기준선을 만든 뒤 활성화합니다. 그 전에도 작업 범위와 인계 형식은 동일하게 사용합니다.
+이 저장소는 `main`과 `origin/main`이 연결되어 있습니다. 직접 `main`에 push하지 않고 아래 브랜치·커밋·PR 규칙을 적용합니다. 원격 branch protection과 required checks는 저장소 권한 보유자가 별도 체크리스트로 확인합니다.
 
 ## 작업 선택
 
@@ -15,6 +15,8 @@
 - 커밋 예: `feat(editor): parse repeated song-form sections`
 - 계획·구성만 바꾸는 경우 `docs`, `chore`, `test` 등 실제 변경 성격을 사용합니다.
 - 서로 다른 Phase의 기능을 한 커밋이나 PR에 섞지 않습니다.
+- Phase 검증과 상태 문서 갱신이 끝나면 작업 결과를 commit하고 `git push -u origin <phase-branch>`로 반드시 원격에 올립니다.
+- push 후 원격 branch가 로컬 HEAD를 가리키는지 확인합니다. push가 실패하면 Phase를 완료 처리하거나 다음 Phase를 시작하지 않습니다.
 
 ## Pull Request
 
@@ -37,3 +39,4 @@ PR에는 다음을 포함합니다.
 - 필요한 문서, 테스트, migration이 코드와 함께 갱신되었습니다.
 - `STATUS.md`의 진행 상태와 인계 내용이 실제 저장소와 일치합니다.
 - 사용자 관점 변경은 `CHANGELOG.md`의 `Unreleased`에 기록했습니다.
+- Phase commit을 원격 작업 브랜치에 push했고 원격 반영을 확인했습니다.
