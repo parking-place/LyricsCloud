@@ -9,9 +9,15 @@ export default defineConfig({
     command: "pnpm --filter @lyricscloud/web start",
     env: {
       NODE_ENV: "production",
-      DATABASE_URL: "postgresql://user:synthetic@127.0.0.1:65432/missing",
+      DATABASE_URL: process.env.E2E_DATABASE_URL ?? (process.env.E2E_SESSION_TOKEN ? process.env.DATABASE_URL : undefined) ?? "postgresql://user:synthetic@127.0.0.1:65432/missing",
       APP_VERSION: "0.1.0",
       BUILD_ID: "playwright",
+      APP_ORIGIN: "https://127.0.0.1:3000",
+      GOOGLE_ISSUER: "https://accounts.google.com",
+      GOOGLE_CLIENT_ID: "synthetic.apps.googleusercontent.com",
+      GOOGLE_CLIENT_SECRET: "synthetic-e2e-secret",
+      SESSION_SECRET: "synthetic-e2e-session-secret-at-least-32-bytes",
+      AUTH_ALLOWED_EMAILS: "fixture@example.invalid",
       HOSTNAME: "127.0.0.1",
       PORT: "3000"
     },

@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.1.0"
 current_phase: "4phase.md"
-state: "ready"
-owner: null
-started_at: null
+state: "review"
+owner: "Codex"
+started_at: "2026-09-04 23:02:00 +0900"
 updated_at: "2026-09-04"
-next_action: "0.1.0 Phase 4 로그인 PC·모바일 화면과 보호 route 탐색 구현 시작"
+next_action: "Phase 4 구현 commit 원격 반영과 GitHub Actions 통과 확인"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -34,7 +34,7 @@ next_action: "0.1.0 Phase 4 로그인 PC·모바일 화면과 보호 route 탐�
 | 버전 | 상태 | 현재/완료 Phase | 진입 조건 |
 |---|---|---|---|
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
-| 0.1.0 | in_progress | Phase 1~3 완료, Phase 4 시작 대기 | 0.0.0 완료 |
+| 0.1.0 | in_progress | Phase 1~3 완료, Phase 4 원격 검토 중 | 0.0.0 완료 |
 | 0.2.0 | planned | 없음 | 0.1.0 완료 |
 | 0.3.0 | planned | 없음 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.1.0 Phase 4 로그인 PC·모바일 화면과 보호 route 탐�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+| Codex | 0.1.0 / Phase 4 | LC-010-P4-01~11 | auth UI·workspace shell·legal routes·responsive E2E | Phase 2~3 완료, 01-auth 목업 | 2026-09-04 23:02:00 +0900 | review |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 

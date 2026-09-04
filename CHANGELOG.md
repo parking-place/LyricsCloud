@@ -14,7 +14,9 @@
 - 15개 route 중립 화면과 liveness/readiness endpoint
 - 빈 작업 사본·빈 Docker volume, 장애 회복, 데이터 지속·초기화, 보안·PC·모바일 기준선 검증 보고서
 - Google OIDC Authorization Code + PKCE 경계, 비공개 베타 허용 목록, PostgreSQL opaque 세션과 로그아웃 API
+- 내부 사용자 ID 기반 profile 소유권, transaction-local 사용자 문맥과 강제 RLS
+- PC·모바일 Google 로그인 화면, 인증 상태 안내, 정책 문서와 보호된 반응형 작업 공간 셸
 
 ### Not yet implemented
 
-- 로그인 최종 PC·모바일 화면, 업무 데이터 schema, CRDT 동기화
+- 곡·가사 업무 데이터 schema, CRDT 동기화

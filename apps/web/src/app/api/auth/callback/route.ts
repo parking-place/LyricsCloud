@@ -18,7 +18,9 @@ export async function GET(request: Request): Promise<Response> {
     const callbackUrl = new URL(`/api/auth/callback${incoming.search}`, config.appOrigin);
     const transaction = readCookie(request.headers.get("cookie"), cookieNames(config).transaction);
     const result = await context.service.completeLogin(callbackUrl, transaction);
-    const headers = new Headers({ ...privateResponseHeaders, Location: new URL(result.returnTo, config.appOrigin).href });
+    const destination = new URL(result.returnTo, config.appOrigin);
+    destination.searchParams.set("auth", "success");
+    const headers = new Headers({ ...privateResponseHeaders, Location: destination.href });
     headers.append("Set-Cookie", sessionCookie(config, result.sessionToken));
     headers.append("Set-Cookie", clearTransactionCookie(config));
     return new Response(null, {
