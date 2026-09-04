@@ -9,6 +9,8 @@
 | worker | 3002 | 없음 | 예약 작업 경계와 health |
 | postgres | 5432 | 없음 | DB와 migration state |
 | migrate | 없음 | 없음 | advisory lock 기반 SQL migration |
+| postgres_test | 5432 | 없음 | `test` profile의 disposable 격리 DB |
+| migrate_test | 없음 | 없음 | 격리 DB 전용 migration |
 
 PostgreSQL은 `postgres_data`, 향후 암호화 backup은 `backup_data`, 의존성은 `workspace_node_modules`/`pnpm_store`에 분리한다. 소스 bind mount와 사용자 데이터 volume을 섞지 않는다.
 
@@ -23,6 +25,8 @@ PostgreSQL은 `postgres_data`, 향후 암호화 backup은 `backup_data`, 의존�
 `docker compose down --volumes`는 DB를 포함한 모든 개발 volume을 영구 제거하므로 일반 초기화 명령으로 제공하지 않는다. 명시적 초기화가 필요하면 대상 project가 `lyricscloud`인지 확인하고 backup 또는 disposable data임을 확인한 뒤 실행한다.
 
 DB 비밀번호 오류나 DB 중단 시 app liveness는 200, readiness는 503이어야 한다. migration 파일을 적용 후 수정하면 checksum 검사가 시작을 거부한다.
+
+격리 테스트 DB는 `docker compose --profile test up -d postgres_test`와 `docker compose --profile test run --rm migrate_test`로 준비한다. 이 DB는 tmpfs만 사용하고 개발 `postgres_data` volume을 마운트하지 않는다. `TEST_DATABASE_URL`을 개발·운영 DB로 지정하지 않는다.
 
 ## Windows·WSL 확인
 

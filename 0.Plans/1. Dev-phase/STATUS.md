@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.1.0"
 current_phase: "1phase.md"
-state: "ready"
-owner: null
-started_at: null
+state: "review"
+owner: "Codex"
+started_at: "2026-09-04 20:47:54 +0900"
 updated_at: "2026-09-04"
-next_action: "0.1.0 Phase 1 담당자와 수정 경로를 등록한 뒤 승인 아키텍처 실행 기반 작업 시작"
+next_action: "0.1.0 Phase 1 원격 CI 통과와 branch SHA를 확인한 뒤 완료 처리"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -34,7 +34,7 @@ next_action: "0.1.0 Phase 1 담당자와 수정 경로를 등록한 뒤 승인 �
 | 버전 | 상태 | 현재/완료 Phase | 진입 조건 |
 |---|---|---|---|
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
-| 0.1.0 | ready | Phase 1 시작 대기 | 0.0.0 완료 |
+| 0.1.0 | review | Phase 1 원격 CI 검토 | 0.0.0 완료 |
 | 0.2.0 | planned | 없음 | 0.1.0 완료 |
 | 0.3.0 | planned | 없음 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.1.0 Phase 1 담당자와 수정 경로를 등록한 뒤 승인 �
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+| Codex | 0.1.0 / Phase 1 | LC-010-P1-01~09 | 앱 실행·config·health·migration·CI·root UI | 0.0.0 완료, ADR-0001/2/3/6 Accepted | 2026-09-04 20:47:54 +0900 | review |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 

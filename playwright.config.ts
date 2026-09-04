@@ -7,7 +7,14 @@ export default defineConfig({
   use: { baseURL: "http://127.0.0.1:3000", trace: "retain-on-failure" },
   webServer: {
     command: "pnpm --filter @lyricscloud/web start",
-    env: { NODE_ENV: "production", DATABASE_URL: "postgresql://user:synthetic@127.0.0.1:65432/missing", HOSTNAME: "127.0.0.1", PORT: "3000" },
+    env: {
+      NODE_ENV: "production",
+      DATABASE_URL: "postgresql://user:synthetic@127.0.0.1:65432/missing",
+      APP_VERSION: "0.1.0",
+      BUILD_ID: "playwright",
+      HOSTNAME: "127.0.0.1",
+      PORT: "3000"
+    },
     url: "http://127.0.0.1:3000/api/health/live",
     reuseExistingServer: true
   },

@@ -3,7 +3,8 @@ import { ConfigError, readRuntimeConfig } from "./index.js";
 
 describe("runtime configuration", () => {
   it("accepts a PostgreSQL URL", () => {
-    expect(readRuntimeConfig({ NODE_ENV: "test", DATABASE_URL: "postgresql://user:secret@db/app" }).runtime).toBe("test");
+    const config = readRuntimeConfig({ NODE_ENV: "test", DATABASE_URL: "postgresql://user:secret@db/app" });
+    expect(config).toMatchObject({ runtime: "test", appVersion: "0.1.0", buildId: "local" });
   });
   it("reports key names without their values", () => {
     const secret = "never-print-this";
@@ -13,5 +14,10 @@ describe("runtime configuration", () => {
       expect(String(error)).toContain("NODE_ENV");
       expect(String(error)).toContain("DATABASE_URL");
     }
+  });
+  it("rejects unsafe build identifiers without echoing them", () => {
+    const unsafe = "build id with spaces and a secret";
+    expect(() => readRuntimeConfig({ NODE_ENV: "test", DATABASE_URL: "postgresql://user:test@db/app", BUILD_ID: unsafe }))
+      .toThrow("Invalid configuration keys: BUILD_ID");
   });
 });
