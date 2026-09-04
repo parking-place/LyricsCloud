@@ -94,6 +94,7 @@ next_action: "Phase 4 최종 상태 commit 원격 검사 후 0.1.0 Phase 5 통�
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 개발·릴리스 Debian 13 서버에 Docker Engine·Compose·Buildx·Git·기본 운영 도구 설치 | 양쪽 Docker 29.8.0·Compose 5.5.1·Buildx 0.37.0·Git 2.47.3, Compose hello-world, overlayfs·systemd cgroup, daemon enabled/active, TCP API 비공개, GitHub read, Tunnel active | 환경별 deploy key·배포 경로·운영 Compose와 secret 배치 |
 | 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 신규 릴리스 서버에 릴리스 전용 Cloudflare Tunnel·DNS·HTTPS 경로를 구성하고 오접속 기록·인벤토리 정정 | 실제 대상 SSH 확인, cloudflared 2026.8.3, ingress 유효, systemd enabled/active, DNS CNAME·TLS hostname 검증, 개발·릴리스 machine/Tunnel ID 분리, 예상 502 | 릴리스 앱 배포 시 Google OAuth client·환경 값·실제 로그인 검증 |
 | 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 개발 Tunnel 공개 주소를 `devlyrics.parkingp.kr`로 변경하고 기존 DNS 제거, 로컬 공개·비공개 문서 동기화 | Tunnel ingress 검증, systemd enabled/active, 공개 DNS 신규 CNAME·기존 NXDOMAIN, Universal SSL SAN 일치, 예상 502 확인 | Google Cloud Console의 홈랩 개발 OAuth origin·redirect 수동 변경 후 앱 배포 |
 | 2026-09-04 | 0.1.0 / Phase 4 | Codex | Google 로그인 PC·모바일 상태 화면, 실제 정책 route, no-store 경계와 보호된 반응형 workspace shell 완성 | check, 31 unit, production build, 320·390·1440px E2E 12개, 시각 캡처 4개, GitHub Actions 33883741006 통과 | 인증 fixture·locator·브라우저 행렬 통합 검증 |
