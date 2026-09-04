@@ -4,13 +4,13 @@ LyricsCloud는 Suno 음악 제작 과정의 곡, 여러 가사 버전, 라임 �
 
 ## 현재 상태
 
-- 로컬 검증을 완료한 개발 기준선: `0.0.0`
-- 현재 Phase: [`0.0.0/5phase.md`](<./0.Plans/1. Dev-phase/0.0.0/5phase.md>) — 원격 Phase 브랜치 push 검토 대기
+- 완료된 개발 기준선: `0.0.0`
+- 다음 Phase: [`0.1.0/1phase.md`](<./0.Plans/1. Dev-phase/0.1.0/1phase.md>) — 시작 대기
 - 상태 원본: [`STATUS.md`](<./0.Plans/1. Dev-phase/STATUS.md>)
 - 애플리케이션 코드: 0.0.0 중립 화면·health·workspace 부트스트랩 완료
 - Git 저장소·원격 GitHub: `main`과 `origin/main` 연결 확인, 보호 규칙은 권한 보유자 확인 필요
 - 기획, 화면 목업, 기술 선택, `0.0.0 → 1.0.0` 실행 계획과 Docker 개발 골격: 준비됨
-- 기준선 검증: [`0.0.0 통합 검증 보고서`](./docs/runbooks/0.0.0-release-readiness.md) 로컬 통과, 원격 push 확인 대기
+- 기준선 검증: [`0.0.0 통합 검증 보고서`](./docs/runbooks/0.0.0-release-readiness.md) 통과, 원격 Phase 브랜치 확인 완료
 
 실행 가능한 패키지 설정과 Docker 구성은 승인된 ADR-0001~0009를 따릅니다. 제품 기능은 0.1.0부터 구현합니다.
 

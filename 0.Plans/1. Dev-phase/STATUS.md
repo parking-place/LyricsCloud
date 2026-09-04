@@ -3,13 +3,13 @@
 이 파일은 현재 버전·Phase·담당 작업의 단일 상태 원본입니다. 계획 문서는 범위를 정의하고 이 파일은 실제 진행 상황을 기록합니다.
 
 ```yaml
-current_version: "0.0.0"
-current_phase: "5phase.md"
-state: "review"
-owner: "Codex"
-started_at: "2026-09-04 19:10:49 +0900"
+current_version: "0.1.0"
+current_phase: "1phase.md"
+state: "ready"
+owner: null
+started_at: null
 updated_at: "2026-09-04"
-next_action: "GitHub 인증 설정 후 phase/0.0.0-baseline을 push하고 원격 commit을 확인"
+next_action: "0.1.0 Phase 1 담당자와 수정 경로를 등록한 뒤 승인 아키텍처 실행 기반 작업 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -33,8 +33,8 @@ next_action: "GitHub 인증 설정 후 phase/0.0.0-baseline을 push하고 원격
 
 | 버전 | 상태 | 현재/완료 Phase | 진입 조건 |
 |---|---|---|---|
-| 0.0.0 | review | Phase 1~5 로컬 검증 완료, 원격 push 대기 | 원격 Phase 브랜치 commit 확인 |
-| 0.1.0 | planned | 없음 | 0.0.0 완료 |
+| 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
+| 0.1.0 | ready | Phase 1 시작 대기 | 0.0.0 완료 |
 | 0.2.0 | planned | 없음 | 0.1.0 완료 |
 | 0.3.0 | planned | 없음 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
@@ -53,7 +53,7 @@ next_action: "GitHub 인증 설정 후 phase/0.0.0-baseline을 push하고 원격
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.0.0 / Phase 5 | Git 원격 인계 | `phase/0.0.0-baseline` | GitHub 인증 | 2026-09-04 19:10:49 +0900 | review |
+| 없음 | - | - | - | - | - | - |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -85,15 +85,16 @@ next_action: "GitHub 인증 설정 후 phase/0.0.0-baseline을 push하고 원격
 
 ## 다음 작업
 
-1. GitHub 인증을 설정하고 `git push -u origin phase/0.0.0-baseline`을 실행합니다.
-2. 원격 branch가 로컬 HEAD를 가리키는지 확인한 뒤 0.0.0 Phase 5를 완료 처리합니다.
-3. [`0.1.0/1phase.md`](./0.1.0/1phase.md)의 작업 ID와 담당 경로를 등록합니다.
-4. [`0.0.0 기준선 통합 검증 보고서`](../../docs/runbooks/0.0.0-release-readiness.md)의 승인 어댑터·환경·health 계약을 확인하고 0.1.0 범위만 시작합니다.
+1. [`0.1.0/1phase.md`](./0.1.0/1phase.md)의 작업 ID를 Issue 또는 작업 기록에 연결합니다.
+2. 활성 작업 표에 담당자와 Phase 1에서 수정할 경로를 기록합니다.
+3. [`0.0.0 기준선 통합 검증 보고서`](../../docs/runbooks/0.0.0-release-readiness.md)의 승인 어댑터·환경·health 계약을 확인합니다.
+4. Google OAuth 구현 전 callback origin과 합성 테스트 DB 경계를 확정하고, 0.1.0 범위만 시작합니다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-04 | 0.0.0 / Phase 5 | Codex | 요구사항·ADR·Docker·Git·보안 기준선 통합 검증, 0.1.0 진입 승인 | 계획 검증 통과, 빈 작업 사본·빈 volume readiness 200, DB 장애 503·회복 200, secret scan 0건, PC·모바일 smoke, 원격 Phase branch SHA 일치 | 0.1.0 / Phase 1 |
 | 2026-09-04 | 0.0.0 / Phase 2 | Codex | ADR-0001~0009 작성 및 사용자 승인으로 Accepted | ADR 색인·개별 문서 상태 일치, 각 대안·보안·철회 경로 기록 | 아키텍처 중립 골격 |
 | 2026-09-04 | 0.0.0 / Phase 3 | Codex | workspace, 15 route, 중립 타입, config·health, 반응형 token과 경계 검사 구현 | Node 24.20.0 임시 도구로 `pnpm check` 통과 | Docker 개발환경 |
 | 2026-09-04 | 0.0.0 / Phase 4 | Codex | Compose 5개 서비스, PostgreSQL 18.6, migration·health·volume·host 8080 개발환경 검증 | 로컬·container check/test/build, DB 지속·초기화, 정상/실패 health, Playwright PC·모바일 통과 | 0.0.0 통합 게이트 |
