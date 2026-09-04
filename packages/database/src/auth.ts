@@ -81,6 +81,13 @@ export class PostgresAuthStore implements AuthStore {
         );
       }
       await client.query("update app_users set updated_at = $2 where id = $1", [userId, now]);
+      await client.query(
+        `insert into user_profiles(owner_id, display_name, avatar_url, updated_at)
+         values ($1, $2, $3, $4)
+         on conflict (owner_id) do update
+         set display_name = excluded.display_name, avatar_url = excluded.avatar_url, updated_at = excluded.updated_at`,
+        [userId, identity.displayName ?? "", identity.avatarUrl ?? null, now]
+      );
       await client.query("commit");
       return userId;
     } catch (error) {
