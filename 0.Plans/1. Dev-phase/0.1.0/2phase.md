@@ -1,6 +1,6 @@
 # 0.1.0 Phase 2 — Google 인증과 세션 경계
 
-- 상태: **검토**
+- 상태: **완료**
 - 버전 상태: [../STATUS.md](../STATUS.md)
 
 ## 목표
@@ -63,7 +63,7 @@ Google 계정으로 가입과 로그인을 하나의 흐름으로 제공하고, 
 
 ## 완료 조건
 
-- [ ] Google 로그인·가입이 동일 진입점에서 성공한다.
+- [x] Google 로그인·가입이 동일 진입점에서 성공한다.
 - [x] callback 보안 검증과 내부 redirect 제한이 동작한다.
 - [x] 로그인 유지·갱신·로그아웃이 서버 세션과 일치한다.
 - [x] 비공개 베타 허용 경계가 적용됐다.
@@ -82,4 +82,4 @@ Google 계정으로 가입과 로그인을 하나의 흐름으로 제공하고, 
 
 Phase 3에 검증된 내부 사용자 ID, 요청별 인증 context, 세션 만료·로그아웃 이벤트, 허용 계정 규칙을 전달한다. 데이터 계층은 callback 입력이나 이메일을 owner ID로 직접 사용하지 않는다.
 
-합성 OIDC와 격리 PostgreSQL 검증은 완료했다. 실제 Google OAuth 자격 증명이 현재 환경에 없어 실계정 최초 로그인·재로그인은 검토 대기이며, 설정과 결과는 [`Phase 2 검증 기록`](../../../docs/runbooks/0.1.0-phase2-validation.md)을 따른다.
+합성 OIDC·격리 PostgreSQL 검증과 허용된 실제 Google 계정 로그인을 완료했다. 설정과 결과는 [`Phase 2 검증 기록`](../../../docs/runbooks/0.1.0-phase2-validation.md)을 따른다.

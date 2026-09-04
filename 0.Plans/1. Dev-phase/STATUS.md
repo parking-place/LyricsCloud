@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.1.0"
-current_phase: "2phase.md"
-state: "review"
-owner: "Codex"
-started_at: "2026-09-04 21:07:32 +0900"
+current_phase: "3phase.md"
+state: "ready"
+owner: null
+started_at: null
 updated_at: "2026-09-04"
-next_action: "로컬 .env에 Google OAuth 값을 설정하고 허용 계정 최초 로그인·재로그인·로그아웃 실계정 검증"
+next_action: "0.1.0 Phase 3 profile·user-owned schema와 요청별 인증 context 구현 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -34,7 +34,7 @@ next_action: "로컬 .env에 Google OAuth 값을 설정하고 허용 계정 최�
 | 버전 | 상태 | 현재/완료 Phase | 진입 조건 |
 |---|---|---|---|
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
-| 0.1.0 | in_progress | Phase 1 완료, Phase 2 실계정 검토 대기 | 0.0.0 완료 |
+| 0.1.0 | in_progress | Phase 1~2 완료, Phase 3 시작 대기 | 0.0.0 완료 |
 | 0.2.0 | planned | 없음 | 0.1.0 완료 |
 | 0.3.0 | planned | 없음 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
@@ -53,7 +53,7 @@ next_action: "로컬 .env에 Google OAuth 값을 설정하고 허용 계정 최�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.1.0 / Phase 2 | LC-010-P2-01~10 | auth adapter·route·session migration·OIDC tests | 실제 Google OAuth `.env`와 허용 계정 검증 필요 | 2026-09-04 21:07:32 +0900 | review |
+| 없음 | - | - | - | - | - | - |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -94,6 +94,7 @@ next_action: "로컬 .env에 Google OAuth 값을 설정하고 허용 계정 최�
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-04 | 0.1.0 / Phase 2 | Codex | Google OIDC·PKCE·허용 목록·opaque session 경계와 실계정 로그인 완성 | 28 tests, 격리 DB migration 2회, 실계정 로그인 후 내부 user·identity·active session 각 1건 및 중복 0건, GitHub Actions 통과 | 내부 user ID 기반 profile·소유권 schema |
 | 2026-09-04 | 0.1.0 / Phase 1 | Codex | 실행·config·오류·health·격리 test DB·CI 기반 완성 | 12 unit tests, build, PC/mobile E2E, DB 장애·인증 분류, GitHub Actions 33870853702 통과 | Google OIDC·서버 session 경계 |
 | 2026-09-04 | 0.0.0 / Phase 5 | Codex | 요구사항·ADR·Docker·Git·보안 기준선 통합 검증, 0.1.0 진입 승인 | 계획 검증 통과, 빈 작업 사본·빈 volume readiness 200, DB 장애 503·회복 200, secret scan 0건, PC·모바일 smoke, 원격 Phase branch SHA 일치 | 0.1.0 / Phase 1 |
 | 2026-09-04 | 0.0.0 / Phase 2 | Codex | ADR-0001~0009 작성 및 사용자 승인으로 Accepted | ADR 색인·개별 문서 상태 일치, 각 대안·보안·철회 경로 기록 | 아키텍처 중립 골격 |
