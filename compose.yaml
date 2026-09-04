@@ -80,6 +80,18 @@ services:
   web:
     <<: *app
     command: ["pnpm", "--filter", "@lyricscloud/web", "dev"]
+    environment:
+      CI: "true"
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set in .env}
+      APP_VERSION: ${APP_VERSION:-0.1.0}
+      BUILD_ID: ${BUILD_ID:-local}
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8080}
+      GOOGLE_ISSUER: ${GOOGLE_ISSUER:-https://accounts.google.com}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-CHANGE_ME.apps.googleusercontent.com}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-CHANGE_ME}
+      SESSION_SECRET: ${SESSION_SECRET:-CHANGE_ME_AT_LEAST_32_RANDOM_BYTES}
+      AUTH_ALLOWED_EMAILS: ${AUTH_ALLOWED_EMAILS:-CHANGE_ME_TO_COMMA_SEPARATED_EMAILS}
     ports:
       - "${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-8080}:3000"
     healthcheck:

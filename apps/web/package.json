@@ -9,6 +9,7 @@
     "start": "node .next/standalone/apps/web/server.js"
   },
   "dependencies": {
+    "@lyricscloud/auth": "workspace:*",
     "@lyricscloud/config": "workspace:*",
     "@lyricscloud/database": "workspace:*",
     "@lyricscloud/domain": "workspace:*",

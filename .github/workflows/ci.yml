@@ -31,6 +31,7 @@ jobs:
       CI: "true"
       NODE_ENV: test
       DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
+      AUTH_DATABASE_INTEGRATION: "true"
       APP_VERSION: 0.1.0
       BUILD_ID: ${{ github.sha }}
     steps:

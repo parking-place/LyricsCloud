@@ -1,0 +1,13 @@
+{
+  "name": "@lyricscloud/auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": { "check": "tsc -p tsconfig.json" },
+  "dependencies": {
+    "@lyricscloud/config": "workspace:*",
+    "@lyricscloud/database": "workspace:*",
+    "openid-client": "6.8.7"
+  }
+}

@@ -13,7 +13,8 @@
 - Docker Compose 기반 web·collaboration·worker·PostgreSQL·migration 개발환경
 - 15개 route 중립 화면과 liveness/readiness endpoint
 - 빈 작업 사본·빈 Docker volume, 장애 회복, 데이터 지속·초기화, 보안·PC·모바일 기준선 검증 보고서
+- Google OIDC Authorization Code + PKCE 경계, 비공개 베타 허용 목록, PostgreSQL opaque 세션과 로그아웃 API
 
 ### Not yet implemented
 
-- Google 로그인과 실제 제품 화면, 업무 데이터 schema, CRDT 동기화
+- 로그인 최종 PC·모바일 화면, 업무 데이터 schema, CRDT 동기화

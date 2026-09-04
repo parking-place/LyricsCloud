@@ -1,6 +1,8 @@
 import { Pool } from "pg";
 
-export const CURRENT_SCHEMA_VERSION = "0000_baseline.sql";
+export const CURRENT_SCHEMA_VERSION = "0100_auth.sql";
+
+export * from "./auth.js";
 
 export type DatabaseHealthCode =
   | "DATABASE_AUTH_FAILED"

@@ -19,3 +19,17 @@ API 오류 응답은 HTTP 상태와 다음 두 필드만 공개한다.
 - 모든 health와 인증 응답은 `Cache-Control: no-store`를 사용한다.
 
 오류 분류에는 driver code만 사용하고 원본 driver message나 connection URL은 공개하지 않는다.
+
+## 인증 오류
+
+| code | 의미 | HTTP 또는 화면 전환 |
+|---|---|---|
+| `AUTH_REQUIRED` | 유효한 로그인 세션 없음 | 보호 API 401 |
+| `AUTH_CANCELLED` | 사용자가 Google 동의를 취소함 | `/auth` 안내 |
+| `AUTH_STATE_INVALID` | state 불일치, 거래 쿠키 변조 또는 거래 만료 | `/auth` 안내 |
+| `AUTH_CALLBACK_REPLAYED` | 이미 처리한 callback 또는 거부된 일회성 code | `/auth` 안내 |
+| `AUTH_NOT_ALLOWED` | 검증된 이메일이 비공개 베타 허용 목록에 없음 | `/auth` 안내 |
+| `AUTH_SESSION_EXPIRED` | idle 또는 absolute 세션 만료, 갱신 실패 | 세션 API 401 |
+| `AUTH_PROVIDER_UNAVAILABLE` | OIDC discovery·token·claims 검증 실패 | 503 또는 `/auth` 안내 |
+
+callback 오류 전환에도 `requestId`를 붙인다. OAuth code, provider token, ID token claims와 이메일은 공개 오류·서버 로그에 포함하지 않는다.

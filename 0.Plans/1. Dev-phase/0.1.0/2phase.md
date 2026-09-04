@@ -1,6 +1,6 @@
 # 0.1.0 Phase 2 — Google 인증과 세션 경계
 
-- 상태: **대기**
+- 상태: **검토**
 - 버전 상태: [../STATUS.md](../STATUS.md)
 
 ## 목표
@@ -41,16 +41,16 @@ Google 계정으로 가입과 로그인을 하나의 흐름으로 제공하고, 
 
 ## 작업 체크리스트
 
-- [ ] LC-010-P2-01 — 로그인 시작 요청에 state, nonce, PKCE 값을 생성하고 세션과 안전하게 연결한다.
-- [ ] LC-010-P2-02 — callback에서 code, state, nonce, redirect 목적지를 모두 검증한 뒤에만 세션을 발급한다.
-- [ ] LC-010-P2-03 — Google 이메일이 아닌 provider subject와 issuer 조합을 내부 사용자 식별 기준으로 저장한다.
-- [ ] LC-010-P2-04 — OAuth scope를 openid, email, profile로 제한하고 추가 Google 토큰을 보관하지 않는다.
-- [ ] LC-010-P2-05 — 초대되지 않은 계정에는 세션을 만들지 않고 사용자용 안내 코드로 종료한다.
-- [ ] LC-010-P2-06 — 세션 쿠키에 Accepted ADR의 Secure, HttpOnly, SameSite, 만료 정책을 적용한다.
-- [ ] LC-010-P2-07 — 만료 임박 세션 갱신과 갱신 실패 시 재로그인 전환을 구현한다.
-- [ ] LC-010-P2-08 — 로그아웃 시 서버 세션을 무효화하고 인증 캐시 제거 신호를 반환한다.
-- [ ] LC-010-P2-09 — 외부 URL과 프로토콜 상대 URL을 로그인 후 redirect로 사용할 수 없게 한다.
-- [ ] LC-010-P2-10 — 취소, 잘못된 state, 재사용 code, 만료 세션을 각각 다른 테스트 사례로 만든다.
+- [x] LC-010-P2-01 — 로그인 시작 요청에 state, nonce, PKCE 값을 생성하고 세션과 안전하게 연결한다.
+- [x] LC-010-P2-02 — callback에서 code, state, nonce, redirect 목적지를 모두 검증한 뒤에만 세션을 발급한다.
+- [x] LC-010-P2-03 — Google 이메일이 아닌 provider subject와 issuer 조합을 내부 사용자 식별 기준으로 저장한다.
+- [x] LC-010-P2-04 — OAuth scope를 openid, email, profile로 제한하고 추가 Google 토큰을 보관하지 않는다.
+- [x] LC-010-P2-05 — 초대되지 않은 계정에는 세션을 만들지 않고 사용자용 안내 코드로 종료한다.
+- [x] LC-010-P2-06 — 세션 쿠키에 Accepted ADR의 Secure, HttpOnly, SameSite, 만료 정책을 적용한다.
+- [x] LC-010-P2-07 — 만료 임박 세션 갱신과 갱신 실패 시 재로그인 전환을 구현한다.
+- [x] LC-010-P2-08 — 로그아웃 시 서버 세션을 무효화하고 인증 캐시 제거 신호를 반환한다.
+- [x] LC-010-P2-09 — 외부 URL과 프로토콜 상대 URL을 로그인 후 redirect로 사용할 수 없게 한다.
+- [x] LC-010-P2-10 — 취소, 잘못된 state, 재사용 code, 만료 세션을 각각 다른 테스트 사례로 만든다.
 
 ## 검증 방법
 
@@ -64,11 +64,11 @@ Google 계정으로 가입과 로그인을 하나의 흐름으로 제공하고, 
 ## 완료 조건
 
 - [ ] Google 로그인·가입이 동일 진입점에서 성공한다.
-- [ ] callback 보안 검증과 내부 redirect 제한이 동작한다.
-- [ ] 로그인 유지·갱신·로그아웃이 서버 세션과 일치한다.
-- [ ] 비공개 베타 허용 경계가 적용됐다.
-- [ ] 추가 Google 권한과 provider token을 저장하지 않는다.
-- [ ] 인증 실패가 사용자용 코드와 진단용 요청 ID로 구분된다.
+- [x] callback 보안 검증과 내부 redirect 제한이 동작한다.
+- [x] 로그인 유지·갱신·로그아웃이 서버 세션과 일치한다.
+- [x] 비공개 베타 허용 경계가 적용됐다.
+- [x] 추가 Google 권한과 provider token을 저장하지 않는다.
+- [x] 인증 실패가 사용자용 코드와 진단용 요청 ID로 구분된다.
 
 ## 산출물
 
@@ -81,3 +81,5 @@ Google 계정으로 가입과 로그인을 하나의 흐름으로 제공하고, 
 ## 다음 Phase 인계
 
 Phase 3에 검증된 내부 사용자 ID, 요청별 인증 context, 세션 만료·로그아웃 이벤트, 허용 계정 규칙을 전달한다. 데이터 계층은 callback 입력이나 이메일을 owner ID로 직접 사용하지 않는다.
+
+합성 OIDC와 격리 PostgreSQL 검증은 완료했다. 실제 Google OAuth 자격 증명이 현재 환경에 없어 실계정 최초 로그인·재로그인은 검토 대기이며, 설정과 결과는 [`Phase 2 검증 기록`](../../../docs/runbooks/0.1.0-phase2-validation.md)을 따른다.

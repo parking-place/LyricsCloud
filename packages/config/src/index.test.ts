@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ConfigError, readRuntimeConfig } from "./index.js";
+import { ConfigError, readAuthConfig, readRuntimeConfig } from "./index.js";
 
 describe("runtime configuration", () => {
   it("accepts a PostgreSQL URL", () => {
@@ -19,5 +19,37 @@ describe("runtime configuration", () => {
     const unsafe = "build id with spaces and a secret";
     expect(() => readRuntimeConfig({ NODE_ENV: "test", DATABASE_URL: "postgresql://user:test@db/app", BUILD_ID: unsafe }))
       .toThrow("Invalid configuration keys: BUILD_ID");
+  });
+});
+
+describe("auth configuration", () => {
+  const valid = {
+    NODE_ENV: "test",
+    APP_ORIGIN: "http://localhost:8080",
+    GOOGLE_ISSUER: "http://oidc.test",
+    GOOGLE_CLIENT_ID: "client.test.apps.googleusercontent.com",
+    GOOGLE_CLIENT_SECRET: "synthetic-client-secret",
+    SESSION_SECRET: "synthetic-session-secret-at-least-32-bytes",
+    AUTH_ALLOWED_EMAILS: " Allowed@Example.com "
+  };
+
+  it("normalizes the allowlist and permits a local test issuer", () => {
+    const config = readAuthConfig(valid);
+    expect(config.allowedEmails.has("allowed@example.com")).toBe(true);
+    expect(config.secureCookies).toBe(false);
+  });
+
+  it("requires HTTPS and the Google issuer in production", () => {
+    expect(() => readAuthConfig({ ...valid, NODE_ENV: "production" })).toThrow(ConfigError);
+  });
+
+  it("reports missing secret key names without values", () => {
+    expect(() => readAuthConfig({ ...valid, SESSION_SECRET: "too-short", AUTH_ALLOWED_EMAILS: "" }))
+      .toThrow("Invalid configuration keys: SESSION_SECRET, AUTH_ALLOWED_EMAILS");
+  });
+
+  it("rejects an application origin with a path and non-test issuer overrides", () => {
+    expect(() => readAuthConfig({ ...valid, APP_ORIGIN: "http://localhost:8080/auth" })).toThrow("APP_ORIGIN");
+    expect(() => readAuthConfig({ ...valid, NODE_ENV: "development" })).toThrow("GOOGLE_ISSUER");
   });
 });

@@ -6,6 +6,16 @@ export interface RuntimeConfig {
   readonly buildId: string;
 }
 
+export interface AuthConfig {
+  readonly appOrigin: string;
+  readonly issuer: string;
+  readonly clientId: string;
+  readonly clientSecret: string;
+  readonly sessionSecret: string;
+  readonly allowedEmails: ReadonlySet<string>;
+  readonly secureCookies: boolean;
+}
+
 export class ConfigError extends Error {
   readonly code = "CONFIG_INVALID";
   constructor(readonly keys: readonly string[]) { super(`Invalid configuration keys: ${keys.join(", ")}`); }
@@ -32,4 +42,37 @@ export function readRuntimeConfig(env: NodeJS.ProcessEnv): RuntimeConfig {
 
 function isSafeIdentifier(value: string): boolean {
   return value.length > 0 && value.length <= 128 && /^[A-Za-z0-9._-]+$/.test(value);
+}
+
+export function readAuthConfig(env: NodeJS.ProcessEnv): AuthConfig {
+  const runtime = env.NODE_ENV;
+  const invalid: string[] = [];
+  let origin: URL | undefined;
+  let issuer: URL | undefined;
+  try { origin = new URL(env.APP_ORIGIN ?? ""); } catch { invalid.push("APP_ORIGIN"); }
+  try { issuer = new URL(env.GOOGLE_ISSUER ?? "https://accounts.google.com"); } catch { invalid.push("GOOGLE_ISSUER"); }
+  if (origin && !["http:", "https:"].includes(origin.protocol)) invalid.push("APP_ORIGIN");
+  if (origin && (origin.pathname !== "/" || origin.search || origin.hash || origin.username || origin.password)) invalid.push("APP_ORIGIN");
+  if (origin && runtime === "production" && origin.protocol !== "https:") invalid.push("APP_ORIGIN");
+  if (issuer && runtime !== "test" && issuer.href !== "https://accounts.google.com/") invalid.push("GOOGLE_ISSUER");
+  if (!env.GOOGLE_CLIENT_ID || env.GOOGLE_CLIENT_ID.startsWith("CHANGE_ME")) invalid.push("GOOGLE_CLIENT_ID");
+  if (runtime === "production" && !env.GOOGLE_CLIENT_ID?.endsWith(".apps.googleusercontent.com")) invalid.push("GOOGLE_CLIENT_ID");
+  if (!env.GOOGLE_CLIENT_SECRET || env.GOOGLE_CLIENT_SECRET.startsWith("CHANGE_ME")) invalid.push("GOOGLE_CLIENT_SECRET");
+  if (!env.SESSION_SECRET || env.SESSION_SECRET.length < 32 || env.SESSION_SECRET.startsWith("CHANGE_ME")) invalid.push("SESSION_SECRET");
+  const allowedEmails = new Set((env.AUTH_ALLOWED_EMAILS ?? "").split(",").map(normalizeEmail).filter(Boolean));
+  if (allowedEmails.size === 0 || [...allowedEmails].some((email) => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))) invalid.push("AUTH_ALLOWED_EMAILS");
+  if (invalid.length) throw new ConfigError([...new Set(invalid)]);
+  return {
+    appOrigin: origin!.origin,
+    issuer: issuer!.href,
+    clientId: env.GOOGLE_CLIENT_ID!,
+    clientSecret: env.GOOGLE_CLIENT_SECRET!,
+    sessionSecret: env.SESSION_SECRET!,
+    allowedEmails,
+    secureCookies: origin!.protocol === "https:"
+  };
+}
+
+export function normalizeEmail(value: string): string {
+  return value.trim().normalize("NFKC").toLowerCase();
 }

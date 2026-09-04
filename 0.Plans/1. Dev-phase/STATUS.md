@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.1.0"
 current_phase: "2phase.md"
-state: "ready"
-owner: null
-started_at: null
+state: "review"
+owner: "Codex"
+started_at: "2026-09-04 21:07:32 +0900"
 updated_at: "2026-09-04"
-next_action: "0.1.0 Phase 2 Google OIDC·서버 세션 경계 구현 시작"
+next_action: "로컬 .env에 Google OAuth 값을 설정하고 허용 계정 최초 로그인·재로그인·로그아웃 실계정 검증"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -34,7 +34,7 @@ next_action: "0.1.0 Phase 2 Google OIDC·서버 세션 경계 구현 시작"
 | 버전 | 상태 | 현재/완료 Phase | 진입 조건 |
 |---|---|---|---|
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
-| 0.1.0 | in_progress | Phase 1 완료, Phase 2 시작 대기 | 0.0.0 완료 |
+| 0.1.0 | in_progress | Phase 1 완료, Phase 2 실계정 검토 대기 | 0.0.0 완료 |
 | 0.2.0 | planned | 없음 | 0.1.0 완료 |
 | 0.3.0 | planned | 없음 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.1.0 Phase 2 Google OIDC·서버 세션 경계 구현 시작"
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+| Codex | 0.1.0 / Phase 2 | LC-010-P2-01~10 | auth adapter·route·session migration·OIDC tests | 실제 Google OAuth `.env`와 허용 계정 검증 필요 | 2026-09-04 21:07:32 +0900 | review |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
