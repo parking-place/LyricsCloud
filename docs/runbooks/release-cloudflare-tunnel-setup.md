@@ -4,16 +4,9 @@
 
 ## 현재 확인 상태
 
-2026-09-05 기준으로 다음 항목을 확인했다.
+2026-09-05 기준으로 실제 신규 릴리스 서버에 `cloudflared`를 설치하고 `lyricscloud-release` Tunnel을 생성했다. Tunnel 전용 자격 증명은 `/etc/cloudflared`에 `0600`으로 배치했으며 계정 전체 Tunnel 관리 권한을 가진 `/root/.cloudflared/cert.pem`과 중복 자격 증명은 제거했다.
 
-- 기존 로컬 관리 Tunnel과 ingress 설정이 유효하다.
-- `cloudflared.service`가 부팅 시 자동 시작되며 현재 실행 중이다.
-- Tunnel 연결이 Cloudflare edge에 등록된다.
-- 공개 hostname의 proxied CNAME과 HTTPS 인증서 hostname 검증이 성공한다.
-- origin은 LXC의 loopback HTTP만 사용하며 외부에 애플리케이션 포트를 열지 않는다.
-- 서비스 설정은 `0640`, Tunnel 전용 자격 증명은 `0600`이다.
-- 계정 전체 Tunnel 관리 권한을 가진 `/root/.cloudflared/cert.pem`은 서버에 남기지 않는다.
-- 애플리케이션이 아직 origin에서 실행되지 않아 공개 루트의 Cloudflare `502`는 현재 예상 상태다.
+릴리스 공개 hostname이 확정되지 않아 ingress, DNS route와 systemd 서비스는 아직 구성하지 않았다. 이 세 항목과 외부 TLS·health 검증을 마치기 전에는 릴리스 Tunnel 구성이 완료된 것으로 기록하지 않는다.
 
 ## 구성 계약
 

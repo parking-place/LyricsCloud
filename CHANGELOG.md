@@ -20,7 +20,6 @@
 ### Changed
 
 - 홈랩 개발 서버의 공개 주소를 `devlyrics.parkingp.kr`로 변경
-- 릴리스 서버의 기존 Cloudflare Tunnel·DNS·HTTPS 구성을 검증하고 운영 문서와 비공개 인벤토리를 현재 상태로 동기화
 
 ### Not yet implemented
 

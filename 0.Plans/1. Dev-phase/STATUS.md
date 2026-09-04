@@ -53,7 +53,7 @@ next_action: "Phase 4 최종 상태 commit 원격 검사 후 0.1.0 Phase 5 통�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+| Codex | 0.1.0 / 운영 보완 | RELEASE-TUNNEL-SETUP | `docs/runbooks/**`, `.private/**`, `192.168.0.250` Tunnel/DNS | 사용자 명시 승인·대상 IP 정정 | 2026-09-05 01:05 KST | 진행 중 |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -94,7 +94,6 @@ next_action: "Phase 4 최종 상태 commit 원격 검사 후 0.1.0 Phase 5 통�
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
-| 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 릴리스 서버 기존 Cloudflare Tunnel·DNS·HTTPS 보안 구성을 정규화하고 공개 runbook·비공개 인벤토리 동기화 | ingress 유효, systemd enabled/active, Tunnel 연결 등록, DNS CNAME·TLS hostname 검증, 설정 640·자격 증명 600, 계정 cert 미보관, 예상 502 확인 | 릴리스 앱 배포 시 Google OAuth client·환경 값·실제 로그인 검증 |
 | 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 개발 Tunnel 공개 주소를 `devlyrics.parkingp.kr`로 변경하고 기존 DNS 제거, 로컬 공개·비공개 문서 동기화 | Tunnel ingress 검증, systemd enabled/active, 공개 DNS 신규 CNAME·기존 NXDOMAIN, Universal SSL SAN 일치, 예상 502 확인 | Google Cloud Console의 홈랩 개발 OAuth origin·redirect 수동 변경 후 앱 배포 |
 | 2026-09-04 | 0.1.0 / Phase 4 | Codex | Google 로그인 PC·모바일 상태 화면, 실제 정책 route, no-store 경계와 보호된 반응형 workspace shell 완성 | check, 31 unit, production build, 320·390·1440px E2E 12개, 시각 캡처 4개, GitHub Actions 33883741006 통과 | 인증 fixture·locator·브라우저 행렬 통합 검증 |
 | 2026-09-04 | 0.1.0 / Phase 3 | Codex | profile owner 규약·transaction-local 내부 user context·non-superuser 강제 RLS·계정별 cache 계약 완성 | 36 tests, A/B CRUD 차단, 기본 거부·pool 격리·blocked session 차단, migration 2회, build | 로그인 화면과 보호 route UI |
