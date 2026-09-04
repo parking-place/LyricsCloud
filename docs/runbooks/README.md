@@ -16,3 +16,8 @@
 
 - [`0.0.0 기준선 통합 검증 보고서`](./0.0.0-release-readiness.md)
 - [`0.0.0 Docker 검증 기록`](../../infra/docker/VALIDATION.md)
+
+## 개발 서버 운영
+
+- [`Cloudflare Tunnel과 HTTPS`](./cloudflare-tunnel-setup.md)
+- [`Google OAuth 개발 설정`](./google-oauth-setup.md)

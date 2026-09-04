@@ -133,6 +133,19 @@ Google 개발 프로젝트에서도 더 이상 시험하지 않을 계정을 제
 
 운영에서는 `APP_ORIGIN`과 redirect URI를 동일한 HTTPS origin으로 바꾸고, Google issuer override를 사용하지 않는다. 자격 증명을 노출했다면 즉시 Google Cloud에서 client secret을 교체하고 session secret 변경 후 기존 세션을 폐기한다.
 
+## 홈랩 개발 서버 값
+
+Cloudflare Tunnel이 구성된 개발 서버에 앱을 배포할 때는 다음 값을 사용한다. 로컬 `localhost` 개발 OAuth client와 섞지 않고 홈랩 개발용 Web application client를 별도로 둔다.
+
+```text
+APP_ORIGIN=https://lyrics-dev.parkingp.kr
+Authorized JavaScript origin=https://lyrics-dev.parkingp.kr
+Authorized redirect URI=https://lyrics-dev.parkingp.kr/api/auth/callback
+Authorized domain=parkingp.kr
+```
+
+JavaScript origin에는 경로와 끝 슬래시를 넣지 않는다. redirect URI에는 `/api/auth/callback`을 포함한다. Tunnel과 TLS 검증은 [`개발 서버 Cloudflare Tunnel과 HTTPS`](./cloudflare-tunnel-setup.md)를 따른다.
+
 ## 참고
 
 - [Google Auth Platform 시작 및 메뉴 구성](https://support.google.com/cloud/answer/15544987?hl=ko)
