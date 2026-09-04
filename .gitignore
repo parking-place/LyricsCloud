@@ -1,0 +1,51 @@
+# Dependencies and package-manager state
+node_modules/
+.pnpm-store/
+
+# Build output
+.next/
+dist/
+build/
+out/
+coverage/
+.turbo/
+*.tsbuildinfo
+
+# Test output
+playwright-report/
+test-results/
+blob-report/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Runtime data — never commit user content
+data/
+var/
+postgres-data/
+backups/
+exports/
+uploads/
+*.dump
+*.sql.gz
+
+# Logs and temporary files
+logs/
+*.log
+*.tmp
+*.temp
+.cache/
+
+# Editor and OS metadata
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.DS_Store
+Thumbs.db
+Desktop.ini
+
