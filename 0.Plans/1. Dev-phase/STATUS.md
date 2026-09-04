@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.1.0"
-current_phase: "1phase.md"
-state: "review"
-owner: "Codex"
-started_at: "2026-09-04 20:47:54 +0900"
+current_phase: "2phase.md"
+state: "ready"
+owner: null
+started_at: null
 updated_at: "2026-09-04"
-next_action: "0.1.0 Phase 1 원격 CI 통과와 branch SHA를 확인한 뒤 완료 처리"
+next_action: "0.1.0 Phase 2 Google OIDC·서버 세션 경계 구현 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -34,7 +34,7 @@ next_action: "0.1.0 Phase 1 원격 CI 통과와 branch SHA를 확인한 뒤 완�
 | 버전 | 상태 | 현재/완료 Phase | 진입 조건 |
 |---|---|---|---|
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
-| 0.1.0 | review | Phase 1 원격 CI 검토 | 0.0.0 완료 |
+| 0.1.0 | in_progress | Phase 1 완료, Phase 2 시작 대기 | 0.0.0 완료 |
 | 0.2.0 | planned | 없음 | 0.1.0 완료 |
 | 0.3.0 | planned | 없음 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.1.0 Phase 1 원격 CI 통과와 branch SHA를 확인한 뒤 완�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.1.0 / Phase 1 | LC-010-P1-01~09 | 앱 실행·config·health·migration·CI·root UI | 0.0.0 완료, ADR-0001/2/3/6 Accepted | 2026-09-04 20:47:54 +0900 | review |
+| 없음 | - | - | - | - | - | - |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -94,6 +94,7 @@ next_action: "0.1.0 Phase 1 원격 CI 통과와 branch SHA를 확인한 뒤 완�
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-04 | 0.1.0 / Phase 1 | Codex | 실행·config·오류·health·격리 test DB·CI 기반 완성 | 12 unit tests, build, PC/mobile E2E, DB 장애·인증 분류, GitHub Actions 33870853702 통과 | Google OIDC·서버 session 경계 |
 | 2026-09-04 | 0.0.0 / Phase 5 | Codex | 요구사항·ADR·Docker·Git·보안 기준선 통합 검증, 0.1.0 진입 승인 | 계획 검증 통과, 빈 작업 사본·빈 volume readiness 200, DB 장애 503·회복 200, secret scan 0건, PC·모바일 smoke, 원격 Phase branch SHA 일치 | 0.1.0 / Phase 1 |
 | 2026-09-04 | 0.0.0 / Phase 2 | Codex | ADR-0001~0009 작성 및 사용자 승인으로 Accepted | ADR 색인·개별 문서 상태 일치, 각 대안·보안·철회 경로 기록 | 아키텍처 중립 골격 |
 | 2026-09-04 | 0.0.0 / Phase 3 | Codex | workspace, 15 route, 중립 타입, config·health, 반응형 token과 경계 검사 구현 | Node 24.20.0 임시 도구로 `pnpm check` 통과 | Docker 개발환경 |
