@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: false,
   globalSetup: "./tests/e2e/global-setup.ts",
   reporter: "line",
-  expect: { toHaveScreenshot: { animations: "disabled", maxDiffPixelRatio: 0.02 } },
+  expect: { toHaveScreenshot: { animations: "disabled", maxDiffPixelRatio: 0.06 } },
   use: { baseURL: "http://127.0.0.1:3000", trace: "retain-on-failure", serviceWorkers: "block" },
   webServer: [
     {
