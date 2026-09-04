@@ -1,0 +1,10 @@
+# Development server override: run the immutable image content without host source or dependency mounts.
+services:
+  migrate:
+    volumes: !reset []
+  web:
+    volumes: !reset []
+  collaboration:
+    volumes: !reset []
+  worker:
+    volumes: !reset []

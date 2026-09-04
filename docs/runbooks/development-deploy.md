@@ -9,7 +9,7 @@
 3. 그 SHA의 필수 GitHub Actions가 모두 통과했는지 확인한다.
 4. 개발 서버 checkout에 tracked 변경이 없는지 확인한다.
 5. 원격 branch와 전달받은 전체 SHA가 일치할 때만 해당 SHA로 전환한다.
-6. 환경 파일을 유지한 채 image build, forward migration, Compose 갱신을 실행한다.
+6. 환경 파일을 유지한 채 서버 전용 Compose override로 image build, forward migration, Compose 갱신을 실행한다.
 7. 네 컨테이너 health와 공개 HTTPS live·ready, 변경 기능 smoke test를 확인한다.
 8. 배포 SHA·시각·검증 결과를 로컬 서버 인벤토리에 기록한다.
 
@@ -18,6 +18,7 @@
 - 배포 전용 checkout은 다른 저장소와 섞이지 않는 개발 서버 경로에 둔다.
 - Git remote는 read-only 접근으로 충분하다. 서버에서 commit하거나 merge하지 않는다.
 - `.env`와 `.test_users`는 mode `600`으로 만들고 Git·Docker build context에 넣지 않는다.
+- [`compose.development-server.yaml`](../../compose.development-server.yaml)은 host source·dependency mount를 제거한다. 실행 컨테이너는 checkout을 직접 수정하거나 checkout 전환 중인 코드를 미리 읽지 않고, build된 정확한 commit 내용만 사용한다.
 - 개발 OAuth client의 JavaScript origin과 callback은 개발 공개 주소와 정확히 일치해야 한다.
 - `POSTGRES_PASSWORD`, `SESSION_SECRET`, OAuth secret과 허용 메일 값은 터미널 출력이나 명령행 인수로 전달하지 않는다.
 
