@@ -146,6 +146,21 @@ Authorized domain=parkingp.kr
 
 JavaScript origin에는 경로와 끝 슬래시를 넣지 않는다. redirect URI에는 `/api/auth/callback`을 포함한다. Tunnel과 TLS 검증은 [`개발 서버 Cloudflare Tunnel과 HTTPS`](./cloudflare-tunnel-setup.md)를 따른다.
 
+## 홈랩 릴리스 서버 값
+
+릴리스 서버의 실제 hostname과 OAuth 값은 Git에서 제외된 `.private/server-inventory.local.md`의 `릴리스 서버` → `Google OAuth` 항목을 단일 원본으로 사용한다. 공개 문서나 `.env.example`에 실제 릴리스 주소와 자격 증명을 복사하지 않는다.
+
+릴리스용 Google OAuth Web application client는 로컬·개발용 client와 분리하고 다음 관계를 적용한다.
+
+```text
+APP_ORIGIN=https://<RELEASE-HOSTNAME>
+Authorized JavaScript origin=https://<RELEASE-HOSTNAME>
+Authorized redirect URI=https://<RELEASE-HOSTNAME>/api/auth/callback
+Authorized domain=parkingp.kr
+```
+
+Google Console에서 값을 변경한 뒤 릴리스 서버의 `.env`와 `.test_users`를 반영하고 앱을 재배포해야 한다. 실제 로그인, callback, 보호 route와 로그아웃이 검증되기 전에는 릴리스 인증 구성이 완료된 것으로 기록하지 않는다. Tunnel 검증은 [`릴리스 서버 Cloudflare Tunnel과 HTTPS`](./release-cloudflare-tunnel-setup.md)를 따른다.
+
 ## 참고
 
 - [Google Auth Platform 시작 및 메뉴 구성](https://support.google.com/cloud/answer/15544987?hl=ko)
