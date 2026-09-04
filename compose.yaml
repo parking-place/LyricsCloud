@@ -80,6 +80,8 @@ services:
   web:
     <<: *app
     command: ["pnpm", "--filter", "@lyricscloud/web", "dev"]
+    secrets:
+      - auth_allowed_emails
     environment:
       CI: "true"
       NODE_ENV: development
@@ -91,7 +93,7 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-CHANGE_ME.apps.googleusercontent.com}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-CHANGE_ME}
       SESSION_SECRET: ${SESSION_SECRET:-CHANGE_ME_AT_LEAST_32_RANDOM_BYTES}
-      AUTH_ALLOWED_EMAILS: ${AUTH_ALLOWED_EMAILS:-CHANGE_ME_TO_COMMA_SEPARATED_EMAILS}
+      AUTH_ALLOWED_EMAILS_FILE: /run/secrets/auth_allowed_emails
     ports:
       - "${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-8080}:3000"
     healthcheck:
@@ -144,3 +146,7 @@ volumes:
   backup_data:
   workspace_node_modules:
   pnpm_store:
+
+secrets:
+  auth_allowed_emails:
+    file: ./.test_users

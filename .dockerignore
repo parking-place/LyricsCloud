@@ -3,6 +3,8 @@
 .env
 .env.*
 !.env.example
+.test_users
+.private
 node_modules
 .next
 **/node_modules

@@ -1,0 +1,3 @@
+# Copy this file to .test_users on each server and enter one email per line.
+# Keep development and release server files separate.
+user@example.com

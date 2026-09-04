@@ -21,3 +21,13 @@ powershell -NoProfile -File scripts/validate-plans.ps1
 - 저장소 내 Markdown 로컬 링크 대상의 존재 여부
 
 이 검사는 문서 문장의 의미, 요구사항과 구현의 실제 동작 일치, 외부 URL·Markdown 앵커 유효성까지 증명하지는 않습니다.
+
+## 허용 메일 파일 이관
+
+이전 설정의 `.env` `AUTH_ALLOWED_EMAILS` 값을 현재 환경의 `.test_users`로 값 노출 없이 이관한다.
+
+```bash
+node scripts/migrate-test-users.mjs
+```
+
+스크립트는 기존 `.test_users` 항목과 병합·정규화한 뒤 `.env`에서 `AUTH_ALLOWED_EMAILS` 행을 제거한다. 두 파일 권한은 `600`으로 맞추며 실제 이메일은 출력하지 않는다.

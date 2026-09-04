@@ -39,6 +39,31 @@ describe("auth configuration", () => {
     expect(config.secureCookies).toBe(false);
   });
 
+  it("loads a comment-friendly allowlist file before the legacy environment value", () => {
+    const config = readAuthConfig(
+      { ...valid, AUTH_ALLOWED_EMAILS: "legacy@example.com", AUTH_ALLOWED_EMAILS_FILE: "/run/secrets/auth_allowed_emails" },
+      (path) => {
+        expect(path).toBe("/run/secrets/auth_allowed_emails");
+        return "# local only\n File.User@Example.com\nsecond@example.com\n";
+      }
+    );
+    expect([...config.allowedEmails]).toEqual(["file.user@example.com", "second@example.com"]);
+    expect(config.allowedEmails.has("legacy@example.com")).toBe(false);
+  });
+
+  it("fails closed without exposing an unreadable allowlist path", () => {
+    const path = "/private/never-print-this";
+    expect(() => readAuthConfig(
+      { ...valid, AUTH_ALLOWED_EMAILS_FILE: path },
+      () => { throw new Error("read failed"); }
+    )).toThrow("Invalid configuration keys: AUTH_ALLOWED_EMAILS_FILE");
+    try {
+      readAuthConfig({ ...valid, AUTH_ALLOWED_EMAILS_FILE: path }, () => { throw new Error("read failed"); });
+    } catch (error) {
+      expect(String(error)).not.toContain(path);
+    }
+  });
+
   it("requires HTTPS and the Google issuer in production", () => {
     expect(() => readAuthConfig({ ...valid, NODE_ENV: "production" })).toThrow(ConfigError);
   });

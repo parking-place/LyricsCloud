@@ -13,20 +13,26 @@ export class RequestAuthError extends Error {
   constructor() { super("AUTH_REQUIRED"); this.name = "RequestAuthError"; }
 }
 
-let cached: { key: string; context: AuthContext } | undefined;
+let cached: { key: string; context: AuthContext; allowedEmails: Set<string> } | undefined;
 
 export function getAuthContext(): AuthContext {
   const runtime = readRuntimeConfig(process.env);
   const config = readAuthConfig(process.env);
   const key = `${runtime.databaseUrl}\u0000${config.appOrigin}\u0000${config.issuer}\u0000${config.clientId}`;
-  if (cached?.key === key) return cached.context;
+  if (cached?.key === key) {
+    cached.allowedEmails.clear();
+    for (const email of config.allowedEmails) cached.allowedEmails.add(email);
+    return cached.context;
+  }
+  const allowedEmails = new Set(config.allowedEmails);
+  const liveConfig = { ...config, allowedEmails };
   const store = new PostgresAuthStore(runtime.databaseUrl);
   const context = {
-    config,
-    service: new AuthService(config, store, new GoogleOidcAdapter(config)),
+    config: liveConfig,
+    service: new AuthService(liveConfig, store, new GoogleOidcAdapter(liveConfig)),
     ownedData: new PostgresOwnedDataStore(runtime.databaseUrl)
   };
-  cached = { key, context };
+  cached = { key, context, allowedEmails };
   return context;
 }
 

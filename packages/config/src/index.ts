@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 export type RuntimeName = "development" | "test" | "production";
 export interface RuntimeConfig {
   readonly runtime: RuntimeName;
@@ -44,7 +46,10 @@ function isSafeIdentifier(value: string): boolean {
   return value.length > 0 && value.length <= 128 && /^[A-Za-z0-9._-]+$/.test(value);
 }
 
-export function readAuthConfig(env: NodeJS.ProcessEnv): AuthConfig {
+export function readAuthConfig(
+  env: NodeJS.ProcessEnv,
+  readTextFile: (path: string) => string = (path) => readFileSync(path, "utf8")
+): AuthConfig {
   const runtime = env.NODE_ENV;
   const invalid: string[] = [];
   let origin: URL | undefined;
@@ -59,8 +64,16 @@ export function readAuthConfig(env: NodeJS.ProcessEnv): AuthConfig {
   if (runtime === "production" && !env.GOOGLE_CLIENT_ID?.endsWith(".apps.googleusercontent.com")) invalid.push("GOOGLE_CLIENT_ID");
   if (!env.GOOGLE_CLIENT_SECRET || env.GOOGLE_CLIENT_SECRET.startsWith("CHANGE_ME")) invalid.push("GOOGLE_CLIENT_SECRET");
   if (!env.SESSION_SECRET || env.SESSION_SECRET.length < 32 || env.SESSION_SECRET.startsWith("CHANGE_ME")) invalid.push("SESSION_SECRET");
-  const allowedEmails = new Set((env.AUTH_ALLOWED_EMAILS ?? "").split(",").map(normalizeEmail).filter(Boolean));
-  if (allowedEmails.size === 0 || [...allowedEmails].some((email) => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))) invalid.push("AUTH_ALLOWED_EMAILS");
+  const allowedEmailFile = env.AUTH_ALLOWED_EMAILS_FILE?.trim();
+  const allowedEmailKey = allowedEmailFile ? "AUTH_ALLOWED_EMAILS_FILE" : "AUTH_ALLOWED_EMAILS";
+  let allowedEmailSource = env.AUTH_ALLOWED_EMAILS ?? "";
+  if (allowedEmailFile) {
+    try { allowedEmailSource = readTextFile(allowedEmailFile); }
+    catch { invalid.push(allowedEmailKey); allowedEmailSource = ""; }
+  }
+  const allowedEmails = parseAllowedEmails(allowedEmailSource);
+  if (allowedEmailSource.length > 65_536 || allowedEmails.size === 0
+    || [...allowedEmails].some((email) => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))) invalid.push(allowedEmailKey);
   if (invalid.length) throw new ConfigError([...new Set(invalid)]);
   return {
     appOrigin: origin!.origin,
@@ -75,4 +88,12 @@ export function readAuthConfig(env: NodeJS.ProcessEnv): AuthConfig {
 
 export function normalizeEmail(value: string): string {
   return value.trim().normalize("NFKC").toLowerCase();
+}
+
+function parseAllowedEmails(source: string): Set<string> {
+  const entries = source.split(/\r?\n/u).flatMap((line) => {
+    const trimmed = line.trim();
+    return !trimmed || trimmed.startsWith("#") ? [] : trimmed.split(",");
+  });
+  return new Set(entries.map(normalizeEmail).filter(Boolean));
 }
