@@ -78,7 +78,7 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .avatar { width: 2.1rem; height: 2.1rem; display: grid; flex: 0 0 auto; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--surface-raised); color: var(--acid); object-fit: cover; font-size: .8rem; font-weight: 800; }
 .logout-button { min-height: 2.65rem; display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); align-items: center; gap: .45rem; padding: .55rem .7rem; border: 0; border-radius: .6rem; background: transparent; color: var(--muted); text-align: left; cursor: pointer; }
 .logout-button:hover { background: var(--surface); color: var(--ink); }
-.logout-button:disabled, .top-logout:disabled { opacity: .55; cursor: wait; }
+.logout-button:disabled, .top-logout:disabled, .mobile-logout:disabled { opacity: .55; cursor: wait; }
 .workspace-shell.is-collapsed .brand > span:last-child, .workspace-shell.is-collapsed .nav-label, .workspace-shell.is-collapsed .nav-text { visibility: hidden; }
 .workspace-shell.is-collapsed .rail-toggle { align-self: center; }
 .main-shell { min-width: 0; display: grid; grid-template-rows: 4.5rem minmax(0, 1fr); }
@@ -144,6 +144,8 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .mobile-header { grid-row: 1; display: flex; align-items: center; justify-content: space-between; padding: max(.85rem, var(--lc-safe-top)) max(1rem, var(--lc-safe-right)) .85rem max(1rem, var(--lc-safe-left)); border-bottom: 1px solid var(--line); background: #0c0f13; }
   .mobile-header .brand { font-size: .7rem; }
   .mobile-header .brand-mark { width: 1.8rem; height: 1.8rem; }
+  .mobile-account { display: flex; align-items: center; gap: .55rem; }
+  .mobile-logout { min-height: 2.35rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .55rem; background: transparent; color: var(--muted); font-size: .7rem; cursor: pointer; }
   .workspace-content { grid-row: 2; padding: clamp(1.5rem, 7vw, 2.4rem) max(1.1rem, var(--lc-safe-right)) 2rem max(1.1rem, var(--lc-safe-left)); overflow-y: auto; }
   .workspace-content > h1 { font-size: clamp(2.1rem, 11vw, 3.5rem); }
   .empty-state { margin-top: 3rem; }
@@ -165,6 +167,8 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .brand { letter-spacing: .11em; }
   .workspace-content { padding-inline: 1rem; }
   .private-badge { display: none; }
+  .mobile-account { gap: .35rem; }
+  .mobile-logout { padding-inline: .5rem; }
 }
 
 @media (max-height: 690px) and (max-width: 720px) {

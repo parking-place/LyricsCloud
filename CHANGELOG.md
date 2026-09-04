@@ -16,6 +16,9 @@
 - Google OIDC Authorization Code + PKCE 경계, 비공개 베타 허용 목록, PostgreSQL opaque 세션과 로그아웃 API
 - 내부 사용자 ID 기반 profile 소유권, transaction-local 사용자 문맥과 강제 RLS
 - PC·모바일 Google 로그인 화면, 인증 상태 안내, 정책 문서와 보호된 반응형 작업 공간 셸
+- 로컬 OIDC 기반 로그인·세션·로그아웃 E2E, A/B 소유권 공격 검사와 PC·모바일 시각 회귀 기준
+- 모바일 셸 로그아웃, 계정별 브라우저 캐시 정리와 공통 응답 보안 헤더
+- 0.2.0 resource 생성용 서버 owner context 계약
 
 ### Changed
 

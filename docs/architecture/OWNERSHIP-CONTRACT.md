@@ -44,6 +44,8 @@ create policy example_resources_owner_policy on example_resources
 - 미소유 ID와 존재하지 않는 ID를 모두 `NOT_FOUND`로 응답한다.
 - 거부 오류와 로그에는 상대 사용자의 존재, 이메일, provider subject, 표시 이름이나 창작물 내용을 포함하지 않는다.
 
+0.2.0 생성 API가 소비할 실행 가능한 예제와 필수 회귀 묶음은 [`0.2.0 owner context 인계`](./0.2.0-OWNER-CONTEXT-HANDOFF.md)에 고정한다.
+
 ## Profile
 
 `user_profiles.owner_id`가 내부 사용자 ID이자 profile 식별자다. 표시 이름·avatar URL·생성·수정 시각은 profile에 저장하고, 계정 활성 상태는 `app_users.status`를 단일 원본으로 사용한다. 보호된 profile 응답은 활성 사용자에게만 `accountStatus: active`를 반환한다.

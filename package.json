@@ -7,6 +7,7 @@
   "scripts": {
     "build": "pnpm -r --if-present build",
     "check": "pnpm lint && pnpm typecheck",
+    "check:secrets": "node scripts/check-secret-leaks.mjs",
     "boundaries": "node scripts/check-boundaries.mjs",
     "dev": "pnpm --filter @lyricscloud/web dev",
     "lint": "pnpm boundaries",
@@ -17,5 +18,5 @@
     "typecheck": "pnpm -r --if-present check",
     "migrate": "pnpm --filter @lyricscloud/database migrate"
   },
-  "devDependencies": { "@playwright/test": "1.62.1", "@types/node": "24.10.0", "typescript": "5.9.3", "vitest": "4.0.18" }
+  "devDependencies": { "@playwright/test": "1.62.1", "@types/node": "24.10.0", "@types/pg": "8.15.5", "pg": "8.16.3", "typescript": "5.9.3", "vitest": "4.0.18" }
 }

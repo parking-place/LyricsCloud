@@ -68,6 +68,26 @@ describe("auth configuration", () => {
     expect(() => readAuthConfig({ ...valid, NODE_ENV: "production" })).toThrow(ConfigError);
   });
 
+  it("allows a production-build OIDC fixture only when both endpoints are loopback", () => {
+    const fixture = readAuthConfig({
+      ...valid,
+      NODE_ENV: "production",
+      OIDC_TEST_FIXTURE: "true",
+      APP_ORIGIN: "http://127.0.0.1:3000",
+      GOOGLE_ISSUER: "http://127.0.0.1:3100",
+      GOOGLE_CLIENT_ID: "synthetic-e2e-client"
+    });
+    expect(fixture).toMatchObject({ secureCookies: false, issuer: "http://127.0.0.1:3100/" });
+    expect(() => readAuthConfig({
+      ...valid,
+      NODE_ENV: "production",
+      OIDC_TEST_FIXTURE: "true",
+      APP_ORIGIN: "http://dev.example.com",
+      GOOGLE_ISSUER: "http://oidc.example.com",
+      GOOGLE_CLIENT_ID: "synthetic-e2e-client"
+    })).toThrow(ConfigError);
+  });
+
   it("reports missing secret key names without values", () => {
     expect(() => readAuthConfig({ ...valid, SESSION_SECRET: "too-short", AUTH_ALLOWED_EMAILS: "" }))
       .toThrow("Invalid configuration keys: SESSION_SECRET, AUTH_ALLOWED_EMAILS");

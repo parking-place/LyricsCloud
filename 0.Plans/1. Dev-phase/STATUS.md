@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.1.0"
-current_phase: "4phase.md"
+current_phase: "5phase.md"
 state: "complete"
-owner: null
-started_at: null
+owner: "none"
+started_at: "2026-09-05 01:43 KST"
 updated_at: "2026-09-05"
-next_action: "Phase 4 최종 상태 commit 원격 검사 후 0.1.0 Phase 5 통합 검증 진입"
+next_action: "사용자 지시 후 0.2.0 Phase 1 공통 resource·곡 데이터 모델 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -34,8 +34,8 @@ next_action: "Phase 4 최종 상태 commit 원격 검사 후 0.1.0 Phase 5 통�
 | 버전 | 상태 | 현재/완료 Phase | 진입 조건 |
 |---|---|---|---|
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
-| 0.1.0 | in_progress | Phase 1~4 완료, Phase 5 시작 대기 | 0.0.0 완료 |
-| 0.2.0 | planned | 없음 | 0.1.0 완료 |
+| 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
+| 0.2.0 | ready | 없음 | 0.1.0 완료 |
 | 0.3.0 | planned | 없음 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
@@ -85,15 +85,16 @@ next_action: "Phase 4 최종 상태 commit 원격 검사 후 0.1.0 Phase 5 통�
 
 ## 다음 작업
 
-1. [`0.1.0/1phase.md`](./0.1.0/1phase.md)의 작업 ID를 Issue 또는 작업 기록에 연결합니다.
-2. 활성 작업 표에 담당자와 Phase 1에서 수정할 경로를 기록합니다.
-3. [`0.0.0 기준선 통합 검증 보고서`](../../docs/runbooks/0.0.0-release-readiness.md)의 승인 어댑터·환경·health 계약을 확인합니다.
-4. Google OAuth 구현 전 callback origin과 합성 테스트 DB 경계를 확정하고, 0.1.0 범위만 시작합니다.
+1. 사용자 지시를 받은 뒤 [`0.2.0 Phase 1`](./0.2.0/1phase.md)의 범위와 선행조건을 확인합니다.
+2. 활성 작업 표에 담당자와 resource·song schema 수정 경로를 기록합니다.
+3. [`0.2.0 owner context 인계`](../../docs/architecture/0.2.0-OWNER-CONTEXT-HANDOFF.md)의 생성 명령·RLS·idempotency 기준을 적용합니다.
+4. 곡·resource 범위만 시작하고 lyrics·CRDT·검색 기능은 뒤 Phase로 남깁니다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-05 | 0.1.0 / Phase 5 | Codex | 로컬 OIDC 로그인·세션 복원·갱신·로그아웃, A/B 소유권 공격, PC·모바일 시각·보안 회귀를 CI에 연결하고 0.1.0 완료 | migration 2회, check, 41 tests, production build, desktop/mobile E2E 26개, secret scan 0건, Docker restart readiness 200, [`검증 보고서`](../../docs/runbooks/0.1.0-phase5-validation.md) | [`0.2.0 owner context 인계`](../../docs/architecture/0.2.0-OWNER-CONTEXT-HANDOFF.md)와 합성 A/B fixture |
 | 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 개발·릴리스 Debian 13 서버에 Docker Engine·Compose·Buildx·Git·기본 운영 도구 설치 | 양쪽 Docker 29.8.0·Compose 5.5.1·Buildx 0.37.0·Git 2.47.3, Compose hello-world, overlayfs·systemd cgroup, daemon enabled/active, TCP API 비공개, GitHub read, Tunnel active | 환경별 deploy key·배포 경로·운영 Compose와 secret 배치 |
 | 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 신규 릴리스 서버에 릴리스 전용 Cloudflare Tunnel·DNS·HTTPS 경로를 구성하고 오접속 기록·인벤토리 정정 | 실제 대상 SSH 확인, cloudflared 2026.8.3, ingress 유효, systemd enabled/active, DNS CNAME·TLS hostname 검증, 개발·릴리스 machine/Tunnel ID 분리, 예상 502 | 릴리스 앱 배포 시 Google OAuth client·환경 값·실제 로그인 검증 |
 | 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 개발 Tunnel 공개 주소를 `devlyrics.parkingp.kr`로 변경하고 기존 DNS 제거, 로컬 공개·비공개 문서 동기화 | Tunnel ingress 검증, systemd enabled/active, 공개 DNS 신규 CNAME·기존 NXDOMAIN, Universal SSL SAN 일치, 예상 502 확인 | Google Cloud Console의 홈랩 개발 OAuth origin·redirect 수동 변경 후 앱 배포 |

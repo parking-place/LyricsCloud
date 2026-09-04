@@ -56,12 +56,14 @@ export function readAuthConfig(
   let issuer: URL | undefined;
   try { origin = new URL(env.APP_ORIGIN ?? ""); } catch { invalid.push("APP_ORIGIN"); }
   try { issuer = new URL(env.GOOGLE_ISSUER ?? "https://accounts.google.com"); } catch { invalid.push("GOOGLE_ISSUER"); }
+  const localTestFixture = env.OIDC_TEST_FIXTURE === "true"
+    && isLoopback(origin) && isLoopback(issuer);
   if (origin && !["http:", "https:"].includes(origin.protocol)) invalid.push("APP_ORIGIN");
   if (origin && (origin.pathname !== "/" || origin.search || origin.hash || origin.username || origin.password)) invalid.push("APP_ORIGIN");
-  if (origin && runtime === "production" && origin.protocol !== "https:") invalid.push("APP_ORIGIN");
-  if (issuer && runtime !== "test" && issuer.href !== "https://accounts.google.com/") invalid.push("GOOGLE_ISSUER");
+  if (origin && runtime === "production" && origin.protocol !== "https:" && !localTestFixture) invalid.push("APP_ORIGIN");
+  if (issuer && runtime !== "test" && issuer.href !== "https://accounts.google.com/" && !localTestFixture) invalid.push("GOOGLE_ISSUER");
   if (!env.GOOGLE_CLIENT_ID || env.GOOGLE_CLIENT_ID.startsWith("CHANGE_ME")) invalid.push("GOOGLE_CLIENT_ID");
-  if (runtime === "production" && !env.GOOGLE_CLIENT_ID?.endsWith(".apps.googleusercontent.com")) invalid.push("GOOGLE_CLIENT_ID");
+  if (runtime === "production" && !env.GOOGLE_CLIENT_ID?.endsWith(".apps.googleusercontent.com") && !localTestFixture) invalid.push("GOOGLE_CLIENT_ID");
   if (!env.GOOGLE_CLIENT_SECRET || env.GOOGLE_CLIENT_SECRET.startsWith("CHANGE_ME")) invalid.push("GOOGLE_CLIENT_SECRET");
   if (!env.SESSION_SECRET || env.SESSION_SECRET.length < 32 || env.SESSION_SECRET.startsWith("CHANGE_ME")) invalid.push("SESSION_SECRET");
   const allowedEmailFile = env.AUTH_ALLOWED_EMAILS_FILE?.trim();
@@ -84,6 +86,10 @@ export function readAuthConfig(
     allowedEmails,
     secureCookies: origin!.protocol === "https:"
   };
+}
+
+function isLoopback(url: URL | undefined): boolean {
+  return Boolean(url && url.protocol === "http:" && ["127.0.0.1", "localhost", "[::1]"].includes(url.hostname));
 }
 
 export function normalizeEmail(value: string): string {

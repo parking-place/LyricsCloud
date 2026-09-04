@@ -56,3 +56,15 @@ jobs:
         env:
           NODE_ENV: production
         run: pnpm build
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Auth and ownership E2E
+        env:
+          E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
+        run: pnpm test:e2e
+      - name: Scan build artifacts for auth secrets
+        env:
+          GOOGLE_CLIENT_SECRET: synthetic-e2e-client-secret
+          SESSION_SECRET: synthetic-e2e-session-secret-at-least-32-bytes
+          E2E_PROVIDER_TOKEN: synthetic-provider-token-never-persisted
+        run: pnpm check:secrets apps/web/.next

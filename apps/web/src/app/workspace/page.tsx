@@ -9,5 +9,5 @@ export default async function WorkspacePage({ searchParams }: { searchParams: Pr
   const user = await resolvePageUser();
   if (!user) redirect("/auth");
   const query = await searchParams;
-  return <AppShell profile={{ displayName: user.displayName, avatarUrl: user.avatarUrl }} loginCompleted={query.auth === "success"} />;
+  return <AppShell profile={{ userId: user.userId, displayName: user.displayName, avatarUrl: user.avatarUrl }} loginCompleted={query.auth === "success"} />;
 }

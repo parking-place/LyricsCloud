@@ -136,6 +136,8 @@ describe("redirect and cookie policy", () => {
     expect(safeReturnTo("/songs/1?tab=lyrics#verse")).toBe("/songs/1?tab=lyrics#verse");
     expect(cookieNames(config)).toEqual({ session: "lc_session", transaction: "lc_oidc" });
     expect(sessionCookie(config, "opaque")).toContain("HttpOnly; SameSite=Lax; Max-Age=2592000");
+    expect(sessionCookie({ secureCookies: true }, "opaque"))
+      .toContain("__Host-lc_session=opaque; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000; Secure");
     expect(transactionCookie({ secureCookies: true }, "sealed")).toContain("__Host-lc_oidc=sealed; Path=/; HttpOnly; SameSite=Lax; Max-Age=600; Secure");
   });
 });

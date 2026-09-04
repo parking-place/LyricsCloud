@@ -8,5 +8,10 @@
 - 온라인·오프라인·재연결 상태 변화
 - export, 탈퇴, purge, backup의 데이터 생명주기
 
-현재는 후보 디렉터리만 있으며 확정 도식은 `0.0.0` 완료 때 추가합니다.
+현재 확정 계약:
 
+- [`경계와 의존 방향`](./BOUNDARIES.md)
+- [`오류 응답`](./ERROR-CONTRACT.md)
+- [`사용자 소유권`](./OWNERSHIP-CONTRACT.md)
+- [`계정별 클라이언트 캐시`](./ACCOUNT-CACHE-CONTRACT.md)
+- [`0.2.0 owner context 인계`](./0.2.0-OWNER-CONTEXT-HANDOFF.md)
