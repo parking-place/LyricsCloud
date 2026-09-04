@@ -8,7 +8,7 @@ current_phase: "4phase.md"
 state: "complete"
 owner: null
 started_at: null
-updated_at: "2026-09-04"
+updated_at: "2026-09-05"
 next_action: "Phase 4 최종 상태 commit 원격 검사 후 0.1.0 Phase 5 통합 검증 진입"
 ```
 
@@ -94,6 +94,7 @@ next_action: "Phase 4 최종 상태 commit 원격 검사 후 0.1.0 Phase 5 통�
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 개발 Tunnel 공개 주소를 `devlyrics.parkingp.kr`로 변경하고 기존 DNS 제거, 로컬 공개·비공개 문서 동기화 | Tunnel ingress 검증, systemd enabled/active, 공개 DNS 신규 CNAME·기존 NXDOMAIN, Universal SSL SAN 일치, 예상 502 확인 | Google Cloud Console의 홈랩 개발 OAuth origin·redirect 수동 변경 후 앱 배포 |
 | 2026-09-04 | 0.1.0 / Phase 4 | Codex | Google 로그인 PC·모바일 상태 화면, 실제 정책 route, no-store 경계와 보호된 반응형 workspace shell 완성 | check, 31 unit, production build, 320·390·1440px E2E 12개, 시각 캡처 4개, GitHub Actions 33883741006 통과 | 인증 fixture·locator·브라우저 행렬 통합 검증 |
 | 2026-09-04 | 0.1.0 / Phase 3 | Codex | profile owner 규약·transaction-local 내부 user context·non-superuser 강제 RLS·계정별 cache 계약 완성 | 36 tests, A/B CRUD 차단, 기본 거부·pool 격리·blocked session 차단, migration 2회, build | 로그인 화면과 보호 route UI |
 | 2026-09-04 | 0.1.0 / Phase 2 | Codex | Google OIDC·PKCE·허용 목록·opaque session 경계와 실계정 로그인 완성 | 28 tests, 격리 DB migration 2회, 실계정 로그인 후 내부 user·identity·active session 각 1건 및 중복 0건, GitHub Actions 통과 | 내부 user ID 기반 profile·소유권 schema |

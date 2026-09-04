@@ -17,6 +17,10 @@
 - 내부 사용자 ID 기반 profile 소유권, transaction-local 사용자 문맥과 강제 RLS
 - PC·모바일 Google 로그인 화면, 인증 상태 안내, 정책 문서와 보호된 반응형 작업 공간 셸
 
+### Changed
+
+- 홈랩 개발 서버의 공개 주소를 `devlyrics.parkingp.kr`로 변경
+
 ### Not yet implemented
 
 - 곡·가사 업무 데이터 schema, CRDT 동기화

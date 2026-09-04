@@ -138,9 +138,9 @@ Google 개발 프로젝트에서도 더 이상 시험하지 않을 계정을 제
 Cloudflare Tunnel이 구성된 개발 서버에 앱을 배포할 때는 다음 값을 사용한다. 로컬 `localhost` 개발 OAuth client와 섞지 않고 홈랩 개발용 Web application client를 별도로 둔다.
 
 ```text
-APP_ORIGIN=https://lyrics-dev.parkingp.kr
-Authorized JavaScript origin=https://lyrics-dev.parkingp.kr
-Authorized redirect URI=https://lyrics-dev.parkingp.kr/api/auth/callback
+APP_ORIGIN=https://devlyrics.parkingp.kr
+Authorized JavaScript origin=https://devlyrics.parkingp.kr
+Authorized redirect URI=https://devlyrics.parkingp.kr/api/auth/callback
 Authorized domain=parkingp.kr
 ```
 

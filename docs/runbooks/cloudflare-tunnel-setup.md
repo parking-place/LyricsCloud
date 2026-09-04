@@ -6,7 +6,7 @@
 
 | 항목 | 값 |
 |---|---|
-| 공개 주소 | `https://lyrics-dev.parkingp.kr` |
+| 공개 주소 | `https://devlyrics.parkingp.kr` |
 | Tunnel 이름 | `lyricscloud-dev` |
 | origin | `http://127.0.0.1:8080` |
 | 서버 | Debian 13 LXC |
@@ -66,7 +66,7 @@ tunnel: <TUNNEL-UUID>
 credentials-file: /etc/cloudflared/<TUNNEL-UUID>.json
 
 ingress:
-  - hostname: lyrics-dev.parkingp.kr
+  - hostname: devlyrics.parkingp.kr
     service: http://127.0.0.1:8080
   - service: http_status:404
 ```
@@ -78,7 +78,7 @@ ingress:
 Tunnel CNAME을 만들고 설정을 검증한 뒤 부팅 자동 시작 서비스를 설치한다.
 
 ```bash
-cloudflared tunnel route dns <TUNNEL-UUID> lyrics-dev.parkingp.kr
+cloudflared tunnel route dns <TUNNEL-UUID> devlyrics.parkingp.kr
 cloudflared --config /etc/cloudflared/config.yml tunnel ingress validate
 cloudflared --config /etc/cloudflared/config.yml service install
 systemctl enable --now cloudflared
@@ -92,14 +92,14 @@ systemctl enable --now cloudflared
 systemctl is-enabled cloudflared
 systemctl is-active cloudflared
 journalctl -u cloudflared --since '10 minutes ago' --no-pager
-curl -I https://lyrics-dev.parkingp.kr
+curl -I https://devlyrics.parkingp.kr
 ```
 
 `Registered tunnel connection`이 하나 이상 있고 TLS handshake가 성공해야 한다. 앱을 아직 배포하지 않았거나 `127.0.0.1:8080`이 준비되지 않았다면 Cloudflare의 `502` 응답은 정상이다. 앱 배포 후에는 다음 두 경로가 `200`이어야 한다.
 
 ```bash
-curl -fsS https://lyrics-dev.parkingp.kr/api/health/live
-curl -fsS https://lyrics-dev.parkingp.kr/api/health/ready
+curl -fsS https://devlyrics.parkingp.kr/api/health/live
+curl -fsS https://devlyrics.parkingp.kr/api/health/ready
 ```
 
 ## Google OAuth 후속 설정
@@ -107,9 +107,9 @@ curl -fsS https://lyrics-dev.parkingp.kr/api/health/ready
 개발 서버에 앱을 배포할 때 다음 값을 문자 단위로 일치시킨다.
 
 ```text
-APP_ORIGIN=https://lyrics-dev.parkingp.kr
-Authorized JavaScript origin=https://lyrics-dev.parkingp.kr
-Authorized redirect URI=https://lyrics-dev.parkingp.kr/api/auth/callback
+APP_ORIGIN=https://devlyrics.parkingp.kr
+Authorized JavaScript origin=https://devlyrics.parkingp.kr
+Authorized redirect URI=https://devlyrics.parkingp.kr/api/auth/callback
 Authorized domain=parkingp.kr
 ```
 
