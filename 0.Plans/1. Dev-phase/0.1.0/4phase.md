@@ -1,6 +1,6 @@
 # 0.1.0 Phase 4 — 01 로그인 화면과 공통 반응형 셸
 
-- 상태: **검토 중**
+- 상태: **완료**
 - 버전 상태: [../STATUS.md](../STATUS.md)
 
 ## 목표
@@ -84,6 +84,15 @@
 - 접근성·반응형 검증 캡처
 - 미구현 route 안내 상태
 
+## 검증 결과
+
+- `pnpm check`: architecture boundary와 9개 workspace TypeScript 검사 통과
+- `pnpm test`: 31개 통과, 이 Phase에서 DB를 바꾸지 않아 DB 통합 5개는 기본 실행 경계대로 제외
+- `pnpm build`: Next.js production build와 standalone asset 준비 통과
+- Playwright: desktop 1440px, mobile 390×844, 최소 320px에서 로그인 상태·정책 왕복·보호 route·키보드 focus·메뉴 접기·safe-area·수평 overflow 12개 통과
+- 시각 증거: `docs/runbooks/evidence/0.1.0-phase4-auth-{desktop,mobile}.png`, `0.1.0-phase4-shell-{desktop,mobile}.png`
+- GitHub Actions: `33883741006` 구현 commit 전체 검사 통과
+
 ## 다음 Phase 인계
 
-Phase 5에 화면별 locator, 인증 상태 fixture, PC·모바일 기준 캡처, route 보호 규칙, 알려진 브라우저 차이를 전달한다.
+Phase 5에는 `tests/e2e/auth-ui.spec.ts`의 role 기반 locator, 고정 합성 사용자·opaque 세션 fixture 방식, PC·모바일 기준 캡처, `/workspace` 미인증 redirect와 no-store 규칙을 전달한다. Chromium에서는 확인됐으며 iOS Safari·Android Chrome 실제 기기 safe-area와 가상 키보드는 Phase 5 수동 브라우저 행렬에서 재검증한다.
