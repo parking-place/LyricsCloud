@@ -13,6 +13,7 @@
     "lint": "pnpm boundaries",
     "start": "pnpm --filter @lyricscloud/web start",
     "test": "vitest run",
+    "test:migration:0200": "node scripts/verify-0200-migration.mjs",
     "test:e2e": "playwright test",
     "test:watch": "vitest",
     "typecheck": "pnpm -r --if-present check",

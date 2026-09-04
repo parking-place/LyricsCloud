@@ -10,5 +10,3 @@ export interface AuthenticatedUser {
   readonly accountId: AccountId;
   readonly displayName: string;
 }
-
-export type ResourceType = "song" | "lyrics" | "rhyme-note" | "prompt";

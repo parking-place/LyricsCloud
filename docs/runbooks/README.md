@@ -24,6 +24,7 @@
 - [`0.1.0 Phase 2 검증`](./0.1.0-phase2-validation.md)
 - [`0.1.0 Phase 3 검증`](./0.1.0-phase3-validation.md)
 - [`0.1.0 Phase 5 통합 검증`](./0.1.0-phase5-validation.md)
+- [`0.2.0 Phase 1 resource·song 데이터 모델 검증`](./0.2.0-phase1-validation.md)
 
 ## 개발 서버 운영
 

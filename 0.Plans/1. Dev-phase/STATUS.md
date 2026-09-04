@@ -3,13 +3,13 @@
 이 파일은 현재 버전·Phase·담당 작업의 단일 상태 원본입니다. 계획 문서는 범위를 정의하고 이 파일은 실제 진행 상황을 기록합니다.
 
 ```yaml
-current_version: "0.1.0"
-current_phase: "5phase.md"
+current_version: "0.2.0"
+current_phase: "1phase.md"
 state: "complete"
 owner: "none"
-started_at: "2026-09-05 01:43 KST"
+started_at: "2026-09-05 08:20 KST"
 updated_at: "2026-09-05"
-next_action: "사용자 지시 후 0.2.0 Phase 1 공통 resource·곡 데이터 모델 시작"
+next_action: "사용자 지시 후 0.2.0 Phase 2 곡 CRUD 명령과 목록 조회 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -35,7 +35,7 @@ next_action: "사용자 지시 후 0.2.0 Phase 1 공통 resource·곡 데이터 
 |---|---|---|---|
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
-| 0.2.0 | ready | 없음 | 0.1.0 완료 |
+| 0.2.0 | in_progress | Phase 1 완료 | 0.1.0 완료 |
 | 0.3.0 | planned | 없음 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
@@ -76,24 +76,25 @@ next_action: "사용자 지시 후 0.2.0 Phase 1 공통 resource·곡 데이터 
 | CRDT 자동 병합 범위 | `ADR-0004` | 0.0.0, 0.3.1 | 같은 소유자의 기기·탭만 포함, 사용자 공유 제외 |
 | 모바일 네 번째 내비 항목 | `PROD-0001` | 0.1.0 | 고정 `더보기` 진입점과 하위 메뉴를 수용 기준으로 비교 |
 | 빠른 아이디어의 자료 종류 | `PROD-0005` | 0.6.0 | 분류 전 임시 inbox를 새로 만들지 말고 곡·가사 메모 또는 라임 생성 흐름으로 연결 |
-| 라임·프롬프트와 곡 관계 | `PROD-0002` | 0.2.0, 0.6.0 | 여러 곡과 여러 자료를 잇는 N:M 후보, 제품 계약과 schema에서 확정 |
+| 라임·프롬프트와 곡 관계 | `PROD-0002` | 0.2.0, 0.6.0 | N:M, owner가 같은 연결 쌍은 하나, 연결 해제는 독립 원본을 보존하는 것으로 Accepted |
 | 라임 독립 화면의 가사 삽입 | `PROD-0006` | 0.4.0, 0.6.0 | 살아 있는 편집 대상이 확인될 때만 삽입, 아니면 복사 제공 |
 | 가사 버전과 revision | `PROD-0004` | 0.3.0, 0.3.1 | 이름 있는 가사는 독립 resource, revision은 복구 snapshot |
 | 최근 작업 의미 | `PROD-0007` | 0.7.0 | 수정 시각과 열람 시각을 분리하고 마지막 커서·송폼 위치 저장 |
-| 곡 삭제와 연결 자료 | `PROD-0010` | 0.2.0, 0.8.0 | 소속 가사는 함께 숨기고 공유 연결 자료는 삭제하지 않으며 연결 복원 규칙 검증 |
+| 곡 삭제와 연결 자료 | `PROD-0010` | 0.2.0, 0.8.0 | 당시 활성 소속 가사만 함께 숨기고 같은 삭제 작업분만 복원, 독립 연결 자료·관계는 보존으로 Accepted |
 | 목업 전용 보완 기능 | 관련 `PROD-*` 또는 담당 Phase 계약 | 담당 버전 | 버전 비교, 상세 필터, 저장 상태, 비드래그 이동 수단은 1.0 범위에 포함 |
 
 ## 다음 작업
 
-1. 사용자 지시를 받은 뒤 [`0.2.0 Phase 1`](./0.2.0/1phase.md)의 범위와 선행조건을 확인합니다.
-2. 활성 작업 표에 담당자와 resource·song schema 수정 경로를 기록합니다.
-3. [`0.2.0 owner context 인계`](../../docs/architecture/0.2.0-OWNER-CONTEXT-HANDOFF.md)의 생성 명령·RLS·idempotency 기준을 적용합니다.
-4. 곡·resource 범위만 시작하고 lyrics·CRDT·검색 기능은 뒤 Phase로 남깁니다.
+1. 사용자 지시를 받은 뒤 [`0.2.0 Phase 2`](./0.2.0/2phase.md)의 범위와 선행조건을 확인합니다.
+2. resource·song 생성 transaction과 owner context에 idempotency key를 결합합니다.
+3. CRUD, 부분 검색, 상태 필터, 다섯 정렬과 cursor 계약을 구현합니다.
+4. 가사 본문 검색·연결 자료·휴지통·revision·CRDT는 담당 후속 Phase로 남깁니다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-05 | 0.2.0 / Phase 1 | Codex | 공통 resource·song 1:1 schema, 상태·색상·길이·DB 시각 계약, owner RLS, soft delete, 제품 삭제·연결 의미 확정 | clean migration 2회, 합성 fixture 3쌍, down·재적용, 12 files/49 tests, index EXPLAIN, check·build·secret scan, 개발 서비스 readiness 200, [`검증 기록`](../../docs/runbooks/0.2.0-phase1-validation.md) | Phase 2 생성 transaction·idempotency·CRUD·목록 query |
 | 2026-09-05 | 0.1.0 / Phase 5 | Codex | 로컬 OIDC 로그인·세션 복원·갱신·로그아웃, A/B 소유권 공격, PC·모바일 시각·보안 회귀를 CI에 연결하고 0.1.0 완료 | migration 2회, check, 41 tests, production build, desktop/mobile E2E 26개, secret scan 0건, Docker restart readiness 200, [`검증 보고서`](../../docs/runbooks/0.1.0-phase5-validation.md) | [`0.2.0 owner context 인계`](../../docs/architecture/0.2.0-OWNER-CONTEXT-HANDOFF.md)와 합성 A/B fixture |
 | 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 개발·릴리스 Debian 13 서버에 Docker Engine·Compose·Buildx·Git·기본 운영 도구 설치 | 양쪽 Docker 29.8.0·Compose 5.5.1·Buildx 0.37.0·Git 2.47.3, Compose hello-world, overlayfs·systemd cgroup, daemon enabled/active, TCP API 비공개, GitHub read, Tunnel active | 환경별 deploy key·배포 경로·운영 Compose와 secret 배치 |
 | 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 신규 릴리스 서버에 릴리스 전용 Cloudflare Tunnel·DNS·HTTPS 경로를 구성하고 오접속 기록·인벤토리 정정 | 실제 대상 SSH 확인, cloudflared 2026.8.3, ingress 유효, systemd enabled/active, DNS CNAME·TLS hostname 검증, 개발·릴리스 machine/Tunnel ID 분리, 예상 502 | 릴리스 앱 배포 시 Google OAuth client·환경 값·실제 로그인 검증 |

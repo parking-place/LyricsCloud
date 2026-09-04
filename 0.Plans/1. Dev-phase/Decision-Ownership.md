@@ -38,10 +38,10 @@
 
 ## 제품 결정
 
-| ID | 결정 대상 | 결정 Phase | 소비·재검증 Phase | 초기 상태 |
+| ID | 결정 대상 | 결정 Phase | 소비·재검증 Phase | 현재 상태 |
 |---|---|---|---|---|
 | `PROD-0001` | 모바일 주 탐색과 `더보기` 진입·복귀 방식 | [0.1.0 Phase 1](./0.1.0/1phase.md) | [0.1.0 Phase 4](./0.1.0/4phase.md), 0.9.0 | `Proposed` |
-| `PROD-0002` | 곡-라임·프롬프트 관계의 cardinality, 중복과 연결 해제 의미 | [0.2.0 Phase 1](./0.2.0/1phase.md) | [0.6.0 Phase 2](./0.6.0/2phase.md) | `Proposed` |
+| [`PROD-0002`](../../docs/product/PROD-0002-song-resource-links.md) | 곡-라임·프롬프트 관계의 cardinality, 중복과 연결 해제 의미 | [0.2.0 Phase 1](./0.2.0/1phase.md) | [0.6.0 Phase 2](./0.6.0/2phase.md) | `Accepted` |
 | `PROD-0003` | 송폼 문법, 인식 실패와 단일·다중 구간 복사 의미 | [0.3.0 Phase 1](./0.3.0/1phase.md) | [Phase 3](./0.3.0/3phase.md), [Phase 4](./0.3.0/4phase.md) | `Proposed` |
 | `PROD-0004` | 이름 있는 가사 resource와 복구용 revision의 구분 | [0.3.0 Phase 1](./0.3.0/1phase.md) | [0.3.1 Phase 4](./0.3.1/4phase.md) | `Proposed` |
 | `PROD-0005` | 빠른 아이디어의 자료 유형과 새 가사의 부모 곡 선택 방식 | [0.6.0 Phase 4](./0.6.0/4phase.md) | [0.0.0 Phase 1](./0.0.0/1phase.md)에 쟁점 등록, [0.6.0 Phase 5](./0.6.0/5phase.md)에서 검증 | `Proposed` |
@@ -49,7 +49,7 @@
 | `PROD-0007` | 최근 작업의 의미, 정렬 기준, 마지막 cursor·송폼 복원 | [0.7.0 Phase 3](./0.7.0/3phase.md) | [0.7.0 Phase 5](./0.7.0/5phase.md) | `Proposed` |
 | `PROD-0008` | 템플릿 적용 시 덮어쓰기·추가·취소와 기존 내용 보호 | [0.8.0 Phase 1](./0.8.0/1phase.md) | 0.8.0 Phase 5, 0.9.0 | `Proposed` |
 | `PROD-0009` | 단축키 조합, 실행 문맥, 운영체제별 키 표기 | [0.8.0 Phase 3](./0.8.0/3phase.md) | 0.8.0 Phase 5, 0.9.0 | `Proposed` |
-| `PROD-0010` | soft delete, cascade, 연결 자료와 복원 후 관계의 의미 | [0.2.0 Phase 1](./0.2.0/1phase.md) | [0.8.0 Phase 4](./0.8.0/4phase.md) | `Proposed` |
+| [`PROD-0010`](../../docs/product/PROD-0010-soft-delete-restore.md) | soft delete, cascade, 연결 자료와 복원 후 관계의 의미 | [0.2.0 Phase 1](./0.2.0/1phase.md) | [0.8.0 Phase 4](./0.8.0/4phase.md) | `Accepted` |
 
 허용 글꼴 목록, 글쓰기 표시값의 범위와 자산 제공 방식처럼 한 화면군에 국한된 세부 UI 정책은 [`0.8.0 Phase 2`](./0.8.0/2phase.md)의 작업·검증 산출물로 기록합니다. 다른 기능군이나 배포 구조까지 영향을 넓힐 때에만 새 `PROD-*` 또는 ADR로 승격합니다.
 

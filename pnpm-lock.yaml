@@ -106,6 +106,9 @@ importers:
       '@lyricscloud/config':
         specifier: workspace:*
         version: link:../config
+      '@lyricscloud/domain':
+        specifier: workspace:*
+        version: link:../domain
       drizzle-orm:
         specifier: 0.44.7
         version: 0.44.7(@types/pg@8.15.5)(pg@8.16.3)

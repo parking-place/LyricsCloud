@@ -1,6 +1,6 @@
 # 0.2.0 Phase 1 — 공통 resource와 곡 데이터 모델
 
-- 상태: **대기**
+- 상태: **완료**
 - 버전 상태: [../STATUS.md](../STATUS.md)
 
 ## 목표
@@ -42,15 +42,15 @@
 
 ## 작업 체크리스트
 
-- [ ] LC-020-P1-01 — resources에 UUID, owner_id, type, title, favorite, pin, pin_order, color, created_at, updated_at, deleted_at을 정의한다.
-- [ ] LC-020-P1-02 — songs가 정확히 하나의 song resource만 참조하도록 PK·FK·type 일치 규칙을 만든다.
-- [ ] LC-020-P1-03 — 아이디어, 가사 작성 중, 수정 중, Suno 생성 중, 믹싱 중, 완성, 보류 상태만 저장되게 한다.
-- [ ] LC-020-P1-04 — 제목 필수 여부, 앞뒤 공백 처리, 제목·설명·메모 길이 상한을 schema와 validation 계약에 맞춘다.
-- [ ] LC-020-P1-05 — owner_id와 deleted_at, updated_at, pin 순서 조합의 실제 목록 query에 맞는 index를 설계한다.
-- [ ] LC-020-P1-06 — 생성·수정 시각은 DB 시간이 결정하고 updated_at이 업무 변경에만 갱신되게 한다.
-- [ ] LC-020-P1-07 — 현재 사용자의 resource와 song만 읽고 변경할 수 있도록 owner 정책을 적용한다.
-- [ ] LC-020-P1-08 — song soft delete가 resource의 deleted_at을 한 transaction에서 갱신하도록 규칙을 만든다.
-- [ ] LC-020-P1-09 — migration up·down 또는 안전한 후속 rollback 절차와 대표 fixture를 준비한다.
+- [x] LC-020-P1-01 — resources에 UUID, owner_id, type, title, favorite, pin, pin_order, color, created_at, updated_at, deleted_at을 정의한다.
+- [x] LC-020-P1-02 — songs가 정확히 하나의 song resource만 참조하도록 PK·FK·type 일치 규칙을 만든다.
+- [x] LC-020-P1-03 — 아이디어, 가사 작성 중, 수정 중, Suno 생성 중, 믹싱 중, 완성, 보류 상태만 저장되게 한다.
+- [x] LC-020-P1-04 — 제목 필수 여부, 앞뒤 공백 처리, 제목·설명·메모 길이 상한을 schema와 validation 계약에 맞춘다.
+- [x] LC-020-P1-05 — owner_id와 deleted_at, updated_at, pin 순서 조합의 실제 목록 query에 맞는 index를 설계한다.
+- [x] LC-020-P1-06 — 생성·수정 시각은 DB 시간이 결정하고 updated_at이 업무 변경에만 갱신되게 한다.
+- [x] LC-020-P1-07 — 현재 사용자의 resource와 song만 읽고 변경할 수 있도록 owner 정책을 적용한다.
+- [x] LC-020-P1-08 — song soft delete가 resource의 deleted_at을 한 transaction에서 갱신하도록 규칙을 만든다.
+- [x] LC-020-P1-09 — migration up·down 또는 안전한 후속 rollback 절차와 대표 fixture를 준비한다.
 
 ## 검증 방법
 
@@ -63,12 +63,12 @@
 
 ## 완료 조건
 
-- [ ] resource와 song schema가 migration으로 재현된다.
-- [ ] 공통 메타데이터와 song 상태의 DB 무결성이 보장된다.
-- [ ] owner 교차 접근이 차단된다.
-- [ ] soft delete가 기본 조회에서 제외된다.
-- [ ] 목록 정렬용 index가 대표 query와 일치한다.
-- [ ] revision·CRDT가 이 버전에 섞이지 않았다.
+- [x] resource와 song schema가 migration으로 재현된다.
+- [x] 공통 메타데이터와 song 상태의 DB 무결성이 보장된다.
+- [x] owner 교차 접근이 차단된다.
+- [x] soft delete가 기본 조회에서 제외된다.
+- [x] 목록 정렬용 index가 대표 query와 일치한다.
+- [x] revision·CRDT가 이 버전에 섞이지 않았다.
 
 ## 산출물
 

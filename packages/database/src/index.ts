@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 
-export const CURRENT_SCHEMA_VERSION = "0101_profiles_ownership.sql";
+export const CURRENT_SCHEMA_VERSION = "0200_resources_songs.sql";
 
 export * from "./auth.js";
 export * from "./owned.js";

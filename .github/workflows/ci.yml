@@ -48,6 +48,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Apply migrations twice
         run: pnpm migrate && pnpm migrate
+      - name: Verify 0.2.0 Phase 1 migration recovery
+        run: pnpm test:migration:0200
       - name: Static checks
         run: pnpm check
       - name: Unit tests
