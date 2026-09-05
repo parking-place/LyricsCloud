@@ -11,7 +11,6 @@ on:
   pull_request:
   push:
     branches: [main, "phase/**"]
-    tags: ["v*.*.*"]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -66,8 +65,8 @@ jobs:
         run: |
           bash -n scripts/*.sh
           ./scripts/cleanup-docker.sh --dry-run --build-cache
-          test "$(./scripts/docker-image-tag.sh branch phase/0.2.0-p5-song-dashboard 0123456789abcdef0123456789abcdef01234567)" = "0.2.0-dev.0123456789ab"
-          test "$(./scripts/docker-image-tag.sh tag v0.2.0 0123456789abcdef0123456789abcdef01234567)" = "0.2.0"
+          test "$(./scripts/docker-image-tag.sh branch phase/0.2.0-p5-song-dashboard 0123456789abcdef0123456789abcdef01234567 web)" = "0.2.0-beta.0123456789ab-web"
+          if ./scripts/docker-image-tag.sh tag v0.2.0 0123456789abcdef0123456789abcdef01234567 web; then exit 1; fi
       - name: Unit tests
         run: pnpm test
       - name: Production build
@@ -122,18 +121,17 @@ jobs:
       - uses: actions/checkout@v7
       - name: Validate Docker Hub configuration
         env:
-          DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE }}
           DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
-          test -n "$DOCKERHUB_NAMESPACE"
           test -n "$DOCKERHUB_USERNAME"
           test -n "$DOCKERHUB_TOKEN"
-      - name: Resolve mandatory version tag
+      - name: Resolve mandatory beta tags
         id: version
         run: |
-          image_tag=$(./scripts/docker-image-tag.sh "$GITHUB_REF_TYPE" "$GITHUB_REF_NAME" "$GITHUB_SHA")
+          image_tag=$(./scripts/docker-image-tag.sh "$GITHUB_REF_TYPE" "$GITHUB_REF_NAME" "$GITHUB_SHA" "${{ matrix.service }}")
           printf 'tag=%s\n' "$image_tag" >> "$GITHUB_OUTPUT"
+          printf 'version=%s\n' "$(tr -d '\r\n' < VERSION)" >> "$GITHUB_OUTPUT"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
       - name: Log in to Docker Hub
@@ -145,8 +143,10 @@ jobs:
         id: metadata
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
-          images: ${{ vars.DOCKERHUB_NAMESPACE }}/lyricscloud-${{ matrix.service }}
-          tags: type=raw,value=${{ steps.version.outputs.tag }}
+          images: parkingplace/lyricscloud
+          tags: |
+            type=raw,value=${{ steps.version.outputs.tag }}
+            type=raw,value=${{ steps.version.outputs.version }}-beta-${{ matrix.service }}
           labels: |
             org.opencontainers.image.title=LyricsCloud ${{ matrix.service }}
             org.opencontainers.image.version=${{ steps.version.outputs.tag }}

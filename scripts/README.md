@@ -49,8 +49,7 @@ pnpm docker:cleanup
 Docker Hub tag를 Git ref와 현재 `VERSION`으로 계산한다.
 
 ```bash
-./scripts/docker-image-tag.sh branch phase/0.2.0-p5-song-dashboard <40-character-commit-sha>
-./scripts/docker-image-tag.sh tag v0.2.0 <40-character-commit-sha>
+./scripts/docker-image-tag.sh branch phase/0.2.0-p5-song-dashboard <40-character-commit-sha> web
 ```
 
-branch는 `<version>-dev.<12자리 SHA>`, 정확한 release Git tag는 `<version>`을 출력한다. `VERSION`과 `STATUS.md`의 현재 버전이 다르거나 tag·SHA가 잘못되면 실패한다.
+branch는 `<version>-beta.<12자리 SHA>-<service>`를 출력한다. service는 `web`, `collaboration`, `worker`, `migrate`만 허용한다. `VERSION`과 `STATUS.md`의 현재 버전이 다르거나 ref·SHA가 잘못되면 실패하며, 사용자의 정식 발행 승인 전에는 release Git tag를 거부한다.

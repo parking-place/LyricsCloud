@@ -54,5 +54,5 @@ DB 비밀번호 오류나 DB 중단 시 app liveness는 200, readiness는 503이
 
 - `Dockerfile.web`의 `runtime` target은 Next.js production standalone web image다.
 - `Dockerfile.service`는 production dependency만 설치한 공통 runtime에서 `collaboration`, `worker`, `migrate` target을 제공한다.
-- GitHub Actions는 전체 검증 뒤 네 target을 각각 `<namespace>/lyricscloud-<service>:<version-tag>`로 발행한다.
+- GitHub Actions는 전체 검증 뒤 네 target을 `parkingplace/lyricscloud:<version>-beta.<commit>-<service>`와 해당 버전의 이동식 beta service tag로 발행한다.
 - tag 계산과 Docker Hub 연결 절차는 [`Docker Hub 발행 runbook`](../../docs/runbooks/dockerhub-publish.md)을 따른다.

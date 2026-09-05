@@ -4,6 +4,7 @@ set -euo pipefail
 ref_type=${1:-}
 ref_name=${2:-}
 commit_sha=${3:-}
+service=${4:-}
 repository_root=$(git rev-parse --show-toplevel)
 
 version=$(tr -d '\r\n' < "$repository_root/VERSION")
@@ -22,20 +23,20 @@ if [[ ! $commit_sha =~ ^[0-9a-f]{40}$ ]]; then
   printf 'Commit SHA must contain 40 lowercase hexadecimal characters.\n' >&2
   exit 4
 fi
+case "$service" in
+  web|collaboration|worker|migrate) ;;
+  *)
+    printf 'Service must be web, collaboration, worker, or migrate.\n' >&2
+    exit 5
+    ;;
+esac
 
 case "$ref_type" in
-  tag)
-    if [ "$ref_name" != "v$version" ]; then
-      printf 'Release tag must exactly match v%s.\n' "$version" >&2
-      exit 5
-    fi
-    printf '%s\n' "$version"
-    ;;
   branch)
-    printf '%s-dev.%s\n' "$version" "${commit_sha:0:12}"
+    printf '%s-beta.%s-%s\n' "$version" "${commit_sha:0:12}" "$service"
     ;;
   *)
-    printf 'Unsupported Git ref type: %s\n' "$ref_type" >&2
+    printf 'Only beta branch images are enabled until release publishing is explicitly approved: %s\n' "$ref_type" >&2
     exit 6
     ;;
 esac
