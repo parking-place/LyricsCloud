@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.3.0"
-current_phase: "2phase.md"
-state: "complete"
-owner: "none"
-started_at: "2026-09-05 13:00 KST"
+current_phase: "3phase.md"
+state: "in_progress"
+owner: "Codex"
+started_at: "2026-09-05 14:09 KST"
 updated_at: "2026-09-05"
-next_action: "0.3.0 Phase 3 송폼 인식·탐색·복사를 시작"
+next_action: "0.3.0 Phase 3 송폼 인식·강조·구간 탐색 구현·검증"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -53,7 +53,7 @@ next_action: "0.3.0 Phase 3 송폼 인식·탐색·복사를 시작"
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+| Codex | 0.3.0 / Phase 3 | LC-030-P3-01~10 | `packages/editor` 송폼 parser·decoration, `apps/web` 목차·모바일 시트, tests·문서 | 0.3.0 Phase 2 editor port·PROD-0003 | 2026-09-05 14:09 KST | in_progress |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 

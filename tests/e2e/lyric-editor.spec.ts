@@ -113,6 +113,56 @@ test.describe("CodeMirror lyric editor", () => {
       await expect.poll(async () => (await (await page.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body.slice(-2)).toBe("가끝");
     } finally { await deleteAccount(account.userId); }
   });
+
+  test("recognizes repeated and custom song-form tags and navigates without changing the source", async ({ context, page }) => {
+    const account = await createAccount(context, "송폼 탐색 사용자");
+    try {
+      const body = "머리말\n [Intro] \n시작\n[Hook]\n첫 후렴\n[Hook]\n두 번째 후렴\n[후렴 변주]\n끝\n[]\n문장 속 [Bridge]\n[Unclosed";
+      const { lyricId } = await createLyric(page, body);
+      await page.goto(`/lyrics/${lyricId}`);
+      await expect(page.locator(".cm-songform-line")).toHaveCount(4);
+      await expect(page.locator('[data-songform-label="Hook"]')).toHaveCount(2);
+
+      const mobile = (page.viewportSize()?.width ?? 1440) <= 720;
+      if (mobile) await page.getByRole("button", { name: /송폼 4/ }).click();
+      const navigation = mobile
+        ? page.getByRole("dialog", { name: "송폼 이동" }).getByRole("navigation", { name: "인식된 송폼 구간" })
+        : page.getByRole("complementary", { name: "송폼 목차" }).getByRole("navigation", { name: "인식된 송폼 구간" });
+      await expect(navigation.getByRole("button")).toHaveCount(4);
+      await expect(navigation.getByRole("button", { name: "후렴 변주 구간으로 이동" })).toBeVisible();
+      await expect(navigation.getByRole("button", { name: /Bridge/ })).toHaveCount(0);
+      await navigation.getByRole("button", { name: "Hook 2번째 구간으로 이동" }).click();
+      await expect(page.locator(".cm-content")).toBeFocused();
+      await expect(page.locator('.cm-content [data-songform-label="Hook"][data-songform-id$="-2"]')).toBeVisible();
+      if (mobile) {
+        await expect(page.getByRole("dialog", { name: "송폼 이동" })).toHaveCount(0);
+        await page.getByRole("button", { name: /송폼 4/ }).click();
+      }
+      await expect(page.getByRole("button", { name: "Hook 2번째 구간으로 이동" })).toHaveAttribute("aria-current", "location");
+      const stored = await (await page.request.get(`/api/lyrics/${lyricId}`)).json();
+      expect(stored.lyric.body).toBe(body);
+    } finally { await deleteAccount(account.userId); }
+  });
+
+  test("keeps hundreds of sections responsive and can reach the final repeated-free target", async ({ context, page }) => {
+    const account = await createAccount(context, "장문 송폼 사용자");
+    try {
+      const body = Array.from({ length: 400 }, (_, index) => `[Verse ${index + 1}]\n${"가".repeat(220)}`).join("\n");
+      const { lyricId } = await createLyric(page, body);
+      const startedAt = Date.now();
+      await page.goto(`/lyrics/${lyricId}`);
+      await expect(page.locator(".cm-content")).toBeVisible();
+      expect(Date.now() - startedAt).toBeLessThan(5_000);
+      const mobile = (page.viewportSize()?.width ?? 1440) <= 720;
+      if (mobile) await page.getByRole("button", { name: /송폼 400/ }).click();
+      const navigation = mobile
+        ? page.getByRole("dialog", { name: "송폼 이동" }).getByRole("navigation", { name: "인식된 송폼 구간" })
+        : page.getByRole("complementary", { name: "송폼 목차" }).getByRole("navigation", { name: "인식된 송폼 구간" });
+      await navigation.getByRole("button", { name: "Verse 400 구간으로 이동" }).click();
+      await expect(page.locator(".cm-content")).toBeFocused();
+      await expect(page.locator(".cm-content").getByText("[Verse 400]", { exact: true })).toBeVisible();
+    } finally { await deleteAccount(account.userId); }
+  });
 });
 
 async function createAccount(context: BrowserContext, displayName: string) {
