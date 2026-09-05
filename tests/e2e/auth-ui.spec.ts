@@ -57,7 +57,7 @@ test("authenticated workspace exposes the desktop and mobile shell", async ({ co
   const title = page.getByRole("heading", { name: /안녕하세요, 테스트 사용자님/ });
   await expect(title).toBeFocused();
   await expect(page.getByRole("status")).toContainText("로그인이 완료되었습니다");
-  await expect(page.getByText("0.2.0에서 곡 관리 시작")).toBeVisible();
+  await expect(page.getByRole("link", { name: "곡 목록 열기" })).toHaveAttribute("href", "/songs");
   expect(await hasHorizontalOverflow(page)).toBe(false);
   await expect(page).toHaveScreenshot(`0.1.0-phase5-shell-${testInfo.project.name}.png`, { fullPage: true });
   await page.screenshot({ path: `docs/runbooks/evidence/0.1.0-phase5-shell-${testInfo.project.name}.png`, fullPage: true });
@@ -74,7 +74,7 @@ test("authenticated workspace exposes the desktop and mobile shell", async ({ co
     await expect(logout).toBeFocused();
   } else {
     await expect(page.getByRole("navigation", { name: "모바일 주 메뉴" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "빠른 추가, 준비 중" })).toBeDisabled();
+    await expect(page.getByRole("link", { name: "새 곡 추가" })).toHaveAttribute("href", "/songs/new");
   }
 });
 
