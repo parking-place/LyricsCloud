@@ -1,10 +1,11 @@
 import { Pool } from "pg";
 
-export const CURRENT_SCHEMA_VERSION = "0200_resources_songs.sql";
+export const CURRENT_SCHEMA_VERSION = "0201_song_commands.sql";
 
 export * from "./auth.js";
 export * from "./owned.js";
 export * from "./schema.js";
+export * from "./songs.js";
 
 export type DatabaseHealthCode =
   | "DATABASE_AUTH_FAILED"

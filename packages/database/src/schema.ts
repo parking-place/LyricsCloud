@@ -1,5 +1,5 @@
 import type { ResourceColor, ResourceType, SongStatus } from "@lyricscloud/domain";
-import { bigint, boolean, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { bigint, boolean, integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const appUsers = pgTable("app_users", {
   id: uuid("id").primaryKey(),
@@ -50,3 +50,10 @@ export const songs = pgTable("songs", {
   description: text("description").notNull().default(""),
   workNotes: text("work_notes").notNull().default("")
 });
+
+export const songCreateRequests = pgTable("song_create_requests", {
+  ownerId: uuid("owner_id").notNull(),
+  requestId: uuid("request_id").notNull(),
+  resourceId: uuid("resource_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.requestId] })]);

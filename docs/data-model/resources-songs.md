@@ -1,6 +1,6 @@
 # Resource와 song 데이터 모델
 
-0.2.0 Phase 1의 물리 schema 원본은 [`0200_resources_songs.sql`](../../packages/database/migrations/0200_resources_songs.sql)이다.
+0.2.0 Phase 1의 resource·song 물리 schema 원본은 [`0200_resources_songs.sql`](../../packages/database/migrations/0200_resources_songs.sql)이며, Phase 2의 생성 멱등성 보조 schema는 [`0201_song_commands.sql`](../../packages/database/migrations/0201_song_commands.sql)이다.
 
 ## 관계와 불변식
 
@@ -10,6 +10,7 @@
 - 다른 subtype은 해당 버전의 migration이 생기기 전까지 type 값만 예약되어 있으며 song 행을 가질 수 없다.
 - 모든 조회·삽입·수정은 `lyricscloud_app` 역할과 transaction-local `app.user_id`를 사용하고 두 테이블 모두 강제 RLS를 적용한다.
 - 애플리케이션 역할에는 hard delete와 시각·버전 직접 쓰기 권한이 없다.
+- `song_create_requests`는 owner별 생성 요청 UUID와 최초 song ID만 보관한다. 강제 RLS를 적용하며 수정·삭제 권한은 애플리케이션 역할에 주지 않는다.
 
 ## 저장 값 계약
 
@@ -40,3 +41,5 @@
 `soft_delete_song(uuid)`은 현재 owner의 활성 song resource만 DB 시각으로 표시하고 두 행을 남긴다. 재호출과 미소유 UUID는 `false`이며 다른 자료를 바꾸지 않는다. 자세한 미래 cascade·복원 의미는 [PROD-0010](../product/PROD-0010-soft-delete-restore.md)을 따른다.
 
 복구용 down SQL은 [`rollback/0200_resources_songs.sql`](../../packages/database/rollback/0200_resources_songs.sql)에 있다. 이는 데이터가 사라지는 절차이므로 disposable DB 또는 검증된 백업 복원본에서만 실행한다. 운영에서는 먼저 백업을 복원하고 후속 migration 의존성이 없는지 확인한다.
+
+Phase 2 보조 테이블만 되돌리는 절차는 [`rollback/0201_song_commands.sql`](../../packages/database/rollback/0201_song_commands.sql)이다. 0200을 되돌릴 때는 FK 의존성 때문에 반드시 0201을 먼저 되돌린다.

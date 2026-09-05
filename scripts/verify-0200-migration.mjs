@@ -30,12 +30,14 @@ try {
       throw new Error("representative fixture did not create three complete song pairs");
     }
 
+    const dependentRollback = await readFile(resolve("packages/database/rollback/0201_song_commands.sql"), "utf8");
+    await target.query(dependentRollback);
     const rollback = await readFile(resolve("packages/database/rollback/0200_resources_songs.sql"), "utf8");
     await target.query(rollback);
     const rolledBack = await target.query(`
       select to_regclass('public.resources')::text as resources,
              to_regclass('public.songs')::text as songs,
-             exists(select 1 from schema_migrations where name = '0200_resources_songs.sql') as migration
+             exists(select 1 from schema_migrations where name in ('0200_resources_songs.sql', '0201_song_commands.sql')) as migration
     `);
     if (rolledBack.rows[0]?.resources !== null || rolledBack.rows[0]?.songs !== null || rolledBack.rows[0]?.migration) {
       throw new Error("0200 rollback left schema objects or migration history behind");
@@ -50,9 +52,11 @@ try {
     const result = await recovered.query(`
       select to_regclass('public.resources')::text as resources,
              to_regclass('public.songs')::text as songs,
-             exists(select 1 from schema_migrations where name = '0200_resources_songs.sql') as applied
+             exists(select 1 from schema_migrations where name = '0200_resources_songs.sql') as applied,
+             to_regclass('public.song_create_requests')::text as requests
     `);
-    if (result.rows[0]?.resources !== "resources" || result.rows[0]?.songs !== "songs" || !result.rows[0]?.applied) {
+    if (result.rows[0]?.resources !== "resources" || result.rows[0]?.songs !== "songs"
+      || result.rows[0]?.requests !== "song_create_requests" || !result.rows[0]?.applied) {
       throw new Error("0200 migration could not recover after rollback");
     }
   } finally {

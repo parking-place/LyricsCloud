@@ -14,6 +14,7 @@
     "start": "pnpm --filter @lyricscloud/web start",
     "test": "vitest run",
     "test:migration:0200": "node scripts/verify-0200-migration.mjs",
+    "test:migration:0201": "node scripts/verify-0201-migration.mjs",
     "test:e2e": "playwright test",
     "test:watch": "vitest",
     "typecheck": "pnpm -r --if-present check",

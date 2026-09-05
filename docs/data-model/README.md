@@ -4,4 +4,4 @@
 
 각 문서에는 소유권, 생성·수정 시간의 기준, soft delete, cascade·복원 규칙, 보존 한도, 검색 투영, migration 이력을 포함합니다. 실제 schema의 원본은 승인된 migration이며 이 문서는 그 의도와 관계를 설명합니다.
 
-- [`Resource와 song`](./resources-songs.md) — 0.2.0 Phase 1 공통 메타데이터, 1:1 subtype, RLS, soft delete와 목록 index
+- [`Resource와 song`](./resources-songs.md) — 0.2.0 Phase 1~2 공통 메타데이터, 1:1 subtype, RLS, soft delete, 생성 멱등성과 목록 index

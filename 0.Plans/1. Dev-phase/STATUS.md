@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.2.0"
-current_phase: "1phase.md"
+current_phase: "2phase.md"
 state: "complete"
 owner: "none"
-started_at: "2026-09-05 08:20 KST"
+started_at: "2026-09-05 09:21 KST"
 updated_at: "2026-09-05"
-next_action: "사용자 지시 후 0.2.0 Phase 2 곡 CRUD 명령과 목록 조회 시작"
+next_action: "0.2.0 Phase 3 곡 목록 PC·모바일 화면 구현"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -35,7 +35,7 @@ next_action: "사용자 지시 후 0.2.0 Phase 2 곡 CRUD 명령과 목록 조�
 |---|---|---|---|
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
-| 0.2.0 | in_progress | Phase 1 완료 | 0.1.0 완료 |
+| 0.2.0 | in_progress | Phase 1~2 완료 | 0.1.0 완료 |
 | 0.3.0 | planned | 없음 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
@@ -85,15 +85,16 @@ next_action: "사용자 지시 후 0.2.0 Phase 2 곡 CRUD 명령과 목록 조�
 
 ## 다음 작업
 
-1. 사용자 지시를 받은 뒤 [`0.2.0 Phase 2`](./0.2.0/2phase.md)의 범위와 선행조건을 확인합니다.
-2. resource·song 생성 transaction과 owner context에 idempotency key를 결합합니다.
-3. CRUD, 부분 검색, 상태 필터, 다섯 정렬과 cursor 계약을 구현합니다.
+1. [`0.2.0 Phase 3`](./0.2.0/3phase.md)의 02-songs PC·모바일 구성을 구현합니다.
+2. Phase 2 API의 검색·상태·정렬·cursor를 URL 상태와 연결합니다.
+3. 0곡·검색 결과 없음·오류·추가 로드와 키보드 focus를 검증합니다.
 4. 가사 본문 검색·연결 자료·휴지통·revision·CRDT는 담당 후속 Phase로 남깁니다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-05 | 0.2.0 / Phase 2 | Codex | owner 범위 곡 CRUD·명시적 메타데이터 명령, owner별 생성 멱등성, 문자 그대로 부분 검색, 상태 필터, 핀 우선 다섯 keyset 정렬과 미지원 집계 capability 완성 | 0200·0201 migration 재적용/rollback/recovery, 14 files/57 tests, production build, desktop/mobile E2E 30개, secret scan, [`검증 기록`](../../docs/runbooks/0.2.0-phase2-validation.md) | Phase 3 곡 목록 URL 상태·카드·cursor UI |
 | 2026-09-05 | 0.2.0 / Phase 1 | Codex | 공통 resource·song 1:1 schema, 상태·색상·길이·DB 시각 계약, owner RLS, soft delete, 제품 삭제·연결 의미 확정 | clean migration 2회, 합성 fixture 3쌍, down·재적용, 12 files/49 tests, index EXPLAIN, check·build·E2E·secret scan, 개발 서비스 readiness 200, GitHub Actions 33930137076 통과, [`검증 기록`](../../docs/runbooks/0.2.0-phase1-validation.md) | Phase 2 생성 transaction·idempotency·CRUD·목록 query |
 | 2026-09-05 | 0.1.0 / Phase 5 | Codex | 로컬 OIDC 로그인·세션 복원·갱신·로그아웃, A/B 소유권 공격, PC·모바일 시각·보안 회귀를 CI에 연결하고 0.1.0 완료 | migration 2회, check, 41 tests, production build, desktop/mobile E2E 26개, secret scan 0건, Docker restart readiness 200, [`검증 보고서`](../../docs/runbooks/0.1.0-phase5-validation.md) | [`0.2.0 owner context 인계`](../../docs/architecture/0.2.0-OWNER-CONTEXT-HANDOFF.md)와 합성 A/B fixture |
 | 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 개발·릴리스 Debian 13 서버에 Docker Engine·Compose·Buildx·Git·기본 운영 도구 설치 | 양쪽 Docker 29.8.0·Compose 5.5.1·Buildx 0.37.0·Git 2.47.3, Compose hello-world, overlayfs·systemd cgroup, daemon enabled/active, TCP API 비공개, GitHub read, Tunnel active | 환경별 deploy key·배포 경로·운영 Compose와 secret 배치 |

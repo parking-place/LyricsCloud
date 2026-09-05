@@ -15,3 +15,4 @@
 - [`사용자 소유권`](./OWNERSHIP-CONTRACT.md)
 - [`계정별 클라이언트 캐시`](./ACCOUNT-CACHE-CONTRACT.md)
 - [`0.2.0 owner context 인계`](./0.2.0-OWNER-CONTEXT-HANDOFF.md)
+- [`0.2.0 곡 API와 cursor`](./0.2.0-SONG-API.md)
