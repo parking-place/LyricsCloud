@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
-import { fixtureTokens, fixtureUsers } from "./fixtures.js";
+import { fixtureUsers, hashToken, withE2eDatabase } from "./fixtures.js";
 
 const origin = "http://127.0.0.1:3000";
 
@@ -8,10 +8,27 @@ test.describe("song API owner and command contract", () => {
   test.skip(!process.env.E2E_DATABASE_URL, "E2E_DATABASE_URL is required for song API integration");
 
   test("create replay, CRUD, metadata, list cursor, and soft delete stay owner-scoped", async ({ browser }, testInfo) => {
+    const aliceUserId = randomUUID();
+    const bobUserId = randomUUID();
+    const aliceToken = `song-api-alice-${randomUUID()}`;
+    const bobToken = `song-api-bob-${randomUUID()}`;
+    await withE2eDatabase(async (pool) => {
+      for (const [userId, token, displayName] of [
+        [aliceUserId, aliceToken, "곡 API 앨리스"],
+        [bobUserId, bobToken, "곡 API 밥"]
+      ]) {
+        await pool.query("insert into app_users(id, status) values ($1, 'active')", [userId]);
+        await pool.query("insert into user_profiles(owner_id, display_name) values ($1, $2)", [userId, displayName]);
+        await pool.query(`
+          insert into auth_sessions(token_hash, user_id, expires_at, absolute_expires_at)
+          values ($1, $2, now() + interval '1 hour', now() + interval '2 hours')
+        `, [hashToken(token), userId]);
+      }
+    });
     const alice = await browser.newContext({ baseURL: origin });
     const bob = await browser.newContext({ baseURL: origin });
-    await alice.addCookies([{ name: "lc_session", value: fixtureTokens.alice, url: origin, httpOnly: true, sameSite: "Lax" }]);
-    await bob.addCookies([{ name: "lc_session", value: fixtureTokens.bob, url: origin, httpOnly: true, sameSite: "Lax" }]);
+    await alice.addCookies([{ name: "lc_session", value: aliceToken, url: origin, httpOnly: true, sameSite: "Lax" }]);
+    await bob.addCookies([{ name: "lc_session", value: bobToken, url: origin, httpOnly: true, sameSite: "Lax" }]);
     const marker = `${testInfo.project.name}-${randomUUID().slice(0, 8)}`;
     const requestId = randomUUID();
     const createBody = { requestId, title: ` API 곡 ${marker} `, workNotes: "100%_literal", status: "idea" };
@@ -96,6 +113,7 @@ test.describe("song API owner and command contract", () => {
 
     await alice.close();
     await bob.close();
+    await withE2eDatabase((pool) => pool.query("delete from app_users where id = any($1::uuid[])", [[aliceUserId, bobUserId]]).then(() => undefined));
   });
 
   test("unauthenticated requests fail without exposing song data", async ({ request }) => {
