@@ -6,8 +6,10 @@
 .test_users
 .private
 node_modules
+.pnpm-store
 .next
 **/node_modules
+**/.pnpm-store
 **/.next
 dist
 coverage
