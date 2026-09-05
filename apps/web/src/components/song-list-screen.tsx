@@ -112,6 +112,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
 
   async function loadMore() {
     if (!nextCursor || loadingMore) return;
+    let loaded = false;
     setLoadingMore(true);
     setError("");
     const params = new URLSearchParams({ sort, limit: "12", cursor: nextCursor });
@@ -123,11 +124,12 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
       const result = await response.json() as SongListResponse;
       setSongs((current) => [...current, ...result.items]);
       setNextCursor(result.nextCursor);
-      window.requestAnimationFrame(() => loadButton.current?.focus());
+      loaded = true;
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "다음 곡을 불러오지 못했습니다.");
     } finally {
       setLoadingMore(false);
+      if (loaded) window.requestAnimationFrame(() => window.requestAnimationFrame(() => loadButton.current?.focus()));
     }
   }
 
