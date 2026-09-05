@@ -3,3 +3,6 @@ export interface TextDocumentPort {
   readonly value: string;
   replace(from: number, to: number, value: string): void;
 }
+
+export * from "./autosave.js";
+export * from "./codemirror.js";

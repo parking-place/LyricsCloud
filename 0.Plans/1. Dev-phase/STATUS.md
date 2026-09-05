@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.3.0"
-current_phase: "1phase.md"
-state: "complete"
-owner: "none"
-started_at: "2026-09-05 12:44 KST"
+current_phase: "2phase.md"
+state: "in_progress"
+owner: "Codex"
+started_at: "2026-09-05 13:00 KST"
 updated_at: "2026-09-05"
-next_action: "사용자 지시에 따라 0.3.0 Phase 1 완료 후 중지. Phase 2는 시작하지 않음"
+next_action: "0.3.0 Phase 2 CodeMirror 순수 텍스트 편집 기반 구현·검증"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -53,7 +53,7 @@ next_action: "사용자 지시에 따라 0.3.0 Phase 1 완료 후 중지. Phase 
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+| Codex | 0.3.0 / Phase 2 | LC-030-P2-01~10 | `packages/editor`, `apps/web` lyric editor route·UI, 관련 tests·문서 | 0.3.0 Phase 1 API·PROD-0003, DEC-03-A | 2026-09-05 13:00 KST | in_progress |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 

@@ -264,6 +264,25 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .delete-dialog > div { display: flex; justify-content: flex-end; gap: .55rem; margin-top: 1.2rem; }
 .delete-dialog button:disabled { opacity: .6; cursor: wait; }
 
+/* Lyric editor */
+.lyric-editor-page { min-width: 0; height: calc(100svh - 3.8rem); display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; padding: 1.2rem clamp(1rem, 3vw, 3rem) 1rem; overflow: hidden; }
+.lyric-editor-header { display: flex; align-items: end; gap: 1rem; padding-bottom: .9rem; border-bottom: 1px solid var(--line); }
+.lyric-editor-context .back-inline { margin-bottom: .55rem; }
+.save-indicator { display: inline-flex; align-items: center; gap: .45rem; margin-left: auto; color: var(--muted); font-size: .72rem; white-space: nowrap; }
+.save-indicator > span { width: .55rem; height: .55rem; border-radius: 50%; background: var(--subtle); }
+.save-indicator.is-saving > span { background: #ffc857; }
+.save-indicator.is-saved > span { background: var(--acid); }
+.save-indicator.is-error { color: var(--danger); }
+.save-indicator.is-error > span { background: var(--danger); }
+.save-indicator button { min-height: 2rem; padding: .3rem .55rem; border: 1px solid currentColor; border-radius: .45rem; background: transparent; color: inherit; cursor: pointer; }
+.lyric-editor-title { width: min(100%, 54rem); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .8rem; justify-self: center; padding: 1rem 1.5rem .75rem; }
+.lyric-editor-title label { color: var(--subtle); font-size: .68rem; font-weight: 800; }
+.lyric-editor-title input { min-width: 0; padding: .4rem 0; border: 0; border-bottom: 1px solid transparent; outline: 0; background: transparent; color: var(--ink); font-size: clamp(1.15rem, 2vw, 1.6rem); font-weight: 800; }
+.lyric-editor-title input:focus { border-bottom-color: var(--acid); }
+.lyric-editor-title > span { color: var(--danger); font-size: .65rem; }
+.lyric-editor-surface { width: min(100%, 54rem); min-height: 0; justify-self: center; overflow: hidden; border: 1px solid var(--line); border-radius: .85rem; background: var(--panel); font-family: "Noto Sans KR", Pretendard, sans-serif; font-size: 1rem; }
+.lyric-editor-footer { width: min(100%, 54rem); display: flex; justify-content: space-between; gap: 1rem; justify-self: center; padding-top: .65rem; color: var(--subtle); font-size: .62rem; }
+
 /* Legal documents */
 .legal-page { min-height: 100svh; padding: max(1.5rem, var(--lc-safe-top)) max(1.25rem, var(--lc-safe-right)) max(2rem, var(--lc-safe-bottom)) max(1.25rem, var(--lc-safe-left)); background: radial-gradient(circle at 15% 0, rgb(200 255 61 / 8%), transparent 28%), var(--canvas); }
 .legal-page > .brand { display: flex; width: min(100%, 47rem); margin: 0 auto 2.2rem; }
@@ -350,6 +369,16 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .dashboard-side .notes-panel { order: 2; }
   .dashboard-side .danger-zone { order: 3; }
   .lyrics-empty { min-height: 21rem; }
+  .lyric-editor-page { grid-row: 2; height: auto; min-height: 0; padding: .9rem max(.75rem, var(--lc-safe-right)) max(.6rem, var(--lc-safe-bottom)) max(.75rem, var(--lc-safe-left)); }
+  .lyric-editor-header { align-items: center; }
+  .lyric-editor-context .eyebrow { display: none; }
+  .save-indicator { font-size: .65rem; }
+  .lyric-editor-title { grid-template-columns: minmax(0, 1fr); gap: .2rem; padding: .75rem .55rem .55rem; }
+  .lyric-editor-title label { display: none; }
+  .lyric-editor-title > span { grid-row: 2; }
+  .lyric-editor-surface { height: max(24rem, calc(100dvh - 15.5rem)); border-radius: .65rem; }
+  .lyric-editor-surface .cm-content { padding-bottom: calc(7rem + var(--lc-safe-bottom)); }
+  .lyric-editor-footer { padding-inline: .35rem; }
 }
 
 @media (max-width: 360px) {

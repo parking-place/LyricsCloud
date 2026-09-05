@@ -13,10 +13,14 @@
     "@lyricscloud/config": "workspace:*",
     "@lyricscloud/database": "workspace:*",
     "@lyricscloud/domain": "workspace:*",
+    "@lyricscloud/editor": "workspace:*",
     "@lyricscloud/ui": "workspace:*",
     "next": "16.3.4",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
-  "devDependencies": { "@types/react": "19.2.14", "@types/react-dom": "19.2.3" }
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3"
+  }
 }
