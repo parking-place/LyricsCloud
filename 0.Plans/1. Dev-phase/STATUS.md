@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.3.0"
-current_phase: "3phase.md"
-state: "complete"
-owner: "none"
-started_at: "2026-09-05 14:09 KST"
+current_phase: "4phase.md"
+state: "in_progress"
+owner: "Codex"
+started_at: "2026-09-05 14:38 KST"
 updated_at: "2026-09-05"
-next_action: "0.3.0 Phase 4 전체·송폼 복사와 집중 모드를 시작"
+next_action: "0.3.0 Phase 4 전체·송폼 복사, 실패 대안과 PC·모바일 집중 모드를 구현·검증"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -53,7 +53,7 @@ next_action: "0.3.0 Phase 4 전체·송폼 복사와 집중 모드를 시작"
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+| Codex | 0.3.0 / Phase 4 | LC-030-P4-01~10 | `packages/editor`, `apps/web`, `tests/e2e`, Phase·검증 문서 | Phase 3 section offset 계약 | 2026-09-05 14:38 KST | 진행 중 |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 

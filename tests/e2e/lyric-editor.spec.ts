@@ -163,7 +163,119 @@ test.describe("CodeMirror lyric editor", () => {
       await expect(page.locator(".cm-content").getByText("[Verse 400]", { exact: true })).toBeVisible();
     } finally { await deleteAccount(account.userId); }
   });
+
+  test("copies the current document and selected sections in source order", async ({ context, page }) => {
+    const account = await createAccount(context, "가사 복사 사용자");
+    try {
+      await installClipboardRecorder(page);
+      const body = "머리말\n[Verse]\n첫 절\n\n[Hook]\n첫 후렴\n[Verse 2]\n둘째 절\n[Hook]\n마지막 후렴";
+      const { lyricId } = await createLyric(page, body);
+      await page.goto(`/lyrics/${lyricId}`);
+      const editor = page.locator(".cm-content");
+      const current = `${body}\n저장 전 현재 입력`;
+      await editor.fill(current);
+      await expect(page.getByText("변경 내용 있음")).toBeVisible();
+      const mobile = (page.viewportSize()?.width ?? 1440) <= 720;
+      const tools = page.getByRole("group", { name: "가사 편집 도구" });
+      await (mobile ? tools.getByRole("button", { name: /전체 복사/ }) : page.getByRole("button", { name: "전체 복사", exact: true })).click();
+      await expect.poll(() => copiedText(page)).toBe(current);
+      await expect(page.getByRole("status").filter({ hasText: "가사를 복사했습니다" })).toBeVisible();
+
+      if (mobile) await tools.getByRole("button", { name: /송폼 4/ }).click();
+      const region = mobile
+        ? page.getByRole("dialog", { name: "송폼 이동" })
+        : page.getByRole("complementary", { name: "송폼 목차" });
+      await region.getByRole("checkbox", { name: "Hook 2번째 구간 선택" }).check();
+      await region.getByRole("checkbox", { name: "Verse 구간 선택" }).check();
+      await expect(region.getByText("2개 선택됨").first()).toBeVisible();
+      await region.getByRole("button", { name: "선택 복사" }).click();
+      await expect.poll(() => copiedText(page)).toBe("[Verse]\n첫 절\n\n[Hook]\n마지막 후렴\n저장 전 현재 입력");
+      await expect(page.getByRole("status").filter({ hasText: "선택한 2개 구간을 복사했습니다" })).toBeVisible();
+      await region.getByRole("button", { name: "선택 해제" }).click();
+      await expect(region.getByText("0개 선택됨").first()).toBeVisible();
+    } finally { await deleteAccount(account.userId); }
+  });
+
+  test("offers the identical selectable text when Clipboard is denied or unavailable", async ({ context, page }) => {
+    const account = await createAccount(context, "수동 복사 사용자");
+    try {
+      const body = "[Verse]\n권한 실패에도\n\n그대로 보존";
+      await page.addInitScript(() => {
+        Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => Promise.reject(new Error("denied")) } });
+      });
+      const { lyricId } = await createLyric(page, body);
+      await page.goto(`/lyrics/${lyricId}`);
+      const mobile = (page.viewportSize()?.width ?? 1440) <= 720;
+      const copyButton = mobile
+        ? page.getByRole("group", { name: "가사 편집 도구" }).getByRole("button", { name: /전체 복사/ })
+        : page.getByRole("button", { name: "전체 복사", exact: true });
+      await copyButton.click();
+      const dialog = page.getByRole("dialog", { name: "가사 전체를 직접 복사해 주세요" });
+      const textarea = dialog.getByRole("textbox", { name: "수동 복사할 가사" });
+      await expect(textarea).toHaveValue(body);
+      await expect(textarea).toBeFocused();
+      expect(await textarea.evaluate((element) => ({ start: element.selectionStart, end: element.selectionEnd }))).toEqual({ start: 0, end: body.length });
+      await dialog.getByRole("button", { name: "닫기" }).click();
+
+      await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined }));
+      await copyButton.click();
+      await expect(page.getByRole("dialog", { name: "가사 전체를 직접 복사해 주세요" }).getByRole("textbox")).toHaveValue(body);
+    } finally { await deleteAccount(account.userId); }
+  });
+
+  test("keeps unsaved text, cursor focus and scroll while toggling focus mode and shortcuts", async ({ context, page }) => {
+    const account = await createAccount(context, "집중 모드 사용자");
+    try {
+      await installClipboardRecorder(page);
+      const body = Array.from({ length: 80 }, (_, index) => `[Verse ${index + 1}]\n줄 ${index + 1}`).join("\n");
+      const { lyricId } = await createLyric(page, body);
+      await page.goto(`/lyrics/${lyricId}`);
+      const editor = page.locator(".cm-content");
+      const scroller = page.locator(".cm-scroller");
+      await editor.click();
+      await page.keyboard.press("Control+End");
+      await page.keyboard.insertText("\n아직 저장 전인 문장");
+      await scroller.evaluate((element) => { element.scrollTop = Math.max(1, element.scrollHeight - element.clientHeight - 24); });
+      const beforeScroll = await scroller.evaluate((element) => element.scrollTop);
+      const mobile = (page.viewportSize()?.width ?? 1440) <= 720;
+      const focusButton = mobile
+        ? page.getByRole("group", { name: "가사 편집 도구" }).getByRole("button", { name: "집중 모드" })
+        : page.getByRole("button", { name: "집중 모드", exact: true });
+      await focusButton.click();
+      await expect(page.locator(".lyric-editor-page")).toHaveClass(/is-focus-mode/);
+      await expect(editor).toContainText("아직 저장 전인 문장");
+      await expect(editor).toBeFocused();
+      const afterScroll = await scroller.evaluate((element) => element.scrollTop);
+      expect(Math.abs(afterScroll - beforeScroll)).toBeLessThan(40);
+      await page.keyboard.press("Alt+Shift+c");
+      await expect.poll(() => copiedText(page)).toContain("아직 저장 전인 문장");
+      await page.evaluate(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "f", altKey: true, shiftKey: true, isComposing: true })));
+      await expect(page.locator(".lyric-editor-page")).toHaveClass(/is-focus-mode/);
+      await page.keyboard.press("Alt+Shift+f");
+      await expect(page.locator(".lyric-editor-page")).not.toHaveClass(/is-focus-mode/);
+      await expect(editor).toContainText("아직 저장 전인 문장");
+      if (mobile) {
+        for (const viewport of [{ width: 700, height: 390 }, { width: 390, height: 520 }]) {
+          await page.setViewportSize(viewport);
+          await expect(page.getByRole("group", { name: "가사 편집 도구" })).toBeVisible();
+          expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
+        }
+      }
+    } finally { await deleteAccount(account.userId); }
+  });
 });
+
+async function installClipboardRecorder(page: Page) {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: {
+      writeText: (text: string) => { (window as typeof window & { __copiedText?: string }).__copiedText = text; return Promise.resolve(); }
+    } });
+  });
+}
+
+async function copiedText(page: Page) {
+  return page.evaluate(() => (window as typeof window & { __copiedText?: string }).__copiedText ?? "");
+}
 
 async function createAccount(context: BrowserContext, displayName: string) {
   const userId = randomUUID();
