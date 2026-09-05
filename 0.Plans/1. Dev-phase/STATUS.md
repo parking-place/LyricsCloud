@@ -53,7 +53,7 @@ next_action: "0.3.0 Phase 1 가사 resource·song 관계 계약과 schema 시작
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.2.0 / 운영 보완 | OPS-DOCKERHUB-PUBLISH | `.github/workflows/**`, `infra/docker/**`, `scripts/**`, `docs/runbooks/**`, 버전 원본 | Docker Hub repository·Actions variable·PAT 최초 등록 | 2026-09-05 KST | review |
+| 없음 | - | - | - | - | - | - |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -94,6 +94,7 @@ next_action: "0.3.0 Phase 1 가사 resource·song 관계 계약과 schema 시작
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-05 | 0.2.0 / 운영 보완 | Codex | CI 검증 뒤 web·collaboration·worker·migrate image를 `parkingplace/lyricscloud`에 필수 version·beta·commit·service 고정 tag와 버전별 이동식 beta tag로 자동 발행하고, 명시적 승인 전 정식·latest tag를 차단 | migration·복구, check, 59 tests, production build, E2E 42개, 네 production image runtime smoke, GitHub Actions 33940168228, Docker Hub 8개 tag·service별 digest 일치 | 이후 `main`·`phase/**` push마다 beta 자동 발행을 필수 확인하고, 사용자가 명시적으로 요청할 때만 정식 tag 정책 추가 |
 | 2026-09-05 | 0.2.0 / 운영 보완 | Codex | 로컬·개발·릴리스 Docker 작업 뒤 LyricsCloud 중지 컨테이너·미사용 image·network와 builder cache를 정리하고 volume·실행 중 자산은 보존하는 공통 스크립트와 운영 원칙을 추가 | shell·옵션·Compose 검사, check, 59 tests, dry-run, 로컬 실제 정리 약 10.5GB 회수 및 실행 중 컨테이너·전체 volume 전후 일치, [`정리 runbook`](../../docs/runbooks/docker-cleanup.md) | 개발 배포 성공 경로에서 자동 실행, 별도 test project도 명시 정리, 릴리스는 명시적으로 승인된 배포 smoke 성공 뒤 실행 |
 | 2026-09-05 | 0.2.0 / Phase 5 | Codex | 실제 곡 대시보드, 미지원 0 집계, 가사·연결 자료 빈 상태, 작업 메모, pin·favorite rollback, 제목·영향 기반 soft delete 확인과 목록 query 복귀를 완성하고 공개 개발 web을 production standalone asset으로 보정해 0.2.0 종료 | check, 59 tests, production build, production Docker image CSS 일치, desktop/mobile 전체 E2E 42개, A/B 상세·삭제 차단, orphan 0건, secret scan, [`검증 보고서`](../../docs/runbooks/0.2.0-phase5-validation.md) | [`0.3.0 가사 영역 인계`](../../docs/architecture/0.3.0-LYRICS-HANDOFF.md) |
 | 2026-09-05 | 0.2.0 / Phase 4 | Codex | 새 곡·곡 수정 공통 폼에 domain 길이 계약, 7개 상태·5개 색상, pin·favorite, 저장 오류·진행 상태, 이탈 확인과 owner 범위 서버 로드를 구현 | check, 58 tests, production build, 기본값·validation·중복 제출·전체 필드 생성/수정·320px·교차 계정 desktop/mobile E2E, [`검증 기록`](../../docs/runbooks/0.2.0-phase4-validation.md) | Phase 5 곡 대시보드, soft delete와 전체 곡 흐름 |
