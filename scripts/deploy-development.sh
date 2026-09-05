@@ -41,6 +41,18 @@ if [ ! -s .env ] || [ ! -s .test_users ]; then
 fi
 chmod 600 .env .test_users
 
+environment_file=$(mktemp)
+trap 'unlink "$environment_file" 2>/dev/null || true' EXIT
+awk -v build_id="$expected_commit" '
+  BEGIN { found = false }
+  /^BUILD_ID=/ { print "BUILD_ID=" build_id; found = true; next }
+  { print }
+  END { if (!found) print "BUILD_ID=" build_id }
+' .env > "$environment_file"
+chmod 600 "$environment_file"
+mv "$environment_file" .env
+trap - EXIT
+
 "${compose[@]}" config --quiet
 "${compose[@]}" build
 "${compose[@]}" run --rm migrate

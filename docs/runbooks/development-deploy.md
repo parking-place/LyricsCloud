@@ -9,7 +9,7 @@
 3. 그 SHA의 필수 GitHub Actions가 모두 통과했는지 확인한다.
 4. 개발 서버 checkout에 tracked 변경이 없는지 확인한다.
 5. 원격 branch와 전달받은 전체 SHA가 일치할 때만 해당 SHA로 전환한다.
-6. 환경 파일을 유지한 채 서버 전용 Compose override로 image build, forward migration, Compose 갱신을 실행한다.
+6. 환경 파일의 secret을 유지하고 `BUILD_ID`만 목표 SHA로 갱신한 뒤 서버 전용 Compose override로 image build, forward migration, Compose 갱신을 실행한다.
 7. 네 컨테이너 health와 공개 HTTPS live·ready, 변경 기능 smoke test를 확인한다.
 8. 배포 SHA·시각·검증 결과를 로컬 서버 인벤토리에 기록한다.
 
@@ -46,6 +46,8 @@ GET /api/health/live  -> 200
 GET /api/health/ready -> 200, database schema version 포함
 GET /auth             -> 200
 ```
+
+live·ready 응답의 `build.id`는 배포를 요청한 전체 SHA와 정확히 같아야 한다. 단순히 컨테이너가 healthy인 것만으로 배포를 완료 처리하지 않는다.
 
 화면 Phase는 PC와 모바일 viewport에서 변경 흐름을 실행한다. 인증·세션 또는 OAuth 설정을 바꾼 Phase는 시크릿 창에서 허용 계정 로그인·callback·로그아웃까지 확인한다. DB Phase는 ready 응답의 schema version과 Phase 통합 테스트를 함께 증거로 남긴다.
 
