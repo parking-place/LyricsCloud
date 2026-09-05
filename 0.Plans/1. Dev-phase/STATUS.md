@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.3.1"
-current_phase: "2phase.md"
-state: "complete"
+current_phase: "3phase.md"
+state: "review"
 owner: "Codex"
-started_at: "2026-09-05 16:06 KST"
+started_at: "2026-09-05 16:24 KST"
 updated_at: "2026-09-05"
-next_action: "0.3.1 Phase 3 인증 WebSocket, CRDT update·snapshot 영속화와 평문 projection 구현"
+next_action: "0.3.1 Phase 3 원격 CI·Docker Hub·개발 서버 배포 게이트 확인"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -37,7 +37,7 @@ next_action: "0.3.1 Phase 3 인증 WebSocket, CRDT update·snapshot 영속화와
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
 | 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
 | 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
-| 0.3.1 | in_progress | Phase 1~2 완료, Phase 3 대기 | 0.3.0 완료 |
+| 0.3.1 | in_progress | Phase 1~2 완료, Phase 3 진행 중 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
 | 0.5.0 | planned | 없음 | 0.4.0 완료 |
 | 0.6.0 | planned | 없음 | 0.5.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.3.1 Phase 3 인증 WebSocket, CRDT update·snapshot 영속화와
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| — | — | — | 현재 활성 작업 없음 | — | — | — |
+| Codex | 0.3.1 / Phase 3 | LC-031-P3-01~08 | `apps/collaboration`, `packages/database`, 동기화 검증·문서 | Phase 2 완료 | 2026-09-05 16:24 KST | review |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 

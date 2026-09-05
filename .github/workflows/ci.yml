@@ -66,6 +66,8 @@ jobs:
         run: pnpm test:migration:0201
       - name: Verify 0.3.0 lyrics migration recovery
         run: pnpm test:migration:0300
+      - name: Verify 0.3.1 CRDT sync migration recovery
+        run: pnpm test:migration:0310
       - name: Static checks
         run: pnpm check
       - name: Shell and Docker cleanup contract

@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 
-export const CURRENT_SCHEMA_VERSION = "0300_lyrics.sql";
+export const CURRENT_SCHEMA_VERSION = "0310_crdt_sync.sql";
 
 export * from "./auth.js";
 export * from "./owned.js";

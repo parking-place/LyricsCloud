@@ -16,6 +16,7 @@
     "test": "vitest run",
     "test:migration:0200": "node scripts/verify-0200-migration.mjs",
     "test:migration:0300": "node scripts/verify-0300-migration.mjs",
+    "test:migration:0310": "node scripts/verify-0310-migration.mjs",
     "test:migration:0201": "node scripts/verify-0201-migration.mjs",
     "test:e2e": "playwright test",
     "test:watch": "vitest",

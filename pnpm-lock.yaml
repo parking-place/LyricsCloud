@@ -35,9 +35,22 @@ importers:
       '@lyricscloud/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@lyricscloud/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       tsx:
         specifier: 4.20.6
         version: 4.20.6
+      ws:
+        specifier: 8.21.3
+        version: 8.21.3
+      yjs:
+        specifier: 13.6.32
+        version: 13.6.32
+    devDependencies:
+      '@types/ws':
+        specifier: 8.18.1
+        version: 8.18.1
 
   apps/web:
     dependencies:
@@ -886,6 +899,9 @@ packages:
   '@types/react@19.2.14':
     resolution: {integrity: sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==}
 
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
+
   '@vitest/expect@4.0.18':
     resolution: {integrity: sha512-8sCWUyckXXYvx4opfzVY03EOiYVxyNrHS5QxX3DAIi5dpJAAkyJezHCP77VMX4HKA2LDT/Jpfo8i2r5BE3GnQQ==}
 
@@ -1386,6 +1402,18 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
+  ws@8.21.3:
+    resolution: {integrity: sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
@@ -1852,6 +1880,10 @@ snapshots:
     dependencies:
       csstype: 3.2.3
 
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 24.10.0
+
   '@vitest/expect@4.0.18':
     dependencies:
       '@standard-schema/spec': 1.1.0
@@ -2290,6 +2322,8 @@ snapshots:
     dependencies:
       siginfo: 2.0.0
       stackback: 0.0.2
+
+  ws@8.21.3: {}
 
   xtend@4.0.2: {}
 

@@ -1,5 +1,22 @@
 {
-  "name": "@lyricscloud/collaboration", "version": "0.1.0", "private": true, "type": "module",
-  "scripts": { "dev": "tsx watch src/server.ts", "start": "tsx src/server.ts", "check": "tsc -p tsconfig.json" },
-  "dependencies": { "@lyricscloud/config": "workspace:*", "@lyricscloud/database": "workspace:*", "tsx": "4.20.6" }
+  "name": "@lyricscloud/collaboration",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "check": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@lyricscloud/config": "workspace:*",
+    "@lyricscloud/database": "workspace:*",
+    "@lyricscloud/domain": "workspace:*",
+    "tsx": "4.20.6",
+    "ws": "8.21.3",
+    "yjs": "13.6.32"
+  },
+  "devDependencies": {
+    "@types/ws": "8.18.1"
+  }
 }
