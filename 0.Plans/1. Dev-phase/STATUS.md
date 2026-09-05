@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.3.0"
 current_phase: "5phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-05 15:13 KST"
 updated_at: "2026-09-05"
-next_action: "0.3.0 Phase 5 가사 대시보드·생성·전환·복제·삭제·메타데이터·검색과 CRDT 인계를 구현·검증"
+next_action: "0.3.1 Phase 1 계획과 Accepted ADR-0004·0005, 0.3.0 editor·CRDT·revision 인계를 읽고 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -36,7 +36,7 @@ next_action: "0.3.0 Phase 5 가사 대시보드·생성·전환·복제·삭제�
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
 | 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
-| 0.3.0 | in_progress | Phase 1~4 완료, Phase 5 대기 | 0.2.0 완료 |
+| 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
 | 0.5.0 | planned | 없음 | 0.4.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.3.0 Phase 5 가사 대시보드·생성·전환·복제·삭제�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.3.0 / Phase 5 | LC-030-P5-01~11 | `packages/editor`, `packages/database`, `apps/web`, `tests/e2e`, Phase·인계·검증 문서 | Phase 1~4 CRUD·편집·송폼·복사 계약 | 2026-09-05 15:13 KST | 진행 중 |
+| — | — | — | 현재 활성 작업 없음 | — | — | — |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -90,14 +90,13 @@ next_action: "0.3.0 Phase 5 가사 대시보드·생성·전환·복제·삭제�
 
 ## 다음 작업
 
-사용자의 2026-09-05 후속 지시에 따라 0.5.0까지 Phase를 순서대로 진행한다. 현재 0.3.0 Phase 4까지 완료했으며 다음은 [0.3.0 Phase 5](./0.3.0/5phase.md)이다.
-
-Phase 5는 [곡 대시보드 화면 설명](../Mock-up/04-song-dashboard/README.md), [가사 편집 화면 설명](../Mock-up/05-lyrics-editor/README.md), [Phase 4 검증](../../docs/runbooks/0.3.0-phase4-validation.md)을 먼저 읽고 대시보드의 실제 가사 카드·생성·전환·복제·삭제와 메타데이터 흐름을 완성한다. CRDT와 수정 기록은 0.3.1 범위를 유지한다.
+사용자의 2026-09-05 후속 지시에 따라 0.5.0까지 Phase를 순서대로 진행한다. 0.3.0은 다섯 Phase와 개발 배포까지 완료했다. 다음은 [0.3.1 Phase 1](./0.3.1/1phase.md)이며 Accepted `ADR-0004`, `ADR-0005`와 [editor·CRDT·revision 인계](../../docs/architecture/0.3.1-EDITOR-CRDT-REVISION-HANDOFF.md)를 먼저 읽는다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-05 | 0.3.0 / Phase 5 | Codex | 곡 대시보드와 PC·모바일 editor에 실제 가사 카드·생성·전환·복제·삭제·metadata를 연결하고 owner 범위 활성 가사 검색과 CRDT transaction 인계를 완성 | migration·복구, check, 86 tests, production build, PC/mobile E2E 74개, CI 33950119025, 네 image tag/digest 일치, `b8fdec7` 개발 배포·공개 전체 흐름 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase5-validation.md) | 0.3.1 Phase 1이 현재 text와 transaction port를 최초 Yjs 문서와 update schema에 연결 |
 | 2026-09-05 | 0.3.0 / Phase 4 | Codex | 현재 CodeMirror 문서의 전체·단일·복수 송폼 복사, 문서 순서·빈 줄 보존, Clipboard 실패 수동 대안, 키보드 선택과 PC·모바일 집중 모드를 구현 | migration·복구, check, 84 tests, production build, PC/mobile E2E 70개, CI 33948308267, 네 image tag/digest 일치, `8a685c6` 개발 배포·공개 복사/집중 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase4-validation.md) | Phase 5가 현재 editor copy command·selection·focus 상태 계약을 유지하며 가사 대시보드 전체 흐름을 연결 |
 | 2026-09-05 | 0.3.0 / Phase 3 | Codex | 증분 송폼 parser·CodeMirror line decoration, 반복 구간 고유 ID, cursor·viewport active 추적, PC 목차·모바일 시트 탐색을 구현 | check, 80 unit/DB tests, production build, PC/mobile E2E 64개, CI 33947031270, 네 image tag/digest 일치, `1a80f99` 개발 배포·공개 탐색 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase3-validation.md) | Phase 4가 current editor text와 tag 포함 section 범위·문서 순서 선택을 사용 |
 | 2026-09-05 | 0.3.0 / Phase 2 | Codex | CodeMirror 순수 텍스트 편집, IME 안전 직렬 자동 저장, 정확한 저장 상태·재시도, PC·모바일 레이아웃과 10만 자 입력을 구현 | check, 75 unit/DB tests, production build, PC/mobile E2E 60개, secret scan, CI 33945630864, 네 image tag/digest 일치, `cef1d0c` 개발 배포·공개 편집 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase2-validation.md) | Phase 3 parser가 editor DOM을 수정하지 않고 transaction·visible range·selection port를 사용 |
