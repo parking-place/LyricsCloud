@@ -37,7 +37,7 @@ export function readRuntimeConfig(env: NodeJS.ProcessEnv): RuntimeConfig {
   return {
     runtime: runtime as RuntimeName,
     databaseUrl: env.DATABASE_URL!,
-    appVersion: env.APP_VERSION ?? "0.3.0",
+    appVersion: env.APP_VERSION ?? "0.3.1",
     buildId: env.BUILD_ID ?? "local"
   };
 }

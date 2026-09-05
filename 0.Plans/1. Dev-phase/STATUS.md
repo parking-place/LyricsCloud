@@ -3,13 +3,13 @@
 이 파일은 현재 버전·Phase·담당 작업의 단일 상태 원본입니다. 계획 문서는 범위를 정의하고 이 파일은 실제 진행 상황을 기록합니다.
 
 ```yaml
-current_version: "0.3.0"
-current_phase: "5phase.md"
+current_version: "0.3.1"
+current_phase: "1phase.md"
 state: "complete"
 owner: "Codex"
-started_at: "2026-09-05 15:13 KST"
+started_at: "2026-09-05 15:50 KST"
 updated_at: "2026-09-05"
-next_action: "0.3.1 Phase 1 계획과 Accepted ADR-0004·0005, 0.3.0 editor·CRDT·revision 인계를 읽고 시작"
+next_action: "0.3.1 Phase 2 owner·문서별 IndexedDB 초안, 같은 브라우저 탭 병합과 실제 영속 수준 저장 상태 구현"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -37,7 +37,7 @@ next_action: "0.3.1 Phase 1 계획과 Accepted ADR-0004·0005, 0.3.0 editor·CRD
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
 | 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
 | 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
-| 0.3.1 | planned | 없음 | 0.3.0 완료 |
+| 0.3.1 | in_progress | Phase 1 완료, Phase 2 대기 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
 | 0.5.0 | planned | 없음 | 0.4.0 완료 |
 | 0.6.0 | planned | 없음 | 0.5.0 완료 |
@@ -96,6 +96,7 @@ next_action: "0.3.1 Phase 1 계획과 Accepted ADR-0004·0005, 0.3.0 editor·CRD
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-05 | 0.3.1 / Phase 1 | Codex | 동일 owner Yjs 본문, opaque document/update ID, fail-closed 접근, 중복·역순·snapshot과 관계형 제목+CRDT 본문 projection 계약을 구현 | check, 24 files/90 tests, production build, secret scan, PC/mobile baseline 재검증; [검증 기록](../../docs/runbooks/0.3.1-phase1-validation.md) | Phase 2가 owner+document key IndexedDB와 BroadcastChannel 병합·저장 상태를 구현 |
 | 2026-09-05 | 0.3.0 / Phase 5 | Codex | 곡 대시보드와 PC·모바일 editor에 실제 가사 카드·생성·전환·복제·삭제·metadata를 연결하고 owner 범위 활성 가사 검색과 CRDT transaction 인계를 완성 | migration·복구, check, 86 tests, production build, PC/mobile E2E 74개, CI 33950119025, 네 image tag/digest 일치, `b8fdec7` 개발 배포·공개 전체 흐름 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase5-validation.md) | 0.3.1 Phase 1이 현재 text와 transaction port를 최초 Yjs 문서와 update schema에 연결 |
 | 2026-09-05 | 0.3.0 / Phase 4 | Codex | 현재 CodeMirror 문서의 전체·단일·복수 송폼 복사, 문서 순서·빈 줄 보존, Clipboard 실패 수동 대안, 키보드 선택과 PC·모바일 집중 모드를 구현 | migration·복구, check, 84 tests, production build, PC/mobile E2E 70개, CI 33948308267, 네 image tag/digest 일치, `8a685c6` 개발 배포·공개 복사/집중 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase4-validation.md) | Phase 5가 현재 editor copy command·selection·focus 상태 계약을 유지하며 가사 대시보드 전체 흐름을 연결 |
 | 2026-09-05 | 0.3.0 / Phase 3 | Codex | 증분 송폼 parser·CodeMirror line decoration, 반복 구간 고유 ID, cursor·viewport active 추적, PC 목차·모바일 시트 탐색을 구현 | check, 80 unit/DB tests, production build, PC/mobile E2E 64개, CI 33947031270, 네 image tag/digest 일치, `1a80f99` 개발 배포·공개 탐색 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase3-validation.md) | Phase 4가 current editor text와 tag 포함 section 범위·문서 순서 선택을 사용 |

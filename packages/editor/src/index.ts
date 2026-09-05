@@ -7,4 +7,5 @@ export interface TextDocumentPort {
 export * from "./autosave.js";
 export * from "./codemirror.js";
 export * from "./copy.js";
+export * from "./crdt.js";
 export * from "./songform.js";

@@ -110,7 +110,7 @@ export function SongForm({ song, returnTo }: { song?: ExistingSong; returnTo: st
   }
 
   return <section className="song-form-page" aria-labelledby="song-form-title">
-    <header className="form-heading"><div><a className="back-inline" href={returnTo}>← 곡 목록</a><p className="eyebrow">0.3.0 · Song details</p><h1 id="song-form-title">{song ? "곡 정보 수정" : "새 곡 만들기"}</h1><p>{song ? "현재 곡의 기본 정보와 작업 상태를 정리합니다." : "제목 하나로 시작해도 괜찮아요. 나머지는 언제든 채울 수 있습니다."}</p></div></header>
+    <header className="form-heading"><div><a className="back-inline" href={returnTo}>← 곡 목록</a><p className="eyebrow">0.3.1 · Song details</p><h1 id="song-form-title">{song ? "곡 정보 수정" : "새 곡 만들기"}</h1><p>{song ? "현재 곡의 기본 정보와 작업 상태를 정리합니다." : "제목 하나로 시작해도 괜찮아요. 나머지는 언제든 채울 수 있습니다."}</p></div></header>
     {formError ? <div className="form-error-banner" role="alert"><strong>저장 오류</strong><span>{formError}</span></div> : null}
     <form className="song-form" onSubmit={submit} noValidate>
       <div className="form-main">

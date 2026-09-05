@@ -4,7 +4,7 @@ import { ConfigError, readAuthConfig, readRuntimeConfig } from "./index.js";
 describe("runtime configuration", () => {
   it("accepts a PostgreSQL URL", () => {
     const config = readRuntimeConfig({ NODE_ENV: "test", DATABASE_URL: "postgresql://user:secret@db/app" });
-    expect(config).toMatchObject({ runtime: "test", appVersion: "0.3.0", buildId: "local" });
+    expect(config).toMatchObject({ runtime: "test", appVersion: "0.3.1", buildId: "local" });
   });
   it("reports key names without their values", () => {
     const secret = "never-print-this";
