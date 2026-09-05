@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.2.0"
-current_phase: "3phase.md"
+current_phase: "4phase.md"
 state: "complete"
 owner: "none"
-started_at: "2026-09-05 09:46 KST"
+started_at: "2026-09-05 10:05 KST"
 updated_at: "2026-09-05"
-next_action: "0.2.0 Phase 4 곡 작성·수정 폼 PC·모바일 구현"
+next_action: "0.2.0 Phase 5 기본 곡 대시보드와 전체 곡 흐름 검증"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -35,7 +35,7 @@ next_action: "0.2.0 Phase 4 곡 작성·수정 폼 PC·모바일 구현"
 |---|---|---|---|
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
-| 0.2.0 | in_progress | Phase 1~3 완료 | 0.1.0 완료 |
+| 0.2.0 | in_progress | Phase 1~4 완료 | 0.1.0 완료 |
 | 0.3.0 | planned | 없음 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
@@ -85,15 +85,16 @@ next_action: "0.2.0 Phase 4 곡 작성·수정 폼 PC·모바일 구현"
 
 ## 다음 작업
 
-1. [`0.2.0 Phase 4`](./0.2.0/4phase.md)의 새 곡·곡 수정 공통 폼을 구현합니다.
-2. 생성 멱등성 key와 저장·validation·이탈 확인 상태를 화면에 연결합니다.
-3. 생성 뒤 정확한 곡 대시보드 이동과 수정 뒤 상세 복귀를 검증합니다.
-4. 곡 삭제·실제 가사 작성·연결 자료는 담당 후속 Phase로 남깁니다.
+1. [`0.2.0 Phase 5`](./0.2.0/5phase.md)의 기본 곡 대시보드를 구현합니다.
+2. 곡 요약·메모·서로 다른 빈 상태와 pin·favorite·soft delete를 연결합니다.
+3. 목록→생성→대시보드→수정→목록 반영→삭제 전체 흐름을 PC·모바일에서 검증합니다.
+4. 0.3.0 가사 영역이 소비할 owner·count·삭제 계약을 인계합니다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-05 | 0.2.0 / Phase 4 | Codex | 새 곡·곡 수정 공통 폼에 domain 길이 계약, 7개 상태·5개 색상, pin·favorite, 저장 오류·진행 상태, 이탈 확인과 owner 범위 서버 로드를 구현 | check, 58 tests, production build, 기본값·validation·중복 제출·전체 필드 생성/수정·320px·교차 계정 desktop/mobile E2E, [`검증 기록`](../../docs/runbooks/0.2.0-phase4-validation.md) | Phase 5 곡 대시보드, soft delete와 전체 곡 흐름 |
 | 2026-09-05 | 0.2.0 / Phase 3 | Codex | owner 범위 곡 목록을 PC 2열·모바일 1열 카드로 구현하고 지연 검색, URL 상태, 상태·다섯 정렬, cursor 추가 로드, pin·favorite 낙관적 갱신과 구분된 빈·오류 상태 완성 | check, 57 tests, production build, 0·30곡 desktop/mobile E2E 및 320px·큰 글자·focus 검증, [`검증 기록`](../../docs/runbooks/0.2.0-phase3-validation.md) | Phase 4 새 곡·곡 수정 공통 폼과 대시보드 이동 |
 | 2026-09-05 | 0.2.0 / Phase 2 | Codex | owner 범위 곡 CRUD·명시적 메타데이터 명령, owner별 생성 멱등성, 문자 그대로 부분 검색, 상태 필터, 핀 우선 다섯 keyset 정렬과 미지원 집계 capability 완성 | 0200·0201 migration 재적용/rollback/recovery, 14 files/57 tests, production build, desktop/mobile E2E 30개, secret scan, [`검증 기록`](../../docs/runbooks/0.2.0-phase2-validation.md) | Phase 3 곡 목록 URL 상태·카드·cursor UI |
 | 2026-09-05 | 0.2.0 / Phase 1 | Codex | 공통 resource·song 1:1 schema, 상태·색상·길이·DB 시각 계약, owner RLS, soft delete, 제품 삭제·연결 의미 확정 | clean migration 2회, 합성 fixture 3쌍, down·재적용, 12 files/49 tests, index EXPLAIN, check·build·E2E·secret scan, 개발 서비스 readiness 200, GitHub Actions 33930137076 통과, [`검증 기록`](../../docs/runbooks/0.2.0-phase1-validation.md) | Phase 2 생성 transaction·idempotency·CRUD·목록 query |
