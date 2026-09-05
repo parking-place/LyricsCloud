@@ -5,7 +5,7 @@ import { parseCreateLyricInput, parseCreateSongInput } from "@lyricscloud/domain
 import { PostgresLyricStore, PostgresSongStore } from "@lyricscloud/database";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { WebSocket } from "ws";
+import { WebSocket, type RawData } from "ws";
 import * as Y from "yjs";
 
 const enabled = process.env.AUTH_DATABASE_INTEGRATION === "true";
@@ -47,8 +47,7 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
 
     const first = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: { cookie } });
     const second = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: { cookie } });
-    const firstSnapshot = await nextJson(first, "snapshot");
-    await nextJson(second, "snapshot");
+    const [firstSnapshot] = await Promise.all([nextJson(first, "snapshot"), nextJson(second, "snapshot")]);
     const document = new Y.Doc(); Y.applyUpdate(document, Buffer.from(firstSnapshot.payload as string, "base64"));
     let update: Uint8Array<ArrayBufferLike> = new Uint8Array();
     document.once("update", (value) => { update = value; });
@@ -64,7 +63,7 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
     first.send(JSON.stringify({ type: "update", updateId: randomUUID(), payload: Buffer.from(update).toString("base64") }));
     const [code] = await once(first, "close") as [number, Buffer];
     expect(code).toBe(4404);
-    second.close(); document.destroy();
+    const secondClosed = once(second, "close"); second.close(); await secondClosed; document.destroy();
     expect(output).not.toContain(secretBody);
     expect(output).not.toContain(Buffer.from(update).toString("base64"));
     expect(output).not.toContain(ownerId);
@@ -74,7 +73,10 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
 
 afterAll(async () => {
   processHandle?.kill("SIGTERM");
-  if (processHandle && processHandle.exitCode === null) await once(processHandle, "exit").catch(() => undefined);
+  if (processHandle && processHandle.exitCode === null) {
+    await Promise.race([once(processHandle, "exit"), new Promise((resolve) => setTimeout(resolve, 1_000))]);
+    if (processHandle.exitCode === null) processHandle.kill("SIGKILL");
+  }
   if (pool && users.length) await pool.query("delete from app_users where id=any($1::uuid[])", [users]);
   await Promise.all([songs?.close(), lyrics?.close(), pool?.end()]);
 });
@@ -88,10 +90,14 @@ async function waitForReady() {
 }
 
 async function nextJson(socket: WebSocket, type: string): Promise<Record<string, unknown>> {
-  if (socket.readyState === WebSocket.CONNECTING) await once(socket, "open");
-  while (true) {
-    const [raw] = await once(socket, "message") as [Buffer];
-    const value = JSON.parse(raw.toString()) as Record<string, unknown>;
-    if (value.type === type) return value;
-  }
+  return new Promise((resolve, reject) => {
+    const message = (raw: RawData) => {
+      const value = JSON.parse(raw.toString()) as Record<string, unknown>;
+      if (value.type === type) { cleanup(); resolve(value); }
+    };
+    const error = (cause: Error) => { cleanup(); reject(cause); };
+    const close = () => { cleanup(); reject(new Error(`socket closed before ${type}`)); };
+    const cleanup = () => { socket.off("message", message); socket.off("error", error); socket.off("close", close); };
+    socket.on("message", message); socket.once("error", error); socket.once("close", close);
+  });
 }
