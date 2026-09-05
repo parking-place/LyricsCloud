@@ -134,7 +134,7 @@ Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SH
 ## 13. Docker Hub image 발행
 
 - GitHub Actions의 전체 `verify` job을 통과한 push만 `parkingplace/lyricscloud`의 web·collaboration·worker·migrate image 발행 대상으로 사용합니다.
-- 모든 image tag에는 루트 [`VERSION`](./VERSION)의 버전과 service 이름을 반드시 포함합니다. 사용자가 정식 발행을 명시적으로 승인하기 전에는 `<version>-beta.<12자리 commit SHA>-<service>`와 `<version>-beta-<service>`만 사용하고 `latest` 또는 정식 tag는 발행하지 않습니다.
+- 모든 image 발행에는 루트 [`VERSION`](./VERSION)의 버전과 service 이름을 포함한 `<version>-beta.<12자리 commit SHA>-<service>` 고정 tag를 반드시 함께 둡니다. 사용자가 정식 발행을 명시적으로 승인하기 전에는 이 tag와 `<version>-beta-<service>`, `beta-latest-<service>` alias만 사용하며, 기본 `beta-latest`는 web을 가리킵니다. `latest` 또는 정식 tag는 발행하지 않습니다.
 - `VERSION`, `STATUS.md`의 `current_version`, runtime의 기본 `APP_VERSION`을 함께 갱신합니다. 서로 다르면 image 발행을 중단합니다.
 - Docker Hub token은 GitHub Actions secret `DOCKERHUB_TOKEN`에만 저장하고 저장소, 로컬 문서, 명령 인수나 로그에 기록하지 않습니다. 로그인 username은 Actions variable로 관리합니다.
 - 발행 성공 시 service별 image tag와 digest를 CI 증거로 확인합니다. Docker Hub 연결이 활성화된 뒤에는 발행 실패 상태로 개발 서버 배포나 Phase 완료를 진행하지 않습니다.

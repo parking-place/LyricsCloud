@@ -38,12 +38,14 @@ gh variable set DOCKERHUB_ENABLED --body 'true'
 |---|---|---|
 | commit 고정 beta | `0.2.0-beta.72ae674848f9-web` | 버전·commit·service가 고정된 재현 가능한 image |
 | 버전 이동식 beta | `0.2.0-beta-web` | 같은 버전에서 가장 최근 검증된 web beta image |
+| service 최신 beta | `beta-latest-web` | 버전과 관계없이 가장 최근 검증된 해당 service beta image |
+| 기본 최신 beta | `beta-latest` | 가장 최근 검증된 web beta image |
 
-각 형식의 끝에는 `web`, `collaboration`, `worker`, `migrate` 중 하나가 들어간다. `latest`, beta가 없는 정식 tag, service가 없는 tag는 만들지 않는다. 정식 발행은 사용자의 별도 명시적 승인 뒤에만 자동화 규칙을 변경해 연다. 다음 버전 작업을 시작할 때 `VERSION`, `STATUS.md`, runtime 기본 `APP_VERSION`을 같은 commit에서 갱신한다.
+고정 tag는 모든 발행에 필수이며, alias만 단독으로 발행하지 않는다. service alias의 끝에는 `web`, `collaboration`, `worker`, `migrate` 중 하나가 들어간다. 서비스 구분이 없는 `beta-latest`는 web에만 부여해 네 image가 서로 덮어쓰는 것을 막는다. `latest`와 beta가 없는 정식 tag는 만들지 않는다. 정식 발행은 사용자의 별도 명시적 승인 뒤에만 자동화 규칙을 변경해 연다. 다음 버전 작업을 시작할 때 `VERSION`, `STATUS.md`, runtime 기본 `APP_VERSION`을 같은 commit에서 갱신한다.
 
 ## 자동 실행과 수동 재시도
 
-- `main`, `phase/**` push: CI 검증 성공 후 네 service의 고정·이동식 beta tag를 자동 발행한다.
+- `main`, `phase/**` push: CI 검증 성공 후 네 service의 고정·버전 이동식·최신 beta tag를 자동 발행하고, web에는 기본 `beta-latest`도 함께 발행한다.
 - Git tag push: 정식 발행이 승인되기 전에는 workflow 발행 대상으로 등록하지 않는다.
 - pull request: secret을 사용하거나 image를 발행하지 않는다.
 - 수동 재시도: GitHub Actions의 `CI` workflow를 대상 commit에서 실행하고 `publish=true`를 선택한다.
@@ -55,5 +57,5 @@ gh variable set DOCKERHUB_ENABLED --body 'true'
 - `DOCKERHUB_ENABLED=true`인데 username 또는 token이 없으면 발행 job을 실패시킨다.
 - login 실패 시 token 만료·권한과 username을 확인하되 값을 로그로 출력하지 않는다.
 - repository 권한 실패 시 자동 생성에 의존하지 말고 Docker Hub에서 `parkingplace/lyricscloud`와 로그인 계정의 push 권한을 확인한다.
-- branch image 발행 실패를 `latest`나 버전 없는 임시 tag로 우회하지 않는다.
+- branch image 발행 실패를 `latest`나 임의의 임시 tag로 우회하지 않는다. `beta-latest*` alias는 반드시 같은 실행의 고정 version+SHA tag와 함께 갱신한다.
 - 일부 service만 성공했다면 같은 commit으로 workflow를 다시 실행한다. version+SHA tag는 동일 build를 가리켜야 하므로 다른 commit으로 덮어쓰지 않는다.

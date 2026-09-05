@@ -108,15 +108,27 @@ jobs:
           - service: web
             dockerfile: infra/docker/Dockerfile.web
             target: runtime
+            beta_alias: beta-latest-web
+            default_alias: beta-latest
+            publish_default_alias: true
           - service: collaboration
             dockerfile: infra/docker/Dockerfile.service
             target: collaboration
+            beta_alias: beta-latest-collaboration
+            default_alias: beta-latest
+            publish_default_alias: false
           - service: worker
             dockerfile: infra/docker/Dockerfile.service
             target: worker
+            beta_alias: beta-latest-worker
+            default_alias: beta-latest
+            publish_default_alias: false
           - service: migrate
             dockerfile: infra/docker/Dockerfile.service
             target: migrate
+            beta_alias: beta-latest-migrate
+            default_alias: beta-latest
+            publish_default_alias: false
     steps:
       - uses: actions/checkout@v7
       - name: Validate Docker Hub configuration
@@ -147,6 +159,8 @@ jobs:
           tags: |
             type=raw,value=${{ steps.version.outputs.tag }}
             type=raw,value=${{ steps.version.outputs.version }}-beta-${{ matrix.service }}
+            type=raw,value=${{ matrix.beta_alias }}
+            type=raw,value=${{ matrix.default_alias }},enable=${{ matrix.publish_default_alias }}
           labels: |
             org.opencontainers.image.title=LyricsCloud ${{ matrix.service }}
             org.opencontainers.image.version=${{ steps.version.outputs.tag }}
