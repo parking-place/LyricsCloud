@@ -53,7 +53,7 @@ next_action: "0.3.0 Phase 1 가사 resource·song 관계 계약과 schema 시작
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+| Codex | 0.2.0 / 운영 보완 | OPS-DOCKERHUB-PUBLISH | `.github/workflows/**`, `infra/docker/**`, `scripts/**`, `docs/runbooks/**`, 버전 원본 | Docker Hub repository·Actions variable·PAT 최초 등록 | 2026-09-05 KST | review |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 

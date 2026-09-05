@@ -43,3 +43,14 @@ pnpm docker:cleanup
 ```
 
 기본 정리 대상은 `com.docker.compose.project=lyricscloud` 라벨이 있는 중지 컨테이너, 미사용 image와 network다. 별도 Compose project name으로 테스트했다면 `--project <name>`으로 각각 실행한다. `--build-cache`는 여러 프로젝트가 공유할 수 있는 현재 builder의 미사용 cache를 모두 정리하므로 Docker 빌드를 모두 마친 뒤 사용한다. volume, 실행 중 컨테이너, 사용 중 image는 삭제하지 않는다. 삭제 전 대상만 확인하려면 `--dry-run`을 추가한다.
+
+## Docker image tag
+
+Docker Hub tag를 Git ref와 현재 `VERSION`으로 계산한다.
+
+```bash
+./scripts/docker-image-tag.sh branch phase/0.2.0-p5-song-dashboard <40-character-commit-sha>
+./scripts/docker-image-tag.sh tag v0.2.0 <40-character-commit-sha>
+```
+
+branch는 `<version>-dev.<12자리 SHA>`, 정확한 release Git tag는 `<version>`을 출력한다. `VERSION`과 `STATUS.md`의 현재 버전이 다르거나 tag·SHA가 잘못되면 실패한다.

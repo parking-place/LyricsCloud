@@ -1,0 +1,42 @@
+FROM node:24.20.0-bookworm-slim AS runtime-base
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+ENV NODE_ENV=production
+WORKDIR /workspace
+
+RUN npm install --global pnpm@11.25.0
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/collaboration/package.json apps/collaboration/package.json
+COPY apps/worker/package.json apps/worker/package.json
+COPY packages/config/package.json packages/config/package.json
+COPY packages/database/package.json packages/database/package.json
+COPY packages/domain/package.json packages/domain/package.json
+RUN pnpm install --frozen-lockfile --prod \
+  --filter @lyricscloud/collaboration... \
+  --filter @lyricscloud/worker... \
+  --filter @lyricscloud/database... \
+  && pnpm store prune
+
+COPY tsconfig.base.json ./
+COPY apps/collaboration apps/collaboration
+COPY apps/worker apps/worker
+COPY packages/config packages/config
+COPY packages/database packages/database
+COPY packages/domain packages/domain
+
+USER node
+
+FROM runtime-base AS collaboration
+ENV COLLABORATION_PORT=3001
+EXPOSE 3001
+CMD ["/workspace/apps/collaboration/node_modules/.bin/tsx", "apps/collaboration/src/server.ts"]
+
+FROM runtime-base AS worker
+ENV WORKER_HEALTH_PORT=3002
+EXPOSE 3002
+CMD ["/workspace/apps/worker/node_modules/.bin/tsx", "apps/worker/src/server.ts"]
+
+FROM runtime-base AS migrate
+CMD ["/workspace/packages/database/node_modules/.bin/tsx", "packages/database/src/migrate.ts"]

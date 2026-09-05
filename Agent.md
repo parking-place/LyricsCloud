@@ -109,7 +109,7 @@
 - 비밀 값, `.env`, DB 볼륨, 백업, export 묶음, 실제 사용자 자료를 커밋하지 않습니다.
 - 배포·migration·백업 복원처럼 운영 상태를 바꾸는 작업은 승인과 runbook을 확인합니다.
 
-Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SHA 일치 확인 → 필수 CI → 개발 서버에 같은 SHA 배포 → 공개 개발 주소 smoke test → 상태·배포 기록`으로 고정합니다. 구체적인 명령과 중단·되돌림 기준은 [`개발 서버 배포 runbook`](./docs/runbooks/development-deploy.md)을 따릅니다.
+Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SHA 일치 확인 → 필수 CI → version tag를 포함한 Docker Hub image 발행 → 개발 서버에 같은 SHA 배포 → 공개 개발 주소 smoke test → 상태·배포 기록`으로 고정합니다. Docker Hub 초기 연결 전에는 발행 job이 비활성 상태임을 완료 보고에 명시하고, 연결 이후에는 발행 실패를 건너뛰지 않습니다. 구체적인 명령과 중단·되돌림 기준은 [`개발 서버 배포 runbook`](./docs/runbooks/development-deploy.md)과 [`Docker Hub 발행 runbook`](./docs/runbooks/dockerhub-publish.md)을 따릅니다.
 
 ## 11. 서버 정보와 환경별 운영 권한
 
@@ -130,3 +130,11 @@ Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SH
 - 정리는 새 컨테이너의 health와 필수 asset 검증 뒤에만 실행합니다. 그 전에 실패한 배포의 조사·rollback에 필요한 container와 image는 원인이 확인될 때까지 보존합니다.
 - Docker volume은 정리 명령에 포함하지 않습니다. 특히 PostgreSQL, 백업, 의존성 volume은 사용자의 별도 명시적 승인 없이 prune하거나 삭제하지 않습니다.
 - 릴리스 서버의 정리는 릴리스 변경이 명시적으로 승인된 작업 안에서만 실행하며, 이 규칙이 릴리스 서버에 임의로 접속하거나 배포할 권한을 만들지는 않습니다.
+
+## 13. Docker Hub image 발행
+
+- GitHub Actions의 전체 `verify` job을 통과한 push만 web·collaboration·worker·migrate image 발행 대상으로 사용합니다.
+- 모든 image tag에는 루트 [`VERSION`](./VERSION)의 버전을 반드시 포함합니다. 일반 branch는 `<version>-dev.<12자리 commit SHA>`, 정확히 일치하는 Git tag `v<version>`은 `<version>`을 사용하며 `latest` 단독 tag는 발행하지 않습니다.
+- `VERSION`, `STATUS.md`의 `current_version`, runtime의 기본 `APP_VERSION`을 함께 갱신합니다. 서로 다르면 image 발행을 중단합니다.
+- Docker Hub token은 GitHub Actions secret `DOCKERHUB_TOKEN`에만 저장하고 저장소, 로컬 문서, 명령 인수나 로그에 기록하지 않습니다. username과 namespace는 Actions variable로 관리합니다.
+- 발행 성공 시 service별 image tag와 digest를 CI 증거로 확인합니다. Docker Hub 연결이 활성화된 뒤에는 발행 실패 상태로 개발 서버 배포나 Phase 완료를 진행하지 않습니다.

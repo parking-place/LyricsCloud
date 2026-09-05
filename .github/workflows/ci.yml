@@ -1,9 +1,17 @@
 name: CI
 
 on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the tested commit to Docker Hub
+        required: true
+        type: boolean
+        default: false
   pull_request:
   push:
     branches: [main, "phase/**"]
+    tags: ["v*.*.*"]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -32,7 +40,7 @@ jobs:
       NODE_ENV: test
       DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
       AUTH_DATABASE_INTEGRATION: "true"
-      APP_VERSION: 0.1.0
+      APP_VERSION: 0.2.0
       BUILD_ID: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v7
@@ -55,7 +63,11 @@ jobs:
       - name: Static checks
         run: pnpm check
       - name: Shell and Docker cleanup contract
-        run: bash -n scripts/*.sh && ./scripts/cleanup-docker.sh --dry-run --build-cache
+        run: |
+          bash -n scripts/*.sh
+          ./scripts/cleanup-docker.sh --dry-run --build-cache
+          test "$(./scripts/docker-image-tag.sh branch phase/0.2.0-p5-song-dashboard 0123456789abcdef0123456789abcdef01234567)" = "0.2.0-dev.0123456789ab"
+          test "$(./scripts/docker-image-tag.sh tag v0.2.0 0123456789abcdef0123456789abcdef01234567)" = "0.2.0"
       - name: Unit tests
         run: pnpm test
       - name: Production build
@@ -64,6 +76,11 @@ jobs:
         run: pnpm build
       - name: Build development server production image
         run: docker build --file infra/docker/Dockerfile.web --tag lyricscloud-web-ci:${{ github.sha }} .
+      - name: Build production service images
+        run: |
+          for service in collaboration worker migrate; do
+            docker build --file infra/docker/Dockerfile.service --target "$service" --tag "lyricscloud-$service-ci:${{ github.sha }}" .
+          done
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
       - name: Auth and ownership E2E
@@ -76,3 +93,73 @@ jobs:
           SESSION_SECRET: synthetic-e2e-session-secret-at-least-32-bytes
           E2E_PROVIDER_TOKEN: synthetic-provider-token-never-persisted
         run: pnpm check:secrets apps/web/.next
+
+  publish:
+    name: Publish ${{ matrix.service }} image
+    needs: verify
+    if: (github.event_name == 'push' || inputs.publish == true) && vars.DOCKERHUB_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: web
+            dockerfile: infra/docker/Dockerfile.web
+            target: runtime
+          - service: collaboration
+            dockerfile: infra/docker/Dockerfile.service
+            target: collaboration
+          - service: worker
+            dockerfile: infra/docker/Dockerfile.service
+            target: worker
+          - service: migrate
+            dockerfile: infra/docker/Dockerfile.service
+            target: migrate
+    steps:
+      - uses: actions/checkout@v7
+      - name: Validate Docker Hub configuration
+        env:
+          DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          test -n "$DOCKERHUB_NAMESPACE"
+          test -n "$DOCKERHUB_USERNAME"
+          test -n "$DOCKERHUB_TOKEN"
+      - name: Resolve mandatory version tag
+        id: version
+        run: |
+          image_tag=$(./scripts/docker-image-tag.sh "$GITHUB_REF_TYPE" "$GITHUB_REF_NAME" "$GITHUB_SHA")
+          printf 'tag=%s\n' "$image_tag" >> "$GITHUB_OUTPUT"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+      - name: Log in to Docker Hub
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Generate image metadata
+        id: metadata
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ vars.DOCKERHUB_NAMESPACE }}/lyricscloud-${{ matrix.service }}
+          tags: type=raw,value=${{ steps.version.outputs.tag }}
+          labels: |
+            org.opencontainers.image.title=LyricsCloud ${{ matrix.service }}
+            org.opencontainers.image.version=${{ steps.version.outputs.tag }}
+            org.opencontainers.image.revision=${{ github.sha }}
+      - name: Build and push versioned image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-from: type=gha,scope=lyricscloud-${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=lyricscloud-${{ matrix.service }}
