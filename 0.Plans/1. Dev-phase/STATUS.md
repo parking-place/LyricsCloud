@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.3.0"
 current_phase: "2phase.md"
-state: "in_progress"
-owner: "Codex"
+state: "complete"
+owner: "none"
 started_at: "2026-09-05 13:00 KST"
 updated_at: "2026-09-05"
-next_action: "0.3.0 Phase 2 CodeMirror 순수 텍스트 편집 기반 구현·검증"
+next_action: "0.3.0 Phase 3 송폼 인식·탐색·복사를 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -36,7 +36,7 @@ next_action: "0.3.0 Phase 2 CodeMirror 순수 텍스트 편집 기반 구현·�
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
 | 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
-| 0.3.0 | in_progress | Phase 1 완료, Phase 2~5 대기 | 0.2.0 완료 |
+| 0.3.0 | in_progress | Phase 1~2 완료, Phase 3~5 대기 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
 | 0.5.0 | planned | 없음 | 0.4.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.3.0 Phase 2 CodeMirror 순수 텍스트 편집 기반 구현·�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.3.0 / Phase 2 | LC-030-P2-01~10 | `packages/editor`, `apps/web` lyric editor route·UI, 관련 tests·문서 | 0.3.0 Phase 1 API·PROD-0003, DEC-03-A | 2026-09-05 13:00 KST | in_progress |
+| 없음 | - | - | - | - | - | - |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -90,14 +90,15 @@ next_action: "0.3.0 Phase 2 CodeMirror 순수 텍스트 편집 기반 구현·�
 
 ## 다음 작업
 
-사용자의 2026-09-05 후속 지시에 따라 **0.3.0 Phase 1까지 완료하고 중지**한다. 0.3.0 Phase 2와 0.3.1은 시작하지 않았다.
+사용자의 2026-09-05 후속 지시에 따라 0.5.0까지 Phase를 순서대로 진행한다. 현재 0.3.0 Phase 2까지 완료했으며 다음은 [0.3.0 Phase 3](./0.3.0/3phase.md)이다.
 
-다음 작업이 지시되면 [0.3.0 Phase 2](./0.3.0/2phase.md), [가사 API 계약](../../docs/architecture/0.3.0-LYRIC-API.md), [Phase 1 검증](../../docs/runbooks/0.3.0-phase1-validation.md)을 먼저 읽는다. CRDT와 수정 기록은 0.3.1 범위를 유지한다.
+Phase 3은 [가사 편집 화면 설명](../Mock-up/05-lyrics-editor/README.md), [PROD-0003 송폼](../../docs/product/PROD-0003-songform.md), [Phase 2 검증](../../docs/runbooks/0.3.0-phase2-validation.md)을 먼저 읽고, editor transaction·visible range·selection API 위에 송폼 parser와 탐색을 연결한다. CRDT와 수정 기록은 0.3.1 범위를 유지한다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-05 | 0.3.0 / Phase 2 | Codex | CodeMirror 순수 텍스트 편집, IME 안전 직렬 자동 저장, 정확한 저장 상태·재시도, PC·모바일 레이아웃과 10만 자 입력을 구현 | check, 75 unit/DB tests, production build, PC/mobile E2E 60개, secret scan, CI 33945630864, 네 image tag/digest 일치, `cef1d0c` 개발 배포·공개 편집 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase2-validation.md) | Phase 3 parser가 editor DOM을 수정하지 않고 transaction·visible range·selection port를 사용 |
 | 2026-09-05 | 0.3.0 / Phase 1 | Codex | 가사 1:1 subtype·동일 owner 부모·순수 텍스트 CRUD·CAS·멱등 복제·삭제 batch·실제 가사 수 구현 | 70 unit/DB tests, migration 0200/0201/0300 복구, production build/image, PC/mobile E2E 52개, CI 33943267049, 네 image tag/digest 일치, 299a683 개발 배포·공개 API smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase1-validation.md) | 사용자 지시에 따라 여기서 중지, Phase 2 미시작 |
 | 2026-09-05 | 0.2.0 / 운영 보완 | Codex | 네 service image를 독립 Docker Hub repository로 분리하고 개발은 version·전체 SHA·`Dev`·`Dev-latest`, 승인된 릴리스는 `Release`·`latest`까지 같은 digest로 발행하도록 자동화·협업 문서를 갱신 | actionlint 1.7.12, Compose·shell·tag/ref 차단 계약, check, 59 tests, GitHub Actions publish와 네 repository의 tag·digest 일치 확인 | 릴리스는 사용자의 명시적 지시와 정확한 `v<VERSION>` Git tag에서만 수동 실행하고 릴리스 서버는 별도 지시 전까지 변경하지 않음 |
 | 2026-09-05 | 0.2.0 / 운영 보완 | Codex | 기존 필수 version+SHA tag를 유지하면서 네 service에 `beta-latest-<service>` 다중 tag를 추가하고, 충돌 없는 기본 `beta-latest`를 web에만 연결 | actionlint 1.7.12, Compose·shell·tag 계약, check, 59 tests, GitHub Actions publish와 Docker Hub alias·digest 일치 확인 | 정식 전환 지시 전까지 `beta-latest*`는 beta image만 가리키며 `latest`는 생성하지 않음 |
