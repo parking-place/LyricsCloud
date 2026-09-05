@@ -47,7 +47,7 @@ describe.runIf(enabled)("song command and list store", () => {
     expect(await store!.setColor(alice, created.song.id, "blue")).toMatchObject({ color: "blue" });
     expect(await store!.getSong(alice, created.song.id)).toMatchObject({
       counts: {
-        lyrics: { value: 0, available: false },
+        lyrics: { value: 0, available: true },
         prompts: { value: 0, available: false },
         rhymes: { value: 0, available: false }
       }

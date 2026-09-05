@@ -103,7 +103,7 @@ test.describe("song API owner and command contract", () => {
 
     const detail = await alice.request.get(`/api/songs/${songId}`);
     expect(await detail.json()).toMatchObject({
-      song: { counts: { lyrics: { value: 0, available: false }, prompts: { value: 0, available: false }, rhymes: { value: 0, available: false } } }
+      song: { counts: { lyrics: { value: 0, available: true }, prompts: { value: 0, available: false }, rhymes: { value: 0, available: false } } }
     });
 
     expect(await (await bob.request.delete(`/api/songs/${songId}`, { headers: { Origin: origin } })).json()).toEqual({ deleted: false });

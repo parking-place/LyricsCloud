@@ -30,6 +30,8 @@ try {
       throw new Error("representative fixture did not create three complete song pairs");
     }
 
+    const lyricRollback = await readFile(resolve("packages/database/rollback/0300_lyrics.sql"), "utf8");
+    await target.query(lyricRollback);
     const dependentRollback = await readFile(resolve("packages/database/rollback/0201_song_commands.sql"), "utf8");
     await target.query(dependentRollback);
     const rollback = await readFile(resolve("packages/database/rollback/0200_resources_songs.sql"), "utf8");

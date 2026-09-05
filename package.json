@@ -1,6 +1,6 @@
 {
   "name": "lyricscloud",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "packageManager": "pnpm@11.25.0",
   "engines": { "node": ">=24.0.0 <25", "pnpm": ">=11.0.0 <12" },
@@ -15,6 +15,7 @@
     "start": "pnpm --filter @lyricscloud/web start",
     "test": "vitest run",
     "test:migration:0200": "node scripts/verify-0200-migration.mjs",
+    "test:migration:0300": "node scripts/verify-0300-migration.mjs",
     "test:migration:0201": "node scripts/verify-0201-migration.mjs",
     "test:e2e": "playwright test",
     "test:watch": "vitest",
