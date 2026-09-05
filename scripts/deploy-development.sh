@@ -72,6 +72,25 @@ for _attempt in $(seq 1 30); do
     fi
   done
   if [ "$healthy" = true ]; then
+    web_container=$("${compose[@]}" ps -q web)
+    if [ "$(docker exec "$web_container" printenv NODE_ENV)" != "production" ]; then
+      printf 'Development web container is not running the production build.\n' >&2
+      exit 8
+    fi
+    auth_html=$(docker exec "$web_container" node -e "fetch('http://127.0.0.1:3000/auth').then(async response => { if (!response.ok) process.exit(1); process.stdout.write(await response.text()) })")
+    if printf '%s' "$auth_html" | grep -q 'browser_dev_hmr-client'; then
+      printf 'Development web response contains Next.js development assets.\n' >&2
+      exit 9
+    fi
+    css_path=$(printf '%s' "$auth_html" | grep -oE '/_next/static/[^" ]+\.css' | head -n 1 || true)
+    if [ -z "$css_path" ]; then
+      printf 'Development web response does not reference a CSS asset.\n' >&2
+      exit 10
+    fi
+    if ! docker exec "$web_container" node -e "fetch('http://127.0.0.1:3000$css_path').then(async response => { if (!response.ok) process.exit(1); const css = await response.text(); if (!css.includes('.songs-page') || !css.includes('.dashboard-page')) process.exit(2) })"; then
+      printf 'Development web CSS asset does not match the song UI build.\n' >&2
+      exit 11
+    fi
     printf 'Development deploy OK: %s\n' "$expected_commit"
     exit 0
   fi

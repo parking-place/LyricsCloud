@@ -9,9 +9,10 @@
 3. 그 SHA의 필수 GitHub Actions가 모두 통과했는지 확인한다.
 4. 개발 서버 checkout에 tracked 변경이 없는지 확인한다.
 5. 원격 branch와 전달받은 전체 SHA가 일치할 때만 해당 SHA로 전환한다.
-6. 환경 파일의 secret을 유지하고 `BUILD_ID`만 목표 SHA로 갱신한 뒤 서버 전용 Compose override로 image build, forward migration, Compose 갱신을 실행한다.
-7. 네 컨테이너 health와 공개 HTTPS live·ready, 변경 기능 smoke test를 확인한다.
-8. 배포 SHA·시각·검증 결과를 로컬 서버 인벤토리에 기록한다.
+6. 환경 파일의 secret을 유지하고 `BUILD_ID`만 목표 SHA로 갱신한 뒤 서버 전용 Compose override로 production web image build, forward migration, Compose 갱신을 실행한다.
+7. web이 `NODE_ENV=production`이고 HTML에 개발 HMR client가 없으며 같은 image의 CSS에 현재 곡 화면 selector가 포함되는지 확인한다.
+8. 네 컨테이너 health와 공개 HTTPS live·ready, 변경 기능 smoke test를 확인한다.
+9. 배포 SHA·시각·검증 결과를 로컬 서버 인벤토리에 기록한다.
 
 ## 최초 준비
 
@@ -19,6 +20,7 @@
 - Git remote는 read-only 접근으로 충분하다. 서버에서 commit하거나 merge하지 않는다.
 - `.env`와 `.test_users`는 mode `600`으로 만들고 Git·Docker build context에 넣지 않는다.
 - [`compose.development-server.yaml`](../../compose.development-server.yaml)은 host source·dependency mount를 제거한다. 실행 컨테이너는 checkout을 직접 수정하거나 checkout 전환 중인 코드를 미리 읽지 않고, build된 정확한 commit 내용만 사용한다.
+- 공개 개발 web은 `infra/docker/Dockerfile.web`의 Next.js production standalone image로 실행한다. `next dev`는 배포마다 같은 정적 asset URL을 재사용할 수 있어 Cloudflare·브라우저 cache와 최신 HTML이 불일치하므로 서버 배포에 사용하지 않는다.
 - 개발 OAuth client의 JavaScript origin과 callback은 개발 공개 주소와 정확히 일치해야 한다.
 - `POSTGRES_PASSWORD`, `SESSION_SECRET`, OAuth secret과 허용 메일 값은 터미널 출력이나 명령행 인수로 전달하지 않는다.
 
@@ -47,7 +49,7 @@ GET /api/health/ready -> 200, database schema version 포함
 GET /auth             -> 200
 ```
 
-live·ready 응답의 `build.id`는 배포를 요청한 전체 SHA와 정확히 같아야 한다. 단순히 컨테이너가 healthy인 것만으로 배포를 완료 처리하지 않는다.
+live·ready 응답의 `build.id`는 배포를 요청한 전체 SHA와 정확히 같아야 한다. 단순히 컨테이너가 healthy인 것만으로 배포를 완료 처리하지 않는다. HTML에 `browser_dev_hmr-client`가 있거나 image 내부 CSS에 현재 화면 selector가 없으면 정적 자산 불일치로 보고 배포를 실패시킨다.
 
 화면 Phase는 PC와 모바일 viewport에서 변경 흐름을 실행한다. 인증·세션 또는 OAuth 설정을 바꾼 Phase는 시크릿 창에서 허용 계정 로그인·callback·로그아웃까지 확인한다. DB Phase는 ready 응답의 schema version과 Phase 통합 테스트를 함께 증거로 남긴다.
 

@@ -60,6 +60,8 @@ jobs:
         env:
           NODE_ENV: production
         run: pnpm build
+      - name: Build development server production image
+        run: docker build --file infra/docker/Dockerfile.web --tag lyricscloud-web-ci:${{ github.sha }} .
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
       - name: Auth and ownership E2E

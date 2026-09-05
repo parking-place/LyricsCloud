@@ -3,6 +3,12 @@ services:
   migrate:
     volumes: !reset []
   web:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.web
+    command: ["node", "apps/web/server.js"]
+    environment:
+      NODE_ENV: production
     volumes: !reset []
   collaboration:
     volumes: !reset []

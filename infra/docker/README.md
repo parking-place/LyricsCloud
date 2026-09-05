@@ -43,3 +43,9 @@ DB 비밀번호 오류나 DB 중단 시 app liveness는 200, readiness는 503이
 - 서버 시간대는 UTC를 유지하고 표시만 사용자 시간대로 변환
 - 운영 secret manager 또는 host 전용 env 파일을 사용하고 파일 권한 제한
 - 새 호스트에서 migration → readiness → WebSocket → backup/restore smoke 순서로 확인
+
+## 공개 개발 서버 web image
+
+로컬 `compose.yaml`은 빠른 개발을 위해 bind mount와 `next dev`를 사용한다. Cloudflare Tunnel에 연결된 개발 서버는 `compose.development-server.yaml`을 함께 적용하고 [`Dockerfile.web`](./Dockerfile.web)의 production standalone image를 사용한다.
+
+`next dev`의 정적 asset URL은 재배포 사이에 같을 수 있으므로 Cloudflare·브라우저 cache가 최신 HTML과 이전 CSS를 조합할 수 있다. 서버 배포 script는 production mode, 개발 HMR 부재, image 내부 CSS의 현재 화면 selector를 검사한 뒤에만 완료한다.
