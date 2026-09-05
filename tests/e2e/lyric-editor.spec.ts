@@ -91,6 +91,35 @@ test.describe("CodeMirror lyric editor", () => {
     } finally { await deleteAccount(account.userId); }
   });
 
+  test("merges same-owner tabs and restores an offline IndexedDB draft", async ({ context, page }) => {
+    const account = await createAccount(context, "로컬 초안 사용자");
+    const second = await context.newPage();
+    try {
+      const { lyricId } = await createLyric(page, "[Verse]\n서버 기준");
+      await page.goto(`/lyrics/${lyricId}`);
+      await second.goto(`/lyrics/${lyricId}`);
+      await expect(page.locator(".cm-content")).toContainText("서버 기준");
+      await expect(second.locator(".cm-content")).toContainText("서버 기준");
+      await page.locator(".cm-content").fill("[Verse]\n첫 탭에서 확정한 한글");
+      await expect(second.locator(".cm-content")).toContainText("첫 탭에서 확정한 한글");
+      await second.close();
+
+      await context.setOffline(true);
+      await page.locator(".cm-content").fill("[Hook]\n오프라인에서도 남는 초안");
+      await expect(page.getByText("오프라인 · 이 기기에 임시 저장됨")).toBeVisible();
+      await page.close();
+      await context.setOffline(false);
+      const recovered = await context.newPage();
+      await recovered.goto(`/lyrics/${lyricId}`);
+      await expect(recovered.locator(".cm-content")).toContainText("오프라인에서도 남는 초안");
+      await expect.poll(async () => (await (await recovered.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body)
+        .toBe("[Hook]\n오프라인에서도 남는 초안");
+    } finally {
+      if (!second.isClosed()) await second.close();
+      await deleteAccount(account.userId);
+    }
+  });
+
   test("opens and edits a 100,000-character document without rendering every line", async ({ context, page }) => {
     const account = await createAccount(context, "장문 편집 사용자");
     try {

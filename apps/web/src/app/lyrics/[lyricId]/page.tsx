@@ -17,5 +17,5 @@ export default async function LyricEditorPage({ params }: { params: Promise<{ ly
   if (!song) notFound();
   const lyrics = await getAuthContext().lyrics.listSongLyrics(user.userId, lyric.songId).catch(() => null);
   if (!lyrics) notFound();
-  return <WorkspaceShell profile={user} active="songs"><LyricEditor key={lyric.id} initialLyric={lyric} songTitle={song.title} songLyrics={lyrics} /></WorkspaceShell>;
+  return <WorkspaceShell profile={user} active="songs"><LyricEditor key={lyric.id} ownerId={user.userId} initialLyric={lyric} songTitle={song.title} songLyrics={lyrics} /></WorkspaceShell>;
 }

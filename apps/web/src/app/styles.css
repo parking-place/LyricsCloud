@@ -308,6 +308,8 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .save-indicator.is-error { color: var(--danger); }
 .save-indicator.is-error > span { background: var(--danger); }
 .save-indicator button { min-height: 2rem; padding: .3rem .55rem; border: 1px solid currentColor; border-radius: .45rem; background: transparent; color: inherit; cursor: pointer; }
+.local-draft-state { margin: 0; color: var(--muted); font-size: .72rem; white-space: nowrap; }
+.local-draft-state.state-offline { color: #f0bd72; }
 .lyric-editor-title { width: min(100%, 54rem); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .8rem; justify-self: center; padding: 1rem 1.5rem .75rem; }
 .lyric-editor-title label { color: var(--subtle); font-size: .68rem; font-weight: 800; }
 .lyric-editor-title input { min-width: 0; padding: .4rem 0; border: 0; border-bottom: 1px solid transparent; outline: 0; background: transparent; color: var(--ink); font-size: clamp(1.15rem, 2vw, 1.6rem); font-weight: 800; }

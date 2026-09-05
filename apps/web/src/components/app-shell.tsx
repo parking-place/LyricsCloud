@@ -37,7 +37,7 @@ export function WorkspaceShell({
     setLoggingOut(true);
     const response = await fetch("/api/auth/logout", { method: "POST", cache: "no-store" });
     if (response.ok) {
-      clearAccountCache(profile.userId);
+      await clearAccountCache(profile.userId);
       router.replace("/auth");
       router.refresh();
       return;

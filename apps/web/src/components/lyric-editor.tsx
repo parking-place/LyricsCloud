@@ -2,11 +2,14 @@
 
 import {
   copySongFormSections,
+  createBrowserLyricSync,
   copyWholeLyric,
   createCodeMirrorTextEditor,
   parseSongForm,
   SerializedSaveController,
   type CodeMirrorTextEditor,
+  type BrowserLyricSync,
+  type LocalSyncState,
   type SaveState,
   type SongFormNavigationState,
   type SongFormSection
@@ -25,10 +28,11 @@ interface LyricEditorDraft {
   readonly pinOrder: number | null;
 }
 
-export function LyricEditor({ initialLyric, songTitle, songLyrics }: { initialLyric: LyricRecord; songTitle: string; songLyrics: readonly LyricRecord[] }) {
+export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { ownerId: string; initialLyric: LyricRecord; songTitle: string; songLyrics: readonly LyricRecord[] }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<CodeMirrorTextEditor | null>(null);
   const controllerRef = useRef<SerializedSaveController<LyricEditorDraft> | null>(null);
+  const localSyncRef = useRef<BrowserLyricSync | null>(null);
   const titleRef = useRef(initialLyric.title);
   const bodyRef = useRef(initialLyric.body);
   const memoRef = useRef(initialLyric.memo);
@@ -46,6 +50,7 @@ export function LyricEditor({ initialLyric, songTitle, songLyrics }: { initialLy
   const [isFavorite, setIsFavorite] = useState(initialLyric.isFavorite);
   const [isPinned, setIsPinned] = useState(initialLyric.isPinned);
   const [saveState, setSaveState] = useState<SaveState>({ status: "saved", sequence: 0, lastSavedAt: null, error: null });
+  const [localSyncState, setLocalSyncState] = useState<LocalSyncState>("loading");
   const [songForm, setSongForm] = useState<SongFormNavigationState>({ sections: parseSongForm(initialLyric.body), activeSectionId: null });
   const [mobileSongFormOpen, setMobileSongFormOpen] = useState(false);
   const [mobileOtherLyricsOpen, setMobileOtherLyricsOpen] = useState(false);
@@ -101,9 +106,18 @@ export function LyricEditor({ initialLyric, songTitle, songLyrics }: { initialLy
         controller.change(draft({ body: value }), context);
       },
       onCompositionEnd() { controller.compositionEnd(); },
-      onSongFormNavigationChange: setSongForm
+      onSongFormNavigationChange: setSongForm,
+      onTransaction(transaction) { localSyncRef.current?.applyLocalTransaction(transaction); }
     });
     editorRef.current = editor;
+    void createBrowserLyricSync({ ownerId, resourceId: initialLyric.id, initialBody: initialLyric.body,
+      onRemoteBody(value) {
+        if (!active || value === bodyRef.current) return;
+        const currentLength = editorRef.current?.value.length ?? 0;
+        bodyRef.current = value;
+        editorRef.current?.applyTransaction({ changes: [{ from: 0, to: currentLength, insert: value }] });
+      }, onStateChange(state) { if (active) setLocalSyncState(state); }
+    }).then((sync) => { if (active) localSyncRef.current = sync; else void sync.destroy(); });
     const flush = () => { void controller.flush(); };
     window.addEventListener("pagehide", flush);
     const focusFrame = requestAnimationFrame(() => editor.focus());
@@ -112,11 +126,13 @@ export function LyricEditor({ initialLyric, songTitle, songLyrics }: { initialLy
       cancelAnimationFrame(focusFrame);
       window.removeEventListener("pagehide", flush);
       editor.destroy();
+      void localSyncRef.current?.destroy();
+      localSyncRef.current = null;
       if (editorRef.current === editor) editorRef.current = null;
       void controller.dispose();
       controllerRef.current = null;
     };
-  }, [initialLyric.body, initialLyric.id, initialLyric.isFavorite, initialLyric.isPinned, initialLyric.memo, initialLyric.pinOrder, initialLyric.rowVersion, initialLyric.status, initialLyric.title]);
+  }, [initialLyric.body, initialLyric.id, initialLyric.isFavorite, initialLyric.isPinned, initialLyric.memo, initialLyric.pinOrder, initialLyric.rowVersion, initialLyric.status, initialLyric.title, ownerId]);
 
   useEffect(() => {
     const currentIds = new Set(songForm.sections.map((section) => section.id));
@@ -308,6 +324,7 @@ export function LyricEditor({ initialLyric, songTitle, songLyrics }: { initialLy
         <button type="button" disabled={commandBusy} className="danger-text" onClick={() => setDeleteOpen(true)}>삭제</button>
       </div>
       <SaveIndicator state={saveState} onRetry={() => { void controllerRef.current?.retry(); }} />
+      <LocalDraftIndicator state={localSyncState} />
     </header>
     {commandNotice ? <p className="editor-command-notice" role="status">{commandNotice}</p> : null}
     <div className="lyric-editor-title">
@@ -461,4 +478,10 @@ function SaveIndicator({ state, onRetry }: { state: SaveState; onRetry: () => vo
     <span aria-hidden="true" />{label}
     {state.status === "error" ? <button type="button" onClick={onRetry}>다시 시도</button> : null}
   </div>;
+}
+
+function LocalDraftIndicator({ state }: { state: LocalSyncState }) {
+  if (state === "ready") return null;
+  const label = state === "loading" ? "로컬 초안 확인 중…" : state === "offline" ? "오프라인 · 이 기기에 임시 저장됨" : "이 기기에 임시 저장됨";
+  return <p className={`local-draft-state state-${state}`} role="status">{label}</p>;
 }
