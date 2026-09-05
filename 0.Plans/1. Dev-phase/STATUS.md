@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.3.1"
 current_phase: "3phase.md"
-state: "review"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-05 16:24 KST"
 updated_at: "2026-09-05"
-next_action: "0.3.1 Phase 3 원격 CI·Docker Hub·개발 서버 배포 게이트 확인"
+next_action: "0.3.1 Phase 4 수정 기록, 비교와 비파괴 복원 구현"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -37,7 +37,7 @@ next_action: "0.3.1 Phase 3 원격 CI·Docker Hub·개발 서버 배포 게이�
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
 | 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
 | 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
-| 0.3.1 | in_progress | Phase 1~2 완료, Phase 3 진행 중 | 0.3.0 완료 |
+| 0.3.1 | in_progress | Phase 1~3 완료, Phase 4 대기 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
 | 0.5.0 | planned | 없음 | 0.4.0 완료 |
 | 0.6.0 | planned | 없음 | 0.5.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.3.1 Phase 3 원격 CI·Docker Hub·개발 서버 배포 게이�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.3.1 / Phase 3 | LC-031-P3-01~08 | `apps/collaboration`, `packages/database`, 동기화 검증·문서 | Phase 2 완료 | 2026-09-05 16:24 KST | review |
+| — | — | — | 현재 활성 작업 없음 | — | — | — |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -96,6 +96,7 @@ next_action: "0.3.1 Phase 3 원격 CI·Docker Hub·개발 서버 배포 게이�
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-05 | 0.3.1 / Phase 3 | Codex | 인증 WebSocket, 멱등 update ACK, snapshot·raw update·receipt 영속화, 평문 projection·재처리·압축과 내용 없는 지표를 구현 | 0310 migration 복구, check, 93 tests, production build/images, PC/mobile E2E 76개, CI 33953374325, 네 image tag/digest 일치, `e2d7a27` 개발 배포; [검증 기록](../../docs/runbooks/0.3.1-phase3-validation.md) | Phase 4가 durable CRDT snapshot과 projector를 자동 revision·비파괴 복원에 사용 |
 | 2026-09-05 | 0.3.1 / Phase 2 | Codex | IndexedDB Yjs 초안, BroadcastChannel 탭 병합, offline 복구·계정별 삭제와 저장 상태를 편집기에 연결 | check, 90 tests, production build, PC/mobile E2E 76개; [검증 기록](../../docs/runbooks/0.3.1-phase2-validation.md) | Phase 3이 local update를 인증 collaboration 서버에 ACK·projection transaction으로 연결 |
 | 2026-09-05 | 0.3.1 / Phase 1 | Codex | 동일 owner Yjs 본문, opaque document/update ID, fail-closed 접근, 중복·역순·snapshot과 관계형 제목+CRDT 본문 projection 계약을 구현 | check, 24 files/90 tests, production build, secret scan, PC/mobile baseline 재검증; [검증 기록](../../docs/runbooks/0.3.1-phase1-validation.md) | Phase 2가 owner+document key IndexedDB와 BroadcastChannel 병합·저장 상태를 구현 |
 | 2026-09-05 | 0.3.0 / Phase 5 | Codex | 곡 대시보드와 PC·모바일 editor에 실제 가사 카드·생성·전환·복제·삭제·metadata를 연결하고 owner 범위 활성 가사 검색과 CRDT transaction 인계를 완성 | migration·복구, check, 86 tests, production build, PC/mobile E2E 74개, CI 33950119025, 네 image tag/digest 일치, `b8fdec7` 개발 배포·공개 전체 흐름 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase5-validation.md) | 0.3.1 Phase 1이 현재 text와 transaction port를 최초 Yjs 문서와 update schema에 연결 |
