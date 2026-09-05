@@ -6,16 +6,16 @@ GitHub Actions의 전체 검증을 통과한 LyricsCloud commit을 Docker Hub에
 
 | 서비스 | Docker Hub repository | Dockerfile target |
 |---|---|---|
-| web | `parkingplace/lyricscloud` | `Dockerfile.web`의 `runtime` |
-| collaboration | `parkingplace/lyricscloud` | `Dockerfile.service`의 `collaboration` |
-| worker | `parkingplace/lyricscloud` | `Dockerfile.service`의 `worker` |
-| migrate | `parkingplace/lyricscloud` | `Dockerfile.service`의 `migrate` |
+| web | `parkingplace/lyricscloud-web` | `Dockerfile.web`의 `runtime` |
+| collaboration | `parkingplace/lyricscloud-collaboration` | `Dockerfile.service`의 `collaboration` |
+| worker | `parkingplace/lyricscloud-worker` | `Dockerfile.service`의 `worker` |
+| migrate | `parkingplace/lyricscloud-migrate` | `Dockerfile.service`의 `migrate` |
 
-`parkingplace/lyricscloud` repository는 Docker Hub에서 미리 만들고 공개·비공개 여부를 명시적으로 선택한다. 네 실행 image는 service가 포함된 서로 다른 tag로 구분한다. 자동화에는 Docker 계정 비밀번호 대신 `Read & Write`만 가진 전용 PAT를 사용한다. Docker 공식 문서: [repository 생성](https://docs.docker.com/docker-hub/repos/create/), [access token 생성](https://docs.docker.com/security/access-tokens/personal-access-tokens/).
+네 repository는 Docker Hub에서 미리 만들고 공개·비공개 여부를 명시적으로 선택한다. image 종류는 repository로 구분하고 모든 repository에 같은 tag 규칙을 적용한다. 자동화에는 Docker 계정 비밀번호 대신 `Read & Write`만 가진 전용 PAT를 사용한다. Docker 공식 문서: [repository 생성](https://docs.docker.com/docker-hub/repos/create/), [access token 생성](https://docs.docker.com/security/access-tokens/personal-access-tokens/).
 
 ## 한 번만 하는 GitHub 설정
 
-저장소 루트에서 `parkingplace/lyricscloud`에 push 권한이 있는 로그인 username을 Actions variable로 등록한다.
+저장소 루트에서 네 `parkingplace/lyricscloud-*` repository에 push 권한이 있는 로그인 username을 Actions variable로 등록한다.
 
 ```bash
 gh variable set DOCKERHUB_USERNAME --body '<login Docker ID>'
@@ -30,25 +30,28 @@ gh variable set DOCKERHUB_ENABLED --body 'true'
 
 비활성화할 때는 token을 지우기 전에 `DOCKERHUB_ENABLED=false`로 바꾼다.
 
-## 필수 tag 규칙
+## 다중 tag 규칙
 
 루트 `VERSION`과 `STATUS.md`의 `current_version`은 같아야 한다.
 
-| 종류 | Docker tag 예시 | 의미 |
-|---|---|---|
-| commit 고정 beta | `0.2.0-beta.72ae674848f9-web` | 버전·commit·service가 고정된 재현 가능한 image |
-| 버전 이동식 beta | `0.2.0-beta-web` | 같은 버전에서 가장 최근 검증된 web beta image |
-| service 최신 beta | `beta-latest-web` | 버전과 관계없이 가장 최근 검증된 해당 service beta image |
-| 기본 최신 beta | `beta-latest` | 가장 최근 검증된 web beta image |
+| tag | 개발 발행 | 릴리스 발행 | 의미 |
+|---|---|---|---|
+| `<VERSION>` (예: `0.2.0`) | 필수 | 필수 | 해당 버전의 가장 최근 검증 image |
+| 전체 `<commit SHA>` | 필수 | 필수 | 정확한 source commit에 고정된 불변 식별자 |
+| `Dev` | 필수 | 필수 | 개발 채널 alias |
+| `Dev-latest` | 필수 | 필수 | 가장 최근 검증된 개발 image alias |
+| `Release` | 금지 | 필수 | 릴리스 채널 alias |
+| `latest` | 금지 | 필수 | 가장 최근 승인된 릴리스 image alias |
 
-고정 tag는 모든 발행에 필수이며, alias만 단독으로 발행하지 않는다. service alias의 끝에는 `web`, `collaboration`, `worker`, `migrate` 중 하나가 들어간다. 서비스 구분이 없는 `beta-latest`는 web에만 부여해 네 image가 서로 덮어쓰는 것을 막는다. `latest`와 beta가 없는 정식 tag는 만들지 않는다. 정식 발행은 사용자의 별도 명시적 승인 뒤에만 자동화 규칙을 변경해 연다. 다음 버전 작업을 시작할 때 `VERSION`, `STATUS.md`, runtime 기본 `APP_VERSION`을 같은 commit에서 갱신한다.
+한 번의 build 결과에 표의 tag를 동시에 붙이며, 같은 발행에 속한 tag는 모두 같은 digest를 가리켜야 한다. commit tag는 축약하지 않고 40자리 전체 SHA를 사용한다. Docker tag의 대소문자를 규칙 일부로 취급하므로 `Dev`, `Dev-latest`, `Release`를 표기 그대로 사용한다. 다음 버전 작업을 시작할 때 `VERSION`, `STATUS.md`, runtime 기본 `APP_VERSION`을 같은 commit에서 갱신한다.
 
 ## 자동 실행과 수동 재시도
 
-- `main`, `phase/**` push: CI 검증 성공 후 네 service의 고정·버전 이동식·최신 beta tag를 자동 발행하고, web에는 기본 `beta-latest`도 함께 발행한다.
-- Git tag push: 정식 발행이 승인되기 전에는 workflow 발행 대상으로 등록하지 않는다.
+- `main`, `phase/**` push: CI 검증 성공 후 네 repository에 개발용 네 tag를 자동 발행한다.
+- 개발 수동 재시도: GitHub Actions의 `CI` workflow를 branch commit에서 실행하고 `publish=true`, `release=false`를 선택한다.
+- 릴리스: 사용자가 명시적으로 릴리스를 지시한 경우에만 정확한 `v<VERSION>` Git tag를 만든다. 그 tag를 대상으로 `publish=true`, `release=true` 수동 workflow를 실행하면 여섯 tag를 발행한다.
+- `release=true`인데 대상 ref가 정확한 `v<VERSION>` tag가 아니면 발행 전에 실패한다. 반대로 tag ref에서 개발 발행도 허용하지 않는다.
 - pull request: secret을 사용하거나 image를 발행하지 않는다.
-- 수동 재시도: GitHub Actions의 `CI` workflow를 대상 commit에서 실행하고 `publish=true`를 선택한다.
 
 각 image job은 Docker 공식 `login-action`, `metadata-action`, `setup-buildx-action`, `build-push-action`을 고정 commit으로 사용한다. 발행 성공 뒤 Actions 요약에서 repository tag와 digest를 확인한다. 공식 흐름은 [Docker의 GitHub Actions 안내](https://docs.docker.com/guides/gha/)와 [GitHub의 Docker image 발행 안내](https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images)를 따른다.
 
@@ -56,6 +59,6 @@ gh variable set DOCKERHUB_ENABLED --body 'true'
 
 - `DOCKERHUB_ENABLED=true`인데 username 또는 token이 없으면 발행 job을 실패시킨다.
 - login 실패 시 token 만료·권한과 username을 확인하되 값을 로그로 출력하지 않는다.
-- repository 권한 실패 시 자동 생성에 의존하지 말고 Docker Hub에서 `parkingplace/lyricscloud`와 로그인 계정의 push 권한을 확인한다.
-- branch image 발행 실패를 `latest`나 임의의 임시 tag로 우회하지 않는다. `beta-latest*` alias는 반드시 같은 실행의 고정 version+SHA tag와 함께 갱신한다.
-- 일부 service만 성공했다면 같은 commit으로 workflow를 다시 실행한다. version+SHA tag는 동일 build를 가리켜야 하므로 다른 commit으로 덮어쓰지 않는다.
+- repository 권한 실패 시 자동 생성에 의존하지 말고 Docker Hub에서 대상 `parkingplace/lyricscloud-*`와 로그인 계정의 push 권한을 확인한다.
+- 개발 image 발행 실패를 `Release`나 `latest`로 우회하지 않는다.
+- 일부 service만 성공했다면 같은 commit과 같은 channel로 workflow를 다시 실행한다. 동일 실행의 다중 tag가 서로 다른 digest를 가리키지 않는지 확인한다.

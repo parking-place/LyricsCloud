@@ -109,7 +109,7 @@
 - 비밀 값, `.env`, DB 볼륨, 백업, export 묶음, 실제 사용자 자료를 커밋하지 않습니다.
 - 배포·migration·백업 복원처럼 운영 상태를 바꾸는 작업은 승인과 runbook을 확인합니다.
 
-Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SHA 일치 확인 → 필수 CI → version tag를 포함한 Docker Hub beta image 발행 → 개발 서버에 같은 SHA 배포 → 공개 개발 주소 smoke test → 상태·배포 기록`으로 고정합니다. Docker Hub 초기 연결 전에는 발행 job이 비활성 상태임을 완료 보고에 명시하고, 연결 이후에는 발행 실패를 건너뛰지 않습니다. 구체적인 명령과 중단·되돌림 기준은 [`개발 서버 배포 runbook`](./docs/runbooks/development-deploy.md)과 [`Docker Hub 발행 runbook`](./docs/runbooks/dockerhub-publish.md)을 따릅니다.
+Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SHA 일치 확인 → 필수 CI → version·commit SHA·Dev·Dev-latest tag를 포함한 Docker Hub image 발행 → 개발 서버에 같은 SHA 배포 → 공개 개발 주소 smoke test → 상태·배포 기록`으로 고정합니다. Docker Hub 초기 연결 전에는 발행 job이 비활성 상태임을 완료 보고에 명시하고, 연결 이후에는 발행 실패를 건너뛰지 않습니다. 구체적인 명령과 중단·되돌림 기준은 [`개발 서버 배포 runbook`](./docs/runbooks/development-deploy.md)과 [`Docker Hub 발행 runbook`](./docs/runbooks/dockerhub-publish.md)을 따릅니다.
 
 ## 11. 서버 정보와 환경별 운영 권한
 
@@ -133,8 +133,9 @@ Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SH
 
 ## 13. Docker Hub image 발행
 
-- GitHub Actions의 전체 `verify` job을 통과한 push만 `parkingplace/lyricscloud`의 web·collaboration·worker·migrate image 발행 대상으로 사용합니다.
-- 모든 image 발행에는 루트 [`VERSION`](./VERSION)의 버전과 service 이름을 포함한 `<version>-beta.<12자리 commit SHA>-<service>` 고정 tag를 반드시 함께 둡니다. 사용자가 정식 발행을 명시적으로 승인하기 전에는 이 tag와 `<version>-beta-<service>`, `beta-latest-<service>` alias만 사용하며, 기본 `beta-latest`는 web을 가리킵니다. `latest` 또는 정식 tag는 발행하지 않습니다.
+- GitHub Actions의 전체 `verify` job을 통과한 push만 `parkingplace/lyricscloud-web`, `parkingplace/lyricscloud-collaboration`, `parkingplace/lyricscloud-worker`, `parkingplace/lyricscloud-migrate` 발행 대상으로 사용합니다.
+- 개발 발행은 각 repository에 `<version>`, 전체 `<commit SHA>`, `Dev`, `Dev-latest` 네 tag를 같은 image digest로 발행합니다.
+- 릴리스 발행은 위 네 tag에 `Release`, `latest`를 추가합니다. 사용자의 명시적 릴리스 지시가 있고 수동 workflow가 정확한 `v<VERSION>` Git tag에서 `release=true`로 실행될 때만 허용합니다.
 - `VERSION`, `STATUS.md`의 `current_version`, runtime의 기본 `APP_VERSION`을 함께 갱신합니다. 서로 다르면 image 발행을 중단합니다.
 - Docker Hub token은 GitHub Actions secret `DOCKERHUB_TOKEN`에만 저장하고 저장소, 로컬 문서, 명령 인수나 로그에 기록하지 않습니다. 로그인 username은 Actions variable로 관리합니다.
-- 발행 성공 시 service별 image tag와 digest를 CI 증거로 확인합니다. Docker Hub 연결이 활성화된 뒤에는 발행 실패 상태로 개발 서버 배포나 Phase 완료를 진행하지 않습니다.
+- 발행 성공 시 repository별 필수 tag와 digest 일치를 CI 증거로 확인합니다. Docker Hub 연결이 활성화된 뒤에는 발행 실패 상태로 개발 서버 배포나 Phase 완료를 진행하지 않습니다.

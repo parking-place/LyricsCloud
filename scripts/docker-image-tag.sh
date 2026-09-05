@@ -5,6 +5,7 @@ ref_type=${1:-}
 ref_name=${2:-}
 commit_sha=${3:-}
 service=${4:-}
+channel=${5:-}
 repository_root=$(git rev-parse --show-toplevel)
 
 version=$(tr -d '\r\n' < "$repository_root/VERSION")
@@ -31,12 +32,27 @@ case "$service" in
     ;;
 esac
 
-case "$ref_type" in
-  branch)
-    printf '%s-beta.%s-%s\n' "$version" "${commit_sha:0:12}" "$service"
+case "$channel:$ref_type" in
+  dev:branch)
+    ;;
+  release:tag)
+    if [ "$ref_name" != "v$version" ]; then
+      printf 'Release Git tag must exactly match v%s.\n' "$version" >&2
+      exit 6
+    fi
+    ;;
+  dev:*)
+    printf 'Development image publishing requires a branch ref.\n' >&2
+    exit 7
+    ;;
+  release:*)
+    printf 'Release image publishing requires an exact vVERSION Git tag ref.\n' >&2
+    exit 8
     ;;
   *)
-    printf 'Only beta branch images are enabled until release publishing is explicitly approved: %s\n' "$ref_type" >&2
-    exit 6
+    printf 'Channel must be dev or release.\n' >&2
+    exit 9
     ;;
 esac
+
+printf '%s\n' "$version"

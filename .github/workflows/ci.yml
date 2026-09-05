@@ -8,6 +8,11 @@ on:
         required: true
         type: boolean
         default: false
+      release:
+        description: Add Release and latest tags; requires an exact vVERSION Git tag
+        required: true
+        type: boolean
+        default: false
   pull_request:
   push:
     branches: [main, "phase/**"]
@@ -65,8 +70,10 @@ jobs:
         run: |
           bash -n scripts/*.sh
           ./scripts/cleanup-docker.sh --dry-run --build-cache
-          test "$(./scripts/docker-image-tag.sh branch phase/0.2.0-p5-song-dashboard 0123456789abcdef0123456789abcdef01234567 web)" = "0.2.0-beta.0123456789ab-web"
-          if ./scripts/docker-image-tag.sh tag v0.2.0 0123456789abcdef0123456789abcdef01234567 web; then exit 1; fi
+          test "$(./scripts/docker-image-tag.sh branch phase/0.2.0-p5-song-dashboard 0123456789abcdef0123456789abcdef01234567 web dev)" = "0.2.0"
+          test "$(./scripts/docker-image-tag.sh tag v0.2.0 0123456789abcdef0123456789abcdef01234567 web release)" = "0.2.0"
+          if ./scripts/docker-image-tag.sh tag v0.2.0 0123456789abcdef0123456789abcdef01234567 web dev; then exit 1; fi
+          if ./scripts/docker-image-tag.sh branch main 0123456789abcdef0123456789abcdef01234567 web release; then exit 1; fi
       - name: Unit tests
         run: pnpm test
       - name: Production build
@@ -108,27 +115,15 @@ jobs:
           - service: web
             dockerfile: infra/docker/Dockerfile.web
             target: runtime
-            beta_alias: beta-latest-web
-            default_alias: beta-latest
-            publish_default_alias: true
           - service: collaboration
             dockerfile: infra/docker/Dockerfile.service
             target: collaboration
-            beta_alias: beta-latest-collaboration
-            default_alias: beta-latest
-            publish_default_alias: false
           - service: worker
             dockerfile: infra/docker/Dockerfile.service
             target: worker
-            beta_alias: beta-latest-worker
-            default_alias: beta-latest
-            publish_default_alias: false
           - service: migrate
             dockerfile: infra/docker/Dockerfile.service
             target: migrate
-            beta_alias: beta-latest-migrate
-            default_alias: beta-latest
-            publish_default_alias: false
     steps:
       - uses: actions/checkout@v7
       - name: Validate Docker Hub configuration
@@ -138,12 +133,13 @@ jobs:
         run: |
           test -n "$DOCKERHUB_USERNAME"
           test -n "$DOCKERHUB_TOKEN"
-      - name: Resolve mandatory beta tags
+      - name: Resolve tag channel
         id: version
         run: |
-          image_tag=$(./scripts/docker-image-tag.sh "$GITHUB_REF_TYPE" "$GITHUB_REF_NAME" "$GITHUB_SHA" "${{ matrix.service }}")
-          printf 'tag=%s\n' "$image_tag" >> "$GITHUB_OUTPUT"
-          printf 'version=%s\n' "$(tr -d '\r\n' < VERSION)" >> "$GITHUB_OUTPUT"
+          channel=dev
+          if [ "${{ inputs.release }}" = "true" ]; then channel=release; fi
+          version=$(./scripts/docker-image-tag.sh "$GITHUB_REF_TYPE" "$GITHUB_REF_NAME" "$GITHUB_SHA" "${{ matrix.service }}" "$channel")
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
       - name: Log in to Docker Hub
@@ -155,17 +151,19 @@ jobs:
         id: metadata
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
-          images: parkingplace/lyricscloud
+          images: parkingplace/lyricscloud-${{ matrix.service }}
           tags: |
-            type=raw,value=${{ steps.version.outputs.tag }}
-            type=raw,value=${{ steps.version.outputs.version }}-beta-${{ matrix.service }}
-            type=raw,value=${{ matrix.beta_alias }}
-            type=raw,value=${{ matrix.default_alias }},enable=${{ matrix.publish_default_alias }}
+            type=raw,value=${{ steps.version.outputs.version }}
+            type=raw,value=${{ github.sha }}
+            type=raw,value=Dev
+            type=raw,value=Dev-latest
+            type=raw,value=Release,enable=${{ inputs.release == true }}
+            type=raw,value=latest,enable=${{ inputs.release == true }}
           labels: |
             org.opencontainers.image.title=LyricsCloud ${{ matrix.service }}
-            org.opencontainers.image.version=${{ steps.version.outputs.tag }}
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
             org.opencontainers.image.revision=${{ github.sha }}
-      - name: Build and push versioned image
+      - name: Build and push multi-tagged image
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: .
