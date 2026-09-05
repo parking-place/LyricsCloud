@@ -1,6 +1,6 @@
 # 0.3.0 Phase 1 — 가사 resource와 CRUD
 
-- 상태: **대기**
+- 상태: **검토 중 — 로컬 수용 검증 통과, CI·개발 배포 대기**
 - 버전 상태: [../STATUS.md](../STATUS.md)
 
 ## 목표
@@ -43,16 +43,16 @@
 
 ## 작업 체크리스트
 
-- [ ] LC-030-P1-01 — lyric resource가 정확히 하나의 lyrics row와 하나의 소유 song을 갖도록 PK·FK를 정의한다.
-- [ ] LC-030-P1-02 — song과 lyric의 owner_id가 반드시 일치하도록 DB와 서비스 양쪽에서 강제한다.
-- [ ] LC-030-P1-03 — title, UTF-8 순수 텍스트 body, status, memo의 길이와 빈 값 규칙을 정의한다.
-- [ ] LC-030-P1-04 — createLyric이 한 transaction에서 resource와 lyrics를 만들고 재시도 중복을 막는다.
-- [ ] LC-030-P1-05 — updateLyricCurrent가 HTML이나 editor 내부 구조가 아닌 전체 순수 텍스트 현재본만 저장하게 한다.
-- [ ] LC-030-P1-06 — duplicateLyric이 원본을 바꾸지 않고 제목 규칙과 본문·메모·상태를 새 ID로 복사한다.
-- [ ] LC-030-P1-07 — deleteLyric이 soft delete하고 song의 활성 lyric_count가 즉시 줄어들게 한다.
-- [ ] LC-030-P1-08 — listSongLyrics가 최근 수정순과 안정된 tie-breaker로 카드 데이터를 반환한다.
-- [ ] LC-030-P1-09 — favorite·pin·status 명령을 owner 범위에서 제공하고 삭제된 가사에는 적용하지 않는다.
-- [ ] LC-030-P1-10 — CRDT·revision 저장 필드나 특정 CRDT 패키지 구조를 이 migration에 미리 넣지 않는다.
+- [x] LC-030-P1-01 — lyric resource가 정확히 하나의 lyrics row와 하나의 소유 song을 갖도록 PK·FK를 정의한다.
+- [x] LC-030-P1-02 — song과 lyric의 owner_id가 반드시 일치하도록 DB와 서비스 양쪽에서 강제한다.
+- [x] LC-030-P1-03 — title, UTF-8 순수 텍스트 body, status, memo의 길이와 빈 값 규칙을 정의한다.
+- [x] LC-030-P1-04 — createLyric이 한 transaction에서 resource와 lyrics를 만들고 재시도 중복을 막는다.
+- [x] LC-030-P1-05 — updateLyricCurrent가 HTML이나 editor 내부 구조가 아닌 전체 순수 텍스트 현재본만 저장하게 한다.
+- [x] LC-030-P1-06 — duplicateLyric이 원본을 바꾸지 않고 제목 규칙과 본문·메모·상태를 새 ID로 복사한다.
+- [x] LC-030-P1-07 — deleteLyric이 soft delete하고 song의 활성 lyric_count가 즉시 줄어들게 한다.
+- [x] LC-030-P1-08 — listSongLyrics가 최근 수정순과 안정된 tie-breaker로 카드 데이터를 반환한다.
+- [x] LC-030-P1-09 — favorite·pin·status 명령을 owner 범위에서 제공하고 삭제된 가사에는 적용하지 않는다.
+- [x] LC-030-P1-10 — CRDT·revision 저장 필드나 특정 CRDT 패키지 구조를 이 migration에 미리 넣지 않는다.
 
 ## 검증 방법
 
@@ -65,12 +65,12 @@
 
 ## 완료 조건
 
-- [ ] lyric schema와 CRUD가 migration·서비스로 재현된다.
-- [ ] 한 곡의 여러 가사가 서로 독립적으로 유지된다.
-- [ ] 원문이 순수 텍스트로 손실 없이 왕복한다.
-- [ ] 부모·자식 owner 무결성과 교차 계정 차단이 동작한다.
-- [ ] 복제·삭제·lyric_count가 일관된다.
-- [ ] CRDT와 수정 기록이 0.3.0 schema에 결합되지 않았다.
+- [x] lyric schema와 CRUD가 migration·서비스로 재현된다.
+- [x] 한 곡의 여러 가사가 서로 독립적으로 유지된다.
+- [x] 원문이 순수 텍스트로 손실 없이 왕복한다.
+- [x] 부모·자식 owner 무결성과 교차 계정 차단이 동작한다.
+- [x] 복제·삭제·lyric_count가 일관된다.
+- [x] CRDT와 수정 기록이 0.3.0 schema에 결합되지 않았다.
 
 ## 산출물
 

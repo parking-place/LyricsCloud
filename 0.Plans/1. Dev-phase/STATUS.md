@@ -3,13 +3,13 @@
 이 파일은 현재 버전·Phase·담당 작업의 단일 상태 원본입니다. 계획 문서는 범위를 정의하고 이 파일은 실제 진행 상황을 기록합니다.
 
 ```yaml
-current_version: "0.2.0"
-current_phase: "5phase.md"
-state: "complete"
-owner: "none"
-started_at: "2026-09-05 10:22 KST"
+current_version: "0.3.0"
+current_phase: "1phase.md"
+state: "review"
+owner: "Codex"
+started_at: "2026-09-05 12:44 KST"
 updated_at: "2026-09-05"
-next_action: "0.3.0 Phase 1 가사 resource·song 관계 계약과 schema 시작"
+next_action: "0.3.0 Phase 1 원격 CI·Docker Hub 발행·동일 SHA 개발 배포·공개 smoke"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -36,7 +36,7 @@ next_action: "0.3.0 Phase 1 가사 resource·song 관계 계약과 schema 시작
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
 | 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
-| 0.3.0 | planned | 없음 | 0.2.0 완료 |
+| 0.3.0 | in_progress | Phase 1 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
 | 0.5.0 | planned | 없음 | 0.4.0 완료 |
@@ -53,7 +53,9 @@ next_action: "0.3.0 Phase 1 가사 resource·song 관계 계약과 schema 시작
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+| Codex | 0.3.0 / P1 | LC-030-P1-01~10 | domain, web API, docs, version, CI | 0.2.0 완료 | 2026-09-05 | in_progress |
+| DB Agent | 0.3.0 / P1 | LC-030-P1-01~10 | packages/database | domain 계약 | 2026-09-05 | in_progress |
+| Validation Agent | 0.3.0 / P1 | LC-030-P1 검증 | tests/e2e/lyrics-api.spec.ts, scripts/verify-0300-migration.mjs | domain·DB 계약 | 2026-09-05 | in_progress |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -82,6 +84,11 @@ next_action: "0.3.0 Phase 1 가사 resource·song 관계 계약과 schema 시작
 | 최근 작업 의미 | `PROD-0007` | 0.7.0 | 수정 시각과 열람 시각을 분리하고 마지막 커서·송폼 위치 저장 |
 | 곡 삭제와 연결 자료 | `PROD-0010` | 0.2.0, 0.8.0 | 당시 활성 소속 가사만 함께 숨기고 같은 삭제 작업분만 복원, 독립 연결 자료·관계는 보존으로 Accepted |
 | 목업 전용 보완 기능 | 관련 `PROD-*` 또는 담당 Phase 계약 | 담당 버전 | 버전 비교, 상세 필터, 저장 상태, 비드래그 이동 수단은 1.0 범위에 포함 |
+
+## 범위 밖 인계
+
+- 루트 README의 초기 버전 안내가 STATUS보다 오래됨.
+- ADR-0002의 전체 세션 로그아웃과 현재 단일 세션 폐기 구현 차이는 0.3.1 계정 격리 검증 시 재검토한다.
 
 ## 다음 작업
 

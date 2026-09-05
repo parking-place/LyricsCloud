@@ -26,7 +26,7 @@ interface Song {
   readonly pinOrder: number | null;
   readonly createdAt: string;
   readonly updatedAt: string;
-  readonly lyricCount: 0;
+  readonly lyricCount: number;
 }
 
 interface SongListResponse {
@@ -162,7 +162,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
   const newSongHref = `/songs/new?returnTo=${encodeURIComponent(returnTo)}`;
   return <section className="songs-page" aria-labelledby="songs-title">
     <header className="songs-heading">
-      <div><p className="eyebrow">Private beta · 0.2.0</p><h1 id="songs-title" tabIndex={-1} data-login-focus>내 곡</h1><p>아이디어부터 완성까지, 지금 흐름을 한눈에 관리하세요.</p></div>
+      <div><p className="eyebrow">Private beta · 0.3.0</p><h1 id="songs-title" tabIndex={-1} data-login-focus>내 곡</h1><p>아이디어부터 완성까지, 지금 흐름을 한눈에 관리하세요.</p></div>
       <a className="primary-link new-song-link" href={newSongHref}>＋ 새 곡</a>
     </header>
 

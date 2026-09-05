@@ -42,8 +42,8 @@
 |---|---|---|---|---|
 | `PROD-0001` | 모바일 주 탐색과 `더보기` 진입·복귀 방식 | [0.1.0 Phase 1](./0.1.0/1phase.md) | [0.1.0 Phase 4](./0.1.0/4phase.md), 0.9.0 | `Proposed` |
 | [`PROD-0002`](../../docs/product/PROD-0002-song-resource-links.md) | 곡-라임·프롬프트 관계의 cardinality, 중복과 연결 해제 의미 | [0.2.0 Phase 1](./0.2.0/1phase.md) | [0.6.0 Phase 2](./0.6.0/2phase.md) | `Accepted` |
-| `PROD-0003` | 송폼 문법, 인식 실패와 단일·다중 구간 복사 의미 | [0.3.0 Phase 1](./0.3.0/1phase.md) | [Phase 3](./0.3.0/3phase.md), [Phase 4](./0.3.0/4phase.md) | `Proposed` |
-| `PROD-0004` | 이름 있는 가사 resource와 복구용 revision의 구분 | [0.3.0 Phase 1](./0.3.0/1phase.md) | [0.3.1 Phase 4](./0.3.1/4phase.md) | `Proposed` |
+| [`PROD-0003`](../../docs/product/PROD-0003-songform.md) | 송폼 문법, 인식 실패와 단일·다중 구간 복사 의미 | [0.3.0 Phase 1](./0.3.0/1phase.md) | [Phase 3](./0.3.0/3phase.md), [Phase 4](./0.3.0/4phase.md) | `Accepted` |
+| [`PROD-0004`](../../docs/product/PROD-0004-lyric-versions.md) | 이름 있는 가사 resource와 복구용 revision의 구분 | [0.3.0 Phase 1](./0.3.0/1phase.md) | [0.3.1 Phase 4](./0.3.1/4phase.md) | `Accepted` |
 | `PROD-0005` | 빠른 아이디어의 자료 유형과 새 가사의 부모 곡 선택 방식 | [0.6.0 Phase 4](./0.6.0/4phase.md) | [0.0.0 Phase 1](./0.0.0/1phase.md)에 쟁점 등록, [0.6.0 Phase 5](./0.6.0/5phase.md)에서 검증 | `Proposed` |
 | `PROD-0006` | 라임 삽입 대상, 선택 영역, target 없음과 복사 대안 | [0.4.0 Phase 4](./0.4.0/4phase.md) | [0.6.0 Phase 4](./0.6.0/4phase.md) | `Proposed` |
 | `PROD-0007` | 최근 작업의 의미, 정렬 기준, 마지막 cursor·송폼 복원 | [0.7.0 Phase 3](./0.7.0/3phase.md) | [0.7.0 Phase 5](./0.7.0/5phase.md) | `Proposed` |

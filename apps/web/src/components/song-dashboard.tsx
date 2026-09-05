@@ -17,7 +17,7 @@ interface DashboardSong {
   readonly isPinned: boolean;
   readonly updatedAt: string;
   readonly counts: {
-    readonly lyrics: { readonly value: 0; readonly available: false };
+    readonly lyrics: { readonly value: number; readonly available: boolean };
     readonly prompts: { readonly value: 0; readonly available: false };
     readonly rhymes: { readonly value: 0; readonly available: false };
   };

@@ -26,12 +26,12 @@ export interface SongRecord {
   readonly rowVersion: number;
   readonly createdAt: string;
   readonly updatedAt: string;
-  readonly lyricCount: 0;
+  readonly lyricCount: number;
 }
 
 export interface SongDashboard extends SongRecord {
   readonly counts: {
-    readonly lyrics: { readonly value: 0; readonly available: false };
+    readonly lyrics: { readonly value: number; readonly available: true };
     readonly prompts: { readonly value: 0; readonly available: false };
     readonly rhymes: { readonly value: 0; readonly available: false };
   };
@@ -64,6 +64,7 @@ interface SongRow extends QueryResultRow {
   description: string;
   work_notes: string;
   sort_title: string;
+  lyric_count: string;
 }
 
 interface SongCursor {
@@ -239,7 +240,9 @@ const SONG_SELECT = `
          r.created_at, r.updated_at,
          to_char(r.created_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as created_cursor,
          to_char(r.updated_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as updated_cursor,
-         s.status, s.description, s.work_notes, lower(r.title) as sort_title
+         s.status, s.description, s.work_notes, lower(r.title) as sort_title,
+         (select count(*)::text from lyrics l join resources lr on lr.id = l.resource_id and lr.owner_id = l.owner_id
+          where l.song_id = r.id and l.owner_id = r.owner_id and lr.type = 'lyrics' and lr.deleted_at is null) as lyric_count
   from resources r join songs s on s.resource_id = r.id and s.owner_id = r.owner_id
 `;
 
@@ -272,7 +275,7 @@ function mapSong(row: SongRow): SongRecord {
     rowVersion: Number(row.row_version),
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
-    lyricCount: 0
+    lyricCount: Number(row.lyric_count)
   };
 }
 
@@ -280,7 +283,7 @@ function dashboard(song: SongRecord): SongDashboard {
   return {
     ...song,
     counts: {
-      lyrics: { value: 0, available: false },
+      lyrics: { value: song.lyricCount, available: true },
       prompts: { value: 0, available: false },
       rhymes: { value: 0, available: false }
     }

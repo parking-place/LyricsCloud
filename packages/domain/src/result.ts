@@ -10,6 +10,7 @@ export type ErrorCode =
   | "NOT_FOUND"
   | "VALIDATION_FAILED"
   | "CONFLICT"
+  | "VERSION_CONFLICT"
   | "DEPENDENCY_UNAVAILABLE";
 export interface ValidationIssue { readonly field: string; readonly code: string; }
 export type CommandResult<Value> =
