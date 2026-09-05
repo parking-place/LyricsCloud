@@ -20,6 +20,9 @@
 - 모바일 셸 로그아웃, 계정별 브라우저 캐시 정리와 공통 응답 보안 헤더
 - 0.2.0 resource 생성용 서버 owner context 계약
 - 공통 resource·곡 1:1 데이터 모델, 상태·색상·길이 계약, owner RLS와 soft delete 기반
+- owner 범위 곡 생성·수정·조회·soft delete와 멱등 생성, 검색·상태·다섯 정렬·cursor API
+- PC·모바일 곡 목록, 새 곡·곡 수정 공통 폼, 기본 곡 대시보드와 작업 메모·pin·favorite 흐름
+- 가사·라임·프롬프트 미지원 집계를 정직한 0과 구분된 빈 상태로 표시하는 0.2.0 곡 수직 흐름
 
 ### Changed
 
@@ -29,4 +32,4 @@
 
 ### Not yet implemented
 
-- 곡·가사 업무 데이터 schema, CRDT 동기화
+- 가사 본문 resource·편집기와 CRDT 동기화

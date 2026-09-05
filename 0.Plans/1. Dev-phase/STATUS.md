@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.2.0"
-current_phase: "4phase.md"
+current_phase: "5phase.md"
 state: "complete"
 owner: "none"
-started_at: "2026-09-05 10:05 KST"
+started_at: "2026-09-05 10:22 KST"
 updated_at: "2026-09-05"
-next_action: "0.2.0 Phase 5 기본 곡 대시보드와 전체 곡 흐름 검증"
+next_action: "0.3.0 Phase 1 가사 resource·song 관계 계약과 schema 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -35,7 +35,7 @@ next_action: "0.2.0 Phase 5 기본 곡 대시보드와 전체 곡 흐름 검증"
 |---|---|---|---|
 | 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
-| 0.2.0 | in_progress | Phase 1~4 완료 | 0.1.0 완료 |
+| 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
 | 0.3.0 | planned | 없음 | 0.2.0 완료 |
 | 0.3.1 | planned | 없음 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
@@ -85,15 +85,16 @@ next_action: "0.2.0 Phase 5 기본 곡 대시보드와 전체 곡 흐름 검증"
 
 ## 다음 작업
 
-1. [`0.2.0 Phase 5`](./0.2.0/5phase.md)의 기본 곡 대시보드를 구현합니다.
-2. 곡 요약·메모·서로 다른 빈 상태와 pin·favorite·soft delete를 연결합니다.
-3. 목록→생성→대시보드→수정→목록 반영→삭제 전체 흐름을 PC·모바일에서 검증합니다.
-4. 0.3.0 가사 영역이 소비할 owner·count·삭제 계약을 인계합니다.
+1. [`0.3.0 Phase 1`](./0.3.0/1phase.md)의 가사 resource와 song 관계 계약을 시작합니다.
+2. [`0.3.0 가사 인계 계약`](../../docs/architecture/0.3.0-LYRICS-HANDOFF.md)의 count·owner·soft delete 규칙을 migration에 반영합니다.
+3. 곡 대시보드의 가사 빈 영역을 실제 가사 목록 응답으로 확장합니다.
+4. CRDT 동기화는 0.3.1 범위로 유지합니다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-05 | 0.2.0 / Phase 5 | Codex | 실제 곡 대시보드, 미지원 0 집계, 가사·연결 자료 빈 상태, 작업 메모, pin·favorite rollback, 제목·영향 기반 soft delete 확인과 목록 query 복귀를 완성하고 0.2.0 종료 | check, 59 tests, production build, desktop/mobile 전체 E2E 42개, A/B 상세·삭제 차단, orphan 0건, secret scan, [`검증 보고서`](../../docs/runbooks/0.2.0-phase5-validation.md) | [`0.3.0 가사 영역 인계`](../../docs/architecture/0.3.0-LYRICS-HANDOFF.md) |
 | 2026-09-05 | 0.2.0 / Phase 4 | Codex | 새 곡·곡 수정 공통 폼에 domain 길이 계약, 7개 상태·5개 색상, pin·favorite, 저장 오류·진행 상태, 이탈 확인과 owner 범위 서버 로드를 구현 | check, 58 tests, production build, 기본값·validation·중복 제출·전체 필드 생성/수정·320px·교차 계정 desktop/mobile E2E, [`검증 기록`](../../docs/runbooks/0.2.0-phase4-validation.md) | Phase 5 곡 대시보드, soft delete와 전체 곡 흐름 |
 | 2026-09-05 | 0.2.0 / Phase 3 | Codex | owner 범위 곡 목록을 PC 2열·모바일 1열 카드로 구현하고 지연 검색, URL 상태, 상태·다섯 정렬, cursor 추가 로드, pin·favorite 낙관적 갱신과 구분된 빈·오류 상태 완성 | check, 57 tests, production build, 0·30곡 desktop/mobile E2E 및 320px·큰 글자·focus 검증, [`검증 기록`](../../docs/runbooks/0.2.0-phase3-validation.md) | Phase 4 새 곡·곡 수정 공통 폼과 대시보드 이동 |
 | 2026-09-05 | 0.2.0 / Phase 2 | Codex | owner 범위 곡 CRUD·명시적 메타데이터 명령, owner별 생성 멱등성, 문자 그대로 부분 검색, 상태 필터, 핀 우선 다섯 keyset 정렬과 미지원 집계 capability 완성 | 0200·0201 migration 재적용/rollback/recovery, 14 files/57 tests, production build, desktop/mobile E2E 30개, secret scan, [`검증 기록`](../../docs/runbooks/0.2.0-phase2-validation.md) | Phase 3 곡 목록 URL 상태·카드·cursor UI |

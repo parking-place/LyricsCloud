@@ -31,7 +31,7 @@ const defaults: SongFormValues = {
   isPinned: false
 };
 
-export function SongForm({ song }: { song?: ExistingSong }) {
+export function SongForm({ song, returnTo }: { song?: ExistingSong; returnTo: string }) {
   const initial = useMemo<SongFormValues>(() => song ? {
     title: song.title,
     description: song.description,
@@ -89,7 +89,7 @@ export function SongForm({ song }: { song?: ExistingSong }) {
     try {
       const songId = song ? await updateSong(song.id, values) : await createSong(values, requestId.current);
       setState("saved");
-      router.replace(`/songs/${songId}`);
+      router.replace(`/songs/${songId}?returnTo=${encodeURIComponent(returnTo)}`);
       router.refresh();
     } catch (caught) {
       const failure = caught as SongFormFailure;
@@ -110,7 +110,7 @@ export function SongForm({ song }: { song?: ExistingSong }) {
   }
 
   return <section className="song-form-page" aria-labelledby="song-form-title">
-    <header className="form-heading"><div><a className="back-inline" href="/songs">← 곡 목록</a><p className="eyebrow">0.2.0 · Song details</p><h1 id="song-form-title">{song ? "곡 정보 수정" : "새 곡 만들기"}</h1><p>{song ? "현재 곡의 기본 정보와 작업 상태를 정리합니다." : "제목 하나로 시작해도 괜찮아요. 나머지는 언제든 채울 수 있습니다."}</p></div></header>
+    <header className="form-heading"><div><a className="back-inline" href={returnTo}>← 곡 목록</a><p className="eyebrow">0.2.0 · Song details</p><h1 id="song-form-title">{song ? "곡 정보 수정" : "새 곡 만들기"}</h1><p>{song ? "현재 곡의 기본 정보와 작업 상태를 정리합니다." : "제목 하나로 시작해도 괜찮아요. 나머지는 언제든 채울 수 있습니다."}</p></div></header>
     {formError ? <div className="form-error-banner" role="alert"><strong>저장 오류</strong><span>{formError}</span></div> : null}
     <form className="song-form" onSubmit={submit} noValidate>
       <div className="form-main">
@@ -130,7 +130,7 @@ export function SongForm({ song }: { song?: ExistingSong }) {
         <fieldset className="option-group color-options"><legend>표시 색상</legend><button type="button" className={values.color === null ? "selected" : ""} aria-pressed={values.color === null} onClick={() => update("color", null)}>색상 없음</button>{COLOR_OPTIONS.map(([value, label]) => <button type="button" key={value} className={`color-choice color-${value}${values.color === value ? " selected" : ""}`} aria-pressed={values.color === value} onClick={() => update("color", value)}><span aria-hidden="true" />{label}</button>)}</fieldset>
         <div className="switch-options"><label><input type="checkbox" checked={values.isPinned} onChange={(event) => update("isPinned", event.target.checked)} /><span><strong>목록 상단에 고정</strong><small>중요한 곡을 먼저 보여줍니다.</small></span></label><label><input type="checkbox" checked={values.isFavorite} onChange={(event) => update("isFavorite", event.target.checked)} /><span><strong>즐겨찾기에 추가</strong><small>즐겨찾기 우선 정렬에 반영됩니다.</small></span></label></div>
       </aside>
-      <footer className="song-form-actions"><a className="secondary-button button-link" href={song ? `/songs/${song.id}` : "/songs"}>취소</a><button className="primary-link" type="submit" disabled={state === "saving"}>{state === "saving" ? "저장 중…" : state === "saved" ? "저장 완료" : song ? "변경 저장" : "곡 만들기"}</button><span className="sr-only" role="status">{state === "saving" ? "곡을 저장하는 중입니다." : state === "saved" ? "곡 저장이 완료되었습니다." : ""}</span></footer>
+      <footer className="song-form-actions"><a className="secondary-button button-link" href={song ? `/songs/${song.id}?returnTo=${encodeURIComponent(returnTo)}` : returnTo}>취소</a><button className="primary-link" type="submit" disabled={state === "saving"}>{state === "saving" ? "저장 중…" : state === "saved" ? "저장 완료" : song ? "변경 저장" : "곡 만들기"}</button><span className="sr-only" role="status">{state === "saving" ? "곡을 저장하는 중입니다." : state === "saved" ? "곡 저장이 완료되었습니다." : ""}</span></footer>
     </form>
   </section>;
 }

@@ -154,10 +154,16 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
   }
 
   const filtered = Boolean(appliedSearch || status);
+  const returnParams = new URLSearchParams();
+  if (appliedSearch) returnParams.set("search", appliedSearch);
+  if (status) returnParams.set("status", status);
+  if (sort !== "updated_desc") returnParams.set("sort", sort);
+  const returnTo = `/songs${returnParams.size ? `?${returnParams}` : ""}`;
+  const newSongHref = `/songs/new?returnTo=${encodeURIComponent(returnTo)}`;
   return <section className="songs-page" aria-labelledby="songs-title">
     <header className="songs-heading">
       <div><p className="eyebrow">Private beta · 0.2.0</p><h1 id="songs-title" tabIndex={-1} data-login-focus>내 곡</h1><p>아이디어부터 완성까지, 지금 흐름을 한눈에 관리하세요.</p></div>
-      <a className="primary-link new-song-link" href="/songs/new">＋ 새 곡</a>
+      <a className="primary-link new-song-link" href={newSongHref}>＋ 새 곡</a>
     </header>
 
     <div className="song-toolbar">
@@ -172,16 +178,16 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     {error ? <div className="list-error" role="alert"><strong>{error}</strong><button type="button" onClick={() => setRetryKey((value) => value + 1)}>다시 시도</button></div> : null}
 
     {loading ? <div className="song-grid" aria-label="곡 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="song-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
-    {!loading && !error && songs.length === 0 ? <div className="empty-state song-empty"><span aria-hidden="true">{filtered ? "⌕" : "♪"}</span><h2>{filtered ? "조건에 맞는 곡이 없어요" : "아직 만든 곡이 없어요"}</h2><p>{filtered ? "검색어나 상태 필터를 바꾸면 다른 곡을 찾을 수 있어요." : "떠오른 아이디어를 첫 곡으로 기록해보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={() => { setSearch(""); setStatus(""); }}>검색 조건 지우기</button> : <a className="primary-link" href="/songs/new">첫 곡 만들기</a>}</div> : null}
-    {!loading && songs.length > 0 ? <div className="song-grid">{songs.map((song) => <SongCard song={song} key={song.id} onToggle={toggle} />)}</div> : null}
+    {!loading && !error && songs.length === 0 ? <div className="empty-state song-empty"><span aria-hidden="true">{filtered ? "⌕" : "♪"}</span><h2>{filtered ? "조건에 맞는 곡이 없어요" : "아직 만든 곡이 없어요"}</h2><p>{filtered ? "검색어나 상태 필터를 바꾸면 다른 곡을 찾을 수 있어요." : "떠오른 아이디어를 첫 곡으로 기록해보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={() => { setSearch(""); setStatus(""); }}>검색 조건 지우기</button> : <a className="primary-link" href={newSongHref}>첫 곡 만들기</a>}</div> : null}
+    {!loading && songs.length > 0 ? <div className="song-grid">{songs.map((song) => <SongCard song={song} returnTo={returnTo} key={song.id} onToggle={toggle} />)}</div> : null}
     {!loading && songs.length > 0 ? <div className="load-more-wrap"><button ref={loadButton} className="secondary-button load-more" type="button" disabled={!nextCursor || loadingMore} onClick={loadMore}>{loadingMore ? "불러오는 중…" : nextCursor ? "더 불러오기" : "모든 곡을 불러왔습니다"}</button></div> : null}
   </section>;
 }
 
-function SongCard({ song, onToggle }: { song: Song; onToggle: (song: Song, field: "isFavorite" | "isPinned") => void }) {
+function SongCard({ song, returnTo, onToggle }: { song: Song; returnTo: string; onToggle: (song: Song, field: "isFavorite" | "isPinned") => void }) {
   const note = song.workNotes || song.description;
   return <article className={`song-card${song.color ? ` color-${song.color}` : ""}`}>
-    <a className="song-card-hit" href={`/songs/${song.id}`} aria-label={`${song.title} 대시보드 열기`}><span className="sr-only">{song.title}</span></a>
+    <a className="song-card-hit" href={`/songs/${song.id}?returnTo=${encodeURIComponent(returnTo)}`} aria-label={`${song.title} 대시보드 열기`}><span className="sr-only">{song.title}</span></a>
     <div className="song-card-top"><span className={`status-badge status-${song.status}`}>{STATUS_LABELS[song.status]}</span><span className="song-card-actions"><button type="button" className={song.isPinned ? "is-on" : ""} aria-label={`${song.title} ${song.isPinned ? "고정 해제" : "고정"}`} aria-pressed={song.isPinned} onClick={() => onToggle(song, "isPinned")}>⌁</button><button type="button" className={song.isFavorite ? "is-on" : ""} aria-label={`${song.title} ${song.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"}`} aria-pressed={song.isFavorite} onClick={() => onToggle(song, "isFavorite")}>★</button></span></div>
     <h2>{song.title}</h2>
     <p className={note ? "song-note" : "song-note is-empty"}>{note || "아직 작업 메모가 없습니다."}</p>

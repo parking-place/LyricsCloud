@@ -74,7 +74,7 @@ test("authenticated workspace exposes the desktop and mobile shell", async ({ co
     await expect(logout).toBeFocused();
   } else {
     await expect(page.getByRole("navigation", { name: "모바일 주 메뉴" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "새 곡 추가" })).toHaveAttribute("href", "/songs/new");
+    await expect(page.getByRole("link", { name: "새 곡 추가" })).toHaveAttribute("href", /^\/songs\/new/);
   }
 });
 

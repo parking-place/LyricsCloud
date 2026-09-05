@@ -13,7 +13,7 @@ test.describe("song list UI", () => {
       const response = await page.goto("/songs");
       expect(response?.headers()["cache-control"]).toContain("no-store");
       await expect(page.getByRole("heading", { name: "아직 만든 곡이 없어요" })).toBeVisible();
-      await expect(page.getByRole("link", { name: "첫 곡 만들기" })).toHaveAttribute("href", "/songs/new");
+      await expect(page.getByRole("link", { name: "첫 곡 만들기" })).toHaveAttribute("href", /^\/songs\/new/);
       await page.setViewportSize({ width: 320, height: 700 });
       expect(await hasHorizontalOverflow(page)).toBe(false);
       await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
@@ -87,7 +87,7 @@ test.describe("song list UI", () => {
 
       await cards.first().getByRole("link").focus();
       await expect(cards.first().getByRole("link")).toBeFocused();
-      await expect(page.getByRole("link", { name: "＋ 새 곡" })).toHaveAttribute("href", "/songs/new");
+      await expect(page.getByRole("link", { name: "＋ 새 곡" })).toHaveAttribute("href", /^\/songs\/new/);
     } finally {
       await deleteAccount(account.userId);
     }

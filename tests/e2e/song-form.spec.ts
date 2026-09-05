@@ -63,11 +63,11 @@ test.describe("song create and edit form", () => {
         form.requestSubmit();
       });
       await expect(page.getByRole("button", { name: "저장 중…" })).toBeDisabled();
-      await expect(page).toHaveURL(/\/songs\/[0-9a-f-]+$/);
+      await expect(page).toHaveURL(/\/songs\/[0-9a-f-]+(?:\?|$)/);
       expect(creates).toBe(1);
       await expect(page.getByRole("heading", { name: "폼에서 만든 곡" })).toBeVisible();
 
-      const songId = page.url().split("/").at(-1)!;
+      const songId = new URL(page.url()).pathname.split("/").at(-1)!;
       await page.goto(`/songs/${songId}/edit`);
       await expect(page.locator('input[name="title"]')).toHaveValue("폼에서 만든 곡");
       await expect(page.locator('textarea[name="description"]')).toHaveValue("폼 설명");
@@ -80,7 +80,7 @@ test.describe("song create and edit form", () => {
       await page.locator('input[name="title"]').fill("수정 완료한 곡");
       await page.getByRole("radio", { name: /완성/ }).check();
       await page.getByRole("button", { name: "변경 저장" }).click();
-      await expect(page).toHaveURL(`/songs/${songId}`);
+      await expect(page).toHaveURL(new RegExp(`/songs/${songId}(?:\\?|$)`));
       await expect(page.getByRole("heading", { name: "수정 완료한 곡" })).toBeVisible();
 
       const api = await page.request.get(`/api/songs/${songId}`);
