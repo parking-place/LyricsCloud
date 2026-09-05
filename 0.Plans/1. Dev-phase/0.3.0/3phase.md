@@ -1,6 +1,6 @@
 # 0.3.0 Phase 3 — 송폼 인식·강조·구간 탐색
 
-- 상태: **진행 중**
+- 상태: **완료**
 - 버전 상태: [../STATUS.md](../STATUS.md)
 
 ## 목표
@@ -43,16 +43,16 @@
 
 ## 작업 체크리스트
 
-- [ ] LC-030-P3-01 — 앞뒤 공백을 제외한 한 줄 전체가 비어 있지 않은 대괄호 label일 때만 section으로 인식한다.
-- [ ] LC-030-P3-02 — Intro, Verse 1, Pre-Chorus, Final Hook과 한글·사용자 label을 원문 그대로 보존한다.
-- [ ] LC-030-P3-03 — 같은 Hook이 반복될 때 문서 순서 기반 occurrence와 offset으로 각각 다른 section ID를 만든다.
-- [ ] LC-030-P3-04 — 닫는 대괄호 누락, 줄 안쪽 대괄호 문장, 빈 대괄호는 일반 가사로 처리한다.
-- [ ] LC-030-P3-05 — parser 결과로 tag line과 section 범위를 계산하고 별도 파서 복사본을 UI마다 만들지 않는다.
-- [ ] LC-030-P3-06 — CodeMirror decoration으로 tag line을 강조하되 editor document와 undo history를 변경하지 않는다.
-- [ ] LC-030-P3-07 — PC 좌측 목차에서 section을 선택하면 해당 tag line을 읽을 수 있는 여백으로 스크롤한다.
-- [ ] LC-030-P3-08 — 모바일 시트에서 section 선택 후 시트를 닫고 editor focus와 해당 위치를 복원한다.
-- [ ] LC-030-P3-09 — cursor·viewport 변화에 따라 active section을 갱신하되 스크롤 중 과도한 렌더를 제한한다.
-- [ ] LC-030-P3-10 — 10만 자·수백 section 문서에서 변경된 범위 중심으로 parser·decoration 성능을 검증한다.
+- [x] LC-030-P3-01 — 앞뒤 공백을 제외한 한 줄 전체가 비어 있지 않은 대괄호 label일 때만 section으로 인식한다.
+- [x] LC-030-P3-02 — Intro, Verse 1, Pre-Chorus, Final Hook과 한글·사용자 label을 원문 그대로 보존한다.
+- [x] LC-030-P3-03 — 같은 Hook이 반복될 때 문서 순서 기반 occurrence와 offset으로 각각 다른 section ID를 만든다.
+- [x] LC-030-P3-04 — 닫는 대괄호 누락, 줄 안쪽 대괄호 문장, 빈 대괄호는 일반 가사로 처리한다.
+- [x] LC-030-P3-05 — parser 결과로 tag line과 section 범위를 계산하고 별도 파서 복사본을 UI마다 만들지 않는다.
+- [x] LC-030-P3-06 — CodeMirror decoration으로 tag line을 강조하되 editor document와 undo history를 변경하지 않는다.
+- [x] LC-030-P3-07 — PC 좌측 목차에서 section을 선택하면 해당 tag line을 읽을 수 있는 여백으로 스크롤한다.
+- [x] LC-030-P3-08 — 모바일 시트에서 section 선택 후 시트를 닫고 editor focus와 해당 위치를 복원한다.
+- [x] LC-030-P3-09 — cursor·viewport 변화에 따라 active section을 갱신하되 스크롤 중 과도한 렌더를 제한한다.
+- [x] LC-030-P3-10 — 10만 자·수백 section 문서에서 변경된 범위 중심으로 parser·decoration 성능을 검증한다.
 
 ## 검증 방법
 
@@ -65,12 +65,12 @@
 
 ## 완료 조건
 
-- [ ] 표준·사용자 송폼을 원문 변경 없이 인식한다.
-- [ ] 반복 section마다 고유 탐색 대상이 있다.
-- [ ] PC 목차와 모바일 시트가 같은 parser 결과를 사용한다.
-- [ ] 잘못된 대괄호 문장이 section으로 오인되지 않는다.
-- [ ] 이동 뒤 focus와 스크롤 위치가 정확하다.
-- [ ] 장문에서도 편집 반응성이 유지된다.
+- [x] 표준·사용자 송폼을 원문 변경 없이 인식한다.
+- [x] 반복 section마다 고유 탐색 대상이 있다.
+- [x] PC 목차와 모바일 시트가 같은 parser 결과를 사용한다.
+- [x] 잘못된 대괄호 문장이 section으로 오인되지 않는다.
+- [x] 이동 뒤 focus와 스크롤 위치가 정확하다.
+- [x] 장문에서도 편집 반응성이 유지된다.
 
 ## 산출물
 

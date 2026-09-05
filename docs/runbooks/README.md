@@ -28,6 +28,7 @@
 - [`0.2.0 Phase 2 곡 CRUD·목록 검증`](./0.2.0-phase2-validation.md)
 - [`0.3.0 Phase 1 가사 resource·CRUD 검증`](./0.3.0-phase1-validation.md)
 - [`0.3.0 Phase 2 CodeMirror 편집기 검증`](./0.3.0-phase2-validation.md)
+- [`0.3.0 Phase 3 송폼 인식·탐색 검증`](./0.3.0-phase3-validation.md)
 
 ## 개발 서버 운영
 
