@@ -125,7 +125,7 @@ Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SH
 
 ## 12. Docker 저장소 정리
 
-- 로컬 수용 테스트나 개발·릴리스 배포에서 Docker image를 build한 작업은 검증 성공 뒤 [`scripts/cleanup-docker.sh`](./scripts/cleanup-docker.sh)를 실행해 LyricsCloud의 중지 컨테이너, dangling image와 미사용 network를 정리합니다.
+- 로컬 수용 테스트나 개발·릴리스 배포에서 Docker image를 build한 작업은 검증 성공 뒤 [`scripts/cleanup-docker.sh`](./scripts/cleanup-docker.sh)를 실행해 LyricsCloud의 중지 컨테이너, 미사용 image와 network를 정리합니다. 별도 Compose project name으로 검증했다면 그 이름도 `--project`로 각각 정리합니다.
 - 개발·릴리스 전용 서버에서는 같은 스크립트의 `--build-cache` 옵션으로 사용하지 않는 BuildKit cache도 정리합니다. 로컬에서도 Phase Docker 검증이 끝나면 같은 명령을 사용합니다.
 - 정리는 새 컨테이너의 health와 필수 asset 검증 뒤에만 실행합니다. 그 전에 실패한 배포의 조사·rollback에 필요한 container와 image는 원인이 확인될 때까지 보존합니다.
 - Docker volume은 정리 명령에 포함하지 않습니다. 특히 PostgreSQL, 백업, 의존성 volume은 사용자의 별도 명시적 승인 없이 prune하거나 삭제하지 않습니다.

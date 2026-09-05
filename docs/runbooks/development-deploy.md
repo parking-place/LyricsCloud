@@ -11,7 +11,7 @@
 5. 원격 branch와 전달받은 전체 SHA가 일치할 때만 해당 SHA로 전환한다.
 6. 환경 파일의 secret을 유지하고 `BUILD_ID`만 목표 SHA로 갱신한 뒤 서버 전용 Compose override로 production web image build, forward migration, Compose 갱신을 실행한다.
 7. web이 `NODE_ENV=production`이고 HTML에 개발 HMR client가 없으며 같은 image의 CSS에 현재 곡 화면 selector가 포함되는지 확인한다.
-8. 네 컨테이너 health를 확인한 뒤 LyricsCloud의 중지 컨테이너·dangling image·미사용 network와 현재 builder의 미사용 cache를 정리한다. volume은 정리하지 않는다.
+8. 네 컨테이너 health를 확인한 뒤 LyricsCloud의 중지 컨테이너·미사용 image·network와 현재 builder의 미사용 cache를 정리한다. volume은 정리하지 않는다.
 9. 공개 HTTPS live·ready와 변경 기능 smoke test를 확인한다.
 10. 배포 SHA·시각·검증 결과를 로컬 서버 인벤토리에 기록한다.
 

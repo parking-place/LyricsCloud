@@ -16,14 +16,14 @@ LyricsCloud의 로컬 테스트와 개발·릴리스 배포에서 반복 build�
 ./scripts/cleanup-docker.sh --build-cache
 ```
 
-로컬에서는 `pnpm docker:cleanup`도 같은 명령을 실행한다. Compose project name을 바꾼 환경은 `--project <name>`을 명시한다.
+로컬에서는 `pnpm docker:cleanup`도 같은 명령을 실행한다. Compose project name을 바꾼 환경은 해당 이름마다 `--project <name>`을 명시한다.
 
 ## 삭제·보존 경계
 
 | 구분 | 처리 |
 |---|---|
 | LyricsCloud 라벨의 중지 컨테이너 | 삭제 |
-| LyricsCloud 라벨의 dangling image | 삭제 |
+| LyricsCloud 라벨의 미사용 image | 삭제 |
 | LyricsCloud 라벨의 미사용 network | 삭제 |
 | 현재 builder의 미사용 build cache | 모두 정리 |
 | 실행 중 컨테이너와 사용 중 image | 보존 |

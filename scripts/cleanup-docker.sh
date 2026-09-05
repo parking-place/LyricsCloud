@@ -68,9 +68,8 @@ if [ "$dry_run" = true ]; then
     --filter status=exited \
     --filter status=dead \
     --format '  {{.ID}} {{.Names}} {{.Status}}'
-  printf '%s\n' 'Dangling project images:'
+  printf '%s\n' 'Project images (only unused images are removed in apply mode):'
   docker image ls \
-    --filter dangling=true \
     --filter "label=$project_label" \
     --format '  {{.ID}} {{.Repository}}:{{.Tag}} {{.Size}}'
   printf '%s\n' 'Project networks (only unused networks are removed in apply mode):'
@@ -87,7 +86,7 @@ fi
 
 printf 'Cleaning unused Docker objects for Compose project %s...\n' "$project"
 docker container prune --force --filter "label=$project_label"
-docker image prune --force --filter "label=$project_label"
+docker image prune --all --force --filter "label=$project_label"
 docker network prune --force --filter "label=$project_label"
 
 if [ "$prune_build_cache" = true ]; then
