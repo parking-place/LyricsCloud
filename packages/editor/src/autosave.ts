@@ -16,10 +16,10 @@ export interface SaveResult {
   readonly rowVersion: number;
 }
 
-export interface SerializedSaveOptions {
-  readonly initialDraft: TextDraft;
+export interface SerializedSaveOptions<Draft extends TextDraft = TextDraft> {
+  readonly initialDraft: Draft;
   readonly initialRowVersion: number;
-  readonly save: (draft: TextDraft, rowVersion: number) => Promise<SaveResult>;
+  readonly save: (draft: Draft, rowVersion: number) => Promise<SaveResult>;
   readonly onStateChange?: (state: SaveState) => void;
   readonly delayMs?: number;
   readonly maxWaitMs?: number;
@@ -29,13 +29,13 @@ export interface SerializedSaveOptions {
  * Keeps one write in flight per document and only marks the latest sequence as
  * saved. Editor DOM, selections and decorations never cross this boundary.
  */
-export class SerializedSaveController {
-  readonly #save: SerializedSaveOptions["save"];
+export class SerializedSaveController<Draft extends TextDraft = TextDraft> {
+  readonly #save: SerializedSaveOptions<Draft>["save"];
   readonly #onStateChange: NonNullable<SerializedSaveOptions["onStateChange"]>;
   readonly #delayMs: number;
   readonly #maxWaitMs: number;
-  #draft: TextDraft;
-  #persisted: TextDraft;
+  #draft: Draft;
+  #persisted: Draft;
   #rowVersion: number;
   #sequence = 0;
   #state: SaveState = { status: "saved", sequence: 0, lastSavedAt: null, error: null };
@@ -44,7 +44,7 @@ export class SerializedSaveController {
   #maxTimer: ReturnType<typeof setTimeout> | null = null;
   #destroyed = false;
 
-  constructor(options: SerializedSaveOptions) {
+  constructor(options: SerializedSaveOptions<Draft>) {
     this.#draft = copy(options.initialDraft);
     this.#persisted = copy(options.initialDraft);
     this.#rowVersion = options.initialRowVersion;
@@ -55,10 +55,10 @@ export class SerializedSaveController {
   }
 
   get state(): SaveState { return this.#state; }
-  get draft(): TextDraft { return copy(this.#draft); }
+  get draft(): Draft { return copy(this.#draft); }
   get rowVersion(): number { return this.#rowVersion; }
 
-  change(next: TextDraft, options: { readonly composing?: boolean } = {}): void {
+  change(next: Draft, options: { readonly composing?: boolean } = {}): void {
     if (this.#destroyed || same(next, this.#draft)) return;
     this.#draft = copy(next);
     this.#sequence += 1;
@@ -128,5 +128,8 @@ export class SerializedSaveController {
   }
 }
 
-function copy(draft: TextDraft): TextDraft { return { title: draft.title, body: draft.body }; }
-function same(left: TextDraft, right: TextDraft): boolean { return left.title === right.title && left.body === right.body; }
+function copy<Draft extends TextDraft>(draft: Draft): Draft { return { ...draft }; }
+function same<Draft extends TextDraft>(left: Draft, right: Draft): boolean {
+  const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
+  return [...keys].every((key) => left[key as keyof Draft] === right[key as keyof Draft]);
+}

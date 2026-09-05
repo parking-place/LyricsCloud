@@ -94,7 +94,7 @@ test.describe("song API owner and command contract", () => {
     expect(first.totalCount).toBe(4);
     expect(first.items).toHaveLength(2);
     expect(first.nextCursor).toEqual(expect.any(String));
-    expect(first.capabilities).toEqual({ lyricsSearch: false, linkedResourceFilters: false });
+    expect(first.capabilities).toEqual({ lyricsSearch: true, linkedResourceFilters: false });
     const second = await (await alice.request.get(
       `/api/songs?search=${encodeURIComponent(marker)}&sort=title_asc&limit=2&cursor=${encodeURIComponent(first.nextCursor)}`
     )).json();

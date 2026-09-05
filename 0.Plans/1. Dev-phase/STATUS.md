@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.3.0"
-current_phase: "4phase.md"
-state: "complete"
-owner: "none"
-started_at: "2026-09-05 14:38 KST"
+current_phase: "5phase.md"
+state: "in_progress"
+owner: "Codex"
+started_at: "2026-09-05 15:13 KST"
 updated_at: "2026-09-05"
-next_action: "0.3.0 Phase 5 가사 대시보드·다른 가사 전환과 전체 흐름을 시작"
+next_action: "0.3.0 Phase 5 가사 대시보드·생성·전환·복제·삭제·메타데이터·검색과 CRDT 인계를 구현·검증"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -53,7 +53,7 @@ next_action: "0.3.0 Phase 5 가사 대시보드·다른 가사 전환과 전체 
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+| Codex | 0.3.0 / Phase 5 | LC-030-P5-01~11 | `packages/editor`, `packages/database`, `apps/web`, `tests/e2e`, Phase·인계·검증 문서 | Phase 1~4 CRUD·편집·송폼·복사 계약 | 2026-09-05 15:13 KST | 진행 중 |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 

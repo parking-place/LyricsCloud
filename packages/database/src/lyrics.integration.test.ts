@@ -113,6 +113,19 @@ describe.runIf(enabled)("lyrics ownership, concurrency and current text", () => 
     expect(await store!.createLyric(alice, input(parent.id))).toBeNull();
   });
 
+  it("finds active lyric titles and bodies only inside the owning song", async () => {
+    const marker = `lyric-${randomUUID().slice(0, 8)}`;
+    const parent = await song(alice);
+    const otherParent = await song(bob);
+    const active = (await store!.createLyric(alice, input(parent.id, { title: `${marker} 제목`, body: `본문 ${marker}-body` })))!.lyric;
+    await store!.createLyric(bob, input(otherParent.id, { title: `${marker} 타인 제목`, body: `타인 ${marker}-foreign` }));
+    expect((await songs!.listSongs(alice, { search: `${marker}-body`, sort: "updated_desc", limit: 20 })).items.map(({ id }) => id)).toEqual([parent.id]);
+    expect((await songs!.listSongs(bob, { search: `${marker}-body`, sort: "updated_desc", limit: 20 })).items).toEqual([]);
+    expect((await songs!.listSongs(alice, { search: `${marker}-foreign`, sort: "updated_desc", limit: 20 })).items).toEqual([]);
+    await store!.deleteLyric(alice, active.id);
+    expect((await songs!.listSongs(alice, { search: marker, sort: "updated_desc", limit: 20 })).items).toEqual([]);
+  });
+
   it("leaves no active orphan when parent deletion races creation", async () => {
     for (let index = 0; index < 4; index++) {
       const parent = await song();

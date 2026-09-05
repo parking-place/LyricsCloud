@@ -11,36 +11,73 @@ import {
   type SongFormNavigationState,
   type SongFormSection
 } from "@lyricscloud/editor";
-import type { LyricRecord } from "@lyricscloud/domain";
+import { LYRIC_STATUSES, LYRIC_STATUS_LABELS, type LyricRecord, type LyricStatus } from "@lyricscloud/domain";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-export function LyricEditor({ initialLyric, songTitle }: { initialLyric: LyricRecord; songTitle: string }) {
+interface LyricEditorDraft {
+  readonly title: string;
+  readonly body: string;
+  readonly memo: string;
+  readonly status: LyricStatus;
+  readonly isFavorite: boolean;
+  readonly isPinned: boolean;
+  readonly pinOrder: number | null;
+}
+
+export function LyricEditor({ initialLyric, songTitle, songLyrics }: { initialLyric: LyricRecord; songTitle: string; songLyrics: readonly LyricRecord[] }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<CodeMirrorTextEditor | null>(null);
-  const controllerRef = useRef<SerializedSaveController | null>(null);
+  const controllerRef = useRef<SerializedSaveController<LyricEditorDraft> | null>(null);
   const titleRef = useRef(initialLyric.title);
   const bodyRef = useRef(initialLyric.body);
+  const memoRef = useRef(initialLyric.memo);
+  const statusRef = useRef(initialLyric.status);
+  const favoriteRef = useRef(initialLyric.isFavorite);
+  const pinnedRef = useRef(initialLyric.isPinned);
+  const pinOrderRef = useRef(initialLyric.pinOrder);
   const titleComposingRef = useRef(false);
+  const memoComposingRef = useRef(false);
   const manualCopyRef = useRef<HTMLTextAreaElement>(null);
   const toastTimerRef = useRef<number | null>(null);
   const [title, setTitle] = useState(initialLyric.title);
+  const [memo, setMemo] = useState(initialLyric.memo);
+  const [status, setStatus] = useState(initialLyric.status);
+  const [isFavorite, setIsFavorite] = useState(initialLyric.isFavorite);
+  const [isPinned, setIsPinned] = useState(initialLyric.isPinned);
   const [saveState, setSaveState] = useState<SaveState>({ status: "saved", sequence: 0, lastSavedAt: null, error: null });
   const [songForm, setSongForm] = useState<SongFormNavigationState>({ sections: parseSongForm(initialLyric.body), activeSectionId: null });
   const [mobileSongFormOpen, setMobileSongFormOpen] = useState(false);
+  const [mobileOtherLyricsOpen, setMobileOtherLyricsOpen] = useState(false);
   const [selectedSectionIds, setSelectedSectionIds] = useState<Set<string>>(() => new Set());
   const [focusMode, setFocusMode] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [manualCopy, setManualCopy] = useState<{ text: string; target: string } | null>(null);
+  const [commandNotice, setCommandNotice] = useState("");
+  const [commandBusy, setCommandBusy] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const router = useRouter();
+
+  function draft(overrides: Partial<LyricEditorDraft> = {}): LyricEditorDraft {
+    return {
+      title: titleRef.current, body: bodyRef.current, memo: memoRef.current, status: statusRef.current,
+      isFavorite: favoriteRef.current, isPinned: pinnedRef.current, pinOrder: pinOrderRef.current,
+      ...overrides
+    };
+  }
 
   useEffect(() => {
     const parent = mountRef.current;
     if (!parent) return;
     let active = true;
-    const controller = new SerializedSaveController({
-      initialDraft: { title: initialLyric.title, body: initialLyric.body },
+    const controller = new SerializedSaveController<LyricEditorDraft>({
+      initialDraft: {
+        title: initialLyric.title, body: initialLyric.body, memo: initialLyric.memo, status: initialLyric.status,
+        isFavorite: initialLyric.isFavorite, isPinned: initialLyric.isPinned, pinOrder: initialLyric.pinOrder
+      },
       initialRowVersion: initialLyric.rowVersion,
       async save(draft, rowVersion) {
-        const payload = JSON.stringify({ rowVersion, title: draft.title, body: draft.body });
+        const payload = JSON.stringify({ rowVersion, ...draft });
         const response = await fetch(`/api/lyrics/${initialLyric.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -61,7 +98,7 @@ export function LyricEditor({ initialLyric, songTitle }: { initialLyric: LyricRe
       ariaLabel: "가사 본문",
       onChange(value, context) {
         bodyRef.current = value;
-        controller.change({ title: titleRef.current, body: value }, context);
+        controller.change(draft({ body: value }), context);
       },
       onCompositionEnd() { controller.compositionEnd(); },
       onSongFormNavigationChange: setSongForm
@@ -79,7 +116,7 @@ export function LyricEditor({ initialLyric, songTitle }: { initialLyric: LyricRe
       void controller.dispose();
       controllerRef.current = null;
     };
-  }, [initialLyric.body, initialLyric.id, initialLyric.rowVersion, initialLyric.title]);
+  }, [initialLyric.body, initialLyric.id, initialLyric.isFavorite, initialLyric.isPinned, initialLyric.memo, initialLyric.pinOrder, initialLyric.rowVersion, initialLyric.status, initialLyric.title]);
 
   useEffect(() => {
     const currentIds = new Set(songForm.sections.map((section) => section.id));
@@ -102,7 +139,88 @@ export function LyricEditor({ initialLyric, songTitle }: { initialLyric: LyricRe
   function changeTitle(value: string) {
     titleRef.current = value;
     setTitle(value);
-    controllerRef.current?.change({ title: value, body: bodyRef.current }, { composing: titleComposingRef.current });
+    controllerRef.current?.change(draft({ title: value }), { composing: titleComposingRef.current });
+  }
+
+  function changeMemo(value: string) {
+    memoRef.current = value;
+    setMemo(value);
+    controllerRef.current?.change(draft({ memo: value }), { composing: memoComposingRef.current });
+  }
+
+  function changeStatus(value: LyricStatus) {
+    statusRef.current = value;
+    setStatus(value);
+    controllerRef.current?.change(draft({ status: value }));
+  }
+
+  function toggleMetadata(field: "favorite" | "pinned") {
+    if (field === "favorite") {
+      const value = !favoriteRef.current;
+      favoriteRef.current = value;
+      setIsFavorite(value);
+      controllerRef.current?.change(draft({ isFavorite: value }));
+    } else {
+      const value = !pinnedRef.current;
+      pinnedRef.current = value;
+      pinOrderRef.current = value ? 0 : null;
+      setIsPinned(value);
+      controllerRef.current?.change(draft({ isPinned: value, pinOrder: value ? 0 : null }));
+    }
+  }
+
+  async function flushBeforeCommand(): Promise<boolean> {
+    await controllerRef.current?.flush();
+    if (controllerRef.current?.state.status === "error") {
+      setCommandNotice("현재 변경 내용을 먼저 저장해야 합니다. 저장을 다시 시도해 주세요.");
+      return false;
+    }
+    return true;
+  }
+
+  async function openLyric(lyricId: string) {
+    if (lyricId === initialLyric.id || commandBusy || !await flushBeforeCommand()) return;
+    setMobileOtherLyricsOpen(false);
+    router.push(`/lyrics/${lyricId}`);
+  }
+
+  async function duplicateCurrent() {
+    if (commandBusy || !await flushBeforeCommand()) return;
+    setCommandBusy(true);
+    setCommandNotice("");
+    try {
+      const response = await fetch(`/api/lyrics/${initialLyric.id}/duplicate`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestId: crypto.randomUUID() })
+      });
+      if (!response.ok) throw new Error();
+      const result = await response.json() as { lyric: LyricRecord };
+      router.push(`/lyrics/${result.lyric.id}`);
+      router.refresh();
+    } catch {
+      setCommandBusy(false);
+      setCommandNotice("가사를 복제하지 못했습니다. 현재 내용은 그대로 보존됩니다.");
+    }
+  }
+
+  async function deleteCurrent() {
+    if (commandBusy || !await flushBeforeCommand()) return;
+    setCommandBusy(true);
+    setCommandNotice("");
+    try {
+      const response = await fetch(`/api/lyrics/${initialLyric.id}`, { method: "DELETE" });
+      const result = await response.json() as { deleted?: boolean };
+      if (!response.ok || !result.deleted) throw new Error();
+      const listResponse = await fetch(`/api/songs/${initialLyric.songId}/lyrics`, { cache: "no-store" });
+      const currentLyrics = listResponse.ok ? (await listResponse.json() as { items: LyricRecord[] }).items : songLyrics;
+      const next = currentLyrics.filter((lyric) => lyric.id !== initialLyric.id)
+        .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt) || right.id.localeCompare(left.id))[0];
+      router.replace(next ? `/lyrics/${next.id}` : `/songs/${initialLyric.songId}`);
+      router.refresh();
+    } catch {
+      setCommandBusy(false);
+      setDeleteOpen(false);
+      setCommandNotice("가사를 삭제하지 못했습니다. 현재 화면을 유지합니다.");
+    }
   }
 
   function goToSection(sectionId: string) {
@@ -154,6 +272,7 @@ export function LyricEditor({ initialLyric, songTitle }: { initialLyric: LyricRe
   function toggleFocusMode() {
     setFocusMode((current) => !current);
     setMobileSongFormOpen(false);
+    setMobileOtherLyricsOpen(false);
     requestAnimationFrame(() => editorRef.current?.focus());
   }
 
@@ -185,9 +304,12 @@ export function LyricEditor({ initialLyric, songTitle }: { initialLyric: LyricRe
       <div className="editor-header-actions">
         <button type="button" onClick={copyWhole} title="Alt+Shift+C" aria-keyshortcuts="Alt+Shift+C">전체 복사</button>
         <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} title="Alt+Shift+F" aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 모드 종료" : "집중 모드"}</button>
+        <button type="button" disabled={commandBusy} onClick={duplicateCurrent}>복제</button>
+        <button type="button" disabled={commandBusy} className="danger-text" onClick={() => setDeleteOpen(true)}>삭제</button>
       </div>
       <SaveIndicator state={saveState} onRetry={() => { void controllerRef.current?.retry(); }} />
     </header>
+    {commandNotice ? <p className="editor-command-notice" role="status">{commandNotice}</p> : null}
     <div className="lyric-editor-title">
       <label id="lyric-title-label" htmlFor="lyric-title">가사 제목</label>
       <input id="lyric-title" value={title} aria-invalid={!title.trim()} onChange={(event) => changeTitle(event.target.value)}
@@ -208,11 +330,18 @@ export function LyricEditor({ initialLyric, songTitle }: { initialLyric: LyricRe
           <span>자동 저장 · 약 1초</span>
         </footer>
       </div>
+      <aside className="other-lyrics-panel" aria-label="다른 가사">
+        <LyricMetadataControls memo={memo} status={status} isFavorite={isFavorite} isPinned={isPinned}
+          onMemo={changeMemo} onStatus={changeStatus} onFavorite={() => toggleMetadata("favorite")} onPinned={() => toggleMetadata("pinned")}
+          onMemoCompositionStart={() => { memoComposingRef.current = true; }} onMemoCompositionEnd={() => { memoComposingRef.current = false; controllerRef.current?.compositionEnd(); }} />
+        <OtherLyricsList lyrics={songLyrics} currentId={initialLyric.id} currentTitle={title} currentStatus={status} currentFavorite={isFavorite} onOpen={(id) => { void openLyric(id); }} />
+      </aside>
     </div>
     <div className="mobile-editor-dock" role="group" aria-label="가사 편집 도구">
       <button type="button" aria-haspopup="dialog" aria-expanded={mobileSongFormOpen}
         onClick={() => setMobileSongFormOpen(true)}>☷ 송폼 <span>{songForm.sections.length}</span></button>
       <button type="button" onClick={copyWhole} aria-keyshortcuts="Alt+Shift+C">⧉ 전체 복사</button>
+      <button type="button" aria-haspopup="dialog" aria-expanded={mobileOtherLyricsOpen} onClick={() => setMobileOtherLyricsOpen(true)}>≋ 다른 가사 <span>{songLyrics.length}</span></button>
       <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 종료" : "집중 모드"}</button>
     </div>
     {mobileSongFormOpen ? <div className="editor-sheet-backdrop" onPointerDown={(event) => {
@@ -225,6 +354,17 @@ export function LyricEditor({ initialLyric, songTitle }: { initialLyric: LyricRe
         <CopySelectionActions selectedCount={selectedSectionIds.size} onClear={() => setSelectedSectionIds(new Set())} onCopy={copySelected} />
       </section>
     </div> : null}
+    {mobileOtherLyricsOpen ? <div className="editor-sheet-backdrop" onPointerDown={(event) => {
+      if (event.target === event.currentTarget) setMobileOtherLyricsOpen(false);
+    }}><section className="songform-sheet other-lyrics-sheet" role="dialog" aria-modal="true" aria-labelledby="other-lyrics-sheet-title">
+      <div className="sheet-handle" aria-hidden="true" />
+      <header><div><h2 id="other-lyrics-sheet-title">다른 가사와 설정</h2><p>{songLyrics.length}개 가사</p></div><button type="button" onClick={() => setMobileOtherLyricsOpen(false)}>닫기</button></header>
+      <div className="mobile-lyric-commands"><button type="button" disabled={commandBusy} onClick={duplicateCurrent}>현재 가사 복제</button><button type="button" disabled={commandBusy} className="danger-text" onClick={() => { setMobileOtherLyricsOpen(false); setDeleteOpen(true); }}>현재 가사 삭제</button></div>
+      <LyricMetadataControls memo={memo} status={status} isFavorite={isFavorite} isPinned={isPinned}
+        onMemo={changeMemo} onStatus={changeStatus} onFavorite={() => toggleMetadata("favorite")} onPinned={() => toggleMetadata("pinned")}
+        onMemoCompositionStart={() => { memoComposingRef.current = true; }} onMemoCompositionEnd={() => { memoComposingRef.current = false; controllerRef.current?.compositionEnd(); }} />
+      <OtherLyricsList lyrics={songLyrics} currentId={initialLyric.id} currentTitle={title} currentStatus={status} currentFavorite={isFavorite} onOpen={(id) => { void openLyric(id); }} />
+    </section></div> : null}
     {toast ? <div className="copy-toast" role="status" aria-live="polite">{toast}</div> : null}
     {manualCopy ? <div className="dialog-backdrop" role="presentation" onPointerDown={(event) => {
       if (event.target === event.currentTarget) setManualCopy(null);
@@ -235,7 +375,51 @@ export function LyricEditor({ initialLyric, songTitle }: { initialLyric: LyricRe
       <textarea ref={manualCopyRef} readOnly aria-label="수동 복사할 가사" value={manualCopy.text} />
       <button type="button" onClick={() => setManualCopy(null)}>닫기</button>
     </section></div> : null}
+    {deleteOpen ? <div className="dialog-backdrop" role="presentation"><section className="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="editor-delete-title" aria-describedby="editor-delete-description"><p className="eyebrow">Soft delete</p><h2 id="editor-delete-title">‘{title}’ 가사를 삭제할까요?</h2><p id="editor-delete-description">현재 가사를 숨긴 뒤 최근 다른 가사 또는 곡 대시보드로 이동합니다.</p><div><button autoFocus className="secondary-button" type="button" disabled={commandBusy} onClick={() => setDeleteOpen(false)}>취소</button><button className="danger-button" type="button" disabled={commandBusy} onClick={deleteCurrent}>{commandBusy ? "삭제 중…" : "가사 삭제 확인"}</button></div></section></div> : null}
   </section>;
+}
+
+function LyricMetadataControls({ memo, status, isFavorite, isPinned, onMemo, onStatus, onFavorite, onPinned, onMemoCompositionStart, onMemoCompositionEnd }: {
+  memo: string;
+  status: LyricStatus;
+  isFavorite: boolean;
+  isPinned: boolean;
+  onMemo: (value: string) => void;
+  onStatus: (value: LyricStatus) => void;
+  onFavorite: () => void;
+  onPinned: () => void;
+  onMemoCompositionStart: () => void;
+  onMemoCompositionEnd: () => void;
+}) {
+  return <section className="lyric-metadata" aria-label="가사 설정">
+    <div className="other-panel-heading"><strong>가사 설정</strong></div>
+    <label><span>상태</span><select value={status} onChange={(event) => onStatus(event.target.value as LyricStatus)}>{LYRIC_STATUSES.map((value) => <option key={value} value={value}>{LYRIC_STATUS_LABELS[value]}</option>)}</select></label>
+    <div className="lyric-metadata-toggles"><button type="button" aria-pressed={isFavorite} onClick={onFavorite}>★ {isFavorite ? "즐겨찾기됨" : "즐겨찾기"}</button><button type="button" aria-pressed={isPinned} onClick={onPinned}>⌁ {isPinned ? "고정됨" : "고정"}</button></div>
+    <label><span>작업 메모</span><textarea value={memo} maxLength={10_000} placeholder="다음 수정 방향을 기록하세요" onChange={(event) => onMemo(event.target.value)} onCompositionStart={onMemoCompositionStart} onCompositionEnd={onMemoCompositionEnd} /></label>
+  </section>;
+}
+
+function OtherLyricsList({ lyrics, currentId, currentTitle, currentStatus, currentFavorite, onOpen }: {
+  lyrics: readonly LyricRecord[];
+  currentId: string;
+  currentTitle: string;
+  currentStatus: LyricStatus;
+  currentFavorite: boolean;
+  onOpen: (id: string) => void;
+}) {
+  const sorted = [...lyrics].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt) || right.id.localeCompare(left.id));
+  return <section className="other-lyrics-list" aria-label="다른 가사 목록">
+    <div className="other-panel-heading"><strong>다른 가사</strong><span>{lyrics.length}</span></div>
+    <div>{sorted.map((lyric) => {
+      const current = lyric.id === currentId;
+      return <button type="button" key={lyric.id} className={current ? "active" : ""} aria-current={current ? "page" : undefined} disabled={current}
+        onClick={() => onOpen(lyric.id)}><span>{current ? currentTitle : lyric.title}</span><small>{current ? LYRIC_STATUS_LABELS[currentStatus] : LYRIC_STATUS_LABELS[lyric.status]} · {(current ? currentFavorite : lyric.isFavorite) ? "★" : formatShortDate(lyric.updatedAt)}</small></button>;
+    })}</div>
+  </section>;
+}
+
+function formatShortDate(value: string) {
+  return new Intl.DateTimeFormat("ko-KR", { month: "short", day: "numeric" }).format(new Date(value));
 }
 
 function SongFormList({ sections, activeSectionId, selectedSectionIds, onSelect, onToggle }: {

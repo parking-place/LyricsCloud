@@ -1,11 +1,24 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { EditorSelection } from "@codemirror/state";
+import { Annotation, EditorSelection } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, keymap, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { findSongFormSection, SongFormIndex, type SongFormSection } from "./songform.js";
 
 export interface SongFormNavigationState {
   readonly sections: readonly SongFormSection[];
   readonly activeSectionId: string | null;
+}
+
+export interface EditorTextChange {
+  readonly from: number;
+  readonly to: number;
+  readonly insert: string;
+}
+
+export interface EditorDocumentTransaction {
+  readonly changes: readonly EditorTextChange[];
+  readonly selection?: { readonly anchor: number; readonly head: number };
+  readonly origin: "user" | "external";
+  readonly composing: boolean;
 }
 
 export interface CodeMirrorTextEditorOptions {
@@ -15,6 +28,7 @@ export interface CodeMirrorTextEditorOptions {
   readonly onChange: (value: string, context: { readonly composing: boolean }) => void;
   readonly onCompositionEnd: () => void;
   readonly onSongFormNavigationChange?: (state: SongFormNavigationState) => void;
+  readonly onTransaction?: (transaction: EditorDocumentTransaction) => void;
 }
 
 export interface CodeMirrorTextEditor {
@@ -23,12 +37,14 @@ export interface CodeMirrorTextEditor {
   readonly selection: { readonly from: number; readonly to: number };
   readonly songForm: SongFormNavigationState;
   replace(from: number, to: number, value: string): void;
+  applyTransaction(transaction: Omit<EditorDocumentTransaction, "origin" | "composing">): void;
   goToSongFormSection(sectionId: string): boolean;
   focus(): void;
   destroy(): void;
 }
 
 export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions): CodeMirrorTextEditor {
+  const transactionOrigin = Annotation.define<EditorDocumentTransaction["origin"]>();
   let navigationFrame: number | null = null;
   let pendingNavigation: SongFormNavigationState | null = null;
   let lastNavigationSignature = "";
@@ -83,7 +99,22 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       EditorView.clipboardInputFilter.of(normalizeLineEndings),
       songFormPlugin,
       EditorView.updateListener.of((update) => {
-        if (update.docChanged) options.onChange(update.state.doc.toString(), { composing: update.view.compositionStarted });
+        if (!update.docChanged) return;
+        const composing = update.view.compositionStarted;
+        options.onChange(update.state.doc.toString(), { composing });
+        if (options.onTransaction) {
+          const changes: EditorTextChange[] = [];
+          update.changes.iterChanges((from, to, _fromAfter, _toAfter, inserted) => {
+            changes.push({ from, to, insert: inserted.toString() });
+          });
+          const origin = update.transactions.map((transaction) => transaction.annotation(transactionOrigin)).find(Boolean) ?? "user";
+          options.onTransaction({
+            changes,
+            selection: { anchor: update.state.selection.main.anchor, head: update.state.selection.main.head },
+            origin,
+            composing
+          });
+        }
       }),
       EditorView.domEventHandlers({
         compositionend: () => {
@@ -118,6 +149,13 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
     replace(from, to, value) {
       const normalized = normalizeLineEndings(value);
       view.dispatch({ changes: { from, to, insert: normalized }, selection: EditorSelection.cursor(from + normalized.length) });
+    },
+    applyTransaction(transaction) {
+      view.dispatch({
+        changes: transaction.changes.map((change) => ({ from: change.from, to: change.to, insert: normalizeLineEndings(change.insert) })),
+        ...(transaction.selection ? { selection: EditorSelection.range(transaction.selection.anchor, transaction.selection.head) } : {}),
+        annotations: transactionOrigin.of("external")
+      });
     },
     goToSongFormSection(sectionId) {
       const sections = view.plugin(songFormPlugin)?.sections ?? [];

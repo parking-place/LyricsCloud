@@ -74,4 +74,16 @@ describe("SerializedSaveController", () => {
     expect(saves[0]?.body).toBe("5");
     vi.useRealTimers();
   });
+
+  it("serializes adapter-neutral metadata with text under the same row version", async () => {
+    const saves: Array<{ title: string; body: string; memo: string; status: string; favorite: boolean }> = [];
+    const controller = new SerializedSaveController({
+      initialDraft: { ...initial, memo: "", status: "draft", favorite: false }, initialRowVersion: 7,
+      save: async (draft, version) => { saves.push(draft); return { rowVersion: version + 1 }; }
+    });
+    controller.change({ ...controller.draft, memo: "다음 작업", status: "revising", favorite: true });
+    await controller.flush();
+    expect(saves).toEqual([{ ...initial, memo: "다음 작업", status: "revising", favorite: true }]);
+    expect(controller.rowVersion).toBe(8);
+  });
 });

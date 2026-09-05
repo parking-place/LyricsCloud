@@ -32,7 +32,8 @@ test.describe("complete song flow", () => {
       await expect(page.getByRole("heading", { name: "연결 자료" })).toBeVisible();
       await expect(page.getByRole("heading", { name: "작업 메모" })).toBeVisible();
       await expect(page.locator(".count-grid strong")).toHaveText(["0", "0", "0"]);
-      await expect(page.getByText("아직 지원 전")).toHaveCount(3);
+      await expect(page.getByText("현재 자료")).toHaveCount(1);
+      await expect(page.getByText("아직 지원 전")).toHaveCount(2);
       await expect(page.getByText("첫 줄 작업 메모")).toContainText("둘째 줄도 그대로 보존");
       expect(await hasHorizontalOverflow(page)).toBe(false);
       const mainBox = await page.locator(".dashboard-main").boundingBox();

@@ -41,7 +41,7 @@ export interface SongListResult {
   readonly items: readonly SongRecord[];
   readonly totalCount: number;
   readonly nextCursor: string | null;
-  readonly capabilities: { readonly lyricsSearch: false; readonly linkedResourceFilters: false };
+  readonly capabilities: { readonly lyricsSearch: true; readonly linkedResourceFilters: false };
 }
 
 export class SongCursorError extends Error {
@@ -171,6 +171,17 @@ export class PostgresSongStore {
           strpos(lower(r.title), lower($${values.length})) > 0
           or strpos(lower(s.description), lower($${values.length})) > 0
           or strpos(lower(s.work_notes), lower($${values.length})) > 0
+          or exists (
+            select 1 from lyrics search_lyric
+            join resources search_resource on search_resource.id = search_lyric.resource_id
+              and search_resource.owner_id = search_lyric.owner_id
+            where search_lyric.song_id = r.id and search_lyric.owner_id = r.owner_id
+              and search_resource.type = 'lyrics' and search_resource.deleted_at is null
+              and (
+                strpos(lower(search_resource.title), lower($${values.length})) > 0
+                or strpos(lower(search_lyric.body), lower($${values.length})) > 0
+              )
+          )
         )`);
       }
       if (input.status) {
@@ -201,7 +212,7 @@ export class PostgresSongStore {
         items: pageRows.map(mapSong),
         totalCount: Number(count.rows[0]?.count ?? 0),
         nextCursor: hasMore && last ? encodeCursor(makeCursor(last, input.sort)) : null,
-        capabilities: { lyricsSearch: false, linkedResourceFilters: false }
+        capabilities: { lyricsSearch: true, linkedResourceFilters: false }
       };
     });
   }

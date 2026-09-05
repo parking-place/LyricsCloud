@@ -89,7 +89,7 @@ describe.runIf(enabled)("song command and list store", () => {
     }
     const firstPage = await store!.listSongs(alice, listInput({ search: marker, limit: 2 }));
     expect(firstPage.totalCount).toBe(fixtures.length);
-    expect(firstPage.capabilities).toEqual({ lyricsSearch: false, linkedResourceFilters: false });
+    expect(firstPage.capabilities).toEqual({ lyricsSearch: true, linkedResourceFilters: false });
     await expect(store!.listSongs(alice, listInput({ cursor: "not-a-cursor" }))).rejects.toBeInstanceOf(SongCursorError);
   });
 

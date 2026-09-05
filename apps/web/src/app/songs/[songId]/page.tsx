@@ -21,5 +21,7 @@ export default async function SongDashboardPage({
   const query = await searchParams;
   const song = await getAuthContext().songs.getSong(user.userId, songId).catch(() => null);
   if (!song) notFound();
-  return <WorkspaceShell profile={user} active="songs"><SongDashboard initialSong={song} returnTo={safeSongReturnTo(query.returnTo)} /></WorkspaceShell>;
+  const lyrics = await getAuthContext().lyrics.listSongLyrics(user.userId, songId).catch(() => null);
+  if (!lyrics) notFound();
+  return <WorkspaceShell profile={user} active="songs"><SongDashboard initialSong={song} initialLyrics={lyrics} returnTo={safeSongReturnTo(query.returnTo)} /></WorkspaceShell>;
 }

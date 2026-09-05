@@ -1,4 +1,4 @@
-/** Adapter-neutral editor boundary. CodeMirror and Yjs arrive in 0.3.x. */
+/** Adapter-neutral text boundary. A CRDT adapter may translate transactions without owning editor DOM. */
 export interface TextDocumentPort {
   readonly value: string;
   replace(from: number, to: number, value: string): void;

@@ -33,7 +33,7 @@ interface SongListResponse {
   readonly items: Song[];
   readonly totalCount: number;
   readonly nextCursor: string | null;
-  readonly capabilities: { readonly lyricsSearch: false; readonly linkedResourceFilters: false };
+  readonly capabilities: { readonly lyricsSearch: true; readonly linkedResourceFilters: false };
 }
 
 const STATUS_LABELS: Record<SongStatus, string> = {
@@ -167,7 +167,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     </header>
 
     <div className="song-toolbar">
-      <label className="search-field"><span className="sr-only">곡 검색</span><span aria-hidden="true">⌕</span><input value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} placeholder="제목 또는 작업 메모 검색" type="search" /></label>
+      <label className="search-field"><span className="sr-only">곡 검색</span><span aria-hidden="true">⌕</span><input value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} placeholder="곡 제목·메모 또는 가사 검색" type="search" /></label>
       <label className="select-field"><span>상태</span><select aria-label="곡 상태 필터" value={status} onChange={(event) => setStatus(event.target.value as SongStatus | "")}><option value="">전체 상태</option>{STATUSES.map((value) => <option key={value} value={value}>{STATUS_LABELS[value]}</option>)}</select></label>
       <label className="select-field"><span>정렬</span><select aria-label="곡 정렬" value={sort} onChange={(event) => setSort(event.target.value as SongSort)}>{SORTS.map((value) => <option key={value} value={value}>{SORT_LABELS[value]}</option>)}</select></label>
     </div>

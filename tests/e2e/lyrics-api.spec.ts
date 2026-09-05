@@ -75,7 +75,7 @@ async function assertCount(request: APIRequestContext, songId: string, count: nu
   expect(response.status()).toBe(200);
   const list = await response.json();
   expect(list.items.find((song: { id: string }) => song.id === songId)).toMatchObject({ lyricCount: count });
-  expect(list.capabilities).toMatchObject({ lyricsSearch: false });
+  expect(list.capabilities).toMatchObject({ lyricsSearch: true });
 }
 
 test.describe("independent lyric API contract", () => {
