@@ -49,6 +49,7 @@ try {
       client.release();
     }
 
+    await target.query(await readFile(resolve("packages/database/rollback/0310_crdt_sync.sql"), "utf8"));
     await target.query(rollback);
     const rolledBack = await target.query(`select
       to_regclass('public.lyrics')::text as lyrics,
