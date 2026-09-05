@@ -54,6 +54,8 @@ jobs:
         run: pnpm test:migration:0201
       - name: Static checks
         run: pnpm check
+      - name: Shell and Docker cleanup contract
+        run: bash -n scripts/*.sh && ./scripts/cleanup-docker.sh --dry-run --build-cache
       - name: Unit tests
         run: pnpm test
       - name: Production build

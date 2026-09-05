@@ -30,6 +30,7 @@
 ## 개발 서버 운영
 
 - [`검증된 Phase commit 배포`](./development-deploy.md)
+- [`Docker 저장소 정리`](./docker-cleanup.md)
 - [`Cloudflare Tunnel과 HTTPS`](./cloudflare-tunnel-setup.md)
 - [`Google OAuth 개발 설정`](./google-oauth-setup.md)
 

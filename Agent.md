@@ -122,3 +122,11 @@ Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SH
 - 릴리스 서버 변경 지시가 없으면 진단과 계획 수립까지만 수행하고, 실행 명령도 자동 적용하지 않습니다.
 - 서버 주소나 공개 origin이 바뀌면 `.private/server-inventory.local.md`의 Google OAuth 변경 절차에 따라 대상 환경의 redirect URI, JavaScript origin, Branding, Audience, 앱 허용 메일을 함께 점검합니다.
 - 릴리스 변경을 수행한 경우 `.private/server-inventory.local.md`의 승인·변경 기록에 요청 내용, 변경 대상, 배포 버전, 검증 및 되돌리기 결과를 남깁니다. 비밀 값은 기록하지 않습니다.
+
+## 12. Docker 저장소 정리
+
+- 로컬 수용 테스트나 개발·릴리스 배포에서 Docker image를 build한 작업은 검증 성공 뒤 [`scripts/cleanup-docker.sh`](./scripts/cleanup-docker.sh)를 실행해 LyricsCloud의 중지 컨테이너, dangling image와 미사용 network를 정리합니다.
+- 개발·릴리스 전용 서버에서는 같은 스크립트의 `--build-cache` 옵션으로 사용하지 않는 BuildKit cache도 정리합니다. 로컬에서도 Phase Docker 검증이 끝나면 같은 명령을 사용합니다.
+- 정리는 새 컨테이너의 health와 필수 asset 검증 뒤에만 실행합니다. 그 전에 실패한 배포의 조사·rollback에 필요한 container와 image는 원인이 확인될 때까지 보존합니다.
+- Docker volume은 정리 명령에 포함하지 않습니다. 특히 PostgreSQL, 백업, 의존성 volume은 사용자의 별도 명시적 승인 없이 prune하거나 삭제하지 않습니다.
+- 릴리스 서버의 정리는 릴리스 변경이 명시적으로 승인된 작업 안에서만 실행하며, 이 규칙이 릴리스 서버에 임의로 접속하거나 배포할 권한을 만들지는 않습니다.

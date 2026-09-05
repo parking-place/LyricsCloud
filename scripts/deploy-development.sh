@@ -91,6 +91,10 @@ for _attempt in $(seq 1 30); do
       printf 'Development web CSS asset does not match the song UI build.\n' >&2
       exit 11
     fi
+    if ! ./scripts/cleanup-docker.sh --build-cache; then
+      printf 'Development services are healthy, but Docker cleanup failed.\n' >&2
+      exit 12
+    fi
     printf 'Development deploy OK: %s\n' "$expected_commit"
     exit 0
   fi

@@ -31,3 +31,15 @@ node scripts/migrate-test-users.mjs
 ```
 
 스크립트는 기존 `.test_users` 항목과 병합·정규화한 뒤 `.env`에서 `AUTH_ALLOWED_EMAILS` 행을 제거한다. 두 파일 권한은 `600`으로 맞추며 실제 이메일은 출력하지 않는다.
+
+## Docker 정리
+
+로컬·개발·릴리스 환경에서 LyricsCloud 빌드와 검증이 성공한 뒤 불필요한 Docker 객체를 정리한다.
+
+```bash
+pnpm docker:cleanup
+# 또는
+./scripts/cleanup-docker.sh --build-cache
+```
+
+기본 정리 대상은 `com.docker.compose.project=lyricscloud` 라벨이 있는 중지 컨테이너, dangling image와 미사용 network다. `--build-cache`는 여러 프로젝트가 공유할 수 있는 현재 builder의 미사용 cache를 모두 정리하므로 Docker 빌드를 모두 마친 뒤 사용한다. volume, 실행 중 컨테이너, 사용 중 image는 삭제하지 않는다. 삭제 전 대상만 확인하려면 `--dry-run`을 추가한다.

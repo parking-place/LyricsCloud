@@ -8,6 +8,7 @@
     "build": "pnpm -r --if-present build",
     "check": "pnpm lint && pnpm typecheck",
     "check:secrets": "node scripts/check-secret-leaks.mjs",
+    "docker:cleanup": "bash scripts/cleanup-docker.sh --build-cache",
     "boundaries": "node scripts/check-boundaries.mjs",
     "dev": "pnpm --filter @lyricscloud/web dev",
     "lint": "pnpm boundaries",

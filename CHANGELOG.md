@@ -30,6 +30,7 @@
 - 신규 릴리스 서버에 개발 환경과 분리된 Cloudflare Tunnel·DNS·HTTPS 경로 구성
 - 개발·릴리스 서버에 Docker Engine·Compose·Buildx·Git 기본 운영 환경 구성
 - 공개 개발 web을 Next.js production standalone image로 전환해 Cloudflare·브라우저의 이전 CSS cache와 최신 HTML이 섞이지 않도록 보정
+- 로컬·개발·릴리스 Docker 작업 뒤 LyricsCloud의 미사용 객체와 초과 build cache를 정리하되 volume과 실행 중 자산은 보존하도록 표준화
 
 ### Not yet implemented
 
