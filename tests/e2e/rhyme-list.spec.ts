@@ -89,6 +89,44 @@ test.describe("rhyme note list", () => {
       }
     } finally { await deleteAccount(account.userId); }
   });
+
+  test("serializes rapid favorite, pin and color changes while the first response is slow", async ({ context, page }) => {
+    const account = await createAccount(context, "라임 연속 변경 사용자");
+    await seedNotes(account.userId, 1);
+    const releases: Array<() => void> = [];
+    try {
+      await page.goto("/rhymes?sort=title_asc");
+      const title = "라임 노트 00";
+      const card = page.locator(".rhyme-card", { has: page.getByRole("heading", { name: title }) });
+      const href = await card.getByRole("link", { name: `${title} 라임 노트 열기` }).getAttribute("href");
+      const id = href!.split("/").at(-1)!;
+
+      const favorite = await holdFirst(page, `**/api/rhymes/${id}/favorite`); releases.push(favorite.release);
+      await card.getByRole("button", { name: `${title} 즐겨찾기` }).click(); await favorite.reached;
+      await card.getByRole("button", { name: `${title} 즐겨찾기 해제` }).click(); favorite.release();
+      await expect(card.getByRole("button", { name: `${title} 즐겨찾기` })).toHaveAttribute("aria-pressed", "false");
+      await expect.poll(() => readRhyme(page, id).then((item) => item.isFavorite)).toBe(false);
+
+      const pin = await holdFirst(page, `**/api/rhymes/${id}/pin`); releases.push(pin.release);
+      await card.getByRole("button", { name: `${title} 고정` }).click(); await pin.reached;
+      await card.getByRole("button", { name: `${title} 고정 해제` }).click(); pin.release();
+      await expect(card.getByRole("button", { name: `${title} 고정` })).toHaveAttribute("aria-pressed", "false");
+      await expect.poll(() => readRhyme(page, id).then((item) => item.isPinned)).toBe(false);
+
+      const color = await holdFirst(page, `**/api/rhymes/${id}/color`); releases.push(color.release);
+      await card.getByRole("button", { name: new RegExp(`${title} 색상: 없음`) }).click(); await color.reached;
+      await card.getByRole("button", { name: new RegExp(`${title} 색상: 빨강`) }).click();
+      await card.getByRole("button", { name: new RegExp(`${title} 색상: 노랑`) }).click(); color.release();
+      await expect(card.getByRole("button", { name: new RegExp(`${title} 색상: 초록`) })).toBeVisible();
+      await expect.poll(() => readRhyme(page, id).then((item) => item.color)).toBe("green");
+
+      await page.route(`**/api/rhymes/${id}/favorite`, (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
+      await card.getByRole("button", { name: `${title} 즐겨찾기` }).click();
+      await expect(page.getByText("변경을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.")).toBeVisible();
+      await expect(card.getByRole("button", { name: `${title} 즐겨찾기` })).toHaveAttribute("aria-pressed", "false");
+      expect((await readRhyme(page, id)).isFavorite).toBe(false);
+    } finally { for (const release of releases) release(); await deleteAccount(account.userId); }
+  });
 });
 
 async function createAccount(context: BrowserContext, displayName: string) {
@@ -129,3 +167,11 @@ async function seedNotes(ownerId: string, count: number) {
 
 async function deleteAccount(userId: string) { await withE2eDatabase((pool) => pool.query("delete from app_users where id=$1", [userId]).then(() => undefined)); }
 async function hasHorizontalOverflow(page: Page) { return page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth); }
+async function readRhyme(page: Page, id: string) { return (await (await page.request.get(`/api/rhymes/${id}`)).json()).rhyme as { isFavorite: boolean; isPinned: boolean; color: string | null }; }
+async function holdFirst(page: Page, pattern: string) {
+  let release!: () => void, reached!: () => void;
+  const waiting = new Promise<void>((resolve) => { release = resolve; });
+  const intercepted = new Promise<void>((resolve) => { reached = resolve; });
+  await page.route(pattern, async (route) => { reached(); await waiting; await route.continue(); }, { times: 1 });
+  return { reached: intercepted, release };
+}

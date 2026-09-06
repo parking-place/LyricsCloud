@@ -19,6 +19,11 @@ interface RhymeListResponse {
   readonly items: RhymeNote[]; readonly totalCount: number; readonly nextCursor: string | null;
   readonly filters: { readonly tags: readonly { id: string; label: string }[]; readonly songs: readonly LinkedSong[] };
 }
+interface MetadataQueueEntry<T> {
+  desired: T;
+  confirmed: T;
+  running: boolean;
+}
 
 const SORT_LABELS: Record<RhymeSort, string> = {
   updated_desc: "최근 수정순", created_desc: "최근 생성순", created_asc: "오래된 생성순",
@@ -43,6 +48,7 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
   const [manualCopy, setManualCopy] = useState<{ title: string; body: string } | null>(null);
   const [retryKey, setRetryKey] = useState(0);
   const requestSequence = useRef(0);
+  const metadataQueue = useRef(new Map<string, MetadataQueueEntry<unknown>>());
   const manualText = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -100,31 +106,60 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
     finally { setLoadingMore(false); }
   }
 
-  async function toggle(note: RhymeNote, field: "isFavorite" | "isPinned") {
-    const value = !note[field];
-    patchNote(note.id, { [field]: value }); setNotice("");
+  function toggle(note: RhymeNote, field: "isFavorite" | "isPinned") {
+    const key = `${note.id}:${field}`;
+    const pending = metadataQueue.current.get(key) as MetadataQueueEntry<boolean> | undefined;
+    const value = !(pending?.desired ?? note[field]);
     const endpoint = field === "isFavorite" ? "favorite" : "pin";
-    try {
-      const response = await fetch(`/api/rhymes/${note.id}/${endpoint}`, {
+    queueMetadataChange(key, pending?.confirmed ?? note[field], value,
+      (next) => patchNote(note.id, field === "isPinned" ? { isPinned: next, pinOrder: next ? 0 : null } : { isFavorite: next }),
+      async (next) => fetch(`/api/rhymes/${note.id}/${endpoint}`, {
         method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(field === "isPinned" ? { value, pinOrder: value ? 0 : null } : { value })
-      });
-      if (!response.ok) throw new Error();
-      const result = await response.json() as { rhyme: RhymeNote };
-      patchNote(note.id, result.rhyme);
-      setNotice(`${note.title}의 ${field === "isFavorite" ? "즐겨찾기" : "고정"}를 ${value ? "설정" : "해제"}했습니다.`);
-    } catch { patchNote(note.id, note); setNotice("변경을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."); }
+        body: JSON.stringify(field === "isPinned" ? { value: next, pinOrder: next ? 0 : null } : { value: next })
+      }),
+      (next) => `${note.title}의 ${field === "isFavorite" ? "즐겨찾기" : "고정"}를 ${next ? "설정" : "해제"}했습니다.`);
   }
 
-  async function cycleColor(note: RhymeNote) {
-    const index = COLORS.indexOf(note.color); const value = COLORS[(index + 1) % COLORS.length] ?? null;
-    patchNote(note.id, { color: value }); setNotice("");
-    try {
-      const response = await fetch(`/api/rhymes/${note.id}/color`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value }) });
-      if (!response.ok) throw new Error();
-      const result = await response.json() as { rhyme: RhymeNote }; patchNote(note.id, result.rhyme);
-      setNotice(`${note.title}의 색상을 ${value ? COLOR_LABELS[value] : "없음"}으로 변경했습니다.`);
-    } catch { patchNote(note.id, note); setNotice("색상을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."); }
+  function cycleColor(note: RhymeNote) {
+    const key = `${note.id}:color`;
+    const pending = metadataQueue.current.get(key) as MetadataQueueEntry<ResourceColor | null> | undefined;
+    const current = pending?.desired ?? note.color;
+    const index = COLORS.indexOf(current); const value = COLORS[(index + 1) % COLORS.length] ?? null;
+    queueMetadataChange(key, pending?.confirmed ?? note.color, value,
+      (next) => patchNote(note.id, { color: next }),
+      (next) => fetch(`/api/rhymes/${note.id}/color`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: next }) }),
+      (next) => `${note.title}의 색상을 ${next ? COLOR_LABELS[next] : "없음"}으로 변경했습니다.`);
+  }
+
+  function queueMetadataChange<T>(key: string, confirmed: T, desired: T, apply: (value: T) => void,
+    send: (value: T) => Promise<Response>, successMessage: (value: T) => string) {
+    let entry = metadataQueue.current.get(key) as MetadataQueueEntry<T> | undefined;
+    if (entry) entry.desired = desired;
+    else {
+      entry = { confirmed, desired, running: false };
+      metadataQueue.current.set(key, entry as MetadataQueueEntry<unknown>);
+    }
+    apply(desired); setNotice("");
+    if (entry.running) return;
+    entry.running = true;
+    void (async () => {
+      while (!Object.is(entry!.confirmed, entry!.desired)) {
+        const sent = entry!.desired;
+        try {
+          const response = await send(sent);
+          if (!response.ok) throw new Error();
+          entry!.confirmed = sent;
+          if (Object.is(entry!.desired, sent)) { apply(sent); setNotice(successMessage(sent)); }
+        } catch {
+          if (Object.is(entry!.desired, sent)) {
+            entry!.desired = entry!.confirmed; apply(entry!.confirmed);
+            setNotice("변경을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+          }
+        }
+      }
+      entry!.running = false;
+      if (metadataQueue.current.get(key) === entry) metadataQueue.current.delete(key);
+    })();
   }
 
   function patchNote(id: string, patch: Partial<RhymeNote>) { setNotes((current) => current.map((item) => item.id === id ? { ...item, ...patch } : item)); }
