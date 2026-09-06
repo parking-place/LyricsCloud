@@ -18,3 +18,4 @@
 - [`0.2.0 곡 API와 cursor`](./0.2.0-SONG-API.md)
 - [`0.3.0 가사 영역 인계`](./0.3.0-LYRICS-HANDOFF.md)
 - [`0.4.0 라임 노트 증적과 0.5.0·0.6.0 인계`](./0.4.0-RHYME-HANDOFF.md)
+- [`0.5.0 프롬프트 토큰 계약`](./0.5.0-PROMPT-CONTRACT.md)

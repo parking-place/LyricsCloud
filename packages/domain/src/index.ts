@@ -7,5 +7,6 @@ export * from "./sync-contract.js";
 export * from "./lyric-contract.js";
 export * from "./rhyme-contract.js";
 export * from "./rhyme-insertion-contract.js";
+export * from "./prompt-contract.js";
 export * from "./revision-contract.js";
 export * from "./types.js";

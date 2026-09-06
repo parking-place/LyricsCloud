@@ -15,3 +15,5 @@ readiness는 인증 실패, 시간 초과, 연결 불가, schema 미적용, 기�
 0400은 `rhyme_note` resource의 1:1 본문 subtype, owner별 Unicode NFC·공백·대소문자 정규화 태그, owner-safe 태그와 곡 N:M 연결, 생성·복제 멱등 요청을 추가합니다. 공통 resource의 pin·favorite·color·row version을 그대로 사용하고 soft delete는 원본 subtype·태그·곡 연결을 보존한 채 일반 조회와 새 연결에서 숨깁니다. `PostgresRhymeStore`는 생성·수정·복제·삭제와 태그·곡 연결/해제를 owner transaction과 강제 RLS 아래 수행합니다.
 
 `sync_documents.resource_type`은 0400부터 `lyrics | rhyme_note`이며 기존 0.3.1 snapshot·raw update·receipt·revision 저장 구조를 공유합니다. `rollback/0400_rhyme_notes.sql`은 라임·태그·곡 연결·라임 sync 자료가 하나라도 있으면 중단합니다. `pnpm test:migration:0400`은 빈 임시 DB에서 전진 적용, 정규화·owner FK, populated rollback guard, 기존 가사 보존과 재적용을 검사합니다.
+
+0500은 `prompt` resource의 1:1 평문 subtype, owner별 토큰 dictionary와 순서형 무중복 읽기 projection, 생성·복제·업데이트 멱등 요청을 추가합니다. CRDT의 중복 occurrence는 사용자 정리 전까지 보존하지만 `prompt_tokens`는 정규화 키별 첫 표시 값만 유지합니다. dictionary의 사용 횟수·최근 사용은 owner별 자동완성에만 사용하며, prompt soft delete 뒤에도 과거 사용 이력은 보존합니다. `sync_documents.resource_type`은 `prompt`까지 확장됩니다.

@@ -1,6 +1,6 @@
 import * as Y from "yjs";
 import { describe, expect, it } from "vitest";
-import { applyLyricUpdate, createLyricDocument, createRhymeDocument, encodeLyricSnapshot, encodeTextRelativePosition, lyricBody, projectLyric, projectRhyme, resolveTextRelativePosition, rhymeBody } from "./crdt.js";
+import { applyLyricUpdate, applyPromptUpdate, createLyricDocument, createPromptDocument, createRhymeDocument, encodeLyricSnapshot, encodePromptSnapshot, encodeTextRelativePosition, insertPromptToken, lyricBody, movePromptToken, projectLyric, projectPrompt, projectRhyme, resolveTextRelativePosition, rhymeBody } from "./crdt.js";
 
 describe("lyric CRDT contract", () => {
   it("converges with reversed and duplicate delivery", () => {
@@ -48,6 +48,39 @@ it("keeps a portable relative cursor attached across a concurrent prefix inserti
   expect(resolveTextRelativePosition(replica, relative)).toBe(8);
   expect(resolveTextRelativePosition(replica, "not/base64")).toBeNull();
   source.destroy(); replica.destroy();
+});
+
+it("converges an ordered prompt sequence after concurrent insertions and movement", () => {
+  const baseline = createPromptDocument("합성 프롬프트", [
+    { occurrenceId: "base-a", displayValue: "ambient" },
+    { occurrenceId: "base-b", displayValue: "female vocal" }
+  ]);
+  const seed = encodePromptSnapshot(baseline);
+  const left = createPromptDocument(); const right = createPromptDocument();
+  applyPromptUpdate(left, seed); applyPromptUpdate(right, seed);
+  insertPromptToken(left, 1, { occurrenceId: "left-new", displayValue: "몽환적" });
+  insertPromptToken(right, 2, { occurrenceId: "right-new", displayValue: "808 bass" });
+  movePromptToken(left, "base-b", 0);
+  const leftUpdate = Y.encodeStateAsUpdate(left, Y.encodeStateVector(baseline));
+  const rightUpdate = Y.encodeStateAsUpdate(right, Y.encodeStateVector(baseline));
+  applyPromptUpdate(left, rightUpdate); applyPromptUpdate(right, leftUpdate);
+  expect(projectPrompt(left)).toEqual(projectPrompt(right));
+  expect(projectPrompt(left).tokens.map((token) => token.displayValue).sort()).toEqual(["808 bass", "ambient", "female vocal", "몽환적"].sort());
+  baseline.destroy(); left.destroy(); right.destroy();
+});
+
+it("keeps user duplicates in the CRDT draft while projecting a unique comma read model", () => {
+  const document = createPromptDocument("중복", [
+    { occurrenceId: "one", displayValue: "Ｆｅｍａｌｅ  Vocal" },
+    { occurrenceId: "two", displayValue: "female vocal" },
+    { occurrenceId: "three", displayValue: "bright synth" }
+  ]);
+  insertPromptToken(document, 3, { occurrenceId: "three", displayValue: "ignored retry" });
+  const projection = projectPrompt(document);
+  expect(projection.tokens).toHaveLength(3);
+  expect(projection.duplicates).toEqual([{ normalizedValue: "female vocal", firstIndex: 0, duplicateIndexes: [1] }]);
+  expect(projection.plainText).toBe("Ｆｅｍａｌｅ  Vocal, bright synth");
+  document.destroy();
 });
 
 function createFrom(update: Uint8Array) {

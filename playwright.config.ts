@@ -25,7 +25,7 @@ export default defineConfig({
         NODE_ENV: "production",
         OIDC_TEST_FIXTURE: "true",
         DATABASE_URL: process.env.E2E_DATABASE_URL ?? "postgresql://user:synthetic@127.0.0.1:65432/missing",
-        APP_VERSION: "0.4.0",
+        APP_VERSION: "0.5.0",
         BUILD_ID: "playwright",
         APP_ORIGIN: "http://127.0.0.1:3000",
         GOOGLE_ISSUER: "http://127.0.0.1:3100",

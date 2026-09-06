@@ -4,8 +4,8 @@ LyricsCloud는 Suno 음악 제작 과정의 곡, 여러 가사 버전, 라임 �
 
 ## 현재 상태
 
-- 완료 기록: `0.0.0`~`0.3.1` 및 `0.4.0 Phase 1~2`; 다음은 라임 노트 생성·편집 화면
-- 다음 단계: [`0.4.0/3phase.md`](<./0.Plans/1. Dev-phase/0.4.0/3phase.md>) — CRDT 자동 저장·표시 속성·수정 기록·삭제의 PC·모바일 구현
+- 완료 기록: `0.0.0`~`0.4.0`; 현재는 `0.5.0 Phase 1` 프롬프트 토큰 계약 구현 중
+- 현재 단계: [`0.5.0/1phase.md`](<./0.Plans/1. Dev-phase/0.5.0/1phase.md>) — 쉼표 parser·정규화·순서형 CRDT·owner별 PostgreSQL 읽기 모델
 - 상태 원본: [`STATUS.md`](<./0.Plans/1. Dev-phase/STATUS.md>)
 - 애플리케이션 코드: Google 로그인·소유권, 곡·가사 CRUD, 라임 노트·태그·곡 연결 데이터 계약, CodeMirror 편집·복사, 동일 owner 본문 동기화, 수정 기록·버전 비교·비파괴 복원
 - 개인 OAuth·수정 기록의 로컬 검증: [`Phase 4 기록`](./docs/runbooks/0.3.1-phase4-local-validation.md)
