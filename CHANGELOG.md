@@ -49,7 +49,7 @@
 
 ### Not yet implemented
 
-- 0.3.1의 실제 Android/iOS·OS 한글 IME·서로 다른 물리 네트워크 인수와 후속 버전 기능
+- 0.4.0 이후 라임 노트·프롬프트·검색·PWA·내보내기·출시 준비 기능
 
 ### Fixed
 
