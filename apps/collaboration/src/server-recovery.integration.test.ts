@@ -22,6 +22,7 @@ describe.runIf(process.env.AUTH_DATABASE_INTEGRATION === "true")("collaboration 
     const port = 31_000 + Math.floor(Math.random() * 10_000);
     const origin = "http://localhost:8080";
     let child: ChildProcessWithoutNullStreams | undefined;
+    let startupFailure = "";
     const clients: WebSocket[] = [];
     const documents: Y.Doc[] = [];
     try {
@@ -74,19 +75,28 @@ describe.runIf(process.env.AUTH_DATABASE_INTEGRATION === "true")("collaboration 
       await Promise.all([pool.end(), songs.close(), lyrics.close()]);
     }
     function start(file: string, crashPoint = "") {
+      startupFailure = "";
       const process = spawn(globalThis.process.execPath, ["--import", pathToFileURL(createRequire(import.meta.url).resolve("tsx")).href, file], { env: {
         ...globalThis.process.env, NODE_ENV: "test", DATABASE_URL: databaseUrl, COLLABORATION_PORT: String(port), APP_ORIGIN: origin, SYNC_CRASH_POINT: crashPoint
       } });
       // Do not accumulate application output or document payloads as evidence.
-      process.stdout.resume(); process.stderr.resume();
+      process.stdout.resume();
+      process.stderr.on("data", (data: Buffer) => {
+        const code = data.toString().match(/\b(?:EADDRINUSE|EACCES|ECONNREFUSED|ERR_MODULE_NOT_FOUND|TypeError|SyntaxError)\b/);
+        if (code) startupFailure = code[0];
+      });
+      process.once("error", (error: Error) => { startupFailure = error.name; });
       return process;
     }
     async function ready() {
       for (let attempt = 0; attempt < 100; attempt++) {
+        if (child && (child.exitCode !== null || child.signalCode !== null)) {
+          throw new Error(`test server exited before readiness: ${startupFailure || child.signalCode || child.exitCode}`);
+        }
         try { if ((await fetch(`http://127.0.0.1:${port}/health/ready`)).ok) return; } catch {}
         await new Promise((resolve) => setTimeout(resolve, 50));
       }
-      throw new Error("test server did not start");
+      throw new Error(`test server did not become ready: ${startupFailure || "process still running"}`);
     }
     function connect(key: string, headers: Record<string, string>) {
       const client = new WebSocket(`ws://127.0.0.1:${port}/sync/${key}`, { headers });
