@@ -102,7 +102,7 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       history(),
       keymap.of([...defaultKeymap, ...historyKeymap]),
       EditorView.lineWrapping,
-      EditorView.contentAttributes.of({ "aria-label": options.ariaLabel, spellcheck: "true" }),
+      EditorView.contentAttributes.of({ "aria-label": options.ariaLabel, spellcheck: "true", tabindex: "0" }),
       EditorView.clipboardInputFilter.of(normalizeLineEndings),
       songFormPlugin,
       EditorView.updateListener.of((update) => {
