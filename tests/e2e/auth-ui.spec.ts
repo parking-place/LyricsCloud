@@ -68,7 +68,7 @@ test("authenticated workspace exposes the desktop and mobile shell", async ({ co
     await toggle.focus();
     await page.keyboard.press("Enter");
     await expect(page.getByRole("button", { name: "좌측 메뉴 펼치기" })).toBeVisible();
-    await expect(page.getByText("0.4.0 예정")).toBeHidden();
+  await expect(page.getByText("0.5.0 예정")).toBeHidden();
     const logout = page.locator(".top-logout");
     await logout.focus();
     await expect(logout).toBeFocused();

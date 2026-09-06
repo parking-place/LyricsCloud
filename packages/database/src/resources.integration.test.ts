@@ -31,6 +31,7 @@ describe.runIf(enabled)("resource and song PostgreSQL contract", () => {
     const wrongType = randomUUID();
     await expectDatabaseError(rootTransaction(async (client) => {
       await client.query("insert into resources(id, owner_id, type, title) values ($1, $2, 'prompt', 'not a song')", [wrongType, alice]);
+      await client.query("insert into prompts(resource_id, owner_id) values ($1, $2)", [wrongType, alice]);
       await client.query("insert into songs(resource_id, owner_id) values ($1, $2)", [wrongType, alice]);
     }), "23503", "songs_resource_owner_type_fk");
 

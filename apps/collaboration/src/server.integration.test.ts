@@ -22,7 +22,7 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
   beforeAll(async () => {
     if (!pool || !/lyricscloud_test(?:\?|$)/.test(databaseUrl)) throw new Error("collaboration integration requires lyricscloud_test");
     processHandle = spawn("apps/collaboration/node_modules/.bin/tsx", ["apps/collaboration/src/server.ts"], {
-      cwd: process.cwd(), env: { ...process.env, DATABASE_URL: databaseUrl, APP_VERSION: "0.4.0", BUILD_ID: "synthetic", COLLABORATION_PORT: String(port), APP_ORIGIN: "http://localhost:8080" }
+      cwd: process.cwd(), env: { ...process.env, DATABASE_URL: databaseUrl, APP_VERSION: "0.5.0", BUILD_ID: "synthetic", COLLABORATION_PORT: String(port), APP_ORIGIN: "http://localhost:8080" }
     });
     processHandle.stdout.on("data", (chunk) => { output += chunk.toString(); });
     processHandle.stderr.on("data", (chunk) => { output += chunk.toString(); });

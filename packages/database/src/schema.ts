@@ -92,6 +92,43 @@ export const rhymeNoteCreateRequests = pgTable("rhyme_note_create_requests", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [primaryKey({ columns: [table.ownerId, table.requestId] })]);
 
+export const prompts = pgTable("prompts", {
+  resourceId: uuid("resource_id").primaryKey(),
+  ownerId: uuid("owner_id").notNull(),
+  plainText: text("plain_text").notNull().default("")
+});
+
+export const promptTokenDictionary = pgTable("prompt_token_dictionary", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ownerId: uuid("owner_id").notNull(),
+  displayValue: text("display_value").notNull(),
+  normalizedValue: text("normalized_value").notNull(),
+  usageCount: bigint("usage_count", { mode: "number" }).notNull().default(0),
+  lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const promptTokens = pgTable("prompt_tokens", {
+  ownerId: uuid("owner_id").notNull(),
+  promptResourceId: uuid("prompt_resource_id").notNull(),
+  ordinal: integer("ordinal").notNull(),
+  dictionaryTokenId: uuid("dictionary_token_id").notNull(),
+  displayValue: text("display_value").notNull(),
+  normalizedValue: text("normalized_value").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.promptResourceId, table.ordinal] })]);
+
+export const promptWriteRequests = pgTable("prompt_write_requests", {
+  ownerId: uuid("owner_id").notNull(),
+  requestId: uuid("request_id").notNull(),
+  resourceId: uuid("resource_id").notNull(),
+  operation: text("operation").$type<"create" | "duplicate" | "update">().notNull(),
+  requestSha256: text("request_sha256").notNull(),
+  resultRowVersion: bigint("result_row_version", { mode: "number" }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.requestId] })]);
+
 export const tags = pgTable("tags", {
   id: uuid("id").primaryKey().defaultRandom(),
   ownerId: uuid("owner_id").notNull(),
