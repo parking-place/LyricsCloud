@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeRhymeTag, parseCreateRhymeNoteInput, parseUpdateRhymeNoteInput, RhymeValidationError } from "./rhyme-contract.js";
+import { normalizeRhymeTag, parseCreateRhymeNoteInput, parseRhymeListInput, parseUpdateRhymeNoteInput, RhymeValidationError } from "./rhyme-contract.js";
 
 const requestId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
@@ -26,5 +26,16 @@ describe("rhyme note contract", () => {
     expect(parseUpdateRhymeNoteInput({ rowVersion: 2, isPinned: false, pinOrder: 9 })).toEqual({ rowVersion: 2, isPinned: false, pinOrder: null });
     expect(() => parseUpdateRhymeNoteInput({ rowVersion: 2, pinOrder: 1 })).toThrow("VALIDATION_FAILED");
     expect(() => parseUpdateRhymeNoteInput({ rowVersion: 0, body: "내용" })).toThrow("VALIDATION_FAILED");
+  });
+
+  it("validates combined list filters and resets defaults deterministically", () => {
+    const tag = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+    const song = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+    expect(parseRhymeListInput(new URLSearchParams({ search: "  Air  ", tag, song, sort: "title_asc", limit: "12" })))
+      .toEqual({ search: "Air", tagId: tag, songId: song, sort: "title_asc", limit: 12 });
+    expect(parseRhymeListInput(new URLSearchParams())).toEqual({ sort: "updated_desc", limit: 20 });
+    expect(() => parseRhymeListInput(new URLSearchParams({ tag: "unsafe" }))).toThrow(RhymeValidationError);
+    expect(() => parseRhymeListInput(new URLSearchParams({ sort: "random" }))).toThrow(RhymeValidationError);
+    expect(() => parseRhymeListInput(new URLSearchParams({ limit: "51" }))).toThrow(RhymeValidationError);
   });
 });

@@ -10,6 +10,19 @@ export const RHYME_LIMITS = {
   tagsPerNote: 30
 } as const;
 
+export const RHYME_SORTS = ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"] as const;
+export type RhymeSort = (typeof RHYME_SORTS)[number];
+export const RHYME_LIST_LIMITS = { default: 20, maximum: 50 } as const;
+
+export interface RhymeListInput {
+  readonly search?: string;
+  readonly tagId?: string;
+  readonly songId?: string;
+  readonly sort: RhymeSort;
+  readonly cursor?: string;
+  readonly limit: number;
+}
+
 export interface RhymeTagRecord {
   readonly id: string;
   readonly displayValue: string;
@@ -116,6 +129,26 @@ export function parseRhymeRequestId(value: unknown): string {
   const input = object(value);
   if (!isResourceId(input.requestId)) issue("requestId", "uuid_required");
   return input.requestId as string;
+}
+
+export function parseRhymeListInput(params: URLSearchParams): RhymeListInput {
+  const search = params.get("search")?.normalize("NFC").trim() || undefined;
+  if (search && [...search].length > 200) issue("search", "too_long");
+  const tagId = params.get("tag")?.trim() || undefined;
+  const songId = params.get("song")?.trim() || undefined;
+  if (tagId && !isResourceId(tagId)) issue("tag", "uuid_required");
+  if (songId && !isResourceId(songId)) issue("song", "uuid_required");
+  const rawSort = params.get("sort") ?? "updated_desc";
+  if (!RHYME_SORTS.includes(rawSort as RhymeSort)) issue("sort", "unsupported_value");
+  const cursor = params.get("cursor")?.trim() || undefined;
+  if (cursor && cursor.length > 1_024) issue("cursor", "too_long");
+  const rawLimit = params.get("limit");
+  const limit = rawLimit === null ? RHYME_LIST_LIMITS.default : Number(rawLimit);
+  if (!Number.isInteger(limit) || limit < 1 || limit > RHYME_LIST_LIMITS.maximum) issue("limit", "integer_between_1_and_50");
+  return {
+    ...(search ? { search } : {}), ...(tagId ? { tagId } : {}), ...(songId ? { songId } : {}),
+    sort: rawSort as RhymeSort, ...(cursor ? { cursor } : {}), limit
+  };
 }
 
 function object(value: unknown): Record<string, unknown> {

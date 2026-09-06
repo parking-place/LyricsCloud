@@ -3,7 +3,7 @@ import {
   isResourceId, normalizeRhymeTag, parseCreateRhymeNoteInput, parseRhymeRequestId,
   parseUpdateRhymeNoteInput, RHYME_LIMITS, RhymeConflictError,
   type CreateRhymeNoteInput, type RhymeNoteRecord, type RhymeTagRecord,
-  type UpdateRhymeNoteInput
+  type RhymeListInput, type RhymeSort, type UpdateRhymeNoteInput, type ResourceColor
 } from "@lyricscloud/domain";
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { createDatabasePool } from "./pool.js";
@@ -15,6 +15,28 @@ interface RhymeRow extends QueryResultRow {
 }
 interface TagRow extends QueryResultRow {
   id: string; display_value: string; normalized_value: string; created_at: Date; updated_at: Date;
+}
+interface RhymeListRow extends RhymeRow {
+  tags: unknown;
+  linked_songs: unknown;
+}
+interface RhymeCursor { readonly version: 1; readonly offset: number; readonly signature: string }
+
+export interface RhymeListItem extends RhymeNoteRecord {
+  readonly linkedSongs: readonly { readonly id: string; readonly title: string }[];
+}
+export interface RhymeListResult {
+  readonly items: readonly RhymeListItem[];
+  readonly totalCount: number;
+  readonly nextCursor: string | null;
+  readonly filters: {
+    readonly tags: readonly { readonly id: string; readonly label: string }[];
+    readonly songs: readonly { readonly id: string; readonly title: string }[];
+  };
+}
+
+export class RhymeCursorError extends Error {
+  constructor() { super("RHYME_CURSOR_INVALID"); this.name = "RhymeCursorError"; }
 }
 
 export type CreatedRhymeNote = { rhyme: RhymeNoteRecord; replayed: boolean };
@@ -44,6 +66,63 @@ export class PostgresRhymeStore {
     return this.#withUser(ownerId, (client) => selectRhyme(client, ownerId, resourceId));
   }
 
+  listRhymeNotes(ownerId: string, input: RhymeListInput): Promise<RhymeListResult> {
+    return this.#withUser(ownerId, async (client) => {
+      const values: unknown[] = [ownerId];
+      const conditions = ["r.owner_id=$1", "r.type='rhyme_note'", "r.deleted_at is null"];
+      if (input.search) {
+        values.push(input.search);
+        conditions.push(`(strpos(lower(r.title),lower($${values.length}))>0 or strpos(lower(n.body),lower($${values.length}))>0)`);
+      }
+      if (input.tagId) {
+        values.push(input.tagId);
+        conditions.push(`exists(select 1 from resource_tags frt join tags ft on ft.id=frt.tag_id and ft.owner_id=frt.owner_id
+          where frt.owner_id=r.owner_id and frt.resource_id=r.id and frt.tag_id=$${values.length} and ft.deleted_at is null)`);
+      }
+      if (input.songId) {
+        values.push(input.songId);
+        conditions.push(`exists(select 1 from song_resource_links fsl join resources fs on fs.id=fsl.song_resource_id and fs.owner_id=fsl.owner_id
+          where fsl.owner_id=r.owner_id and fsl.linked_resource_id=r.id and fsl.linked_resource_type='rhyme_note'
+            and fsl.song_resource_id=$${values.length} and fs.type='song' and fs.deleted_at is null)`);
+      }
+      const where = conditions.join(" and ");
+      const count = Number((await client.query<{ count: string }>(`select count(*)::text count from resources r
+        join rhyme_notes n on n.resource_id=r.id and n.owner_id=r.owner_id where ${where}`, values)).rows[0]?.count ?? 0);
+      const offset = input.cursor ? decodeRhymeCursor(input.cursor, input).offset : 0;
+      values.push(input.limit + 1, offset);
+      const rows = await client.query<RhymeListRow>(`select r.id,r.title,n.body,r.is_favorite,r.is_pinned,r.pin_order,r.color,
+        r.row_version::text,r.created_at,r.updated_at,
+        coalesce((select jsonb_agg(jsonb_build_object('id',t.id,'displayValue',t.display_value,'normalizedValue',t.normalized_value,
+          'createdAt',to_char(t.created_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
+          'updatedAt',to_char(t.updated_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"')) order by t.normalized_value,t.id)
+          from resource_tags rt join tags t on t.id=rt.tag_id and t.owner_id=rt.owner_id
+          where rt.owner_id=r.owner_id and rt.resource_id=r.id and t.deleted_at is null),'[]'::jsonb) tags,
+        coalesce((select jsonb_agg(jsonb_build_object('id',song.id,'title',song.title) order by lower(song.title),song.id)
+          from song_resource_links sl join resources song on song.id=sl.song_resource_id and song.owner_id=sl.owner_id
+          where sl.owner_id=r.owner_id and sl.linked_resource_id=r.id and sl.linked_resource_type='rhyme_note'
+            and song.type='song' and song.deleted_at is null),'[]'::jsonb) linked_songs
+        from resources r join rhyme_notes n on n.resource_id=r.id and n.owner_id=r.owner_id
+        where ${where} order by ${rhymeSortOrder(input.sort)} limit $${values.length - 1} offset $${values.length}`, values);
+      const hasMore = rows.rows.length > input.limit;
+      const page = hasMore ? rows.rows.slice(0, input.limit) : rows.rows;
+      const [tags, songs] = await Promise.all([
+        client.query<{ id: string; display_value: string }>(`select t.id,t.display_value from tags t where t.owner_id=$1 and t.deleted_at is null
+          and exists(select 1 from resource_tags rt join resources rr on rr.id=rt.resource_id and rr.owner_id=rt.owner_id
+            where rt.owner_id=t.owner_id and rt.tag_id=t.id and rr.type='rhyme_note' and rr.deleted_at is null)
+          order by t.normalized_value,t.id`, [ownerId]),
+        client.query<{ id: string; title: string }>(`select r.id,r.title from resources r where r.owner_id=$1 and r.type='song' and r.deleted_at is null
+          and exists(select 1 from song_resource_links sl join resources rr on rr.id=sl.linked_resource_id and rr.owner_id=sl.owner_id
+            where sl.owner_id=r.owner_id and sl.song_resource_id=r.id and sl.linked_resource_type='rhyme_note'
+              and rr.type='rhyme_note' and rr.deleted_at is null) order by lower(r.title),r.id`, [ownerId])
+      ]);
+      return {
+        items: page.map(mapRhymeListItem), totalCount: count,
+        nextCursor: hasMore ? encodeRhymeCursor({ version: 1, offset: offset + input.limit, signature: rhymeQuerySignature(input) }) : null,
+        filters: { tags: tags.rows.map((tag) => ({ id: tag.id, label: tag.display_value })), songs: songs.rows }
+      };
+    });
+  }
+
   updateRhymeNote(ownerId: string, resourceId: string, value: UpdateRhymeNoteInput): Promise<RhymeNoteRecord | null> {
     const input = parseUpdateRhymeNoteInput(value);
     if (!isResourceId(resourceId)) return Promise.resolve(null);
@@ -64,6 +143,22 @@ export class PostgresRhymeStore {
       if (input.body !== undefined) await client.query("update rhyme_notes set body=$3 where resource_id=$1 and owner_id=$2", [resourceId, ownerId, input.body]);
       return selectRhyme(client, ownerId, resourceId);
     });
+  }
+
+  setFavorite(ownerId: string, resourceId: string, value: boolean): Promise<RhymeNoteRecord | null> {
+    return this.#updateResource(ownerId, resourceId, "is_favorite", value);
+  }
+
+  setPin(ownerId: string, resourceId: string, value: boolean, pinOrder: number | null): Promise<RhymeNoteRecord | null> {
+    return this.#withUser(ownerId, async (client) => {
+      const result = await client.query(`update resources set is_pinned=$3,pin_order=$4
+        where id=$1 and owner_id=$2 and type='rhyme_note' and deleted_at is null returning id`, [resourceId, ownerId, value, pinOrder]);
+      return result.rowCount ? selectRhyme(client, ownerId, resourceId) : null;
+    });
+  }
+
+  setColor(ownerId: string, resourceId: string, value: ResourceColor | null): Promise<RhymeNoteRecord | null> {
+    return this.#updateResource(ownerId, resourceId, "color", value);
   }
 
   duplicateRhymeNote(ownerId: string, resourceId: string, value: { readonly requestId: string }): Promise<CreatedRhymeNote | null> {
@@ -151,6 +246,15 @@ export class PostgresRhymeStore {
 
   async close(): Promise<void> { await this.#pool.end(); }
 
+  #updateResource(ownerId: string, resourceId: string, column: "is_favorite" | "color", value: boolean | ResourceColor | null): Promise<RhymeNoteRecord | null> {
+    if (!isResourceId(resourceId)) return Promise.resolve(null);
+    return this.#withUser(ownerId, async (client) => {
+      const result = await client.query(`update resources set ${column}=$3
+        where id=$1 and owner_id=$2 and type='rhyme_note' and deleted_at is null returning id`, [resourceId, ownerId, value]);
+      return result.rowCount ? selectRhyme(client, ownerId, resourceId) : null;
+    });
+  }
+
   async #withUser<T>(ownerId: string, work: (client: PoolClient) => Promise<T>): Promise<T> {
     if (!isResourceId(ownerId)) throw new Error("AUTH_CONTEXT_INVALID");
     const client = await this.#pool.connect();
@@ -226,4 +330,44 @@ function hashRequest(operation: string, value: unknown): string {
 function mapTag(row: TagRow): RhymeTagRecord {
   return { id: row.id, displayValue: row.display_value, normalizedValue: row.normalized_value,
     createdAt: row.created_at.toISOString(), updatedAt: row.updated_at.toISOString() };
+}
+
+function mapRhymeListItem(row: RhymeListRow): RhymeListItem {
+  const tags = Array.isArray(row.tags) ? row.tags as RhymeTagRecord[] : [];
+  const linkedSongs = Array.isArray(row.linked_songs) ? row.linked_songs as { id: string; title: string }[] : [];
+  return {
+    id: row.id, title: row.title, body: row.body, isFavorite: row.is_favorite, isPinned: row.is_pinned,
+    pinOrder: row.pin_order, color: row.color, rowVersion: Number(row.row_version), tags,
+    linkedSongIds: linkedSongs.map(({ id }) => id), linkedSongs,
+    createdAt: row.created_at.toISOString(), updatedAt: row.updated_at.toISOString()
+  };
+}
+
+function rhymeSortOrder(sort: RhymeSort): string {
+  const prefix = "case when r.is_pinned then 0 else 1 end,coalesce(r.pin_order,2147483647)";
+  if (sort === "created_desc") return `${prefix},r.created_at desc,r.id desc`;
+  if (sort === "created_asc") return `${prefix},r.created_at asc,r.id asc`;
+  if (sort === "title_asc") return `${prefix},lower(r.title),r.id`;
+  if (sort === "favorite_first") return `${prefix},case when r.is_favorite then 0 else 1 end,r.updated_at desc,r.id desc`;
+  return `${prefix},r.updated_at desc,r.id desc`;
+}
+
+function rhymeQuerySignature(input: RhymeListInput): string {
+  return createHash("sha256").update(JSON.stringify([input.search ?? "", input.tagId ?? "", input.songId ?? "", input.sort, input.limit])).digest("base64url").slice(0, 20);
+}
+
+function encodeRhymeCursor(cursor: RhymeCursor): string {
+  return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
+}
+
+function decodeRhymeCursor(value: string, input: RhymeListInput): RhymeCursor {
+  try {
+    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as Partial<RhymeCursor>;
+    if (parsed.version !== 1 || !Number.isSafeInteger(parsed.offset) || Number(parsed.offset) < 0
+      || parsed.signature !== rhymeQuerySignature(input)) throw new RhymeCursorError();
+    return parsed as RhymeCursor;
+  } catch (error) {
+    if (error instanceof RhymeCursorError) throw error;
+    throw new RhymeCursorError();
+  }
 }

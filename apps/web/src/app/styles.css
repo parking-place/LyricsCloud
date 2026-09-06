@@ -168,6 +168,42 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .preparation-actions { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 2rem; }
 .preparation-actions .button-link { margin-top: 0; }
 
+/* Rhyme note list */
+.rhymes-page { min-width: 0; width: 100%; padding: clamp(1.5rem, 3.4vw, 3.4rem); overflow: auto; }
+.rhymes-heading { display: flex; align-items: end; gap: 1.5rem; }
+.rhymes-heading > div { min-width: 0; }
+.rhymes-heading h1 { margin: .5rem 0 .55rem; font-size: clamp(2.5rem, 4.5vw, 4.7rem); line-height: 1; letter-spacing: -.065em; }
+.rhymes-heading p:last-child { margin: 0; color: var(--muted); line-height: 1.65; }
+.new-rhyme-link { flex-shrink: 0; margin-left: auto; }
+.rhyme-toolbar { display: grid; grid-template-columns: minmax(15rem, 1fr) minmax(10rem, .35fr) minmax(10rem, .35fr); gap: .65rem; margin-top: 2rem; }
+.rhyme-tag-scroll { display: flex; gap: .45rem; margin-top: .7rem; padding: .15rem .1rem .5rem; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: thin; }
+.rhyme-tag-scroll button { min-height: 2.25rem; flex: 0 0 auto; padding: .4rem .7rem; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); font-size: .7rem; cursor: pointer; }
+.rhyme-tag-scroll button:hover, .rhyme-tag-scroll button.active { border-color: rgb(200 255 61 / 32%); background: rgb(200 255 61 / 8%); color: var(--acid); }
+.rhyme-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+.rhyme-card { --rhyme-color: var(--line); position: relative; isolation: isolate; min-width: 0; min-height: 17rem; display: flex; flex-direction: column; padding: 1.1rem; overflow: hidden; border: 1px solid var(--line); border-radius: .85rem; background: linear-gradient(145deg, var(--panel), #0e1216); }
+.rhyme-card.color-red { --rhyme-color: #ff786b; } .rhyme-card.color-yellow { --rhyme-color: #ffc857; } .rhyme-card.color-green { --rhyme-color: #72d697; } .rhyme-card.color-blue { --rhyme-color: #71a7ff; } .rhyme-card.color-gray { --rhyme-color: #89939d; }
+.rhyme-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: .2rem; background: var(--rhyme-color); opacity: .85; }
+.rhyme-card-hit { position: absolute; z-index: 0; inset: 0; border-radius: inherit; }
+.rhyme-card-hit:hover { box-shadow: inset 0 0 0 1px rgb(200 255 61 / 25%); }
+.rhyme-card-top, .rhyme-card h2, .rhyme-body, .rhyme-card-tags, .rhyme-card footer { position: relative; z-index: 1; pointer-events: none; }
+.rhyme-card-top { display: flex; justify-content: space-between; gap: .7rem; }
+.rhyme-card-actions { display: flex; gap: .25rem; }
+.rhyme-card-actions button, .rhyme-color { width: 2.25rem; height: 2.25rem; display: inline-grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: .52rem; background: var(--surface); color: var(--muted); cursor: pointer; pointer-events: auto; }
+.rhyme-card-actions button:hover, .rhyme-card-actions button.is-on { border-color: rgb(200 255 61 / 35%); color: var(--acid); }
+.rhyme-color > span { width: .82rem; height: .82rem; border: 2px solid var(--subtle); border-radius: 50%; background: transparent; }
+.rhyme-color.color-red > span { border-color: #ff786b; background: #ff786b; } .rhyme-color.color-yellow > span { border-color: #ffc857; background: #ffc857; } .rhyme-color.color-green > span { border-color: #72d697; background: #72d697; } .rhyme-color.color-blue > span { border-color: #71a7ff; background: #71a7ff; } .rhyme-color.color-gray > span { border-color: #89939d; background: #89939d; }
+.rhyme-card h2 { margin: .8rem 0 .5rem; overflow-wrap: anywhere; font-size: 1.08rem; letter-spacing: -.02em; }
+.rhyme-body { min-height: 4.4rem; display: -webkit-box; margin: 0; overflow: hidden; color: var(--muted); font-size: .76rem; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 4; }
+.rhyme-body.is-empty { color: var(--subtle); font-style: italic; }
+.rhyme-card-tags { display: flex; flex-wrap: wrap; gap: .32rem; margin: .75rem 0 0; padding: 0; list-style: none; }
+.rhyme-card-tags li { padding: .23rem .45rem; border-radius: 999px; background: rgb(200 255 61 / 7%); color: #b5d96a; font-size: .62rem; }
+.rhyme-card footer { display: flex; justify-content: space-between; gap: .7rem; margin-top: auto; padding-top: .85rem; border-top: 1px solid var(--line); color: var(--subtle); font-size: .64rem; }
+.rhyme-card footer span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rhyme-card footer time { flex-shrink: 0; }
+.rhyme-card.skeleton { min-height: 17rem; }
+.rhyme-empty { margin-top: 1.5rem; }
+.rhyme-dialog-backdrop { position: fixed; z-index: 40; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgb(0 0 0 / 72%); }
+
 /* Song create and edit form */
 .song-form-page { min-width: 0; width: 100%; padding: clamp(1.5rem, 3.4vw, 3.4rem); overflow: auto; }
 .form-heading { max-width: 57rem; }
@@ -447,6 +483,16 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .song-grid { grid-template-columns: minmax(0, 1fr); }
   .song-card { min-height: 13rem; }
   .list-summary { margin-top: 1.25rem; }
+  .rhymes-page { grid-row: 2; padding: 1.4rem max(1rem, var(--lc-safe-right)) 1.5rem max(1rem, var(--lc-safe-left)); overflow-y: auto; }
+  .rhymes-heading { align-items: start; }
+  .rhymes-heading h1 { font-size: clamp(2.3rem, 12vw, 3.45rem); }
+  .rhymes-heading p:last-child { max-width: 19rem; font-size: .84rem; }
+  .new-rhyme-link { min-height: 2.55rem; padding-inline: .75rem; }
+  .rhyme-toolbar { grid-template-columns: minmax(0, 1fr) 9.5rem; margin-top: 1.5rem; }
+  .rhyme-toolbar .search-field { grid-column: 1 / -1; }
+  .rhyme-toolbar .select-field:first-of-type { display: flex; }
+  .rhyme-grid { grid-template-columns: minmax(0, 1fr); }
+  .rhyme-card { min-height: 15rem; }
   .song-form-page { grid-row: 2; padding: 1.4rem max(1rem, var(--lc-safe-right)) 0 max(1rem, var(--lc-safe-left)); overflow-y: auto; }
   .form-heading h1 { font-size: clamp(2.3rem, 12vw, 3.45rem); }
   .song-form { grid-template-columns: minmax(0, 1fr); margin-top: 1.5rem; padding-bottom: 0; }
@@ -519,6 +565,11 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .song-toolbar { grid-template-columns: minmax(0, 1fr); }
   .select-field { grid-column: 1; }
   .song-card { padding: .85rem; }
+  .rhymes-heading { display: grid; gap: .7rem; }
+  .new-rhyme-link { width: fit-content; margin-left: 0; font-size: .72rem; }
+  .rhyme-toolbar { grid-template-columns: minmax(0, 1fr); }
+  .rhyme-toolbar .select-field { grid-column: 1; }
+  .rhyme-card { padding: .9rem; }
   .song-form-page { padding-inline: .85rem; }
   .form-field, .option-group, .switch-options { padding: .85rem; }
   .dashboard-page { padding-inline: .85rem; }

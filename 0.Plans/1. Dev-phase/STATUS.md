@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.4.0"
-current_phase: "1phase.md"
-state: "complete"
+current_phase: "3phase.md"
+state: "ready"
 owner: "Codex"
 started_at: "2026-09-06 KST"
 updated_at: "2026-09-06"
-next_action: "0.4.0 Phase 2 진입: 라임 목록·검색·필터·정렬·빠른 복사 PC/모바일 구현"
+next_action: "LC-040-P3-01~08 라임 노트 생성·편집, CRDT 자동 저장·수정 기록·삭제 흐름 구현"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -38,7 +38,7 @@ next_action: "0.4.0 Phase 2 진입: 라임 목록·검색·필터·정렬·빠�
 | 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
 | 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
 | 0.3.1 | complete | Phase 1~5 완료, 자동 장애 회귀·실제 기기·원격 CI·image·동일 SHA 개발 배포 검증 | 0.3.0 완료 |
-| 0.4.0 | in_progress | Phase 1 완료 | 0.3.1 완료 |
+| 0.4.0 | in_progress | Phase 1~2 완료 | 0.3.1 완료 |
 | 0.5.0 | planned | 없음 | 0.4.0 완료 |
 | 0.6.0 | planned | 없음 | 0.5.0 완료 |
 | 0.7.0 | planned | 없음 | 0.6.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.4.0 Phase 2 진입: 라임 목록·검색·필터·정렬·빠�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+현재 활성 작업 없음. 다음 작업은 0.4.0 Phase 3이다.
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,12 +102,13 @@ next_action: "0.4.0 Phase 2 진입: 라임 목록·검색·필터·정렬·빠�
 
 ## 다음 작업
 
-0.4.0 Phase 1의 라임 노트·태그·곡 연결과 owner 전용 동기화 재사용은 로컬·원격·개발 인수를 통과했다. Phase 2는 06번 목업의 목록·검색·필터·정렬과 빠른 복사를 PC·모바일에 구현한다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.4.0 Phase 2의 라임 목록·검색·조합 필터·정렬·빠른 복사는 로컬·원격·Docker Hub·동일 SHA 개발 배포 인수를 통과했다. 다음은 Phase 3의 라임 노트 생성·편집과 저장 상태다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-06 | 0.4.0 / Phase 2 | Codex | owner 범위 라임 노트 목록에 문자 그대로 검색·태그/곡 조합 필터·다섯 정렬·pagination과 PC 2열/모바일 1열 카드, URL 상태, 메타데이터·정확한 본문 복사 및 실패 대안을 구현 | 32 files/118 tests, production build·4 image 복구, PC/mobile E2E 124 통과·2 skip, CI `34034902221`·`34034904785`, 네 image tag/digest, `d441a9b` 동일 SHA 개발 배포·공개 health; [검증 기록](../../docs/runbooks/0.4.0-phase2-validation.md) | Phase 3이 `/rhymes/new`·`/rhymes/:id`에 CRDT 생성·편집·수정 기록·삭제를 연결 |
 | 2026-09-06 | 0.4.0 / Phase 1 | Codex | 라임 노트·owner 태그·곡 연결과 공통 표시 속성, 멱등 생성·복제·soft delete, 가사 CRDT·평문·revision 재사용 기반 구현 | 32 files/116 tests, 0200~0400 migration 복구, production build·4 image 복구 smoke, PC/mobile E2E 120 통과·2 skip, CI `34032838270`·`34032860376`, 네 image tag/digest, `fb83f00` 동일 SHA 개발 배포·공개 health; [검증 기록](../../docs/runbooks/0.4.0-phase1-validation.md) | Phase 2가 owner/삭제 경계를 유지하며 목록 query·URL 상태·복사를 구현 |
 | 2026-09-06 | 0.3.1 / Phase 5 | Codex | 다중 탭·기기 자동 병합, 장애 복구, 저장 상태, 수정 기록·복원과 계정 격리를 통합 검증하고 실제 기기 인수를 완료 | 30 files/104 tests, 전체 production 복구·E2E, CI `34026897897`·`34026900854`, 네 image tag/digest, `7734bf2` 동일 SHA 개발 배포·공개 Chromium smoke, 사용자 보고 실제 기기·OS IME·다른 물리 네트워크·Google 로그아웃 인수; [검증 기록](../../docs/runbooks/0.3.1-phase5-local-validation.md) | 0.4.0 Phase 1이 owner 전용 동기화·revision 계약을 라임 노트에 재사용 |
 | 2026-09-06 | 0.3.1 / Phase 4 | Codex | 5분·중요 작업 전 revision, 180일/200개 정리, PC·모바일 비교와 비파괴 복원을 구현 | DB 정책·원자 복원·재시도·offline 병합, PC/mobile 비교·복원, Phase 5 통합 검증; [검증 기록](../../docs/runbooks/0.3.1-phase4-local-validation.md) | Phase 5 통합 장애 회귀와 실제 기기 인수 |

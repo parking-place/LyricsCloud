@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { parseCreateRhymeNoteInput, parseCreateSongInput, RhymeConflictError } from "@lyricscloud/domain";
+import type { RhymeListInput } from "@lyricscloud/domain";
 import { Pool, type PoolClient } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PostgresRhymeStore } from "./rhymes.js";
@@ -97,6 +98,35 @@ describe.runIf(enabled)("rhyme note PostgreSQL contract", () => {
       (select count(*)::text from tags where id=$2) tags,
       (select count(*)::text from song_resource_links where linked_resource_id=$1) links`, [note.id, tag.id]);
     expect(retained.rows[0]).toEqual({ notes: "1", tags: "1", links: "1" });
+  });
+
+  it("lists owner-only notes with combined literal search, tag, song, sort and cursors", async () => {
+    const [alice, bob] = users as [string, string];
+    const marker = `list-${randomUUID()}`;
+    const song = (await songs!.createSong(alice, parseCreateSongInput({ requestId: randomUUID(), title: `${marker} 곡` }))).song;
+    const tag = await rhymes!.upsertTag(alice, `${marker} 태그`);
+    const matching = (await rhymes!.createRhymeNote(alice, parseCreateRhymeNoteInput({ requestId: randomUUID(), title: `${marker} Alpha`, body: "literal %_needle", isPinned: true }))).rhyme;
+    const second = (await rhymes!.createRhymeNote(alice, parseCreateRhymeNoteInput({ requestId: randomUUID(), title: `${marker} Beta`, body: "another needle" }))).rhyme;
+    const hidden = (await rhymes!.createRhymeNote(alice, parseCreateRhymeNoteInput({ requestId: randomUUID(), title: `${marker} Deleted`, body: "needle" }))).rhyme;
+    await rhymes!.attachTag(alice, matching.id, tag.id); await rhymes!.attachTag(alice, second.id, tag.id);
+    await rhymes!.linkSong(alice, matching.id, song.id); await rhymes!.linkSong(alice, second.id, song.id);
+    await rhymes!.deleteRhymeNote(alice, hidden.id);
+    await rhymes!.createRhymeNote(bob, parseCreateRhymeNoteInput({ requestId: randomUUID(), title: `${marker} Foreign`, body: "needle" }));
+
+    const input = (overrides: Partial<RhymeListInput> = {}): RhymeListInput => ({ sort: "title_asc", limit: 1, ...overrides });
+    const literal = await rhymes!.listRhymeNotes(alice, input({ search: "%_needle", tagId: tag.id, songId: song.id }));
+    expect(literal.items).toHaveLength(1);
+    expect(literal.items[0]).toMatchObject({ id: matching.id, tags: [{ id: tag.id }], linkedSongs: [{ id: song.id, title: `${marker} 곡` }] });
+    expect(literal.filters.tags.some(({ id }) => id === tag.id)).toBe(true);
+    expect(literal.filters.songs.some(({ id }) => id === song.id)).toBe(true);
+
+    const first = await rhymes!.listRhymeNotes(alice, input({ search: marker }));
+    expect(first.totalCount).toBe(2); expect(first.nextCursor).toBeTruthy();
+    const next = await rhymes!.listRhymeNotes(alice, input({ search: marker, cursor: first.nextCursor! }));
+    expect(new Set([...first.items, ...next.items].map(({ id }) => id))).toEqual(new Set([matching.id, second.id]));
+    await expect(rhymes!.listRhymeNotes(alice, input({ search: marker, sort: "updated_desc", cursor: first.nextCursor! })))
+      .rejects.toThrow("RHYME_CURSOR_INVALID");
+    expect((await rhymes!.listRhymeNotes(bob, input({ search: "%_needle" }))).items).toEqual([]);
   });
 });
 
