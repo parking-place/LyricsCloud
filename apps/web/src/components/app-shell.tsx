@@ -171,7 +171,7 @@ export function WorkspaceShell({
 export function AppShell({ profile, loginCompleted }: { profile: ShellProfile; loginCompleted: boolean }) {
   return <WorkspaceShell profile={profile} loginCompleted={loginCompleted} active="home">
     <section className="workspace-content" aria-labelledby="workspace-title">
-      <p className="eyebrow">Private beta · 0.5.0</p>
+      <p className="eyebrow">Private beta · 0.6.0</p>
       <h1 tabIndex={-1} data-login-focus id="workspace-title">안녕하세요, {profile.displayName}님.</h1>
       <p>안전한 개인 작업 공간이 준비됐습니다.</p>
       <div className="empty-state"><span aria-hidden="true">✦</span><h2>첫 곡을 정리해볼까요?</h2><p>곡 목록에서 아이디어부터 완성까지 작업 상태를 관리할 수 있어요.</p><a className="primary-link" href="/songs">곡 목록 열기</a></div>

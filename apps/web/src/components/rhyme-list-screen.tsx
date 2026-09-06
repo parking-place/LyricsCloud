@@ -174,7 +174,7 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
   function clearFilters() { setSearch(""); setAppliedSearch(""); setTag(""); setSong(""); }
   const filtered = Boolean(appliedSearch || tag || song);
   return <section className="rhymes-page" aria-labelledby="rhymes-title">
-    <header className="rhymes-heading"><div><p className="eyebrow">Private beta · 0.5.0</p><h1 id="rhymes-title" tabIndex={-1} data-login-focus>라임 노트</h1><p>떠오른 단어와 표현을 모으고, 곡으로 이어가세요.</p></div><a className="primary-link new-rhyme-link" href="/rhymes/new">＋ 새 라임 노트</a></header>
+    <header className="rhymes-heading"><div><p className="eyebrow">Private beta · 0.6.0</p><h1 id="rhymes-title" tabIndex={-1} data-login-focus>라임 노트</h1><p>떠오른 단어와 표현을 모으고, 곡으로 이어가세요.</p></div><a className="primary-link new-rhyme-link" href="/rhymes/new">＋ 새 라임 노트</a></header>
     <div className="rhyme-toolbar">
       <label className="search-field"><span className="sr-only">라임 노트 검색</span><span aria-hidden="true">⌕</span><input value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} placeholder="제목 또는 본문 검색" type="search" /></label>
       <label className="select-field"><span>연결 곡</span><select aria-label="연결 곡 필터" value={song} onChange={(event) => setSong(event.target.value)}><option value="">모든 곡</option>{filters.songs.map((item) => <option value={item.id} key={item.id}>{item.title}</option>)}</select></label>

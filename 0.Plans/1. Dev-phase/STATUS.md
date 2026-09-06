@@ -3,13 +3,13 @@
 이 파일은 현재 버전·Phase·담당 작업의 단일 상태 원본입니다. 계획 문서는 범위를 정의하고 이 파일은 실제 진행 상황을 기록합니다.
 
 ```yaml
-current_version: "0.5.0"
-current_phase: "5phase.md"
-state: "complete"
+current_version: "0.6.0"
+current_phase: "1phase.md"
+state: "in_progress"
 owner: "Codex"
-started_at: "2026-09-07 05:29 KST"
+started_at: "2026-09-07 06:14 KST"
 updated_at: "2026-09-07"
-next_action: "다음 commit에서 VERSION·package·상태표를 함께 0.6.0 Phase 1로 전환하고 곡 중심 연결 패널 계약을 시작"
+next_action: "0.6.0 Phase 1 곡 hero·실제 count·가사 카드·작업 메모·연결 preview와 부분 실패·deep-link 회귀를 구현"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -40,7 +40,7 @@ next_action: "다음 commit에서 VERSION·package·상태표를 함께 0.6.0 Ph
 | 0.3.1 | complete | Phase 1~5 완료, 자동 장애 회귀·실제 기기·원격 CI·image·동일 SHA 개발 배포 검증 | 0.3.0 완료 |
 | 0.4.0 | complete | Phase 1~5 완료 | 0.3.1 완료 |
 | 0.5.0 | complete | Phase 1~5 완료 | 0.4.0 완료 |
-| 0.6.0 | planned | 없음 | 0.5.0 완료 |
+| 0.6.0 | in_progress | Phase 1 진행 중 | 0.5.0 완료 |
 | 0.7.0 | planned | 없음 | 0.6.0 완료 |
 | 0.8.0 | planned | 없음 | 0.7.0 완료 |
 | 0.9.0 | planned | 없음 | 0.8.0 완료 |
@@ -53,6 +53,7 @@ next_action: "다음 commit에서 VERSION·package·상태표를 함께 0.6.0 Ph
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 0.6.0 / Phase 1 | LC-060-P1-01~08 | 곡 dashboard·집계 query·가사 카드·메모·연결 preview·E2E·Phase 문서 | 0.5.0 완료 | 2026-09-07 06:14 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
