@@ -72,6 +72,7 @@ test.describe("CodeMirror lyric editor", () => {
         return route.continue();
       });
       await page.goto(`/lyrics/${lyricId}`);
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
       const editor = page.locator(".cm-content");
       await editor.fill("실패해도 보존할 현재 입력");
       await page.getByRole("textbox", { name: "가사 제목" }).fill("실패 후 재시도할 제목");
@@ -101,6 +102,8 @@ test.describe("CodeMirror lyric editor", () => {
       await second.goto(`/lyrics/${lyricId}`);
       await expect(page.locator(".cm-content")).toContainText("서버 기준");
       await expect(second.locator(".cm-content")).toContainText("서버 기준");
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
+      await expect(second.getByText("방금 저장됨", { exact: true })).toBeVisible();
       await page.locator(".cm-content").fill("[Verse]\n첫 탭에서 확정한 한글");
       await expect(second.locator(".cm-content")).toContainText("첫 탭에서 확정한 한글");
       await second.close();
@@ -198,6 +201,8 @@ test.describe("CodeMirror lyric editor", () => {
       const body = "머리말\n[Verse]\n첫 절\n\n[Hook]\n첫 후렴\n[Verse 2]\n둘째 절\n[Hook]\n마지막 후렴";
       const { lyricId } = await createLyric(page, body);
       await page.goto(`/lyrics/${lyricId}`);
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
+      await context.setOffline(true);
       const editor = page.locator(".cm-content");
       const current = `${body}\n저장 전 현재 입력`;
       await editor.fill(current);
