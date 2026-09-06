@@ -176,6 +176,45 @@ test.describe("rhyme note creation and editor", () => {
       await expect(settings.getByText("연결할 수 있는 곡이 없습니다.")).toBeVisible();
     } finally { await removeAccount(owner.userId); }
   });
+
+  test("keeps a maximum-size body and thirty tags usable without horizontal overflow", async ({ context, page }, info) => {
+    test.setTimeout(120_000);
+    const owner = await account([context]);
+    const initialBody = `${"가".repeat(99_990)}\n마지막 라임`;
+    try {
+      const created = await page.request.post("/api/rhymes", {
+        headers,
+        data: { requestId: randomUUID(), title: "긴 라임과 많은 태그", body: initialBody }
+      });
+      expect(created.status()).toBe(201);
+      const id = (await created.json()).rhyme.id as string;
+      await page.goto(`/rhymes/${id}`); await ready(page);
+
+      const editor = page.locator(".cm-content");
+      await editor.press("Control+End");
+      await page.keyboard.insertText(" 끝");
+      await expect.poll(() => body(page, id), { timeout: 20_000 }).toBe(`${initialBody} 끝`);
+
+      if (info.project.name === "mobile") await page.getByRole("button", { name: /태그·설정/ }).click();
+      const settings = info.project.name === "mobile"
+        ? page.getByRole("dialog", { name: "태그와 표시 설정" })
+        : page.getByRole("complementary", { name: "라임 노트 설정" });
+      for (let index = 1; index <= 30; index += 1) {
+        const input = settings.getByRole("textbox", { name: "새 태그" });
+        await input.fill(`태그 ${String(index).padStart(2, "0")}`);
+        await settings.getByRole("button", { name: "추가", exact: true }).click();
+        await expect(input).toHaveValue("");
+      }
+      await expect(settings.getByText("30 / 30", { exact: true })).toBeVisible();
+      await settings.getByRole("textbox", { name: "새 태그" }).fill("한도 초과 태그");
+      await settings.getByRole("button", { name: "추가", exact: true }).click();
+      await expect(page.getByText("태그를 추가하지 못했습니다. 기존 본문과 태그는 그대로 보존됩니다.")).toBeVisible();
+      await expect(settings.getByText("30 / 30", { exact: true })).toBeVisible();
+      const lastTag = settings.getByRole("button", { name: "#태그 30", exact: true });
+      await lastTag.focus(); await expect(lastTag).toBeFocused();
+      expect(await horizontalOverflow(page)).toBe(false);
+    } finally { await removeAccount(owner.userId); }
+  });
 });
 
 async function account(contexts: BrowserContext[]) {
