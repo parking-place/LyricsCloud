@@ -69,6 +69,20 @@ test.describe("rhyme note API", () => {
     expect(removed.status()).toBe(200); expect(await removed.json()).toEqual({ removed: true });
     expect((await (await request.get(`/api/rhymes/${first.id}`)).json()).rhyme.tags).toEqual([]);
 
+    const songResponse = await request.post("/api/songs", { headers, data: { requestId: randomUUID(), title: "연결할 %_ 곡" } });
+    expect(songResponse.status()).toBe(201);
+    const songId = (await songResponse.json()).song.id as string;
+    const candidates = await request.get(`/api/rhymes/${first.id}/songs?search=%25_&limit=20`);
+    expect(candidates.status()).toBe(200);
+    expect(await candidates.json()).toMatchObject({ items: [{ id: songId, title: "연결할 %_ 곡", isLinked: false }] });
+    expect((await request.put(`/api/rhymes/${first.id}/songs/${songId}`, { headers })).status()).toBe(200);
+    expect(await (await request.put(`/api/rhymes/${first.id}/songs/${songId}`, { headers })).json()).toEqual({ linked: true });
+    expect((await (await request.get(`/api/rhymes/${first.id}/songs`)).json()).items[0]).toMatchObject({ id: songId, isLinked: true });
+    expect((await (await request.get(`/api/rhymes?song=${songId}`)).json()).items).toHaveLength(1);
+    expect(await (await request.delete(`/api/rhymes/${first.id}/songs/${songId}`, { headers })).json()).toEqual({ removed: true });
+    expect(await (await request.delete(`/api/rhymes/${first.id}/songs/${songId}`, { headers })).json()).toEqual({ removed: false });
+    expect((await (await request.get(`/api/rhymes?song=${songId}`)).json()).items).toEqual([]);
+
     const sync = await request.post(`/collaboration/documents/${first.id}`, { headers });
     expect(sync.ok()).toBe(true);
     const staleBody = await request.patch(`/api/rhymes/${first.id}`, { headers, data: { rowVersion: changed.rowVersion, body: "REST로 덮어쓰기 금지" } });
@@ -88,6 +102,7 @@ test.describe("rhyme note API", () => {
       { method: "GET", path: `/api/rhymes/${rhyme.id}` },
       { method: "PATCH", path: `/api/rhymes/${rhyme.id}`, data: { rowVersion: rhyme.rowVersion, title: "침범" } },
       { method: "POST", path: `/api/rhymes/${rhyme.id}/tags`, data: { value: "침범" } },
+      { method: "GET", path: `/api/rhymes/${rhyme.id}/songs` },
       { method: "DELETE", path: `/api/rhymes/${rhyme.id}` }
     ];
     for (const item of paths) {
@@ -97,6 +112,10 @@ test.describe("rhyme note API", () => {
       expect(cross.status()).toBe(item.method === "DELETE" ? 200 : 404);
       if (item.method !== "GET") expect((await actors.alice.request.fetch(item.path, { method: item.method, data: item.data })).status()).toBe(403);
     }
+    const foreignSong = await actors.bob.request.post("/api/songs", { headers, data: { requestId: randomUUID(), title: "다른 owner 곡" } });
+    const foreignSongId = (await foreignSong.json()).song.id as string;
+    expect((await actors.alice.request.put(`/api/rhymes/${rhyme.id}/songs/${foreignSongId}`, { headers })).status()).toBe(404);
+    expect((await actors.alice.request.put(`/api/rhymes/${rhyme.id}/songs/${foreignSongId}`)).status()).toBe(403);
     expect((await actors.alice.request.get(`/api/rhymes/${rhyme.id}`)).status()).toBe(200);
     expect(await (await actors.alice.request.delete(`/api/rhymes/${rhyme.id}`, { headers })).json()).toEqual({ deleted: true });
     expect(await (await actors.alice.request.delete(`/api/rhymes/${rhyme.id}`, { headers })).json()).toEqual({ deleted: false });

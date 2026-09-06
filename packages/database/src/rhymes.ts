@@ -3,7 +3,7 @@ import {
   isResourceId, normalizeRhymeTag, parseCreateRhymeNoteInput, parseRhymeRequestId,
   parseUpdateRhymeNoteInput, RHYME_LIMITS, RhymeConflictError,
   type CreateRhymeNoteInput, type RhymeNoteRecord, type RhymeTagRecord,
-  type RhymeListInput, type RhymeSort, type UpdateRhymeNoteInput, type ResourceColor
+  type RhymeListInput, type RhymeSongSearchInput, type RhymeSort, type UpdateRhymeNoteInput, type ResourceColor
 } from "@lyricscloud/domain";
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { createDatabasePool } from "./pool.js";
@@ -33,6 +33,11 @@ export interface RhymeListResult {
     readonly tags: readonly { readonly id: string; readonly label: string }[];
     readonly songs: readonly { readonly id: string; readonly title: string }[];
   };
+}
+export interface RhymeSongCandidate {
+  readonly id: string;
+  readonly title: string;
+  readonly isLinked: boolean;
 }
 
 export class RhymeCursorError extends Error {
@@ -242,16 +247,47 @@ export class PostgresRhymeStore {
     });
   }
 
+  listSongCandidates(ownerId: string, resourceId: string, input: RhymeSongSearchInput): Promise<readonly RhymeSongCandidate[] | null> {
+    if (!isResourceId(resourceId)) return Promise.resolve(null);
+    return this.#withUser(ownerId, async (client) => {
+      const active = await client.query("select 1 from resources where id=$1 and owner_id=$2 and type='rhyme_note' and deleted_at is null", [resourceId, ownerId]);
+      if (!active.rowCount) return null;
+      const values: unknown[] = [ownerId, resourceId];
+      const search = input.search ? "and strpos(lower(song.title),lower($3))>0" : "";
+      if (input.search) values.push(input.search);
+      values.push(input.limit);
+      const rows = await client.query<{ id: string; title: string; is_linked: boolean }>(`select song.id,song.title,
+        exists(select 1 from song_resource_links link where link.owner_id=song.owner_id and link.song_resource_id=song.id
+          and link.linked_resource_id=$2 and link.linked_resource_type='rhyme_note') is_linked
+        from resources song where song.owner_id=$1 and song.type='song' and song.deleted_at is null ${search}
+        order by is_linked desc,lower(song.title),song.id limit $${values.length}`, values);
+      return rows.rows.map((row) => ({ id: row.id, title: row.title, isLinked: row.is_linked }));
+    });
+  }
+
   linkSong(ownerId: string, resourceId: string, songId: string): Promise<boolean> {
     if (!isResourceId(resourceId) || !isResourceId(songId)) return Promise.resolve(false);
-    return this.#withUser(ownerId, async (client) => (await client.query(`insert into song_resource_links(owner_id,song_resource_id,linked_resource_id,linked_resource_type)
-      values($1,$2,$3,'rhyme_note') on conflict do nothing returning linked_resource_id`, [ownerId, songId, resourceId])).rowCount === 1);
+    return this.#withUser(ownerId, async (client) => {
+      const note = await client.query("select 1 from resources where id=$1 and owner_id=$2 and type='rhyme_note' and deleted_at is null for update", [resourceId, ownerId]);
+      const song = await client.query("select 1 from resources where id=$1 and owner_id=$2 and type='song' and deleted_at is null", [songId, ownerId]);
+      if (!note.rowCount || !song.rowCount) return false;
+      const linked = await client.query(`insert into song_resource_links(owner_id,song_resource_id,linked_resource_id,linked_resource_type)
+        values($1,$2,$3,'rhyme_note') on conflict do nothing returning linked_resource_id`, [ownerId, songId, resourceId]);
+      if (linked.rowCount) await client.query("update resources set updated_at=clock_timestamp() where id=$1 and owner_id=$2", [resourceId, ownerId]);
+      return linked.rowCount === 1;
+    });
   }
 
   unlinkSong(ownerId: string, resourceId: string, songId: string): Promise<boolean> {
     if (!isResourceId(resourceId) || !isResourceId(songId)) return Promise.resolve(false);
-    return this.#withUser(ownerId, async (client) => (await client.query(`delete from song_resource_links
-      where owner_id=$1 and song_resource_id=$2 and linked_resource_id=$3 and linked_resource_type='rhyme_note'`, [ownerId, songId, resourceId])).rowCount === 1);
+    return this.#withUser(ownerId, async (client) => {
+      const note = await client.query("select 1 from resources where id=$1 and owner_id=$2 and type='rhyme_note' and deleted_at is null for update", [resourceId, ownerId]);
+      if (!note.rowCount) return false;
+      const unlinked = await client.query(`delete from song_resource_links
+        where owner_id=$1 and song_resource_id=$2 and linked_resource_id=$3 and linked_resource_type='rhyme_note'`, [ownerId, songId, resourceId]);
+      if (unlinked.rowCount) await client.query("update resources set updated_at=clock_timestamp() where id=$1 and owner_id=$2", [resourceId, ownerId]);
+      return unlinked.rowCount === 1;
+    });
   }
 
   async close(): Promise<void> { await this.#pool.end(); }

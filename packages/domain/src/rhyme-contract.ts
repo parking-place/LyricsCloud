@@ -23,6 +23,11 @@ export interface RhymeListInput {
   readonly limit: number;
 }
 
+export interface RhymeSongSearchInput {
+  readonly search?: string;
+  readonly limit: number;
+}
+
 export interface RhymeTagRecord {
   readonly id: string;
   readonly displayValue: string;
@@ -155,6 +160,15 @@ export function parseRhymeListInput(params: URLSearchParams): RhymeListInput {
     ...(search ? { search } : {}), ...(tagId ? { tagId } : {}), ...(songId ? { songId } : {}),
     sort: rawSort as RhymeSort, ...(cursor ? { cursor } : {}), limit
   };
+}
+
+export function parseRhymeSongSearchInput(params: URLSearchParams): RhymeSongSearchInput {
+  const search = params.get("search")?.normalize("NFC").trim() || undefined;
+  if (search && [...search].length > 200) issue("search", "too_long");
+  const rawLimit = params.get("limit");
+  const limit = rawLimit === null ? 20 : Number(rawLimit);
+  if (!Number.isInteger(limit) || limit < 1 || limit > 50) issue("limit", "integer_between_1_and_50");
+  return { ...(search ? { search } : {}), limit };
 }
 
 function object(value: unknown): Record<string, unknown> {

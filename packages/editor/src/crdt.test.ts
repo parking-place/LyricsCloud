@@ -1,6 +1,6 @@
 import * as Y from "yjs";
 import { describe, expect, it } from "vitest";
-import { applyLyricUpdate, createLyricDocument, createRhymeDocument, encodeLyricSnapshot, lyricBody, projectLyric, projectRhyme, rhymeBody } from "./crdt.js";
+import { applyLyricUpdate, createLyricDocument, createRhymeDocument, encodeLyricSnapshot, encodeTextRelativePosition, lyricBody, projectLyric, projectRhyme, resolveTextRelativePosition, rhymeBody } from "./crdt.js";
 
 describe("lyric CRDT contract", () => {
   it("converges with reversed and duplicate delivery", () => {
@@ -37,6 +37,17 @@ it("uses the same portable text document boundary for rhyme notes", () => {
   expect(rhymeBody(document).toString()).toBe("air\nchair");
   expect(projectRhyme(document, "라임")).toEqual({ title: "라임", body: "air\nchair" });
   document.destroy();
+});
+
+it("keeps a portable relative cursor attached across a concurrent prefix insertion", () => {
+  const source = createLyricDocument("air chair");
+  const relative = encodeTextRelativePosition(source, 4);
+  const replica = createFrom(encodeLyricSnapshot(source));
+  lyricBody(source).insert(0, "new ");
+  applyLyricUpdate(replica, encodeLyricSnapshot(source));
+  expect(resolveTextRelativePosition(replica, relative)).toBe(8);
+  expect(resolveTextRelativePosition(replica, "not/base64")).toBeNull();
+  source.destroy(); replica.destroy();
 });
 
 function createFrom(update: Uint8Array) {

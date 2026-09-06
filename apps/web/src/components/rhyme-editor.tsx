@@ -18,6 +18,7 @@ interface MetadataDraft {
   readonly pinOrder: number | null;
   readonly color: ResourceColor | null;
 }
+interface SongCandidate { readonly id: string; readonly title: string; readonly isLinked: boolean }
 
 const colorLabels: Record<ResourceColor, string> = { red: "빨강", yellow: "노랑", green: "초록", blue: "파랑", gray: "회색" };
 
@@ -42,6 +43,12 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
   const [tags, setTags] = useState<readonly RhymeTagRecord[]>(initialRhyme.tags);
   const [tagInput, setTagInput] = useState("");
   const [tagBusy, setTagBusy] = useState(false);
+  const [songSearch, setSongSearch] = useState("");
+  const [songCandidates, setSongCandidates] = useState<readonly SongCandidate[]>([]);
+  const [songLoading, setSongLoading] = useState(true);
+  const [songError, setSongError] = useState("");
+  const [songBusyId, setSongBusyId] = useState<string | null>(null);
+  const [songRetryKey, setSongRetryKey] = useState(0);
   const [saveState, setSaveState] = useState<SaveState>({ status: "saved", sequence: 0, lastSavedAt: null, error: null });
   const [syncState, setSyncState] = useState<LocalSyncState>("loading");
   const [legacyConflict, setLegacyConflict] = useState<{ localBody: string; serverBody: string } | null>(null);
@@ -120,6 +127,23 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
     manualCopyRef.current?.focus(); manualCopyRef.current?.select();
   }, [manualCopy]);
   useEffect(() => () => { if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current); }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      setSongLoading(true); setSongError("");
+      const params = new URLSearchParams({ limit: "20" });
+      if (songSearch.trim()) params.set("search", songSearch.trim());
+      void fetch(`/api/rhymes/${initialRhyme.id}/songs?${params}`, { cache: "no-store", signal: controller.signal })
+        .then(async (response) => {
+          if (!response.ok) throw new Error();
+          return response.json() as Promise<{ items: readonly SongCandidate[] }>;
+        })
+        .then(({ items }) => setSongCandidates(items))
+        .catch(() => { if (!controller.signal.aborted) setSongError("곡 목록을 불러오지 못했습니다."); })
+        .finally(() => { if (!controller.signal.aborted) setSongLoading(false); });
+    }, 300);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [initialRhyme.id, songRetryKey, songSearch]);
 
   function changeTitle(value: string) {
     titleRef.current = value; setTitle(value);
@@ -180,15 +204,44 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
     finally { setTagBusy(false); }
   }
 
-  async function copyBody() {
-    const value = editorRef.current?.value ?? bodyRef.current;
+  async function toggleSong(candidate: SongCandidate) {
+    if (songBusyId) return;
+    setSongBusyId(candidate.id); setNotice("");
+    try {
+      const response = await fetch(`/api/rhymes/${initialRhyme.id}/songs/${candidate.id}`, { method: candidate.isLinked ? "DELETE" : "PUT" });
+      if (!response.ok) throw new Error();
+      setSongCandidates((items) => items.map((item) => item.id === candidate.id ? { ...item, isLinked: !candidate.isLinked } : item));
+      setNotice(`‘${candidate.title}’ 곡 연결을 ${candidate.isLinked ? "해제" : "추가"}했습니다.`);
+    } catch { setSongError("곡 연결을 변경하지 못했습니다. 다시 시도해 주세요."); }
+    finally { setSongBusyId(null); }
+  }
+
+  async function openTagFilter(tag: RhymeTagRecord) {
+    if (!await flushBeforeCommand(true)) return;
+    router.push(`/rhymes?tag=${tag.id}`);
+  }
+
+  async function writeCopy(value: string, message: string) {
     try {
       if (!navigator.clipboard?.writeText) throw new Error();
       await navigator.clipboard.writeText(value);
       if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current);
-      setToast("라임 노트 전체를 복사했습니다");
+      setToast(message);
       toastTimerRef.current = window.setTimeout(() => setToast(null), 3_000);
     } catch { setManualCopy(value); }
+  }
+
+  function copyBody() {
+    void writeCopy(editorRef.current?.value ?? bodyRef.current, "라임 노트 전체를 복사했습니다");
+  }
+
+  function copySelection() {
+    const editor = editorRef.current;
+    if (!editor || editor.selection.from === editor.selection.to) {
+      setNotice("복사할 본문 영역을 먼저 선택해 주세요.");
+      return;
+    }
+    void writeCopy(editor.value.slice(editor.selection.from, editor.selection.to), "선택한 라임 표현을 복사했습니다");
   }
 
   async function deleteCurrent() {
@@ -210,7 +263,8 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
       <div><button type="button" className="back-button" onClick={() => void goBack()}>← 라임 노트</button><p className="eyebrow">Rhyme editor</p></div>
       <div className="rhyme-editor-actions">
         <button type="button" onClick={() => setHistoryOpen(true)}>수정 기록</button>
-        <button type="button" onClick={() => void copyBody()}>전체 복사</button>
+        <button type="button" onClick={copyBody}>전체 복사</button>
+        <button type="button" onClick={copySelection}>선택 복사</button>
         <button type="button" className="danger-text" disabled={busy} onClick={() => setDeleteOpen(true)}>삭제</button>
       </div>
       <SaveIndicator state={saveState} syncState={syncState} onRetry={() => void controllerRef.current?.retry()} />
@@ -235,11 +289,14 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
       <aside className="rhyme-editor-side" aria-label="라임 노트 설정">
         <RhymeSettings idPrefix="desktop" tags={tags} tagInput={tagInput} tagBusy={tagBusy} isFavorite={isFavorite} isPinned={isPinned} color={color}
           onTagInput={setTagInput} onAddTag={addTag} onRemoveTag={(tag) => void removeTag(tag)}
-          onFavorite={toggleFavorite} onPinned={togglePinned} onColor={changeColor} />
+          onTagFilter={(tag) => void openTagFilter(tag)} onFavorite={toggleFavorite} onPinned={togglePinned} onColor={changeColor}
+          songSearch={songSearch} songCandidates={songCandidates} songLoading={songLoading} songError={songError} songBusyId={songBusyId}
+          onSongSearch={setSongSearch} onSongToggle={(song) => void toggleSong(song)} onSongRetry={() => setSongRetryKey((value) => value + 1)} />
       </aside>
     </div>
     <div className="rhyme-mobile-dock" role="group" aria-label="라임 노트 편집 도구">
-      <button type="button" onClick={() => void copyBody()}>⧉ 전체 복사</button>
+      <button type="button" onClick={copyBody}>⧉ 전체 복사</button>
+      <button type="button" onClick={copySelection}>⌁ 선택 복사</button>
       <button type="button" onClick={() => setHistoryOpen(true)}>◴ 수정 기록</button>
       <button type="button" aria-haspopup="dialog" aria-expanded={settingsOpen} onClick={() => setSettingsOpen(true)}>⚙ 태그·설정</button>
     </div>
@@ -248,7 +305,9 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
         <header><h2 id="rhyme-settings-title">태그와 표시 설정</h2><button type="button" onClick={() => setSettingsOpen(false)}>닫기</button></header>
         <RhymeSettings idPrefix="mobile" tags={tags} tagInput={tagInput} tagBusy={tagBusy} isFavorite={isFavorite} isPinned={isPinned} color={color}
           onTagInput={setTagInput} onAddTag={addTag} onRemoveTag={(tag) => void removeTag(tag)}
-          onFavorite={toggleFavorite} onPinned={togglePinned} onColor={changeColor} />
+          onTagFilter={(tag) => void openTagFilter(tag)} onFavorite={toggleFavorite} onPinned={togglePinned} onColor={changeColor}
+          songSearch={songSearch} songCandidates={songCandidates} songLoading={songLoading} songError={songError} songBusyId={songBusyId}
+          onSongSearch={setSongSearch} onSongToggle={(song) => void toggleSong(song)} onSongRetry={() => setSongRetryKey((value) => value + 1)} />
         <button type="button" className="rhyme-sheet-delete danger-text" disabled={busy} onClick={() => { setSettingsOpen(false); setDeleteOpen(true); }}>라임 노트 삭제</button>
       </section>
     </div> : null}
@@ -273,20 +332,38 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
 function RhymeSettings(props: {
   idPrefix: string; tags: readonly RhymeTagRecord[]; tagInput: string; tagBusy: boolean; isFavorite: boolean; isPinned: boolean; color: ResourceColor | null;
   onTagInput(value: string): void; onAddTag(event: FormEvent): void; onRemoveTag(tag: RhymeTagRecord): void;
+  onTagFilter(tag: RhymeTagRecord): void;
   onFavorite(): void; onPinned(): void; onColor(color: ResourceColor | null): void;
+  songSearch: string; songCandidates: readonly SongCandidate[]; songLoading: boolean; songError: string; songBusyId: string | null;
+  onSongSearch(value: string): void; onSongToggle(song: SongCandidate): void; onSongRetry(): void;
 }) {
   return <div className="rhyme-settings">
     <section><div className="other-panel-heading"><strong>태그</strong><span>{props.tags.length} / {RHYME_LIMITS.tagsPerNote}</span></div>
       <form className="rhyme-tag-form" onSubmit={props.onAddTag}><label htmlFor={`${props.idPrefix}-rhyme-tag`}>새 태그</label><div><input id={`${props.idPrefix}-rhyme-tag`} value={props.tagInput} maxLength={RHYME_LIMITS.tag}
         placeholder="예: air, 펀치라인" onChange={(event) => props.onTagInput(event.target.value)} /><button type="submit" disabled={props.tagBusy || !props.tagInput.trim()}>추가</button></div></form>
-      {props.tags.length ? <ul className="rhyme-editor-tags">{props.tags.map((tag) => <li key={tag.id}><span>#{tag.displayValue}</span><button type="button" disabled={props.tagBusy} aria-label={`${tag.displayValue} 태그 제거`} onClick={() => props.onRemoveTag(tag)}>×</button></li>)}</ul>
+      {props.tags.length ? <ul className="rhyme-editor-tags">{props.tags.map((tag) => <li key={tag.id}><button type="button" className="rhyme-tag-filter" onClick={() => props.onTagFilter(tag)}>#{tag.displayValue}</button><button type="button" disabled={props.tagBusy} aria-label={`${tag.displayValue} 태그 제거`} onClick={() => props.onRemoveTag(tag)}>×</button></li>)}</ul>
         : <p className="rhyme-setting-empty">아직 태그가 없습니다.</p>}
+    </section>
+    <section className="rhyme-song-links"><div className="other-panel-heading"><strong>연결 곡</strong><span>{props.songCandidates.filter(({ isLinked }) => isLinked).length}개</span></div>
+      <label htmlFor={`${props.idPrefix}-rhyme-song-search`}>곡 검색</label>
+      <input id={`${props.idPrefix}-rhyme-song-search`} type="search" value={props.songSearch} maxLength={200} placeholder="곡 제목 검색" onChange={(event) => props.onSongSearch(event.target.value)} />
+      {props.songLoading ? <p role="status">곡 후보를 불러오는 중…</p> : null}
+      {props.songError ? <p role="alert">{props.songError} <button type="button" onClick={props.onSongRetry}>다시 시도</button></p> : null}
+      {!props.songLoading && !props.songError && !props.songCandidates.length ? <p className="rhyme-setting-empty">{props.songSearch.trim() ? "검색에 맞는 곡이 없습니다." : "연결할 수 있는 곡이 없습니다."}</p> : null}
+      {!props.songLoading && !props.songError && props.songCandidates.length ? <ul>{props.songCandidates.map((song) => <li key={song.id}>
+        <span>{song.title}</span><button type="button" aria-pressed={song.isLinked} disabled={props.songBusyId !== null}
+          onClick={() => props.onSongToggle(song)}>{props.songBusyId === song.id ? "처리 중…" : song.isLinked ? "연결 해제" : "연결"}</button>
+      </li>)}</ul> : null}
     </section>
     <section><div className="other-panel-heading"><strong>표시 설정</strong></div>
       <div className="rhyme-setting-toggles"><button type="button" aria-pressed={props.isFavorite} onClick={props.onFavorite}>★ {props.isFavorite ? "즐겨찾기됨" : "즐겨찾기"}</button>
         <button type="button" aria-pressed={props.isPinned} onClick={props.onPinned}>⌁ {props.isPinned ? "고정됨" : "고정"}</button></div>
       <fieldset className="rhyme-color-options"><legend>색상</legend><button type="button" aria-pressed={props.color === null} onClick={() => props.onColor(null)}>없음</button>
         {RESOURCE_COLORS.map((value) => <button type="button" key={value} className={`color-${value}`} aria-pressed={props.color === value} onClick={() => props.onColor(value)}><span aria-hidden="true" />{colorLabels[value]}</button>)}</fieldset>
+    </section>
+    <section className="rhyme-insertion-unavailable"><div className="other-panel-heading"><strong>가사에 삽입</strong></div>
+      <button type="button" disabled aria-describedby={`${props.idPrefix}-rhyme-insertion-help`}>열린 가사에 삽입</button>
+      <p id={`${props.idPrefix}-rhyme-insertion-help`}>현재 화면에는 열린 가사 편집 대상이 없습니다. 선택 복사로 표현을 보존하거나, 0.6.0 통합 작업 화면에서 가사를 연 뒤 삽입할 수 있습니다.</p>
     </section>
   </div>;
 }

@@ -444,6 +444,7 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .rhyme-editor-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin: .7rem 0 0; padding: 0; list-style: none; }
 .rhyme-editor-tags li { display: inline-flex; align-items: center; gap: .2rem; padding: .2rem .25rem .2rem .48rem; border-radius: 999px; background: rgb(200 255 61 / 8%); color: #b5d96a; font-size: .65rem; }
 .rhyme-editor-tags button { width: 1.6rem; height: 1.6rem; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.rhyme-editor-tags .rhyme-tag-filter { width: auto; max-width: 12rem; height: auto; padding: .25rem; border-radius: .35rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rhyme-setting-empty { margin: .75rem 0 0; color: var(--subtle); font-size: .65rem; }
 .rhyme-setting-toggles { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; margin-top: .7rem; }
 .rhyme-setting-toggles button[aria-pressed="true"], .rhyme-color-options button[aria-pressed="true"] { border-color: var(--acid); color: var(--acid); }
@@ -453,6 +454,19 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .rhyme-color-options button > span { width: .55rem; height: .55rem; border-radius: 50%; background: var(--subtle); }
 .rhyme-color-options .color-red > span { background: #ff786b; } .rhyme-color-options .color-yellow > span { background: #ffc857; }
 .rhyme-color-options .color-green > span { background: #72d697; } .rhyme-color-options .color-blue > span { background: #71a7ff; } .rhyme-color-options .color-gray > span { background: #89939d; }
+.rhyme-song-links > label { display: block; margin-top: .7rem; color: var(--subtle); font-size: .62rem; }
+.rhyme-song-links > input { width: 100%; margin-top: .35rem; padding: .55rem; border: 1px solid var(--line); border-radius: .48rem; outline: 0; background: var(--surface); color: var(--ink); font-size: .68rem; }
+.rhyme-song-links > input:focus { border-color: var(--acid); }
+.rhyme-song-links > p { color: var(--muted); font-size: .65rem; line-height: 1.5; }
+.rhyme-song-links > p > button { margin-left: .4rem; border: 0; background: transparent; color: var(--acid); cursor: pointer; }
+.rhyme-song-links > ul { display: grid; gap: .35rem; max-height: 12rem; margin: .65rem 0 0; padding: 0; overflow-y: auto; list-style: none; }
+.rhyme-song-links li { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .4rem; }
+.rhyme-song-links li > span { overflow: hidden; color: var(--muted); font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }
+.rhyme-song-links li > button, .rhyme-insertion-unavailable > button { min-height: 2.1rem; padding: .3rem .5rem; border: 1px solid var(--line); border-radius: .45rem; background: transparent; color: var(--muted); font-size: .61rem; cursor: pointer; }
+.rhyme-song-links li > button[aria-pressed="true"] { border-color: rgb(200 255 61 / 35%); color: var(--acid); }
+.rhyme-song-links li > button:disabled, .rhyme-insertion-unavailable > button:disabled { opacity: .55; cursor: default; }
+.rhyme-insertion-unavailable > button { width: 100%; margin-top: .7rem; }
+.rhyme-insertion-unavailable > p { margin: .55rem 0 0; color: var(--subtle); font-size: .62rem; line-height: 1.55; }
 .rhyme-mobile-dock { display: none; }
 .rhyme-new-page { grid-template-rows: auto auto minmax(0, 1fr); }
 .rhyme-new-page .rhyme-editor-header > .secondary-button { margin-left: auto; }
@@ -617,7 +631,7 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .rhyme-editor-surface { height: max(27rem, calc(100dvh - 17rem)); border-radius: .65rem; }
   .rhyme-editor-surface .cm-content { padding-bottom: calc(6rem + var(--lc-safe-bottom)); }
   .rhyme-editor-document > footer { padding-inline: .35rem; }
-  .rhyme-mobile-dock { position: sticky; z-index: 12; left: 0; right: 0; bottom: 0; min-height: 3.2rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: .6rem; padding: .28rem; border: 1px solid rgb(200 255 61 / 25%); border-radius: .75rem; background: rgb(26 33 23 / 97%); box-shadow: 0 10px 30px rgb(0 0 0 / 42%); }
+  .rhyme-mobile-dock { position: sticky; z-index: 12; left: 0; right: 0; bottom: 0; min-height: 3.2rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: .6rem; padding: .28rem; border: 1px solid rgb(200 255 61 / 25%); border-radius: .75rem; background: rgb(26 33 23 / 97%); box-shadow: 0 10px 30px rgb(0 0 0 / 42%); }
   .rhyme-mobile-dock button { min-width: 0; min-height: 2.6rem; border: 0; border-radius: .5rem; background: transparent; color: var(--muted); font-size: .65rem; font-weight: 800; cursor: pointer; }
 .rhyme-settings-sheet .rhyme-settings { margin-top: .75rem; }
   .rhyme-settings-sheet .rhyme-settings > section { background: var(--surface); }
