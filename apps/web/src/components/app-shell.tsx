@@ -29,7 +29,7 @@ export function WorkspaceShell({
 }: {
   profile: ShellProfile;
   loginCompleted?: boolean;
-  active?: "home" | "songs" | "rhymes";
+  active?: "home" | "songs" | "rhymes" | "prompts";
   children: ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -138,7 +138,7 @@ export function WorkspaceShell({
         <a className={`nav-item${active === "home" ? " active" : ""}`} href="/workspace" aria-current={active === "home" ? "page" : undefined}><span aria-hidden="true">✦</span><span className="nav-text">창작 홈</span></a>
         <a className={`nav-item${active === "songs" ? " active" : ""}`} href="/songs" aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><span className="nav-text">곡</span></a>
         <a className={`nav-item${active === "rhymes" ? " active" : ""}`} href="/rhymes" aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><span className="nav-text">라임 노트</span></a>
-        <PlannedItem icon="◇" label="프롬프트" version="0.5.0" />
+        <a className={`nav-item${active === "prompts" ? " active" : ""}`} href="/prompts" aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><span className="nav-text">프롬프트</span></a>
       </nav>
       <div className="side-spacer" />
       <div className="profile-mini"><Avatar profile={profile} /><span className="nav-text"><strong>{profile.displayName}</strong><small>개인 작업 공간</small></span></div>
@@ -146,7 +146,7 @@ export function WorkspaceShell({
     </aside>
     <div className="main-shell" ref={mainShell}>
       <header className="topbar">
-        <nav className="workspace-tabs" aria-label="창작 영역"><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트 <small>0.4.0</small></a><span className="workspace-tab disabled" aria-disabled="true">프롬프트 <small>0.5.0</small></span></nav>
+        <nav className="workspace-tabs" aria-label="창작 영역"><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트 <small>0.4.0</small></a><a href="/prompts" className={`workspace-tab${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}>프롬프트 <small>0.5.0</small></a></nav>
         <span className="topbar-spacer" /><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button>
       </header>
       {sessionExpired || logoutError ? <div className="account-messages">
@@ -161,8 +161,9 @@ export function WorkspaceShell({
     <nav className="mobile-bottom-nav" aria-label="모바일 주 메뉴">
       <a href="/workspace" className={`mobile-nav-item${active === "home" ? " active" : ""}`} aria-current={active === "home" ? "page" : undefined}><span aria-hidden="true">⌂</span><strong>홈</strong></a>
       <a href="/songs" className={`mobile-nav-item${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><strong>곡</strong></a>
-      <a className="quick-add" href={active === "rhymes" ? "/rhymes/new" : "/songs/new"} aria-label={active === "rhymes" ? "새 라임 노트 추가" : "새 곡 추가"}><span>＋</span><small>{active === "rhymes" ? "새 라임" : "새 곡"}</small></a>
+      <a className="quick-add" href={active === "prompts" ? "/prompts/new" : active === "rhymes" ? "/rhymes/new" : "/songs/new"} aria-label={active === "prompts" ? "새 프롬프트 추가" : active === "rhymes" ? "새 라임 노트 추가" : "새 곡 추가"}><span>＋</span><small>{active === "prompts" ? "새 프롬프트" : active === "rhymes" ? "새 라임" : "새 곡"}</small></a>
       <a href="/rhymes" className={`mobile-nav-item${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><strong>라임</strong></a>
+      <a href="/prompts" className={`mobile-nav-item${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><strong>프롬프트</strong></a>
     </nav>
   </main>;
 }

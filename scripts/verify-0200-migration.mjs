@@ -30,6 +30,7 @@ try {
       throw new Error("representative fixture did not create three complete song pairs");
     }
 
+    await target.query(await readFile(resolve("packages/database/rollback/0501_prompt_usage.sql"), "utf8"));
     await target.query(await readFile(resolve("packages/database/rollback/0500_prompts.sql"), "utf8"));
     await target.query(await readFile(resolve("packages/database/rollback/0400_rhyme_notes.sql"), "utf8"));
     await target.query(await readFile(resolve("packages/database/rollback/0311_lyric_revisions.sql"), "utf8"));

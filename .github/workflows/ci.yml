@@ -74,6 +74,8 @@ jobs:
         run: pnpm test:migration:0400
       - name: Verify 0.5.0 prompt migration recovery
         run: pnpm test:migration:0500
+      - name: Verify 0.5.0 prompt usage migration recovery
+        run: pnpm test:migration:0501
       - name: Static checks
         run: pnpm check
       - name: Shell and Docker cleanup contract

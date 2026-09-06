@@ -10,6 +10,20 @@ export const PROMPT_LIMITS = {
   serialized: 40_398
 } as const;
 
+export const PROMPT_SORTS = ["favorite_first", "recent_used", "updated_desc", "created_desc", "created_asc", "title_asc"] as const;
+export type PromptSort = (typeof PROMPT_SORTS)[number];
+export const PROMPT_LIST_LIMITS = { default: 20, maximum: 50 } as const;
+
+export interface PromptListInput {
+  readonly search?: string;
+  readonly songId?: string;
+  readonly favoriteOnly: boolean;
+  readonly recentlyUsedOnly: boolean;
+  readonly sort: PromptSort;
+  readonly cursor?: string;
+  readonly limit: number;
+}
+
 export interface PromptTokenValue {
   readonly displayValue: string;
   readonly normalizedValue: string;
@@ -32,6 +46,8 @@ export interface PromptRecord {
   readonly color: ResourceColor | null;
   readonly rowVersion: number;
   readonly linkedSongIds: readonly string[];
+  readonly useCount: number;
+  readonly lastUsedAt: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -157,6 +173,35 @@ export function parseUpdatePromptInput(value: unknown): UpdatePromptInput {
   } else if ("pinOrder" in input) fail("isPinned", "required");
   if (Object.keys(result).length === 2) fail("body", "at_least_one_field");
   return result;
+}
+
+export function parsePromptRequestId(value: unknown): string {
+  const input = object(value);
+  if (!isResourceId(input.requestId)) fail("requestId", "uuid_required");
+  return input.requestId as string;
+}
+
+export function parsePromptListInput(params: URLSearchParams): PromptListInput {
+  const search = params.get("search")?.normalize("NFC").trim() || undefined;
+  if (search && [...search].length > 200) fail("search", "too_long");
+  const songId = params.get("song")?.trim() || undefined;
+  if (songId && !isResourceId(songId)) fail("song", "uuid_required");
+  const rawFavorite = params.get("favorite") ?? "false";
+  const rawRecent = params.get("recent") ?? "false";
+  if (rawFavorite !== "true" && rawFavorite !== "false") fail("favorite", "boolean_required");
+  if (rawRecent !== "true" && rawRecent !== "false") fail("recent", "boolean_required");
+  const rawSort = params.get("sort") ?? "favorite_first";
+  if (!PROMPT_SORTS.includes(rawSort as PromptSort)) fail("sort", "unsupported_value");
+  const cursor = params.get("cursor")?.trim() || undefined;
+  if (cursor && cursor.length > 1_024) fail("cursor", "too_long");
+  const rawLimit = params.get("limit");
+  const limit = rawLimit === null ? PROMPT_LIST_LIMITS.default : Number(rawLimit);
+  if (!Number.isInteger(limit) || limit < 1 || limit > PROMPT_LIST_LIMITS.maximum) fail("limit", "integer_between_1_and_50");
+  return {
+    ...(search ? { search } : {}), ...(songId ? { songId } : {}),
+    favoriteOnly: rawFavorite === "true", recentlyUsedOnly: rawRecent === "true",
+    sort: rawSort as PromptSort, ...(cursor ? { cursor } : {}), limit
+  };
 }
 
 export function validatePromptTokens(value: unknown): readonly PromptTokenValue[] {

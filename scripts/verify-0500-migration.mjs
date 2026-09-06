@@ -10,12 +10,14 @@ const databaseName = `lyricscloud_0500_${randomUUID().replaceAll("-", "")}`;
 const url = new URL(source); url.pathname = `/${databaseName}`;
 const admin = new Pool({ connectionString: source.href, max: 1 });
 const rollback = await readFile("packages/database/rollback/0500_prompts.sql", "utf8");
+const usageRollback = await readFile("packages/database/rollback/0501_prompt_usage.sql", "utf8");
 
 try {
   await admin.query(`create database "${databaseName}"`);
   migrate(); migrate();
   const target = new Pool({ connectionString: url.href, max: 1 });
   try {
+    await target.query(usageRollback);
     const alice = (await target.query("insert into app_users default values returning id")).rows[0].id;
     const bob = (await target.query("insert into app_users default values returning id")).rows[0].id;
     const prompt = randomUUID(), song = randomUUID(), rhyme = randomUUID();

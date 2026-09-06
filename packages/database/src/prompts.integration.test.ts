@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { parseCreatePromptInput, parseCreateSongInput, parseUpdatePromptInput, PromptConflictError } from "@lyricscloud/domain";
+import { parseCreatePromptInput, parseCreateSongInput, parsePromptListInput, parseUpdatePromptInput, PromptConflictError } from "@lyricscloud/domain";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { PostgresPromptStore } from "./prompts.js";
+import { PostgresPromptStore, PromptCursorError } from "./prompts.js";
 import { PostgresSongStore } from "./songs.js";
 
 const enabled = process.env.AUTH_DATABASE_INTEGRATION === "true";
@@ -74,6 +74,44 @@ describe.runIf(enabled)("prompt PostgreSQL contract", () => {
     ]);
     expect(await prompts!.listSongCandidates(bob, prompt.id)).toBeNull();
     expect(await songs!.getSong(alice, aliceSong.id)).not.toBeNull();
+  });
+
+  it("combines private list search, song, favorite and recent-use filters with stable cursors", async () => {
+    const [alice, bob] = users as [string, string];
+    const marker = `목록-${randomUUID().slice(0, 8)}`;
+    const song = (await songs!.createSong(alice, parseCreateSongInput({ requestId: randomUUID(), title: `${marker} 연결 곡` }))).song;
+    const favorite = (await prompts!.createPrompt(alice, parseCreatePromptInput({
+      requestId: randomUUID(), title: `${marker} favorite`, tokens: ["dream pop", "female vocal"], isFavorite: true
+    }))).prompt;
+    const second = (await prompts!.createPrompt(alice, parseCreatePromptInput({
+      requestId: randomUUID(), title: `${marker} second`, tokens: ["808 bass"]
+    }))).prompt;
+    const deleted = (await prompts!.createPrompt(alice, parseCreatePromptInput({
+      requestId: randomUUID(), title: `${marker} deleted`, tokens: ["hidden token"]
+    }))).prompt;
+    await prompts!.createPrompt(bob, parseCreatePromptInput({ requestId: randomUUID(), title: `${marker} other owner`, tokens: ["dream pop"] }));
+    expect(await prompts!.linkSong(alice, favorite.id, song.id)).toBe(true);
+    expect(await prompts!.markUsed(alice, favorite.id)).toMatchObject({ useCount: 1 });
+    expect(await prompts!.markUsed(bob, favorite.id)).toBeNull();
+    expect(await prompts!.deletePrompt(alice, deleted.id)).toBe(true);
+
+    const combined = await prompts!.listPrompts(alice, parsePromptListInput(new URLSearchParams({
+      search: "dream POP", song: song.id, favorite: "true", recent: "true", sort: "recent_used"
+    })));
+    expect(combined.totalCount).toBe(1);
+    expect(combined.items[0]).toMatchObject({ id: favorite.id, plainText: "dream pop, female vocal", useCount: 1,
+      linkedSongs: [{ id: song.id, title: `${marker} 연결 곡` }] });
+    expect(combined.filters.songs).toContainEqual({ id: song.id, title: `${marker} 연결 곡` });
+    expect(combined.filters.songs.some(({ title }) => title === "Bob song")).toBe(false);
+
+    expect((await prompts!.listPrompts(alice, parsePromptListInput(new URLSearchParams({ search: `${marker} 연결 곡` })))).items.map(({ id }) => id)).toEqual([favorite.id]);
+    const first = await prompts!.listPrompts(alice, parsePromptListInput(new URLSearchParams({ search: marker, sort: "title_asc", limit: "1" })));
+    expect(first.totalCount).toBe(2); expect(first.nextCursor).toBeTruthy();
+    const next = await prompts!.listPrompts(alice, parsePromptListInput(new URLSearchParams({ search: marker, sort: "title_asc", limit: "1", cursor: first.nextCursor! })));
+    expect(new Set([...first.items, ...next.items].map(({ id }) => id))).toEqual(new Set([favorite.id, second.id]));
+    await expect(prompts!.listPrompts(alice, parsePromptListInput(new URLSearchParams({ search: marker, sort: "updated_desc", limit: "1", cursor: first.nextCursor! }))))
+      .rejects.toBeInstanceOf(PromptCursorError);
+    expect((await prompts!.listPrompts(bob, parsePromptListInput(new URLSearchParams({ search: marker })))).totalCount).toBe(1);
   });
 
   it("soft-deletes only the prompt and excludes it from reads and new links", async () => {

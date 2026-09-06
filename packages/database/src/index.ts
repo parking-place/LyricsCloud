@@ -1,6 +1,6 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "0500_prompts.sql";
+export const CURRENT_SCHEMA_VERSION = "0501_prompt_usage.sql";
 
 export * from "./auth.js";
 export * from "./owned.js";

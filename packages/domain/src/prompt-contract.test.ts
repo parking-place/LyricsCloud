@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   findPromptDuplicates, normalizePromptToken, parseCreatePromptInput, parsePromptText,
-  projectUniquePromptTokens, PROMPT_LIMITS, PromptValidationError, serializePromptTokens
+  parsePromptListInput, projectUniquePromptTokens, PROMPT_LIMITS, PromptValidationError, serializePromptTokens
 } from "./prompt-contract.js";
 
 describe("prompt comma contract", () => {
@@ -43,4 +43,13 @@ it("enforces title, token and sequence limits", () => {
     requestId: "00000000-0000-4000-8000-000000000001", title: "x",
     tokens: Array.from({ length: PROMPT_LIMITS.tokensPerPrompt + 1 }, () => "tag")
   })).toThrow(PromptValidationError);
+});
+
+it("parses prompt list filters and rejects invalid URL state", () => {
+  const song = "00000000-0000-4000-8000-000000000001";
+  expect(parsePromptListInput(new URLSearchParams(`search= synth &song=${song}&favorite=true&recent=true&sort=recent_used&limit=12`)))
+    .toEqual({ search: "synth", songId: song, favoriteOnly: true, recentlyUsedOnly: true, sort: "recent_used", limit: 12 });
+  expect(parsePromptListInput(new URLSearchParams())).toEqual({ favoriteOnly: false, recentlyUsedOnly: false, sort: "favorite_first", limit: 20 });
+  expect(() => parsePromptListInput(new URLSearchParams("recent=sometimes"))).toThrow(PromptValidationError);
+  expect(() => parsePromptListInput(new URLSearchParams("sort=unknown"))).toThrow(PromptValidationError);
 });

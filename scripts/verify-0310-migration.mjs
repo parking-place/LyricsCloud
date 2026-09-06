@@ -38,6 +38,7 @@ try {
       assert.equal((await client.query("select * from sync_documents")).rowCount, 0, "other owner must not observe sync mappings");
       await client.query("rollback");
     } finally { client.release(); }
+    await target.query(await readFile(resolve("packages/database/rollback/0501_prompt_usage.sql"), "utf8"));
     await target.query(await readFile(resolve("packages/database/rollback/0500_prompts.sql"), "utf8"));
     await target.query(await readFile(resolve("packages/database/rollback/0400_rhyme_notes.sql"), "utf8"));
     await assert.rejects(target.query(rollback), /0310_ROLLBACK_REQUIRES_EMPTY_SYNC_DOCUMENTS/);
