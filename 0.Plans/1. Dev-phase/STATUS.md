@@ -3,13 +3,13 @@
 이 파일은 현재 버전·Phase·담당 작업의 단일 상태 원본입니다. 계획 문서는 범위를 정의하고 이 파일은 실제 진행 상황을 기록합니다.
 
 ```yaml
-current_version: "0.5.0"
-current_phase: "1phase.md"
-state: "ready"
+current_version: "0.4.0"
+current_phase: "5phase.md"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-07 KST"
 updated_at: "2026-09-07"
-next_action: "0.5.0 Phase 1 프롬프트 계약과 데이터 모델 구현"
+next_action: "0.5.0 Phase 1 시작 시 VERSION·runtime·CI를 0.5.0으로 함께 전환하고 프롬프트 계약과 데이터 모델 구현"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -39,7 +39,7 @@ next_action: "0.5.0 Phase 1 프롬프트 계약과 데이터 모델 구현"
 | 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
 | 0.3.1 | complete | Phase 1~5 완료, 자동 장애 회귀·실제 기기·원격 CI·image·동일 SHA 개발 배포 검증 | 0.3.0 완료 |
 | 0.4.0 | complete | Phase 1~5 완료 | 0.3.1 완료 |
-| 0.5.0 | planned | Phase 1 준비 | 0.4.0 완료 |
+| 0.5.0 | planned | 없음 | 0.4.0 완료 |
 | 0.6.0 | planned | 없음 | 0.5.0 완료 |
 | 0.7.0 | planned | 없음 | 0.6.0 완료 |
 | 0.8.0 | planned | 없음 | 0.7.0 완료 |
