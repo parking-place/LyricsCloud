@@ -24,6 +24,11 @@ export interface PromptListInput {
   readonly limit: number;
 }
 
+export interface PromptSuggestionInput {
+  readonly search: string;
+  readonly limit: number;
+}
+
 export interface PromptTokenValue {
   readonly displayValue: string;
   readonly normalizedValue: string;
@@ -202,6 +207,15 @@ export function parsePromptListInput(params: URLSearchParams): PromptListInput {
     favoriteOnly: rawFavorite === "true", recentlyUsedOnly: rawRecent === "true",
     sort: rawSort as PromptSort, ...(cursor ? { cursor } : {}), limit
   };
+}
+
+export function parsePromptSuggestionInput(params: URLSearchParams): PromptSuggestionInput {
+  const raw = params.get("search") ?? "";
+  const search = raw.trim() ? normalizePromptToken(raw).displayValue : "";
+  const rawLimit = params.get("limit");
+  const limit = rawLimit === null ? 20 : Number(rawLimit);
+  if (!Number.isInteger(limit) || limit < 1 || limit > 50) fail("limit", "integer_between_1_and_50");
+  return { search, limit };
 }
 
 export function validatePromptTokens(value: unknown): readonly PromptTokenValue[] {

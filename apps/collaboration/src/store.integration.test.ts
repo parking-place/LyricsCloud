@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { parseCreateLyricInput, parseCreateRhymeNoteInput, parseCreateSongInput } from "@lyricscloud/domain";
-import { PostgresLyricStore, PostgresRhymeStore, PostgresSongStore } from "@lyricscloud/database";
+import { parseCreateLyricInput, parseCreatePromptInput, parseCreateRhymeNoteInput, parseCreateSongInput } from "@lyricscloud/domain";
+import { PostgresLyricStore, PostgresPromptStore, PostgresRhymeStore, PostgresSongStore } from "@lyricscloud/database";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as Y from "yjs";
@@ -13,6 +13,7 @@ const sync = enabled ? new CollaborationStore(databaseUrl) : null;
 const songs = enabled ? new PostgresSongStore(databaseUrl, 2) : null;
 const lyrics = enabled ? new PostgresLyricStore(databaseUrl, 2) : null;
 const rhymes = enabled ? new PostgresRhymeStore(databaseUrl, 2) : null;
+const prompts = enabled ? new PostgresPromptStore(databaseUrl, 2) : null;
 const users: string[] = [];
 
 describe.runIf(enabled)("durable owner-only collaboration state", () => {
@@ -90,9 +91,51 @@ describe.runIf(enabled)("durable owner-only collaboration state", () => {
     expect(await sync!.loadDocument(alice, mapping!.document_key)).toBeNull();
     document.destroy();
   });
+
+  it("projects prompt title and unique read tokens while revisions preserve duplicate occurrences", async () => {
+    const [alice, bob] = users as [string, string];
+    const prompt = (await prompts!.createPrompt(alice, parseCreatePromptInput({
+      requestId: randomUUID(), title: "초기 프롬프트", tokens: ["hyperpop", "female vocal"]
+    }))).prompt;
+    const mapping = await sync!.ensureDocument(alice, prompt.id);
+    expect(mapping).toMatchObject({ resource_type: "prompt" });
+    expect(await sync!.ensureDocument(bob, prompt.id)).toBeNull();
+    const loaded = (await sync!.loadDocument(alice, mapping!.document_key))!;
+    const document = materialize(loaded.snapshot, loaded.updates);
+    const vector = Y.encodeStateVector(document);
+    const title = document.getText("prompt-title");
+    title.delete(0, title.length); title.insert(0, "동기화 프롬프트 🎵");
+    document.getArray("prompt-tokens").insert(2, [
+      { occurrenceId: "duplicate-female", displayValue: "Ｆｅｍａｌｅ  Vocal" },
+      { occurrenceId: "new-bass", displayValue: "808 bass" }
+    ]);
+    await sync!.applyUpdate(alice, mapping!.document_key, randomUUID(), Y.encodeStateAsUpdate(document, vector));
+    expect(await prompts!.getPrompt(alice, prompt.id)).toMatchObject({
+      title: "동기화 프롬프트 🎵", plainText: "hyperpop, female vocal, 808 bass"
+    });
+    const before = await sync!.checkpoint(alice, mapping!.document_key, "large_paste");
+    expect(before).toMatchObject({ reason: "large_paste" });
+
+    const nextVector = Y.encodeStateVector(document);
+    title.delete(0, title.length); title.insert(0, "복원 전 제목");
+    await sync!.applyUpdate(alice, mapping!.document_key, randomUUID(), Y.encodeStateAsUpdate(document, nextVector));
+    const history = await sync!.listRevisions(alice, mapping!.document_key);
+    const restored = await sync!.restoreRevision(alice, mapping!.document_key, before!.id, {
+      requestId: randomUUID(), expectedHash: history!.current.hash
+    });
+    expect(restored).toMatchObject({ duplicate: false });
+    expect(await prompts!.getPrompt(alice, prompt.id)).toMatchObject({
+      title: "동기화 프롬프트 🎵", plainText: "hyperpop, female vocal, 808 bass"
+    });
+    const restoredDocument = materialize((await sync!.loadDocument(alice, mapping!.document_key))!.snapshot, []);
+    expect(restoredDocument.getArray("prompt-tokens").toArray()).toContainEqual({
+      occurrenceId: "duplicate-female", displayValue: "Ｆｅｍａｌｅ  Vocal"
+    });
+    document.destroy(); restoredDocument.destroy();
+  });
 });
 
 afterAll(async () => {
   if (pool && users.length) await pool.query("delete from app_users where id=any($1::uuid[])", [users]);
-  await Promise.all([sync?.close(), songs?.close(), lyrics?.close(), rhymes?.close(), pool?.end()]);
+  await Promise.all([sync?.close(), songs?.close(), lyrics?.close(), rhymes?.close(), prompts?.close(), pool?.end()]);
 });

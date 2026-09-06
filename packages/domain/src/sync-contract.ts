@@ -1,6 +1,6 @@
 export type SyncDocumentKey = string & { readonly __syncDocumentKey: unique symbol };
 export type SyncUpdateId = string & { readonly __syncUpdateId: unique symbol };
-export const SYNC_RESOURCE_TYPES = ["lyrics", "rhyme_note"] as const;
+export const SYNC_RESOURCE_TYPES = ["lyrics", "rhyme_note", "prompt"] as const;
 export type SyncResourceType = (typeof SYNC_RESOURCE_TYPES)[number];
 
 export const SYNC_LIMITS = {

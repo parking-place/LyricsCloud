@@ -25,6 +25,12 @@ export interface RhymeCreationDraft {
   readonly body: string;
   readonly updatedAt: string;
 }
+export interface PromptCreationDraft {
+  readonly requestId: string;
+  readonly title: string;
+  readonly tokens: readonly string[];
+  readonly updatedAt: string;
+}
 export type BrowserEditableSyncOptions = {
   ownerId: string; resourceId: string; initialBody: string;
   onRemoteBody: (body: string, changes?: readonly EditorTextChange[]) => void;
@@ -367,6 +373,23 @@ export async function clearRhymeCreationDraft(ownerId: string): Promise<void> {
   try { await storage.table("drafts").delete("new"); }
   finally { storage.close(); }
 }
+export async function readPromptCreationDraft(ownerId: string): Promise<PromptCreationDraft | null> {
+  const name = await promptCreationName(ownerId);
+  if (!(await Dexie.getDatabaseNames()).includes(name)) return null;
+  const storage = await promptCreationStorage(ownerId);
+  try { return await storage.table<PromptCreationDraft, string>("drafts").get("new") ?? null; }
+  finally { storage.close(); }
+}
+export async function writePromptCreationDraft(ownerId: string, draft: PromptCreationDraft): Promise<void> {
+  const storage = await promptCreationStorage(ownerId);
+  try { await storage.table<PromptCreationDraft & { key: string }, string>("drafts").put({ key: "new", ...draft }); }
+  finally { storage.close(); }
+}
+export async function clearPromptCreationDraft(ownerId: string): Promise<void> {
+  const storage = await promptCreationStorage(ownerId);
+  try { await storage.table("drafts").delete("new"); }
+  finally { storage.close(); }
+}
 export async function hasOwnerPendingDrafts(ownerId: string): Promise<boolean> {
   const name = `${await ownerPrefix(ownerId)}sync-v2`;
   if ((await Dexie.getDatabaseNames()).includes(name)) {
@@ -375,7 +398,9 @@ export async function hasOwnerPendingDrafts(ownerId: string): Promise<boolean> {
     finally { storage.close(); }
   }
   const creation = await readRhymeCreationDraft(ownerId);
-  return Boolean(creation && (creation.title || creation.body));
+  const promptCreation = await readPromptCreationDraft(ownerId);
+  return Boolean((creation && (creation.title || creation.body))
+    || (promptCreation && (promptCreation.title || promptCreation.tokens.length)));
 }
 export async function readOwnerPendingDrafts(ownerId: string): Promise<Array<{ resourceId: string; body: string }>> {
   const name = `${await ownerPrefix(ownerId)}sync-v2`;
@@ -386,8 +411,17 @@ export async function readOwnerPendingDrafts(ownerId: string): Promise<Array<{ r
       drafts.push(...await storage.transaction("r", storage.documents, storage.updates, async () => {
       const pending = new Set((await storage.updates.toArray()).map(({ documentKey }) => documentKey));
       return (await storage.documents.toArray()).filter(({ documentKey }) => pending.has(documentKey)).map((cached) => {
-        const document = createLyricDocument();
-        try { Y.applyUpdate(document, cached.snapshot); return { resourceId: cached.resourceId, body: lyricBody(document).toString() }; }
+        const document = new Y.Doc();
+        try {
+          Y.applyUpdate(document, cached.snapshot);
+          if (document.share.has("prompt-title") || document.share.has("prompt-tokens")) {
+            const title = document.getText("prompt-title").toString();
+            const body = document.getArray<{ displayValue?: unknown }>("prompt-tokens").toArray()
+              .map((item) => typeof item?.displayValue === "string" ? item.displayValue : "").filter(Boolean).join(", ");
+            return { resourceId: cached.resourceId, title, body };
+          }
+          return { resourceId: cached.resourceId, body: lyricBody(document).toString() };
+        }
         finally { document.destroy(); }
       });
       }));
@@ -395,6 +429,10 @@ export async function readOwnerPendingDrafts(ownerId: string): Promise<Array<{ r
   }
   const creation = await readRhymeCreationDraft(ownerId);
   if (creation && (creation.title || creation.body)) drafts.push({ resourceId: creation.requestId, title: creation.title, body: creation.body });
+  const promptCreation = await readPromptCreationDraft(ownerId);
+  if (promptCreation && (promptCreation.title || promptCreation.tokens.length)) {
+    drafts.push({ resourceId: promptCreation.requestId, title: promptCreation.title, body: promptCreation.tokens.join(", ") });
+  }
   return drafts;
 }
 export async function clearOtherOwnerLocalDrafts(ownerId: string): Promise<void> {
@@ -421,6 +459,12 @@ async function rhymeCreationStorage(ownerId: string): Promise<Dexie> {
   return storage;
 }
 async function rhymeCreationName(ownerId: string) { return `${await ownerPrefix(ownerId)}rhyme-create-v1`; }
+async function promptCreationStorage(ownerId: string): Promise<Dexie> {
+  const storage = new Dexie(await promptCreationName(ownerId));
+  storage.version(1).stores({ drafts: "&key,updatedAt" });
+  return storage;
+}
+async function promptCreationName(ownerId: string) { return `${await ownerPrefix(ownerId)}prompt-create-v1`; }
 async function digest(value: string) {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");

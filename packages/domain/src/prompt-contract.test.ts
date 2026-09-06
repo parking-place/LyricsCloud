@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   findPromptDuplicates, normalizePromptToken, parseCreatePromptInput, parsePromptText,
-  parsePromptListInput, projectUniquePromptTokens, PROMPT_LIMITS, PromptValidationError, serializePromptTokens
+  parsePromptListInput, parsePromptSuggestionInput, projectUniquePromptTokens, PROMPT_LIMITS, PromptValidationError, serializePromptTokens
 } from "./prompt-contract.js";
 
 describe("prompt comma contract", () => {
@@ -52,4 +52,10 @@ it("parses prompt list filters and rejects invalid URL state", () => {
   expect(parsePromptListInput(new URLSearchParams())).toEqual({ favoriteOnly: false, recentlyUsedOnly: false, sort: "favorite_first", limit: 20 });
   expect(() => parsePromptListInput(new URLSearchParams("recent=sometimes"))).toThrow(PromptValidationError);
   expect(() => parsePromptListInput(new URLSearchParams("sort=unknown"))).toThrow(PromptValidationError);
+});
+
+it("parses bounded suggestion search without requiring a token", () => {
+  expect(parsePromptSuggestionInput(new URLSearchParams({ search: "  fem  ", limit: "8" }))).toEqual({ search: "fem", limit: 8 });
+  expect(parsePromptSuggestionInput(new URLSearchParams())).toEqual({ search: "", limit: 20 });
+  expect(() => parsePromptSuggestionInput(new URLSearchParams({ limit: "51" }))).toThrow(PromptValidationError);
 });

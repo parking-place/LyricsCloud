@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { authorizeSyncDocument, parseSyncUpdateEnvelope, SYNC_LIMITS } from "./sync-contract.js";
+import { authorizeSyncDocument, parseSyncUpdateEnvelope, SYNC_LIMITS, SYNC_RESOURCE_TYPES } from "./sync-contract.js";
 
 const base = {
   authenticatedOwnerId: "owner-a", resourceOwnerId: "owner-a", resourceId: "resource-a",
@@ -7,6 +7,10 @@ const base = {
 };
 
 describe("sync access contract", () => {
+  it("includes prompt documents in the owner-only sync boundary", () => {
+    expect(SYNC_RESOURCE_TYPES).toEqual(["lyrics", "rhyme_note", "prompt"]);
+  });
+
   it("allows only a live same-owner document and otherwise fails indistinguishably", () => {
     expect(authorizeSyncDocument(base, new Date("2029-01-01T00:00:00Z"))).toMatchObject({ allowed: true, documentKey: "opaque-document" });
     for (const candidate of [
