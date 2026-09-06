@@ -25,6 +25,7 @@ test.describe("prompt creation and editor", () => {
       await expect(page.locator(".prompt-editor-token")).toHaveCount(3);
       await page.locator(".prompt-drag-handle").nth(2).press("ArrowUp");
       await expect(page.locator(".prompt-editor-token").nth(1)).toContainText("한글 IME");
+      await expect(page.getByText("오프라인 · 이 기기에 임시 저장됨")).toBeVisible();
       await page.close();
 
       await context.setOffline(false);
@@ -235,6 +236,74 @@ test.describe("prompt creation and editor", () => {
       await outsiderContext.close();
       await removeAccount(owner.userId); await removeAccount(outsider.userId);
     }
+  });
+
+  test("completes the prompt library to Suno-copy journey", async ({ context, page }, info) => {
+    test.setTimeout(100_000);
+    const owner = await account([context]);
+    await page.addInitScript(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: {
+      writeText: (value: string) => { const state = window as unknown as { copied: string; copyCount: number };
+        state.copied = value; state.copyCount = (state.copyCount ?? 0) + 1; return Promise.resolve(); }
+    } }));
+    try {
+      await page.goto("/prompts");
+      await expect(page.getByRole("heading", { name: "자주 쓰는 스타일 조합을 만들어보세요" })).toBeVisible();
+      await create(page, { title: "추천 기반", tokens: ["cinematic", "wide reverb"] });
+      const songId = await createSong(page, "통합 흐름 연결 곡");
+
+      await page.goto("/prompts/new");
+      await titleFor(page).fill("통합 Suno 프롬프트");
+      const input = page.getByRole("combobox", { name: "태그 입력" });
+      await input.fill("cin");
+      await expect(page.getByRole("option").first()).toContainText("cinematic");
+      await input.press("ArrowDown"); await input.press("Enter");
+      await input.fill("hyperpop, female vocal, Female  Vocal, bright synth, fast tempo");
+      await page.getByRole("button", { name: "태그 추가" }).click();
+      await expect(page.locator(".prompt-duplicate-warning")).toContainText("중복 태그 1개");
+      await page.getByRole("button", { name: "첫 표시 값으로 한 번에 정리" }).click();
+      await expect(page).toHaveURL(/\/prompts\/[0-9a-f-]+$/, { timeout: 20_000 });
+      await ready(page);
+      const sourceId = new URL(page.url()).pathname.split("/").at(-1)!;
+
+      const handles = page.locator(".prompt-drag-handle");
+      await handles.last().press("ArrowLeft");
+      const expected = "cinematic, hyperpop, female vocal, fast tempo, bright synth";
+      await expect.poll(() => prompt(page, sourceId).then((value) => value.plainText)).toBe(expected);
+      await page.getByRole("button", { name: "전체 복사", exact: true }).click();
+      expect(await page.evaluate(() => (window as unknown as { copied: string }).copied)).toBe(expected);
+      await page.getByRole("button", { name: "★ 즐겨찾기" }).click();
+      await expect(page.getByRole("button", { name: "★ 즐겨찾기됨" })).toBeVisible();
+      await page.getByRole("button", { name: "연결", exact: true }).click();
+      await expect(page.getByRole("button", { name: "연결 해제", exact: true })).toBeVisible();
+
+      await page.getByRole("button", { name: "← 프롬프트" }).click();
+      await expect(page).toHaveURL("/prompts");
+      await page.getByRole("searchbox", { name: "프롬프트 검색" }).fill("통합 Suno");
+      await page.getByLabel("프롬프트 연결 곡 필터").selectOption(songId);
+      await page.getByRole("button", { name: "★ 즐겨찾기" }).click();
+      await expect(page.getByText("총 1개")).toBeVisible();
+      const card = page.locator(".prompt-card", { has: page.getByRole("heading", { name: "통합 Suno 프롬프트" }) });
+      if (info.project.name === "mobile") {
+        await page.setViewportSize({ width: 360, height: 780 });
+        const box = await card.boundingBox(); expect(box).not.toBeNull();
+        const before = await page.evaluate(() => (window as unknown as { copyCount: number }).copyCount ?? 0);
+        await card.dispatchEvent("pointerdown", { pointerType: "touch", clientX: box!.x + 20, clientY: box!.y + 20 });
+        await page.waitForTimeout(700);
+        await card.dispatchEvent("pointerup", { pointerType: "touch", clientX: box!.x + 20, clientY: box!.y + 20 });
+        await expect.poll(() => page.evaluate(() => (window as unknown as { copyCount: number }).copyCount)).toBe(before + 1);
+      } else await card.getByRole("button", { name: "⧉ 복사" }).click();
+      expect(await page.evaluate(() => (window as unknown as { copied: string }).copied)).toBe(expected);
+
+      await card.getByRole("button", { name: "복제", exact: true }).click();
+      await expect(page).toHaveURL(/\/prompts\/[0-9a-f-]+\?from=duplicate$/, { timeout: 20_000 });
+      await ready(page);
+      const copyId = new URL(page.url()).pathname.split("/").at(-1)!;
+      expect(copyId).not.toBe(sourceId);
+      await titleFor(page).fill("통합 독립 복사본");
+      await expect.poll(() => prompt(page, copyId).then((value) => value.title)).toBe("통합 독립 복사본");
+      expect((await prompt(page, sourceId)).title).toBe("통합 Suno 프롬프트");
+      expect(await horizontalOverflow(page)).toBe(false);
+    } finally { await removeAccount(owner.userId); }
   });
 
   test("keeps invalid new titles local and confirms a named discard", async ({ context, page }) => {

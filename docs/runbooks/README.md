@@ -33,6 +33,8 @@
 - [`0.5.0 Phase 1 프롬프트 계약·데이터 모델 검증`](./0.5.0-phase1-validation.md)
 - [`0.5.0 Phase 2 프롬프트 목록 검증`](./0.5.0-phase2-validation.md)
 - [`0.5.0 Phase 3 프롬프트 편집기 검증`](./0.5.0-phase3-validation.md)
+- [`0.5.0 Phase 4 프롬프트 순서·복사·곡 연결 검증`](./0.5.0-phase4-validation.md)
+- [`0.5.0 Phase 5 프롬프트 통합 검증`](./0.5.0-phase5-validation.md)
 
 ## 개발 서버 운영
 

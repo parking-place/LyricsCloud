@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.5.0"
 current_phase: "5phase.md"
-state: "ready"
+state: "review"
 owner: "Codex"
-started_at: "2026-09-07 04:46 KST"
+started_at: "2026-09-07 05:29 KST"
 updated_at: "2026-09-07"
-next_action: "0.5.0 Phase 5 프롬프트 전체 흐름·격리·동기화·접근성을 통합 검증"
+next_action: "0.5.0 Phase 5 구현 commit을 push하고 CI·네 image·동일 SHA 개발 배포·공개 통합 smoke를 인수"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -53,7 +53,7 @@ next_action: "0.5.0 Phase 5 프롬프트 전체 흐름·격리·동기화·접�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+| Codex | 0.5.0 / Phase 5 | LC-050-P5-01~08 | prompt E2E·증적·0.6.0/0.8.0 인계·Phase 문서 | Phase 1~4 완료 | 2026-09-07 05:29 KST | 원격 인수 대기 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 

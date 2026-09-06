@@ -14,7 +14,7 @@ export function PromptNewScreen({ ownerId }: { ownerId: string }) {
   const [items, setItems] = useState<readonly PromptBuilderItem[]>([]);
   const [ready, setReady] = useState(false);
   const [online, setOnline] = useState(true);
-  const [state, setState] = useState<"local" | "creating" | "error">("local");
+  const [state, setState] = useState<"local" | "saving" | "creating" | "error">("local");
   const [cancelOpen, setCancelOpen] = useState(false);
   const requestId = useRef("");
   const created = useRef(false);
@@ -81,8 +81,10 @@ export function PromptNewScreen({ ownerId }: { ownerId: string }) {
   useEffect(() => {
     if (!ready || created.current) return;
     const draft = { requestId: requestId.current, title, tokens: items.map(({ displayValue }) => displayValue), updatedAt: new Date().toISOString() };
-    writes.current = writes.current.catch(() => undefined).then(() => writePromptCreationDraft(ownerId, draft));
-    void writes.current.then(() => { if (!creating.current) setState("local"); }).catch(() => setState("error"));
+    setState("saving");
+    const pending = writes.current.catch(() => undefined).then(() => writePromptCreationDraft(ownerId, draft));
+    writes.current = pending;
+    void pending.then(() => { if (writes.current === pending && !creating.current) setState("local"); }).catch(() => setState("error"));
     if (!isValid()) return;
     const since = dirtySince.current ?? Date.now(); dirtySince.current = since;
     const timer = window.setTimeout(() => void createNow(), Math.min(900, Math.max(0, 5_000 - (Date.now() - since))));
@@ -98,6 +100,7 @@ export function PromptNewScreen({ ownerId }: { ownerId: string }) {
   const titleError = ready && !title.trim() ? "제목을 입력하면 프롬프트가 자동으로 생성됩니다."
     : titleLength > PROMPT_LIMITS.title ? `제목은 ${PROMPT_LIMITS.title}자 이하로 입력해 주세요.` : "";
   const stateLabel = !ready ? "로컬 초안을 불러오는 중…" : state === "creating" ? "프롬프트를 생성하고 서버에 저장하는 중…"
+    : state === "saving" ? "이 기기에 초안을 저장하는 중…"
     : state === "error" ? "이 기기에 임시 저장하지 못했습니다. 내용을 복사해 보관한 뒤 다시 시도해 주세요."
     : !online ? "오프라인 · 이 기기에 임시 저장됨" : duplicates.length ? "중복 정리 전 이 기기에 임시 저장됨"
     : "이 기기에 임시 저장됨 · 유효한 제목을 입력하면 자동 저장됩니다";
