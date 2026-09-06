@@ -29,7 +29,7 @@ export function WorkspaceShell({
 }: {
   profile: ShellProfile;
   loginCompleted?: boolean;
-  active?: "home" | "songs";
+  active?: "home" | "songs" | "rhymes";
   children: ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -137,7 +137,7 @@ export function WorkspaceShell({
       <nav className="nav-list" aria-label="데스크톱 주 메뉴">
         <a className={`nav-item${active === "home" ? " active" : ""}`} href="/workspace" aria-current={active === "home" ? "page" : undefined}><span aria-hidden="true">✦</span><span className="nav-text">창작 홈</span></a>
         <a className={`nav-item${active === "songs" ? " active" : ""}`} href="/songs" aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><span className="nav-text">곡</span></a>
-        <PlannedItem icon="≈" label="라임 노트" version="0.4.0" />
+        <a className={`nav-item${active === "rhymes" ? " active" : ""}`} href="/rhymes" aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><span className="nav-text">라임 노트</span></a>
         <PlannedItem icon="◇" label="프롬프트" version="0.5.0" />
       </nav>
       <div className="side-spacer" />
@@ -146,7 +146,7 @@ export function WorkspaceShell({
     </aside>
     <div className="main-shell" ref={mainShell}>
       <header className="topbar">
-        <nav className="workspace-tabs" aria-label="창작 영역"><a href="/songs" className="workspace-tab active" aria-current="page">곡 · 가사</a><span className="workspace-tab disabled" aria-disabled="true">라임 노트 <small>0.4.0</small></span><span className="workspace-tab disabled" aria-disabled="true">프롬프트 <small>0.5.0</small></span></nav>
+        <nav className="workspace-tabs" aria-label="창작 영역"><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트 <small>0.4.0</small></a><span className="workspace-tab disabled" aria-disabled="true">프롬프트 <small>0.5.0</small></span></nav>
         <span className="topbar-spacer" /><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button>
       </header>
       {sessionExpired || logoutError ? <div className="account-messages">
@@ -161,8 +161,8 @@ export function WorkspaceShell({
     <nav className="mobile-bottom-nav" aria-label="모바일 주 메뉴">
       <a href="/workspace" className={`mobile-nav-item${active === "home" ? " active" : ""}`} aria-current={active === "home" ? "page" : undefined}><span aria-hidden="true">⌂</span><strong>홈</strong></a>
       <a href="/songs" className={`mobile-nav-item${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><strong>곡</strong></a>
-      <a className="quick-add" href="/songs/new" aria-label="새 곡 추가"><span>＋</span><small>새 곡</small></a>
-      <PlannedMobile icon="•••" label="더보기" />
+      <a className="quick-add" href={active === "rhymes" ? "/rhymes/new" : "/songs/new"} aria-label={active === "rhymes" ? "새 라임 노트 추가" : "새 곡 추가"}><span>＋</span><small>{active === "rhymes" ? "새 라임" : "새 곡"}</small></a>
+      <a href="/rhymes" className={`mobile-nav-item${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><strong>라임</strong></a>
     </nav>
   </main>;
 }
@@ -179,5 +179,4 @@ export function AppShell({ profile, loginCompleted }: { profile: ShellProfile; l
 }
 
 function PlannedItem({ icon, label, version }: { icon: string; label: string; version: string }) { return <span className="nav-item disabled" aria-disabled="true" title={`${version}에서 제공 예정`}><span aria-hidden="true">{icon}</span><span className="nav-text">{label}<small>{version} 예정</small></span></span>; }
-function PlannedMobile({ icon, label }: { icon: string; label: string }) { return <span className="mobile-nav-item disabled" aria-disabled="true"><span aria-hidden="true">{icon}</span><strong>{label}</strong><small>예정</small></span>; }
 function Avatar({ profile }: { profile: Pick<ShellProfile, "displayName" | "avatarUrl"> }) { return profile.avatarUrl ? <img className="avatar" src={profile.avatarUrl} alt="" referrerPolicy="no-referrer" /> : <span className="avatar" aria-hidden="true">{profile.displayName.slice(0, 1)}</span>; }
