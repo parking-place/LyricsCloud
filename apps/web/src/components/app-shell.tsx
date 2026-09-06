@@ -85,7 +85,18 @@ export function WorkspaceShell({
     setLogoutBlocked(false);
     try {
       const completed = await guard.current?.run(async () => {
-        const response = await fetch("/api/auth/logout", { method: "POST", headers: { "X-Expected-Owner": profile.userId }, cache: "no-store", signal: AbortSignal.timeout(10_000) });
+        let response: Response;
+        try {
+          response = await fetch("/api/auth/logout", { method: "POST", headers: { "X-Expected-Owner": profile.userId }, cache: "no-store", signal: AbortSignal.timeout(10_000) });
+        } catch (error) {
+          // Clear-Site-Data can abort an intercepted or delayed fetch after the
+          // server has already revoked the session. Reconcile that ambiguous
+          // response before resuming editors and reporting a false failure.
+          const session = await fetch("/api/auth/session", { cache: "no-store", signal: AbortSignal.timeout(5_000) }).catch(() => null);
+          if (session?.status !== 401) throw error;
+          await clearAccountCache(profile.userId).catch(() => undefined);
+          return;
+        }
         if (!response.ok) throw new Error("LOGOUT_FAILED");
         await clearAccountCache(profile.userId).catch(() => undefined);
       }, force);

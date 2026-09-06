@@ -222,8 +222,8 @@ test.describe("logout preserves pending work and isolates accounts", () => {
       await expect(second.locator(".main-shell")).toHaveAttribute("inert", "");
       expect((await (await second.request.get(`/api/lyrics/${id}`)).json()).lyric.title).toBe("다른 탭의 마지막 제목");
       release!();
-      await expect(page).toHaveURL(/\/auth$/);
-      await expect(second).toHaveURL(/\/auth$/);
+      await expect(page).toHaveURL(/\/auth$/, { timeout: 15_000 });
+      await expect(second).toHaveURL(/\/auth$/, { timeout: 15_000 });
     } finally { release?.(); await remove(owner); }
   });
 
