@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.5.0"
 current_phase: "2phase.md"
-state: "review"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-07 02:49 KST"
 updated_at: "2026-09-07"
-next_action: "0.5.0 Phase 2 구현 commit을 push하고 필수 CI·네 개발 image 발행·동일 SHA 개발 배포·공개 smoke를 확인"
+next_action: "0.5.0 Phase 3 프롬프트 편집기 범위와 결정·목업을 확인하고 활성 작업을 등록"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -39,7 +39,7 @@ next_action: "0.5.0 Phase 2 구현 commit을 push하고 필수 CI·네 개발 im
 | 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
 | 0.3.1 | complete | Phase 1~5 완료, 자동 장애 회귀·실제 기기·원격 CI·image·동일 SHA 개발 배포 검증 | 0.3.0 완료 |
 | 0.4.0 | complete | Phase 1~5 완료 | 0.3.1 완료 |
-| 0.5.0 | in_progress | Phase 1 완료 | 0.4.0 완료 |
+| 0.5.0 | in_progress | Phase 1~2 완료 | 0.4.0 완료 |
 | 0.6.0 | planned | 없음 | 0.5.0 완료 |
 | 0.7.0 | planned | 없음 | 0.6.0 완료 |
 | 0.8.0 | planned | 없음 | 0.7.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.5.0 Phase 2 구현 commit을 push하고 필수 CI·네 개발 im
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.5.0 / Phase 2 | LC-050-P2-01~08 | `apps/web/**`, `packages/database/**`, `packages/domain/**`, `tests/e2e/**`, Phase 산출물 | 0.5.0 Phase 1 프롬프트 계약 | 2026-09-07 02:49 KST | 원격 인수 대기 |
+| 현재 활성 작업 없음 | 다음 작업: 0.5.0 / Phase 3 | - | - | Phase 2 완료 | - | ready |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,12 +102,13 @@ next_action: "0.5.0 Phase 2 구현 commit을 push하고 필수 CI·네 개발 im
 
 ## 다음 작업
 
-0.5.0 Phase 1은 프롬프트 계약·데이터 모델과 원격 CI·image·동일 SHA 배포 인수를 마쳤다. 다음은 Phase 2의 PC·모바일 프롬프트 목록이다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.5.0 Phase 2는 프롬프트 목록·복합 검색/필터·복사/복제와 원격 CI·image·동일 SHA 개발 배포·공개 smoke 인수를 마쳤다. 다음은 Phase 3의 프롬프트 편집기다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-07 | 0.5.0 / Phase 2 | Codex | owner 범위 프롬프트 목록에 제목·토큰·연결 곡 검색, 즐겨찾기·최근 사용 필터, 여섯 정렬·cursor, PC 2열/모바일 1열 카드와 정확한 복사·길게 누르기·수동 대안·멱등 복제를 구현 | 35 files/135 tests, 0200~0501 migration 복구, production build, PC/mobile E2E 142 통과·2 skip, CI `34051539662`, 네 image tag/digest, `9dd672f` 동일 SHA 로컬·개발 배포와 공개 prompt smoke; [검증 기록](../../docs/runbooks/0.5.0-phase2-validation.md) | Phase 3이 `/prompts/new`·`/prompts/:id`의 토큰 편집·자동완성·중복 상태를 연결 |
 | 2026-09-07 | 0.5.0 / Phase 1 | Codex | 표시 값을 보존하는 쉼표 parser·NFKC 중복 키, occurrence 기반 Yjs sequence와 무중복 평문 projection, owner 토큰 이력·멱등 쓰기·곡 연결·soft delete 계약 구현 | 35 files/133 tests, 0200~0500 migration 복구, production build·4 image 복구, PC/mobile E2E 138 통과·2 skip, CI `34044477557`·`34044480587`, 네 image tag/digest, `bfd359c` 동일 SHA 로컬·개발 배포와 공개 smoke; [검증 기록](../../docs/runbooks/0.5.0-phase1-validation.md) | Phase 2가 owner query에 제목·토큰·곡 검색, URL 필터·정렬, 카드 복사·복제를 연결 |
 | 2026-09-07 | 0.4.0 / Phase 5 | Codex | Phase 1~4 고유 ID를 증적과 연결하고 라임 전체 흐름·owner 격리·다중 탭/오프라인 복구·접근성을 통합 검증, 느린 메타데이터 응답 경쟁 조건을 수정 | 33 files/122 tests, migration 복구·production build·4 image 복구, PC/mobile E2E 138 통과·2 skip, CI `34042009944`·`34042030495`, 네 image tag/digest, `cf5ba57` 동일 SHA 로컬·개발 배포와 공개 smoke; [검증 기록](../../docs/runbooks/0.4.0-phase5-validation.md) | 0.5.0 Phase 1은 [라임 인계](../../docs/architecture/0.4.0-RHYME-HANDOFF.md)의 owner/resource·목록·명령 queue 패턴을 프롬프트에 재사용 |
 | 2026-09-06 | 0.4.0 / Phase 4 | Codex | 태그 필터 이동, owner 곡 후보 검색·멱등 연결·선택 해제, 전체/선택 복사·빈 선택·수동 복사와 0.6.0용 Yjs 상대 위치 삽입 계약을 구현 | 20 files/122 tests, production build·4 image 복구, PC/mobile E2E 134 통과·2 skip, CI `34039901090`·`34039912586`, 네 image tag/digest, `3a2b2f3` 동일 SHA 로컬·개발 배포와 공개 연결 smoke; [검증 기록](../../docs/runbooks/0.4.0-phase4-validation.md) | Phase 5가 06~07번 전체 흐름·격리·동기화·접근성을 통합 검증 |
