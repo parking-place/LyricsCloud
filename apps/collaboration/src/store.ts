@@ -19,16 +19,20 @@ export class CollaborationStore {
       if (!lyric.rowCount) return null;
       const existing = await client.query<DocumentRows>("select document_key, resource_id, snapshot, snapshot_sequence::text from sync_documents where resource_id=$1", [resourceId]);
       if (existing.rows[0]) return existing.rows[0];
-      const document = new Y.Doc(); const body = lyric.rows[0]!.body;
+      const document = new Y.Doc(); const body = lyric.rows[0]!.body.replace(/\r\n?/g, "\n");
       if (body) document.getText("body").insert(0, body);
       const created = await client.query<DocumentRows>(`insert into sync_documents(resource_id,owner_id,snapshot,projected_at)
         values($1,$2,$3,statement_timestamp()) returning document_key,resource_id,snapshot,snapshot_sequence::text`, [resourceId, ownerId, Buffer.from(Y.encodeStateAsUpdate(document))]);
+      if (body !== lyric.rows[0]!.body) await client.query("update lyrics set body=$3 where resource_id=$1 and owner_id=$2", [resourceId, ownerId, body]);
       document.destroy(); return created.rows[0]!;
     });
   }
 
   async loadDocument(ownerId: string, documentKey: string) {
-    return this.#owned(ownerId, async (client) => this.#loadLocked(client, ownerId, documentKey, false));
+    return this.#owned(ownerId, async (client) => {
+      await client.query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [documentKey]);
+      return this.#loadLocked(client, ownerId, documentKey, false);
+    });
   }
 
   async applyUpdate(ownerId: string, documentKey: string, updateId: string, payload: Uint8Array) {

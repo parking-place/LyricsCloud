@@ -12,6 +12,7 @@
     "@lyricscloud/config": "workspace:*",
     "@lyricscloud/database": "workspace:*",
     "@lyricscloud/domain": "workspace:*",
+    "pg": "8.16.3",
     "tsx": "4.20.6",
     "ws": "8.21.3",
     "yjs": "13.6.32"

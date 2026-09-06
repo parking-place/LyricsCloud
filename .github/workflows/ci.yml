@@ -91,6 +91,8 @@ jobs:
           for service in collaboration worker migrate; do
             docker build --file infra/docker/Dockerfile.service --target "$service" --tag "lyricscloud-$service-ci:${{ github.sha }}" .
           done
+      - name: Run production images with a fresh database
+        run: bash scripts/verify-production-images.sh "${{ github.sha }}"
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
       - name: Auth and ownership E2E

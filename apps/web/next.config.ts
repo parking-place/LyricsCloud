@@ -4,6 +4,9 @@ const config: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: new URL("../../", import.meta.url).pathname,
   transpilePackages: ["@lyricscloud/auth", "@lyricscloud/config", "@lyricscloud/database", "@lyricscloud/domain", "@lyricscloud/ui"],
+  async rewrites() {
+    return [{ source: "/collaboration/:path*", destination: `${process.env.COLLABORATION_INTERNAL_URL ?? "http://127.0.0.1:3001"}/:path*` }];
+  },
   async headers() {
     const noStore = [
       { key: "Cache-Control", value: "private, no-store, max-age=0" },

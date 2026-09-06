@@ -2,7 +2,7 @@ export type SaveStatus = "saved" | "dirty" | "saving" | "error";
 
 export interface TextDraft {
   readonly title: string;
-  readonly body: string;
+  readonly body?: string;
 }
 
 export interface SaveState {

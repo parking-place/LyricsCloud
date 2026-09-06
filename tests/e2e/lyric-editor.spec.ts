@@ -72,8 +72,10 @@ test.describe("CodeMirror lyric editor", () => {
         return route.continue();
       });
       await page.goto(`/lyrics/${lyricId}`);
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
       const editor = page.locator(".cm-content");
       await editor.fill("실패해도 보존할 현재 입력");
+      await page.getByRole("textbox", { name: "가사 제목" }).fill("실패 후 재시도할 제목");
       await expect(page.getByText("저장하지 못했습니다")).toBeVisible();
       await expect(editor).toContainText("실패해도 보존할 현재 입력");
       await page.getByRole("button", { name: "다시 시도" }).click();
@@ -100,6 +102,8 @@ test.describe("CodeMirror lyric editor", () => {
       await second.goto(`/lyrics/${lyricId}`);
       await expect(page.locator(".cm-content")).toContainText("서버 기준");
       await expect(second.locator(".cm-content")).toContainText("서버 기준");
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
+      await expect(second.getByText("방금 저장됨", { exact: true })).toBeVisible();
       await page.locator(".cm-content").fill("[Verse]\n첫 탭에서 확정한 한글");
       await expect(second.locator(".cm-content")).toContainText("첫 탭에서 확정한 한글");
       await second.close();
@@ -129,15 +133,12 @@ test.describe("CodeMirror lyric editor", () => {
       await page.goto(`/lyrics/${lyricId}`);
       const editor = page.locator(".cm-content");
       await expect(editor).toBeVisible();
+      await expect(editor).toHaveAttribute("contenteditable", "true");
       expect(Date.now() - startedAt).toBeLessThan(5_000);
       await editor.click();
       await page.keyboard.press("Control+End");
-      const patchResponsePromise = page.waitForResponse((response) =>
-        response.request().method() === "PATCH" && response.url().endsWith(`/api/lyrics/${lyricId}`));
       await page.keyboard.press("Backspace");
       await page.keyboard.insertText("끝");
-      const patchResponse = await patchResponsePromise;
-      expect(patchResponse.status(), await patchResponse.text()).toBe(200);
       await expect(page.getByText("방금 저장됨")).toBeVisible();
       await expect.poll(async () => (await (await page.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body.slice(-2)).toBe("가끝");
     } finally { await deleteAccount(account.userId); }
@@ -175,7 +176,12 @@ test.describe("CodeMirror lyric editor", () => {
 
   test("keeps hundreds of sections responsive and can reach the final repeated-free target", async ({ context, page }) => {
     const account = await createAccount(context, "장문 송폼 사용자");
+    let releaseBootstrap: (() => void) | undefined;
     try {
+      await page.route("**/collaboration/documents/*", async (route) => {
+        await new Promise<void>((resolve) => { releaseBootstrap = resolve; });
+        await route.continue();
+      });
       const body = Array.from({ length: 400 }, (_, index) => `[Verse ${index + 1}]\n${"가".repeat(220)}`).join("\n");
       const { lyricId } = await createLyric(page, body);
       const startedAt = Date.now();
@@ -188,9 +194,13 @@ test.describe("CodeMirror lyric editor", () => {
         ? page.getByRole("dialog", { name: "송폼 이동" }).getByRole("navigation", { name: "인식된 송폼 구간" })
         : page.getByRole("complementary", { name: "송폼 목차" }).getByRole("navigation", { name: "인식된 송폼 구간" });
       await navigation.getByRole("button", { name: "Verse 400 구간으로 이동" }).click();
+      await expect(page.locator(".cm-content")).toHaveAttribute("contenteditable", "false");
       await expect(page.locator(".cm-content")).toBeFocused();
       await expect(page.locator(".cm-content").getByText("[Verse 400]", { exact: true })).toBeVisible();
-    } finally { await deleteAccount(account.userId); }
+      await expect.poll(() => Boolean(releaseBootstrap)).toBe(true);
+      releaseBootstrap!();
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
+    } finally { releaseBootstrap?.(); await deleteAccount(account.userId); }
   });
 
   test("copies the current document and selected sections in source order", async ({ context, page }) => {
@@ -200,10 +210,11 @@ test.describe("CodeMirror lyric editor", () => {
       const body = "머리말\n[Verse]\n첫 절\n\n[Hook]\n첫 후렴\n[Verse 2]\n둘째 절\n[Hook]\n마지막 후렴";
       const { lyricId } = await createLyric(page, body);
       await page.goto(`/lyrics/${lyricId}`);
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
+      await context.setOffline(true);
       const editor = page.locator(".cm-content");
       const current = `${body}\n저장 전 현재 입력`;
       await editor.fill(current);
-      await expect(page.getByText("변경 내용 있음")).toBeVisible();
       const mobile = (page.viewportSize()?.width ?? 1440) <= 720;
       const tools = page.getByRole("group", { name: "가사 편집 도구" });
       await (mobile ? tools.getByRole("button", { name: /전체 복사/ }) : page.getByRole("button", { name: "전체 복사", exact: true })).click();
@@ -259,6 +270,8 @@ test.describe("CodeMirror lyric editor", () => {
       const body = Array.from({ length: 80 }, (_, index) => `[Verse ${index + 1}]\n줄 ${index + 1}`).join("\n");
       const { lyricId } = await createLyric(page, body);
       await page.goto(`/lyrics/${lyricId}`);
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
+      await context.setOffline(true);
       const editor = page.locator(".cm-content");
       const scroller = page.locator(".cm-scroller");
       await editor.click();
@@ -277,7 +290,7 @@ test.describe("CodeMirror lyric editor", () => {
       const afterScroll = await scroller.evaluate((element) => element.scrollTop);
       expect(Math.abs(afterScroll - beforeScroll)).toBeLessThan(40);
       await page.keyboard.press("Alt+Shift+c");
-      await expect.poll(() => copiedText(page)).toContain("아직 저장 전인 문장");
+      await expect.poll(() => copiedText(page)).toBe(`${body}\n아직 저장 전인 문장`);
       await page.evaluate(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "f", altKey: true, shiftKey: true, isComposing: true })));
       await expect(page.locator(".lyric-editor-page")).toHaveClass(/is-focus-mode/);
       await page.keyboard.press("Alt+Shift+f");

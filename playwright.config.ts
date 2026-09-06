@@ -8,6 +8,12 @@ export default defineConfig({
   expect: { toHaveScreenshot: { animations: "disabled", maxDiffPixelRatio: 0.06 } },
   use: { baseURL: "http://127.0.0.1:3000", trace: "retain-on-failure", serviceWorkers: "block" },
   webServer: [
+    ...(process.env.E2E_DATABASE_URL ? [{
+      command: "pnpm --filter @lyricscloud/collaboration start",
+      env: { NODE_ENV: "test", DATABASE_URL: process.env.E2E_DATABASE_URL, APP_ORIGIN: "http://127.0.0.1:3000", COLLABORATION_PORT: "3001" },
+      url: "http://127.0.0.1:3001/health/ready",
+      reuseExistingServer: false
+    }] : []),
     {
       command: "node tests/e2e/oidc-fixture-server.mjs",
       url: "http://127.0.0.1:3100/health",

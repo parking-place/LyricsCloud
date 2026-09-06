@@ -22,7 +22,7 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
   beforeAll(async () => {
     if (!pool || !/lyricscloud_test(?:\?|$)/.test(databaseUrl)) throw new Error("collaboration integration requires lyricscloud_test");
     processHandle = spawn("apps/collaboration/node_modules/.bin/tsx", ["apps/collaboration/src/server.ts"], {
-      cwd: process.cwd(), env: { ...process.env, DATABASE_URL: databaseUrl, APP_VERSION: "0.3.1", BUILD_ID: "synthetic", COLLABORATION_PORT: String(port) }
+      cwd: process.cwd(), env: { ...process.env, DATABASE_URL: databaseUrl, APP_VERSION: "0.3.1", BUILD_ID: "synthetic", COLLABORATION_PORT: String(port), APP_ORIGIN: "http://localhost:8080" }
     });
     processHandle.stdout.on("data", (chunk) => { output += chunk.toString(); });
     processHandle.stderr.on("data", (chunk) => { output += chunk.toString(); });
@@ -40,14 +40,21 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
     await pool!.query(`insert into auth_sessions(token_hash,user_id,expires_at,absolute_expires_at)
       values($1,$2,now()+interval '1 hour',now()+interval '2 hours')`, [hash, ownerId]);
     const cookie = `lc_session=${encodeURIComponent(token)}`;
-    const bootstrap = await fetch(`http://127.0.0.1:${port}/documents/${lyric.id}`, { method: "POST", headers: { cookie } });
+    const headers = { cookie, origin: "http://localhost:8080" };
+    expect((await fetch(`http://127.0.0.1:${port}/documents/${lyric.id}`, { method: "POST", headers: { cookie, origin: "https://foreign.example" } })).status).toBe(403);
+    const bootstrap = await fetch(`http://127.0.0.1:${port}/documents/${lyric.id}`, { method: "POST", headers });
     expect(bootstrap.status).toBe(200);
     const { documentKey } = await bootstrap.json() as { documentKey: string };
     expect(documentKey).not.toBe(lyric.id);
 
-    const first = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: { cookie } });
-    const second = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: { cookie } });
-    const [firstSnapshot] = await Promise.all([nextJson(first, "snapshot"), nextJson(second, "snapshot")]);
+    const secondToken = `session-${randomUUID()}`;
+    await pool!.query(`insert into auth_sessions(token_hash,user_id,expires_at,absolute_expires_at)
+      values($1,$2,now()+interval '1 hour',now()+interval '2 hours')`, [createHash("sha256").update(secondToken).digest("base64url"), ownerId]);
+
+    const first = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers });
+    const second = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: { ...headers, cookie: `lc_session=${secondToken}` } });
+    const idle = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers });
+    const [firstSnapshot] = await Promise.all([nextJson(first, "snapshot"), nextJson(second, "snapshot"), nextJson(idle, "snapshot")]);
     const document = new Y.Doc(); Y.applyUpdate(document, Buffer.from(firstSnapshot.payload as string, "base64"));
     let update: Uint8Array<ArrayBufferLike> = new Uint8Array();
     document.once("update", (value) => { update = value; });
@@ -63,6 +70,13 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
     first.send(JSON.stringify({ type: "update", updateId: randomUUID(), payload: Buffer.from(update).toString("base64") }));
     const [code] = await once(first, "close") as [number, Buffer];
     expect(code).toBe(4404);
+    const idleClosed = once(idle, "close");
+    document.once("update", (value) => { update = value; });
+    document.getText("body").insert(0, "유효한 다른 세션\n");
+    const secondAck = nextJson(second, "ack");
+    second.send(JSON.stringify({ type: "update", updateId: randomUUID(), payload: Buffer.from(update).toString("base64") }));
+    await secondAck;
+    expect((await idleClosed)[0]).toBe(4404);
     const secondClosed = once(second, "close"); second.close(); await secondClosed; document.destroy();
     expect(output).not.toContain(secretBody);
     expect(output).not.toContain(Buffer.from(update).toString("base64"));
