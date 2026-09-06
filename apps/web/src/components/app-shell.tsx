@@ -5,6 +5,16 @@ import { useEffect, useRef, useState } from "react";
 import { clearAccountCache, clearOtherAccountCaches, coordinateAccountLogout, downloadRecoveryDrafts } from "../lib/account-cache.js";
 import { Brand } from "./auth-screen.js";
 
+async function clearAccountCacheBeforeNavigation(userId: string): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      clearAccountCache(userId).catch(() => undefined),
+      new Promise<void>((resolve) => { timer = setTimeout(resolve, 2_000); })
+    ]);
+  } finally { clearTimeout(timer); }
+}
+
 interface ShellProfile {
   readonly userId: string;
   readonly displayName: string;
@@ -43,7 +53,7 @@ export function WorkspaceShell({
       }
       setAccountPaused(paused);
     }, () => {
-      void clearAccountCache(profile.userId).catch(() => undefined).finally(() => window.location.replace("/auth"));
+      void clearAccountCacheBeforeNavigation(profile.userId).finally(() => window.location.replace("/auth"));
     });
     guard.current = coordination;
     return () => { coordination.dispose(); guard.current = null; };
@@ -94,17 +104,16 @@ export function WorkspaceShell({
           // response before resuming editors and reporting a false failure.
           const session = await fetch("/api/auth/session", { cache: "no-store", signal: AbortSignal.timeout(5_000) }).catch(() => null);
           if (session?.status !== 401) throw error;
-          await clearAccountCache(profile.userId).catch(() => undefined);
           return;
         }
         if (!response.ok) throw new Error("LOGOUT_FAILED");
-        await clearAccountCache(profile.userId).catch(() => undefined);
       }, force);
       if (!completed) {
         setLogoutError("아직 서버에 저장하지 못한 변경이 있어 로그아웃하지 않았습니다. 편집하던 가사를 열어 저장을 마친 뒤 다시 시도해 주세요.");
         setLogoutBlocked(true);
         return;
       }
+      await clearAccountCacheBeforeNavigation(profile.userId);
       window.location.replace("/auth");
     } catch {
       setLogoutError("로그아웃을 완료하지 못했습니다. 현재 화면을 유지했으니 연결을 확인한 뒤 다시 시도해 주세요.");
