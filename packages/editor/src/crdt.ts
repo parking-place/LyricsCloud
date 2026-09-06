@@ -43,6 +43,35 @@ export function projectRhyme(document: Y.Doc, relationalTitle: string): RhymePro
   return projectLyric(document, relationalTitle);
 }
 
+export function encodeTextRelativePosition(document: Y.Doc, index: number, association = 0): string {
+  const text = lyricBody(document);
+  if (!Number.isInteger(index) || index < 0 || index > text.length) throw new RangeError("CRDT_POSITION_OUT_OF_RANGE");
+  const encoded = Y.encodeRelativePosition(Y.createRelativePositionFromTypeIndex(text, index, association));
+  return bytesToBase64Url(encoded);
+}
+
+export function resolveTextRelativePosition(document: Y.Doc, value: string): number | null {
+  try {
+    const absolute = Y.createAbsolutePositionFromRelativePosition(Y.decodeRelativePosition(base64UrlToBytes(value)), document);
+    // Yjs can be bundled more than once by test/build tooling, which makes an
+    // otherwise valid shared type fail a strict object identity comparison.
+    // A resolved type belonging to this document is sufficient here because
+    // lyric/rhyme documents expose only the canonical body shared type.
+    return absolute?.type.doc === document ? absolute.index : null;
+  } catch { return null; }
+}
+
 function normalizeLineEndings(value: string): string {
   return value.replace(/\r\n?/g, "\n");
+}
+
+function bytesToBase64Url(value: Uint8Array): string {
+  let binary = "";
+  for (const byte of value) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function base64UrlToBytes(value: string): Uint8Array {
+  const base64 = value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - value.length % 4) % 4);
+  return Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
 }

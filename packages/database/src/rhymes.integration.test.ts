@@ -51,7 +51,7 @@ describe.runIf(enabled)("rhyme note PostgreSQL contract", () => {
     const bobTag = await rhymes!.upsertTag(bob, "Bob tag");
     const bobSong = (await songs!.createSong(bob, parseCreateSongInput({ requestId: randomUUID(), title: "Bob song" }))).song;
     await expect(rhymes!.attachTag(alice, note.id, bobTag.id)).rejects.toMatchObject({ code: "23503" });
-    await expect(rhymes!.linkSong(alice, note.id, bobSong.id)).rejects.toMatchObject({ code: "23503" });
+    expect(await rhymes!.linkSong(alice, note.id, bobSong.id)).toBe(false);
     expect((await rhymes!.getRhymeNote(alice, note.id))!.tags).toEqual([]);
     expect((await rhymes!.getRhymeNote(alice, note.id))!.linkedSongIds).toEqual([]);
     expect(await rhymes!.getRhymeNote(bob, note.id)).toBeNull();

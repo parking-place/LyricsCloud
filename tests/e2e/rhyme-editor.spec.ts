@@ -15,6 +15,9 @@ test.describe("rhyme note creation and editor", () => {
       writeText(value: string) { (window as unknown as { copied: string }).copied = value; return Promise.resolve(); }
     } }));
     try {
+      const songResponse = await page.request.post("/api/songs", { headers, data: { requestId: randomUUID(), title: "Phase 4 연결 곡" } });
+      expect(songResponse.status()).toBe(201);
+      const songId = (await songResponse.json()).song.id as string;
       await page.goto("/rhymes/new");
       await expect(page.getByRole("textbox", { name: "노트 제목" })).toBeEnabled();
       await context.setOffline(true);
@@ -43,8 +46,24 @@ test.describe("rhyme note creation and editor", () => {
       await settings.getByRole("button", { name: /고정$/ }).click();
       await settings.getByRole("button", { name: "빨강", exact: true }).click();
       await expect(settings.getByRole("button", { name: /즐겨찾기됨$/ })).toHaveAttribute("aria-pressed", "true");
-      if (info.project.name === "mobile") await settings.getByRole("button", { name: "닫기", exact: true }).click();
-      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
+      await expect(settings.getByRole("searchbox", { name: "곡 검색" })).toBeVisible();
+      await settings.getByRole("searchbox", { name: "곡 검색" }).fill("Phase 4");
+      await expect(settings.getByText("Phase 4 연결 곡", { exact: true })).toBeVisible();
+      await settings.getByRole("button", { name: "연결", exact: true }).click();
+      await expect(settings.getByRole("button", { name: "연결 해제", exact: true })).toBeVisible();
+      await expect.poll(async () => (await (await page.request.get(`/api/rhymes?song=${songId}`)).json()).items.length).toBe(1);
+      await settings.getByRole("button", { name: "연결 해제", exact: true }).click();
+      await expect(settings.getByRole("button", { name: "연결", exact: true })).toBeVisible();
+      await expect.poll(async () => (await (await page.request.get(`/api/rhymes?song=${songId}`)).json()).items.length).toBe(0);
+      await settings.getByRole("button", { name: "연결", exact: true }).click();
+      const insertion = settings.getByRole("button", { name: "열린 가사에 삽입" });
+      await expect(insertion).toBeDisabled();
+      await expect(settings.getByText(/현재 화면에는 열린 가사 편집 대상이 없습니다/)).toBeVisible();
+      await settings.getByRole("button", { name: "#FIRE Tag", exact: true }).click();
+      await expect(page).toHaveURL(/\/rhymes\?tag=[0-9a-f-]+$/);
+      await expect(page.getByText("총 1개")).toBeVisible();
+      await page.getByRole("link", { name: "수정한 라임 제목 라임 노트 열기" }).click();
+      await ready(page);
 
       const editor = page.locator(".cm-content");
       await editor.fill("첫 기록 본문\n한글 IME 확정 🎵");
@@ -84,6 +103,20 @@ test.describe("rhyme note creation and editor", () => {
       else await page.getByRole("button", { name: "전체 복사", exact: true }).click();
       expect(await page.evaluate(() => (window as unknown as { copied: string }).copied)).toBe("첫 기록 본문\n한글 IME 확정 🎵");
       await expect(page.getByText("라임 노트 전체를 복사했습니다")).toBeVisible();
+      await editor.click(); await editor.press("Control+Home");
+      const selectionCopy = page.getByRole("button", { name: /선택 복사/, exact: false }).last();
+      await selectionCopy.click();
+      await expect(page.getByText("복사할 본문 영역을 먼저 선택해 주세요.")).toBeVisible();
+      await editor.click(); await editor.press("Control+Home");
+      await page.keyboard.down("Shift"); await page.keyboard.press("End"); await page.keyboard.up("Shift");
+      await selectionCopy.click();
+      expect(await page.evaluate(() => (window as unknown as { copied: string }).copied)).toBe("첫 기록 본문");
+      await expect(page.getByText("선택한 라임 표현을 복사했습니다")).toBeVisible();
+      await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => Promise.reject(new Error("denied")) } }));
+      await selectionCopy.click();
+      const copyDialog = page.getByRole("dialog", { name: "직접 복사해 주세요" });
+      await expect(copyDialog.getByRole("textbox", { name: "수동 복사할 라임 노트" })).toHaveValue("첫 기록 본문");
+      await copyDialog.getByRole("button", { name: "닫기" }).click();
       expect(await horizontalOverflow(page)).toBe(false);
       if (info.project.name === "mobile") {
         const dock = await page.locator(".rhyme-mobile-dock").boundingBox();
@@ -125,6 +158,22 @@ test.describe("rhyme note creation and editor", () => {
       await page.getByRole("button", { name: "취소", exact: true }).click();
       await page.getByRole("button", { name: "초안 삭제 후 나가기" }).click();
       await expect(page).toHaveURL("/rhymes");
+    } finally { await removeAccount(owner.userId); }
+  });
+
+  test("shows an empty song picker after a failed candidate request is retried", async ({ context, page }, info) => {
+    const owner = await account([context]);
+    try {
+      const created = await page.request.post("/api/rhymes", { headers, data: { requestId: randomUUID(), title: "곡 후보 오류 복구", body: "retry" } });
+      expect(created.status()).toBe(201);
+      const id = (await created.json()).rhyme.id as string;
+      await page.route(`**/api/rhymes/${id}/songs?*`, (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
+      await page.goto(`/rhymes/${id}`); await ready(page);
+      if (info.project.name === "mobile") await page.getByRole("button", { name: /태그·설정/ }).click();
+      const settings = info.project.name === "mobile" ? page.getByRole("dialog", { name: "태그와 표시 설정" }) : page.getByRole("complementary", { name: "라임 노트 설정" });
+      await expect(settings.getByRole("alert")).toContainText("곡 목록을 불러오지 못했습니다.");
+      await settings.getByRole("button", { name: "다시 시도" }).click();
+      await expect(settings.getByText("연결할 수 있는 곡이 없습니다.")).toBeVisible();
     } finally { await removeAccount(owner.userId); }
   });
 });
