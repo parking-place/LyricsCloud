@@ -9,7 +9,7 @@ state: "review"
 owner: "Codex"
 started_at: "2026-09-06 KST"
 updated_at: "2026-09-06"
-next_action: "Phase 5 로컬 결과 검토와 실제 기기 인수; Phase 3→4→5 원격 승인·CI·동일 SHA 개발 배포 대기, 0.4.0 미시작"
+next_action: "Phase 3→4→5 PR·CI·개발 이미지 결과 확인과 실제 기기·동일 SHA 개발 서버 인수; 0.4.0 미시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -63,6 +63,8 @@ next_action: "Phase 5 로컬 결과 검토와 실제 기기 인수; Phase 3→4�
 
 문서·브라우저 worker의 담당 파일은 인계받았다. 부모가 실행 검증과 필요한 코드를 수정했고 GLM 5.3 Flash는 로그아웃 변경 경계의 읽기 전용 검토를 맡았다. 결과는 [Phase 5 로컬 검증 기록](../../docs/runbooks/0.3.1-phase5-local-validation.md)에 모았다.
 
+2026-09-06 GitHub 반영: Phase 3 보완 [PR #2](https://github.com/parking-place/LyricsCloud/pull/2) → Phase 4 [PR #3](https://github.com/parking-place/LyricsCloud/pull/3) → `phase/0.3.1-p5-resilience` 순서의 초안 PR로 인계한다. 원격 CI에서 확인한 초기화 대기 누락은 본문 입력 시험에 반영했고 편집기 PC·모바일 20개를 국소 재검증했다. 앱 코드는 기존 로컬 검증본과 같다. 각 push의 verify·네 개발 이미지 발행과 tag digest 일치를 확인한 뒤 다음 Phase 브랜치를 올린다. main·release 변경이나 개발 서버 배포는 이 GitHub 반영에 포함하지 않는다.
+
 ## 0.0.0에서 닫아야 할 기술 게이트
 
 - [x] `ADR-0001` — 웹·협업·worker 프로세스 및 workspace 토폴로지
@@ -98,7 +100,7 @@ next_action: "Phase 5 로컬 결과 검토와 실제 기기 인수; Phase 3→4�
 
 ## 다음 작업
 
-2026-09-06 Phase 3 보완 → Phase 4 수정 기록 → Phase 5 통합 장애·계정 격리 순으로 로컬 개발을 진행했다. [Phase 5 검증 기록](../../docs/runbooks/0.3.1-phase5-local-validation.md)과 [요구사항 추적표](../../docs/architecture/0.3.1-REQUIREMENTS-TRACEABILITY.md)를 먼저 읽는다. 개인 앱은 `http://localhost:8080`의 `phase5-local`이며 기존 OAuth·DB volume을 보존했다. 다음은 실제 모바일·IME 인수와 Phase 3→4→5 원격 변경 검토다. 공유 Docker Hub alias를 바꾸는 push와 개발 서버 배포는 후속 영향·대상 승인 및 서버 정보가 필요하다. 해당 검증 전에는 complete 또는 0.4.0으로 진행하지 않는다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+2026-09-06 Phase 3 보완 → Phase 4 수정 기록 → Phase 5 통합 장애·계정 격리 순으로 로컬 개발을 진행했다. [Phase 5 검증 기록](../../docs/runbooks/0.3.1-phase5-local-validation.md)과 [요구사항 추적표](../../docs/architecture/0.3.1-REQUIREMENTS-TRACEABILITY.md)를 먼저 읽는다. 개인 앱은 `http://localhost:8080`의 `phase5-local`이며 기존 OAuth·DB volume을 보존했다. 원격 PR은 위 Phase 연쇄를 따르고 현재 head SHA의 GitHub Actions와 네 image digest를 확인한다. 실제 모바일·IME 인수와 동일 SHA의 개발 서버 배포·공개 smoke는 남아 있다. 해당 인수 전에는 complete 또는 0.4.0으로 진행하지 않는다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
