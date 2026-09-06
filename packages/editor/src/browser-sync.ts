@@ -19,6 +19,12 @@ export interface BrowserLyricSync {
   destroy(): Promise<void>;
 }
 export type BrowserRhymeSync = BrowserLyricSync;
+export interface RhymeCreationDraft {
+  readonly requestId: string;
+  readonly title: string;
+  readonly body: string;
+  readonly updatedAt: string;
+}
 export type BrowserEditableSyncOptions = {
   ownerId: string; resourceId: string; initialBody: string;
   onRemoteBody: (body: string, changes?: readonly EditorTextChange[]) => void;
@@ -341,27 +347,55 @@ export async function clearOwnerLocalDrafts(ownerId: string): Promise<void> {
   channel.close();
   for (const name of await Dexie.getDatabaseNames()) if (name.startsWith(prefix)) await Dexie.delete(name);
 }
+
+export async function readRhymeCreationDraft(ownerId: string): Promise<RhymeCreationDraft | null> {
+  const name = await rhymeCreationName(ownerId);
+  if (!(await Dexie.getDatabaseNames()).includes(name)) return null;
+  const storage = await rhymeCreationStorage(ownerId);
+  try { return await storage.table<RhymeCreationDraft, string>("drafts").get("new") ?? null; }
+  finally { storage.close(); }
+}
+
+export async function writeRhymeCreationDraft(ownerId: string, draft: RhymeCreationDraft): Promise<void> {
+  const storage = await rhymeCreationStorage(ownerId);
+  try { await storage.table<RhymeCreationDraft & { key: string }, string>("drafts").put({ key: "new", ...draft }); }
+  finally { storage.close(); }
+}
+
+export async function clearRhymeCreationDraft(ownerId: string): Promise<void> {
+  const storage = await rhymeCreationStorage(ownerId);
+  try { await storage.table("drafts").delete("new"); }
+  finally { storage.close(); }
+}
 export async function hasOwnerPendingDrafts(ownerId: string): Promise<boolean> {
   const name = `${await ownerPrefix(ownerId)}sync-v2`;
-  if (!(await Dexie.getDatabaseNames()).includes(name)) return false;
-  const storage = new SyncStorage(name);
-  try { return (await storage.updates.count()) > 0; }
-  finally { storage.close(); }
+  if ((await Dexie.getDatabaseNames()).includes(name)) {
+    const storage = new SyncStorage(name);
+    try { if ((await storage.updates.count()) > 0) return true; }
+    finally { storage.close(); }
+  }
+  const creation = await readRhymeCreationDraft(ownerId);
+  return Boolean(creation && (creation.title || creation.body));
 }
 export async function readOwnerPendingDrafts(ownerId: string): Promise<Array<{ resourceId: string; body: string }>> {
   const name = `${await ownerPrefix(ownerId)}sync-v2`;
-  if (!(await Dexie.getDatabaseNames()).includes(name)) return [];
-  const storage = new SyncStorage(name);
-  try {
-    return await storage.transaction("r", storage.documents, storage.updates, async () => {
+  const drafts: Array<{ resourceId: string; title?: string; body: string }> = [];
+  if ((await Dexie.getDatabaseNames()).includes(name)) {
+    const storage = new SyncStorage(name);
+    try {
+      drafts.push(...await storage.transaction("r", storage.documents, storage.updates, async () => {
       const pending = new Set((await storage.updates.toArray()).map(({ documentKey }) => documentKey));
       return (await storage.documents.toArray()).filter(({ documentKey }) => pending.has(documentKey)).map((cached) => {
         const document = createLyricDocument();
         try { Y.applyUpdate(document, cached.snapshot); return { resourceId: cached.resourceId, body: lyricBody(document).toString() }; }
         finally { document.destroy(); }
       });
-    });
-  } finally { storage.close(); }
+      }));
+    } finally { storage.close(); }
+  }
+  const creation = await readRhymeCreationDraft(ownerId);
+  if (creation && (creation.title || creation.body)) drafts.push({ resourceId: creation.requestId, title: creation.title, body: creation.body });
+  return drafts;
 }
 export async function clearOtherOwnerLocalDrafts(ownerId: string): Promise<void> {
   const current = await ownerPrefix(ownerId);
@@ -381,6 +415,12 @@ async function readLegacyDraft(name: string): Promise<string | null> {
   finally { await persistence.destroy(); document.destroy(); }
 }
 async function ownerPrefix(ownerId: string) { return `lyricscloud-draft-${await digest(ownerId)}-`; }
+async function rhymeCreationStorage(ownerId: string): Promise<Dexie> {
+  const storage = new Dexie(await rhymeCreationName(ownerId));
+  storage.version(1).stores({ drafts: "&key,updatedAt" });
+  return storage;
+}
+async function rhymeCreationName(ownerId: string) { return `${await ownerPrefix(ownerId)}rhyme-create-v1`; }
 async function digest(value: string) {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
