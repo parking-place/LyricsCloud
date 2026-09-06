@@ -408,6 +408,61 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .manual-copy-dialog textarea:focus { border-color: var(--acid); }
 .manual-copy-dialog > button { min-height: 2.4rem; display: block; margin: .8rem 0 0 auto; padding: .45rem .8rem; border: 1px solid var(--line); border-radius: .5rem; background: transparent; color: var(--muted); cursor: pointer; }
 
+/* Rhyme note editor */
+.rhyme-editor-page, .rhyme-new-page { min-width: 0; height: calc(100svh - 3.8rem); display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; padding: 1.2rem clamp(1rem, 3vw, 3rem) 1rem; overflow: hidden; }
+.rhyme-editor-header { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; padding-bottom: .85rem; border-bottom: 1px solid var(--line); }
+.rhyme-editor-header > div:first-child { min-width: 9rem; }
+.rhyme-editor-header .eyebrow { margin: .3rem 0 0; }
+.back-button { min-height: 2rem; padding: 0; border: 0; background: transparent; color: var(--muted); font-size: .75rem; font-weight: 750; cursor: pointer; }
+.back-button:hover { color: var(--acid); }
+.rhyme-editor-actions { display: flex; gap: .4rem; margin-left: auto; }
+.rhyme-editor-actions button { min-height: 2.3rem; padding: .4rem .65rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--surface); color: var(--muted); font-size: .67rem; font-weight: 750; cursor: pointer; }
+.rhyme-editor-actions button:hover { border-color: rgb(200 255 61 / 32%); color: var(--acid); }
+.rhyme-editor-header .local-draft-state { flex-basis: 100%; text-align: right; }
+.local-draft-state button { margin-left: .55rem; padding: .25rem .45rem; border: 1px solid currentColor; border-radius: .4rem; background: transparent; color: inherit; cursor: pointer; }
+.rhyme-editor-title { width: min(100%, 70rem); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .75rem; justify-self: center; padding: 1rem .8rem .8rem; }
+.rhyme-editor-title label { color: var(--subtle); font-size: .68rem; font-weight: 800; }
+.rhyme-editor-title input { min-width: 0; padding: .42rem 0; border: 0; border-bottom: 1px solid transparent; outline: 0; background: transparent; color: var(--ink); font-size: clamp(1.15rem, 2vw, 1.6rem); font-weight: 800; }
+.rhyme-editor-title input:focus { border-bottom-color: var(--acid); }
+.rhyme-editor-title > span { color: var(--subtle); font-size: .62rem; }
+.rhyme-editor-title > span.over, .rhyme-new-document .over { color: var(--danger); }
+.rhyme-editor-title > small { grid-column: 2 / -1; color: var(--danger); font-size: .66rem; }
+.rhyme-editor-workspace { width: min(100%, 70rem); min-height: 0; display: grid; grid-template-columns: minmax(26rem, 1fr) minmax(15rem, 18rem); gap: 1rem; justify-self: center; }
+.rhyme-editor-document { min-width: 0; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
+.rhyme-editor-surface { min-height: 0; overflow: hidden; border: 1px solid var(--line); border-radius: .85rem; background: var(--panel); font-family: "Noto Sans KR", Pretendard, sans-serif; font-size: 1rem; }
+.rhyme-editor-document > footer, .rhyme-new-document > footer { display: flex; justify-content: space-between; gap: 1rem; padding: .65rem .35rem 0; color: var(--subtle); font-size: .62rem; }
+.rhyme-editor-side { min-width: 0; overflow-y: auto; }
+.rhyme-settings { display: grid; gap: .75rem; }
+.rhyme-settings > section { padding: .85rem; border: 1px solid var(--line); border-radius: .8rem; background: var(--panel); }
+.rhyme-tag-form { display: grid; gap: .35rem; margin-top: .7rem; }
+.rhyme-tag-form > label { color: var(--subtle); font-size: .62rem; }
+.rhyme-tag-form > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .35rem; }
+.rhyme-tag-form input { min-width: 0; padding: .55rem; border: 1px solid var(--line); border-radius: .48rem; outline: 0; background: var(--surface); color: var(--ink); font-size: .68rem; }
+.rhyme-tag-form input:focus { border-color: var(--acid); }
+.rhyme-tag-form button, .rhyme-setting-toggles button, .rhyme-color-options button { min-height: 2.25rem; padding: .38rem .55rem; border: 1px solid var(--line); border-radius: .46rem; background: transparent; color: var(--muted); font-size: .62rem; cursor: pointer; }
+.rhyme-tag-form button:disabled, .rhyme-editor-tags button:disabled { opacity: .45; cursor: default; }
+.rhyme-editor-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin: .7rem 0 0; padding: 0; list-style: none; }
+.rhyme-editor-tags li { display: inline-flex; align-items: center; gap: .2rem; padding: .2rem .25rem .2rem .48rem; border-radius: 999px; background: rgb(200 255 61 / 8%); color: #b5d96a; font-size: .65rem; }
+.rhyme-editor-tags button { width: 1.6rem; height: 1.6rem; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.rhyme-setting-empty { margin: .75rem 0 0; color: var(--subtle); font-size: .65rem; }
+.rhyme-setting-toggles { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; margin-top: .7rem; }
+.rhyme-setting-toggles button[aria-pressed="true"], .rhyme-color-options button[aria-pressed="true"] { border-color: var(--acid); color: var(--acid); }
+.rhyme-color-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; margin: .75rem 0 0; padding: 0; border: 0; }
+.rhyme-color-options legend { grid-column: 1 / -1; padding: 0; color: var(--subtle); font-size: .62rem; }
+.rhyme-color-options button { display: flex; align-items: center; gap: .3rem; justify-content: center; }
+.rhyme-color-options button > span { width: .55rem; height: .55rem; border-radius: 50%; background: var(--subtle); }
+.rhyme-color-options .color-red > span { background: #ff786b; } .rhyme-color-options .color-yellow > span { background: #ffc857; }
+.rhyme-color-options .color-green > span { background: #72d697; } .rhyme-color-options .color-blue > span { background: #71a7ff; } .rhyme-color-options .color-gray > span { background: #89939d; }
+.rhyme-mobile-dock { display: none; }
+.rhyme-new-page { grid-template-rows: auto auto minmax(0, 1fr); }
+.rhyme-new-page .rhyme-editor-header > .secondary-button { margin-left: auto; }
+.rhyme-new-document { width: min(100%, 70rem); min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: .5rem; justify-self: center; padding: 0 .8rem 1rem; }
+.rhyme-new-document > label { color: var(--subtle); font-size: .68rem; font-weight: 800; }
+.rhyme-new-document > textarea { min-height: 20rem; padding: 1.25rem 1.5rem; resize: none; border: 1px solid var(--line); border-radius: .85rem; outline: 0; background: var(--panel); color: var(--ink); font: 1rem/1.8 "Noto Sans KR", Pretendard, sans-serif; }
+.rhyme-new-document > textarea:focus { border-color: var(--acid); }
+.rhyme-new-document > small { color: var(--danger); font-size: .66rem; }
+.rhyme-history-dialog .history-toolbar > p { margin: 0; }
+
 /* Legal documents */
 .legal-page { min-height: 100svh; padding: max(1.5rem, var(--lc-safe-top)) max(1.25rem, var(--lc-safe-right)) max(2rem, var(--lc-safe-bottom)) max(1.25rem, var(--lc-safe-left)); background: radial-gradient(circle at 15% 0, rgb(200 255 61 / 8%), transparent 28%), var(--canvas); }
 .legal-page > .brand { display: flex; width: min(100%, 47rem); margin: 0 auto 2.2rem; }
@@ -426,6 +481,8 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .song-toolbar { grid-template-columns: minmax(12rem, 1fr) 9.5rem 9.5rem; }
   .lyric-editor-workspace { width: min(100%, 67rem); grid-template-columns: 12rem minmax(0, 54rem); }
   .other-lyrics-panel { display: none; }
+  .rhyme-editor-workspace { grid-template-columns: minmax(0, 1fr); }
+  .rhyme-editor-side { display: none; }
 }
 
 @media (max-width: 720px) {
@@ -547,6 +604,26 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .lyric-editor-page.is-focus-mode { grid-template-rows: auto minmax(0, 1fr) auto; padding-top: .55rem; }
   .lyric-editor-page.is-focus-mode .lyric-editor-surface { height: max(28rem, calc(100dvh - 12.9rem)); }
   .copy-toast { bottom: calc(8.4rem + var(--lc-safe-bottom)); max-width: calc(100vw - 2rem); text-align: center; white-space: nowrap; }
+  .rhyme-editor-page, .rhyme-new-page { grid-row: 2; height: auto; min-height: 0; padding: .8rem max(.75rem, var(--lc-safe-right)) max(.5rem, var(--lc-safe-bottom)) max(.75rem, var(--lc-safe-left)); overflow-y: auto; }
+  .rhyme-editor-header { align-items: center; }
+  .rhyme-editor-header .eyebrow, .rhyme-editor-actions { display: none; }
+  .rhyme-editor-header .save-indicator { margin-left: auto; font-size: .62rem; }
+  .rhyme-editor-header .local-draft-state { overflow: hidden; font-size: .62rem; text-overflow: ellipsis; white-space: normal; }
+  .rhyme-editor-title { grid-template-columns: minmax(0, 1fr) auto; gap: .2rem .5rem; padding: .7rem .5rem .55rem; }
+  .rhyme-editor-title label { display: none; }
+  .rhyme-editor-title > small { grid-column: 1 / -1; }
+  .rhyme-editor-workspace { display: block; width: 100%; }
+  .rhyme-editor-document { height: auto; }
+  .rhyme-editor-surface { height: max(27rem, calc(100dvh - 17rem)); border-radius: .65rem; }
+  .rhyme-editor-surface .cm-content { padding-bottom: calc(6rem + var(--lc-safe-bottom)); }
+  .rhyme-editor-document > footer { padding-inline: .35rem; }
+  .rhyme-mobile-dock { position: sticky; z-index: 12; left: 0; right: 0; bottom: 0; min-height: 3.2rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: .6rem; padding: .28rem; border: 1px solid rgb(200 255 61 / 25%); border-radius: .75rem; background: rgb(26 33 23 / 97%); box-shadow: 0 10px 30px rgb(0 0 0 / 42%); }
+  .rhyme-mobile-dock button { min-width: 0; min-height: 2.6rem; border: 0; border-radius: .5rem; background: transparent; color: var(--muted); font-size: .65rem; font-weight: 800; cursor: pointer; }
+.rhyme-settings-sheet .rhyme-settings { margin-top: .75rem; }
+  .rhyme-settings-sheet .rhyme-settings > section { background: var(--surface); }
+  .rhyme-sheet-delete { width: 100%; min-height: 2.7rem; margin-top: .75rem; border: 1px solid rgb(255 172 158 / 35%); border-radius: .55rem; background: var(--danger-bg); color: var(--danger); font-weight: 750; }
+  .rhyme-new-document { min-height: 31rem; padding: 0 .5rem 1rem; }
+  .rhyme-new-document > textarea { min-height: max(27rem, calc(100dvh - 17rem)); padding: 1rem; resize: vertical; }
 }
 
 @media (max-width: 360px) {

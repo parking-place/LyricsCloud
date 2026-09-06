@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeRhymeTag, parseCreateRhymeNoteInput, parseRhymeListInput, parseUpdateRhymeNoteInput, RhymeValidationError } from "./rhyme-contract.js";
+import { normalizeRhymeTag, parseCreateRhymeNoteInput, parseRhymeListInput, parseRhymeTagInput, parseUpdateRhymeNoteInput, RhymeValidationError } from "./rhyme-contract.js";
 
 const requestId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
@@ -14,6 +14,12 @@ describe("rhyme note contract", () => {
   it("normalizes tag identity across whitespace, case and Unicode composition", () => {
     expect(normalizeRhymeTag("  FIrE\t tag ")).toEqual({ displayValue: "FIrE tag", normalizedValue: "fire tag" });
     expect(normalizeRhymeTag("  가  ")).toEqual(normalizeRhymeTag("가"));
+  });
+
+  it("parses tag mutation bodies with the same normalization and limits", () => {
+    expect(parseRhymeTagInput({ value: "  FIRE\t tag  " })).toBe("FIRE tag");
+    expect(() => parseRhymeTagInput({ value: "" })).toThrow(RhymeValidationError);
+    expect(() => parseRhymeTagInput({ value: "가".repeat(51) })).toThrow(RhymeValidationError);
   });
 
   it("rejects oversized, malformed and empty values", () => {

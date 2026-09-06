@@ -215,21 +215,31 @@ export class PostgresRhymeStore {
   attachTag(ownerId: string, resourceId: string, tagId: string): Promise<boolean> {
     if (!isResourceId(resourceId) || !isResourceId(tagId)) return Promise.resolve(false);
     return this.#withUser(ownerId, async (client) => {
-      await client.query("select id from resources where id=$1 and owner_id=$2 and type='rhyme_note' and deleted_at is null for update", [resourceId, ownerId]);
+      const resource = await client.query("select id from resources where id=$1 and owner_id=$2 and type='rhyme_note' and deleted_at is null for update", [resourceId, ownerId]);
+      if (!resource.rowCount) return false;
       const existing = await client.query("select 1 from resource_tags where owner_id=$1 and resource_id=$2 and tag_id=$3", [ownerId, resourceId, tagId]);
       if (existing.rowCount) return false;
       const count = Number((await client.query<{ count: string }>("select count(*)::text count from resource_tags where owner_id=$1 and resource_id=$2", [ownerId, resourceId])).rows[0]!.count);
       if (count >= RHYME_LIMITS.tagsPerNote) throw new Error("RHYME_TAG_LIMIT");
       const result = await client.query(`insert into resource_tags(owner_id,resource_id,tag_id) values($1,$2,$3)
         on conflict do nothing returning tag_id`, [ownerId, resourceId, tagId]);
-      return result.rowCount === 1;
+      if (!result.rowCount) return false;
+      await client.query("update resources set updated_at=clock_timestamp() where id=$1 and owner_id=$2", [resourceId, ownerId]);
+      return true;
     });
   }
 
   detachTag(ownerId: string, resourceId: string, tagId: string): Promise<boolean> {
     if (!isResourceId(resourceId) || !isResourceId(tagId)) return Promise.resolve(false);
-    return this.#withUser(ownerId, async (client) => (await client.query(
-      "delete from resource_tags where owner_id=$1 and resource_id=$2 and tag_id=$3", [ownerId, resourceId, tagId])).rowCount === 1);
+    return this.#withUser(ownerId, async (client) => {
+      const active = await client.query("select id from resources where id=$1 and owner_id=$2 and type='rhyme_note' and deleted_at is null for update", [resourceId, ownerId]);
+      if (!active.rowCount) return false;
+      const removed = await client.query(
+        "delete from resource_tags where owner_id=$1 and resource_id=$2 and tag_id=$3", [ownerId, resourceId, tagId]);
+      if (!removed.rowCount) return false;
+      await client.query("update resources set updated_at=clock_timestamp() where id=$1 and owner_id=$2", [resourceId, ownerId]);
+      return true;
+    });
   }
 
   linkSong(ownerId: string, resourceId: string, songId: string): Promise<boolean> {

@@ -131,6 +131,12 @@ export function parseRhymeRequestId(value: unknown): string {
   return input.requestId as string;
 }
 
+export function parseRhymeTagInput(value: unknown): string {
+  const input = object(value);
+  if (typeof input.value !== "string") issue("tag", "string_required");
+  return normalizeRhymeTag(input.value).displayValue;
+}
+
 export function parseRhymeListInput(params: URLSearchParams): RhymeListInput {
   const search = params.get("search")?.normalize("NFC").trim() || undefined;
   if (search && [...search].length > 200) issue("search", "too_long");

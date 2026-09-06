@@ -5,7 +5,7 @@
 ```yaml
 current_version: "0.4.0"
 current_phase: "3phase.md"
-state: "ready"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-06 KST"
 updated_at: "2026-09-06"
@@ -53,7 +53,7 @@ next_action: "LC-040-P3-01~08 라임 노트 생성·편집, CRDT 자동 저장·
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-현재 활성 작업 없음. 다음 작업은 0.4.0 Phase 3이다.
+| Codex | 0.4.0 / Phase 3 | LC-040-P3-01~08 | `packages/domain`, `packages/database`, `packages/editor`, `apps/collaboration`, `apps/web`, `tests/e2e`, Phase 상태·검증 문서 | 0.4.0 Phase 1~2와 0.3.1 동기화·revision 계약 | 2026-09-06 KST | in_progress |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 

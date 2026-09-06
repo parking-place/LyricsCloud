@@ -1,5 +1,5 @@
 import { AuthError } from "@lyricscloud/auth";
-import { RhymeValidationError, SongValidationError } from "@lyricscloud/domain";
+import { RhymeConflictError, RhymeValidationError, SongValidationError } from "@lyricscloud/domain";
 import { RhymeCursorError } from "@lyricscloud/database";
 import { RequestAuthError } from "./auth-context.js";
 import { errorResponse, privateResponseHeaders } from "./http-response.js";
@@ -15,6 +15,10 @@ export function rhymeApiError(error: unknown): Response {
     return errorResponse("VALIDATION_FAILED", 400, undefined, error.issues);
   }
   if (error instanceof RhymeCursorError) return errorResponse("VALIDATION_FAILED", 400, undefined, [{ field: "cursor", code: "invalid" }]);
+  if (error instanceof RhymeConflictError) return errorResponse(error.code === "VERSION_CONFLICT" ? "VERSION_CONFLICT" : "CONFLICT", 409);
+  if (error instanceof Error && error.message === "RHYME_TAG_LIMIT") {
+    return errorResponse("VALIDATION_FAILED", 400, undefined, [{ field: "tag", code: "maximum_30" }]);
+  }
   if (error instanceof SyntaxError) return errorResponse("VALIDATION_FAILED", 400);
   return errorResponse("DEPENDENCY_UNAVAILABLE", 503);
 }
