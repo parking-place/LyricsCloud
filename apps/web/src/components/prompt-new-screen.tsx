@@ -117,13 +117,18 @@ export function PromptNewScreen({ ownerId }: { ownerId: string }) {
     <div className="prompt-editor-workspace">
       <PromptTokenBuilder idPrefix="new-prompt" items={items} disabled={!ready || state === "creating"}
         onAdd={(values) => updateItems([...itemsRef.current, ...values.map((displayValue) => ({ occurrenceId: crypto.randomUUID(), displayValue }))])}
+        onMove={(id, targetIndex) => {
+          const next = [...itemsRef.current]; const currentIndex = next.findIndex(({ occurrenceId }) => occurrenceId === id);
+          if (currentIndex < 0 || targetIndex < 0 || targetIndex >= next.length || currentIndex === targetIndex) return;
+          const [item] = next.splice(currentIndex, 1); next.splice(targetIndex, 0, item!); updateItems(next);
+        }}
         onRemove={(id) => updateItems(itemsRef.current.filter(({ occurrenceId }) => occurrenceId !== id))}
         onCleanup={() => { const seen = new Set<string>(); updateItems(itemsRef.current.filter(({ displayValue }) => {
           const key = normalizePromptToken(displayValue).normalizedValue; if (seen.has(key)) return false; seen.add(key); return true;
         })); }} />
       <aside className="prompt-editor-info" aria-label="새 프롬프트 안내"><h2>자동 저장</h2>
         <p>제목과 태그 초안은 계정별로 이 기기에 먼저 보관됩니다. 중복이 없고 제목이 유효하면 서버 문서로 전환됩니다.</p>
-        <h2>태그 순서</h2><p>현재 보이는 순서가 최종 쉼표 문자열의 순서입니다. 순서 이동은 다음 Phase에서 접근 가능한 버튼과 포인터 동작으로 추가합니다.</p>
+        <h2>태그 순서</h2><p>현재 보이는 순서가 최종 쉼표 문자열의 순서입니다. 손잡이를 끌거나 선택한 태그의 앞으로·뒤로 버튼과 방향키로 이동할 수 있습니다.</p>
       </aside>
     </div>
     {cancelOpen ? <div className="dialog-backdrop"><section className="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="new-prompt-cancel-title">

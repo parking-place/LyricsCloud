@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.5.0"
-current_phase: "3phase.md"
-state: "complete"
+current_phase: "4phase.md"
+state: "review"
 owner: "Codex"
-started_at: "2026-09-07 03:52 KST"
+started_at: "2026-09-07 04:46 KST"
 updated_at: "2026-09-07"
-next_action: "0.5.0 Phase 4 프롬프트 순서 변경·최종 복사·곡 연결 범위와 목업을 확인하고 활성 작업을 등록"
+next_action: "0.5.0 Phase 4 구현 commit을 push하고 CI·네 image·동일 SHA 개발 배포·공개 smoke를 인수"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -53,7 +53,7 @@ next_action: "0.5.0 Phase 4 프롬프트 순서 변경·최종 복사·곡 연�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 현재 활성 작업 없음 | 다음 작업: 0.5.0 / Phase 4 | - | - | Phase 3 완료 | - | ready |
+| Codex | 0.5.0 / Phase 4 | LC-050-P4-01~08 | prompt editor·API·domain·database·tests·Phase 문서 | Phase 3 완료, PROD-0002 Accepted | 2026-09-07 04:46 KST | 원격 인수 대기 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,7 +102,7 @@ next_action: "0.5.0 Phase 4 프롬프트 순서 변경·최종 복사·곡 연�
 
 ## 다음 작업
 
-0.5.0 Phase 3은 프롬프트 신규·복제·편집, 자동완성·중복 정리, CRDT/IndexedDB 자동 저장과 원격 CI·image·동일 SHA 개발 배포·공개 smoke 인수를 마쳤다. 다음은 Phase 4의 순서 변경·최종 복사·곡 연결이다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.5.0 Phase 4의 접근 가능한 순서 변경·최종 복사·복제·즐겨찾기·핀·곡 연결은 로컬 구현과 PC·모바일 수용 검증을 마쳤다. 다음은 구현 commit의 CI·네 image·동일 SHA 개발 배포·공개 smoke 인수다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 

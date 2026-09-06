@@ -6,7 +6,7 @@ import {
 } from "@lyricscloud/domain";
 import {
   createPromptDocument, insertPromptToken, projectPrompt,
-  promptTitle, promptTokenSequence, removePromptToken, type PromptSequenceItem
+  movePromptToken, promptTitle, promptTokenSequence, removePromptToken, type PromptSequenceItem
 } from "./crdt.js";
 import type { LocalSyncState } from "./browser-sync.js";
 import { SyncStorage, type QueuedUpdate } from "./sync-storage.js";
@@ -23,6 +23,7 @@ export interface PromptEditorSnapshot {
 export interface BrowserPromptSync {
   setTitle(value: string): void;
   insertTokens(values: readonly string[], index?: number): void;
+  moveToken(occurrenceId: string, targetIndex: number): void;
   removeToken(occurrenceId: string): void;
   cleanupDuplicates(): void;
   setComposing(composing: boolean): void;
@@ -277,6 +278,10 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
       document.transact(() => normalized.forEach((displayValue, offset) => insertPromptToken(document, index + offset, {
         occurrenceId: crypto.randomUUID(), displayValue
       })), localOrigin);
+    },
+    moveToken(occurrenceId, targetIndex) {
+      if (!initialized || halted) return;
+      document.transact(() => movePromptToken(document, occurrenceId, targetIndex), localOrigin);
     },
     removeToken(occurrenceId) {
       if (!initialized || halted) return;

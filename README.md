@@ -4,10 +4,10 @@ LyricsCloud는 Suno 음악 제작 과정의 곡, 여러 가사 버전, 라임 �
 
 ## 현재 상태
 
-- 완료 기록: `0.0.0`~`0.4.0`, `0.5.0 Phase 1~3`; 다음은 `0.5.0 Phase 4`
-- 다음 단계: [`0.5.0/4phase.md`](<./0.Plans/1. Dev-phase/0.5.0/4phase.md>) — 토큰 순서 변경·최종 복사·곡 연결
+- 완료 기록: `0.0.0`~`0.4.0`, `0.5.0 Phase 1~3`; `0.5.0 Phase 4`는 원격 인수 중
+- 현재 단계: [`0.5.0/4phase.md`](<./0.Plans/1. Dev-phase/0.5.0/4phase.md>) — CI·image·동일 SHA 개발 배포·공개 smoke
 - 상태 원본: [`STATUS.md`](<./0.Plans/1. Dev-phase/STATUS.md>)
-- 애플리케이션 코드: Google 로그인·소유권, 곡·가사 CRUD, 라임 노트·태그·곡 연결, 프롬프트 목록·토큰 편집·자동완성·중복 정리, CodeMirror 편집·복사, 동일 owner CRDT 동기화, 수정 기록·비파괴 복원
+- 애플리케이션 코드: Google 로그인·소유권, 곡·가사 CRUD, 라임 노트·태그·곡 연결, 프롬프트 목록·토큰 편집·자동완성·중복 정리·접근 가능한 순서 변경·정확한 복사·복제·곡 연결, CodeMirror 편집·복사, 동일 owner CRDT 동기화, 수정 기록·비파괴 복원
 - 개인 OAuth·수정 기록의 로컬 검증: [`Phase 4 기록`](./docs/runbooks/0.3.1-phase4-local-validation.md)
 - 다중 탭·장애 복구·초안 보존 검증과 남는 인수 항목: [`Phase 5 기록`](./docs/runbooks/0.3.1-phase5-local-validation.md)
 - 인수인계·로컬 실행·현재 검증 한계: [`0.3.1 로컬 검토`](./docs/runbooks/0.3.1-local-handoff-review.md)

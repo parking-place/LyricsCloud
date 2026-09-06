@@ -29,6 +29,11 @@ export interface PromptSuggestionInput {
   readonly limit: number;
 }
 
+export interface PromptSongSearchInput {
+  readonly search?: string;
+  readonly limit: number;
+}
+
 export interface PromptTokenValue {
   readonly displayValue: string;
   readonly normalizedValue: string;
@@ -216,6 +221,15 @@ export function parsePromptSuggestionInput(params: URLSearchParams): PromptSugge
   const limit = rawLimit === null ? 20 : Number(rawLimit);
   if (!Number.isInteger(limit) || limit < 1 || limit > 50) fail("limit", "integer_between_1_and_50");
   return { search, limit };
+}
+
+export function parsePromptSongSearchInput(params: URLSearchParams): PromptSongSearchInput {
+  const search = params.get("search")?.normalize("NFC").trim() || undefined;
+  if (search && [...search].length > 200) fail("search", "too_long");
+  const rawLimit = params.get("limit");
+  const limit = rawLimit === null ? 20 : Number(rawLimit);
+  if (!Number.isInteger(limit) || limit < 1 || limit > 50) fail("limit", "integer_between_1_and_50");
+  return { ...(search ? { search } : {}), limit };
 }
 
 export function validatePromptTokens(value: unknown): readonly PromptTokenValue[] {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   findPromptDuplicates, normalizePromptToken, parseCreatePromptInput, parsePromptText,
-  parsePromptListInput, parsePromptSuggestionInput, projectUniquePromptTokens, PROMPT_LIMITS, PromptValidationError, serializePromptTokens
+  parsePromptListInput, parsePromptSongSearchInput, parsePromptSuggestionInput, projectUniquePromptTokens, PROMPT_LIMITS, PromptValidationError, serializePromptTokens
 } from "./prompt-contract.js";
 
 describe("prompt comma contract", () => {
@@ -58,4 +58,11 @@ it("parses bounded suggestion search without requiring a token", () => {
   expect(parsePromptSuggestionInput(new URLSearchParams({ search: "  fem  ", limit: "8" }))).toEqual({ search: "fem", limit: 8 });
   expect(parsePromptSuggestionInput(new URLSearchParams())).toEqual({ search: "", limit: 20 });
   expect(() => parsePromptSuggestionInput(new URLSearchParams({ limit: "51" }))).toThrow(PromptValidationError);
+});
+
+it("parses bounded owner song candidate search", () => {
+  expect(parsePromptSongSearchInput(new URLSearchParams({ search: "  연결 곡  ", limit: "8" }))).toEqual({ search: "연결 곡", limit: 8 });
+  expect(parsePromptSongSearchInput(new URLSearchParams())).toEqual({ limit: 20 });
+  expect(() => parsePromptSongSearchInput(new URLSearchParams({ search: "x".repeat(201) }))).toThrow(PromptValidationError);
+  expect(() => parsePromptSongSearchInput(new URLSearchParams({ limit: "0" }))).toThrow(PromptValidationError);
 });

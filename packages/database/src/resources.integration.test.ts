@@ -157,6 +157,7 @@ describe.runIf(enabled)("resource and song PostgreSQL contract", () => {
     const client = await pool!.connect();
     try {
       await client.query("set enable_seqscan = off");
+      await client.query("set enable_sort = off");
       const recent = await explain(client, `
         select id from resources
         where owner_id = $1 and type = 'song' and deleted_at is null

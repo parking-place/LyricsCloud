@@ -1,6 +1,6 @@
 import * as Y from "yjs";
 import { describe, expect, it } from "vitest";
-import { applyLyricUpdate, applyPromptUpdate, createLyricDocument, createPromptDocument, createRhymeDocument, encodeLyricSnapshot, encodePromptSnapshot, encodeTextRelativePosition, insertPromptToken, lyricBody, movePromptToken, projectLyric, projectPrompt, projectRhyme, resolveTextRelativePosition, rhymeBody } from "./crdt.js";
+import { applyLyricUpdate, applyPromptUpdate, createLyricDocument, createPromptDocument, createRhymeDocument, encodeLyricSnapshot, encodePromptSnapshot, encodeTextRelativePosition, insertPromptToken, lyricBody, movePromptToken, projectLyric, projectPrompt, projectRhyme, removePromptToken, resolveTextRelativePosition, rhymeBody } from "./crdt.js";
 
 describe("lyric CRDT contract", () => {
   it("converges with reversed and duplicate delivery", () => {
@@ -67,6 +67,32 @@ it("converges an ordered prompt sequence after concurrent insertions and movemen
   expect(projectPrompt(left)).toEqual(projectPrompt(right));
   expect(projectPrompt(left).tokens.map((token) => token.displayValue).sort()).toEqual(["808 bass", "ambient", "female vocal", "몽환적"].sort());
   baseline.destroy(); left.destroy(); right.destroy();
+});
+
+it("converges concurrent moves and move-versus-delete without duplicate occurrences", () => {
+  const baseline = createPromptDocument("동시 순서", [
+    { occurrenceId: "one", displayValue: "one" },
+    { occurrenceId: "two", displayValue: "two" },
+    { occurrenceId: "three", displayValue: "three" }
+  ]);
+  const seed = encodePromptSnapshot(baseline);
+  const left = createPromptDocument(); const right = createPromptDocument();
+  applyPromptUpdate(left, seed); applyPromptUpdate(right, seed);
+  movePromptToken(left, "two", 0); movePromptToken(right, "two", 2);
+  const leftUpdate = Y.encodeStateAsUpdate(left, Y.encodeStateVector(baseline));
+  const rightUpdate = Y.encodeStateAsUpdate(right, Y.encodeStateVector(baseline));
+  applyPromptUpdate(left, rightUpdate); applyPromptUpdate(right, leftUpdate);
+  expect(projectPrompt(left)).toEqual(projectPrompt(right));
+  expect(projectPrompt(left).tokens.filter(({ displayValue }) => displayValue === "two")).toHaveLength(1);
+
+  const deleteSide = createPromptDocument(); const moveSide = createPromptDocument();
+  applyPromptUpdate(deleteSide, encodePromptSnapshot(left)); applyPromptUpdate(moveSide, encodePromptSnapshot(left));
+  removePromptToken(deleteSide, "three"); movePromptToken(moveSide, "three", 0);
+  const deleted = encodePromptSnapshot(deleteSide); const moved = encodePromptSnapshot(moveSide);
+  applyPromptUpdate(deleteSide, moved); applyPromptUpdate(moveSide, deleted);
+  expect(projectPrompt(deleteSide)).toEqual(projectPrompt(moveSide));
+  expect(projectPrompt(deleteSide).tokens.filter(({ displayValue }) => displayValue === "three").length).toBeLessThanOrEqual(1);
+  baseline.destroy(); left.destroy(); right.destroy(); deleteSide.destroy(); moveSide.destroy();
 });
 
 it("keeps user duplicates in the CRDT draft while projecting a unique comma read model", () => {

@@ -23,6 +23,8 @@ test.describe("prompt creation and editor", () => {
       await page.getByRole("button", { name: "태그 추가" }).click();
       await expect(page.getByText("오프라인 · 이 기기에 임시 저장됨")).toBeVisible();
       await expect(page.locator(".prompt-editor-token")).toHaveCount(3);
+      await page.locator(".prompt-drag-handle").nth(2).press("ArrowUp");
+      await expect(page.locator(".prompt-editor-token").nth(1)).toContainText("한글 IME");
       await page.close();
 
       await context.setOffline(false);
@@ -33,7 +35,7 @@ test.describe("prompt creation and editor", () => {
       await expect(page).toHaveURL(/\/prompts\/[0-9a-f-]+$/, { timeout: 20_000 });
       await ready(page);
       const id = new URL(page.url()).pathname.split("/").at(-1)!;
-      await expect.poll(() => prompt(page, id).then((value) => value.plainText)).toBe("feminine vocal, dream pop, 한글 IME");
+      await expect.poll(() => prompt(page, id).then((value) => value.plainText)).toBe("feminine vocal, 한글 IME, dream pop");
     } finally { await removeAccount(owner.userId); }
   });
 
@@ -78,7 +80,7 @@ test.describe("prompt creation and editor", () => {
       await expect(warning).toContainText("‘female vocal’ 2·8번째");
       expect(await horizontalOverflow(page)).toBe(false);
       if (info.project.name === "mobile") {
-        await expect(page.locator(".prompt-editor-token button")).toHaveCount(8);
+        await expect(page.locator(".prompt-token-remove")).toHaveCount(8);
         await expect(page.locator(".prompt-editor-token").last()).toContainText("Female Vocal");
       }
 
@@ -110,6 +112,14 @@ test.describe("prompt creation and editor", () => {
       await expect(titleFor(second)).toHaveValue("두 탭 프롬프트 제목");
       await expect.poll(() => prompt(page, target.id).then((value) => value.title)).toBe("두 탭 프롬프트 제목");
       await expect.poll(() => prompt(page, target.id).then((value) => value.plainText)).toContain("second-tab-token");
+      const alphaHandle = page.locator(".prompt-editor-token", { hasText: "alpha" }).locator(".prompt-drag-handle");
+      const alphaRemove = second.getByRole("button", { name: "alpha 태그 제거" });
+      await Promise.all([alphaHandle.press("ArrowLeft"), alphaRemove.click()]);
+      await expect.poll(async () => {
+        const first = await page.locator(".prompt-editor-token > span").allTextContents();
+        const other = await second.locator(".prompt-editor-token > span").allTextContents();
+        return JSON.stringify(first) === JSON.stringify(other) && first.filter((value) => value === "alpha").length <= 1;
+      }).toBe(true);
       await other.close();
 
       await page.getByRole("button", { name: "수정 기록", exact: true }).click();
@@ -147,6 +157,84 @@ test.describe("prompt creation and editor", () => {
       await expect.poll(() => prompt(page, new URL(page.url()).pathname.split("/").at(-1)!).then((value) => value.title)).toBe("독립 복제본");
       expect((await prompt(page, source.id)).title).toBe("복제 원본");
     } finally { await removeAccount(owner.userId); }
+  });
+
+  test("reorders by pointer, buttons and keyboard, copies safely, and manages metadata and song links", async ({ browser, context, page }, info) => {
+    test.setTimeout(100_000);
+    const owner = await account([context]);
+    const outsiderContext = await browser.newContext({ baseURL: origin });
+    const outsider = await account([outsiderContext]);
+    const outsiderPage = await outsiderContext.newPage();
+    await page.addInitScript(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: {
+      writeText: (value: string) => { (window as unknown as { copied: string }).copied = value; return Promise.resolve(); }
+    } }));
+    try {
+      const target = await create(page, { title: "순서와 연결", tokens: ["alpha", "beta", "<img src=x onerror=alert(1)>"] });
+      const songId = await createSong(page, "Phase 4 연결 곡");
+      const outsiderSongId = await createSong(outsiderPage, "다른 owner 곡");
+      const denied = await page.request.put(`/api/prompts/${target.id}/songs/${outsiderSongId}`, { headers });
+      expect(denied.status()).toBe(404);
+
+      await page.goto(`/prompts/${target.id}`); await ready(page);
+      const handles = page.locator(".prompt-drag-handle");
+      await handles.nth(1).focus();
+      await page.getByRole("button", { name: "앞으로", exact: true }).click();
+      await expect(handles.filter({ hasText: "⠿" }).nth(0)).toBeFocused();
+      await expect(page.getByText("beta 태그를 1번째로 이동했습니다.")).toBeAttached();
+      await handles.nth(0).press("ArrowRight");
+      await expect(handles.nth(1)).toBeFocused();
+
+      if (info.project.name === "mobile") {
+        const from = await handles.nth(2).boundingBox(); const to = await page.locator("[data-prompt-token-index='0']").boundingBox();
+        expect(from).not.toBeNull(); expect(to).not.toBeNull();
+        await handles.nth(2).dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 7, clientX: from!.x + 8, clientY: from!.y + 8 });
+        await handles.nth(2).dispatchEvent("pointerup", { pointerType: "touch", pointerId: 7, clientX: to!.x + 8, clientY: to!.y + 8 });
+      } else {
+        await handles.nth(2).dragTo(page.locator("[data-prompt-token-index='0']"));
+      }
+      await expect(page.locator(".prompt-editor-token").nth(0)).toContainText("<img src=x onerror=alert(1)>");
+      await expect(page.locator("img")).toHaveCount(0);
+      await expect.poll(() => prompt(page, target.id).then((value) => value.plainText)).toBe("<img src=x onerror=alert(1)>, alpha, beta");
+
+      await page.getByRole("button", { name: "전체 복사", exact: true }).click();
+      expect(await page.evaluate(() => (window as unknown as { copied: string }).copied)).toBe("<img src=x onerror=alert(1)>, alpha, beta");
+      await expect(page.getByText("쉼표로 정리한 프롬프트를 복사했습니다.")).toBeVisible();
+      await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => Promise.reject(new Error("denied")) } }));
+      await page.getByRole("button", { name: "전체 복사", exact: true }).click();
+      const copyDialog = page.getByRole("dialog", { name: "프롬프트를 직접 복사해 주세요" });
+      await expect(copyDialog.getByRole("textbox", { name: "수동 복사할 프롬프트" })).toHaveValue("<img src=x onerror=alert(1)>, alpha, beta");
+      await copyDialog.getByRole("button", { name: "취소" }).click();
+
+      await page.getByRole("button", { name: "★ 즐겨찾기" }).click();
+      await expect(page.getByRole("button", { name: "★ 즐겨찾기됨" })).toHaveAttribute("aria-pressed", "true");
+      await page.getByRole("button", { name: "⌁ 고정" }).click();
+      await expect(page.getByRole("button", { name: "⌁ 고정됨" })).toHaveAttribute("aria-pressed", "true");
+
+      await expect(page.getByRole("searchbox", { name: "곡 검색" })).toBeVisible();
+      const connect = page.getByRole("button", { name: "연결", exact: true });
+      await expect(connect).toBeVisible();
+      await page.route(`**/api/prompts/${target.id}/songs/${songId}`, (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
+      await connect.click();
+      await expect(page.getByText("곡 연결을 변경하지 못했습니다. 다시 시도해 주세요.")).toBeVisible();
+      await page.getByRole("button", { name: "다시 시도" }).click();
+      await expect(connect).toBeVisible(); await connect.click();
+      const unlink = page.getByRole("button", { name: "연결 해제", exact: true });
+      await expect(unlink).toBeVisible(); await unlink.click();
+      const unlinkDialog = page.getByRole("dialog", { name: "‘Phase 4 연결 곡’ 곡 연결을 해제할까요?" });
+      await unlinkDialog.getByRole("button", { name: "취소" }).click();
+      await unlink.click(); await page.getByRole("button", { name: "연결 해제 확인" }).click();
+      await expect(connect).toBeVisible();
+
+      await page.getByRole("button", { name: "복제", exact: true }).click();
+      await expect(page).toHaveURL(/\/prompts\/[0-9a-f-]+\?from=duplicate$/, { timeout: 20_000 });
+      await expect.poll(() => withE2eDatabase(async (pool) => Number((await pool.query(
+        "select count(*)::text count from lyric_revisions lr join sync_documents sd using(document_key) where sd.resource_id=$1 and lr.reason='duplicate'", [target.id]
+      )).rows[0]?.count ?? 0))).toBeGreaterThan(0);
+      expect(await horizontalOverflow(page)).toBe(false);
+    } finally {
+      await outsiderContext.close();
+      await removeAccount(owner.userId); await removeAccount(outsider.userId);
+    }
   });
 
   test("keeps invalid new titles local and confirms a named discard", async ({ context, page }) => {
@@ -189,6 +277,11 @@ async function create(page: Page, input: { title: string; tokens: readonly strin
   } });
   expect(response.status()).toBe(201);
   return (await response.json()).prompt as PromptRecord;
+}
+async function createSong(page: Page, title: string): Promise<string> {
+  const response = await page.request.post("/api/songs", { headers, data: { requestId: randomUUID(), title } });
+  expect(response.status()).toBe(201);
+  return (await response.json()).song.id as string;
 }
 async function ready(page: Page) {
   await expect(titleFor(page)).toBeEnabled({ timeout: 20_000 });
