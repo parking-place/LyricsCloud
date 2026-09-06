@@ -6,8 +6,9 @@ lyrics.example.invalid {
   encode zstd gzip
   request_body { max_size 2MB }
 
-  @collaboration path /collaboration/*
-  reverse_proxy @collaboration collaboration:3001
+  handle_path /collaboration/* {
+    reverse_proxy collaboration:3001
+  }
   reverse_proxy web:3000
 
   header {

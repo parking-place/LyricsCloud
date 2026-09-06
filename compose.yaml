@@ -89,6 +89,7 @@ services:
       APP_VERSION: ${APP_VERSION:-0.3.1}
       BUILD_ID: ${BUILD_ID:-local}
       APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8080}
+      COLLABORATION_INTERNAL_URL: http://collaboration:3001
       GOOGLE_ISSUER: ${GOOGLE_ISSUER:-https://accounts.google.com}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-CHANGE_ME.apps.googleusercontent.com}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-CHANGE_ME}

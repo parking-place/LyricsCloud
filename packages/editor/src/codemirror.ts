@@ -1,5 +1,5 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { Annotation, EditorSelection } from "@codemirror/state";
+import { Annotation, ChangeSet, Compartment, EditorSelection, EditorState, Transaction } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, keymap, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { findSongFormSection, SongFormIndex, type SongFormSection } from "./songform.js";
 
@@ -27,6 +27,8 @@ export interface CodeMirrorTextEditorOptions {
   readonly ariaLabel: string;
   readonly onChange: (value: string, context: { readonly composing: boolean }) => void;
   readonly onCompositionEnd: () => void;
+  readonly onCompositionStart?: () => void;
+  readonly readOnly?: boolean;
   readonly onSongFormNavigationChange?: (state: SongFormNavigationState) => void;
   readonly onTransaction?: (transaction: EditorDocumentTransaction) => void;
 }
@@ -40,11 +42,15 @@ export interface CodeMirrorTextEditor {
   applyTransaction(transaction: Omit<EditorDocumentTransaction, "origin" | "composing">): void;
   goToSongFormSection(sectionId: string): boolean;
   focus(): void;
+  setEditable(editable: boolean): void;
   destroy(): void;
 }
 
 export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions): CodeMirrorTextEditor {
   const transactionOrigin = Annotation.define<EditorDocumentTransaction["origin"]>();
+  const editable = new Compartment();
+  let compositionChanges: ChangeSet | null = null;
+  let compositionTimer: ReturnType<typeof setTimeout> | undefined;
   let navigationFrame: number | null = null;
   let pendingNavigation: SongFormNavigationState | null = null;
   let lastNavigationSignature = "";
@@ -92,6 +98,7 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
     doc: normalizeLineEndings(options.initialValue),
     parent: options.parent,
     extensions: [
+      editable.of([EditorState.readOnly.of(options.readOnly ?? false), EditorView.editable.of(!options.readOnly)]),
       history(),
       keymap.of([...defaultKeymap, ...historyKeymap]),
       EditorView.lineWrapping,
@@ -100,7 +107,8 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       songFormPlugin,
       EditorView.updateListener.of((update) => {
         if (!update.docChanged) return;
-        const composing = update.view.compositionStarted;
+        const composing = compositionChanges !== null || update.view.compositionStarted;
+        if (compositionChanges) compositionChanges = compositionChanges.compose(update.changes);
         options.onChange(update.state.doc.toString(), { composing });
         if (options.onTransaction) {
           const changes: EditorTextChange[] = [];
@@ -117,8 +125,20 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
         }
       }),
       EditorView.domEventHandlers({
+        compositionstart: () => {
+          compositionChanges ??= ChangeSet.empty(view.state.doc.length);
+          options.onCompositionStart?.();
+          return false;
+        },
         compositionend: () => {
-          queueMicrotask(options.onCompositionEnd);
+          clearTimeout(compositionTimer);
+          compositionTimer = setTimeout(() => {
+            const changes: EditorTextChange[] = [];
+            compositionChanges?.iterChanges((from, to, _a, _b, inserted) => changes.push({ from, to, insert: inserted.toString() }));
+            compositionChanges = null;
+            if (changes.length) options.onTransaction?.({ changes, origin: "user", composing: false });
+            options.onCompositionEnd();
+          }, 0);
           return false;
         }
       }),
@@ -154,7 +174,7 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       view.dispatch({
         changes: transaction.changes.map((change) => ({ from: change.from, to: change.to, insert: normalizeLineEndings(change.insert) })),
         ...(transaction.selection ? { selection: EditorSelection.range(transaction.selection.anchor, transaction.selection.head) } : {}),
-        annotations: transactionOrigin.of("external")
+        annotations: [transactionOrigin.of("external"), Transaction.addToHistory.of(false)]
       });
     },
     goToSongFormSection(sectionId) {
@@ -169,7 +189,9 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       return true;
     },
     focus() { view.focus(); },
+    setEditable(value) { view.dispatch({ effects: editable.reconfigure([EditorState.readOnly.of(!value), EditorView.editable.of(value)]) }); },
     destroy() {
+      clearTimeout(compositionTimer);
       if (navigationFrame !== null) cancelAnimationFrame(navigationFrame);
       navigationFrame = null;
       pendingNavigation = null;

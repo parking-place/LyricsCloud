@@ -17,10 +17,10 @@ import {
 import { LYRIC_STATUSES, LYRIC_STATUS_LABELS, type LyricRecord, type LyricStatus } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { createLyricMetadataSaver } from "../lib/lyric-metadata.js";
 
 interface LyricEditorDraft {
   readonly title: string;
-  readonly body: string;
   readonly memo: string;
   readonly status: LyricStatus;
   readonly isFavorite: boolean;
@@ -51,6 +51,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
   const [isPinned, setIsPinned] = useState(initialLyric.isPinned);
   const [saveState, setSaveState] = useState<SaveState>({ status: "saved", sequence: 0, lastSavedAt: null, error: null });
   const [localSyncState, setLocalSyncState] = useState<LocalSyncState>("loading");
+  const [legacyConflict, setLegacyConflict] = useState<{ localBody: string; serverBody: string } | null>(null);
   const [songForm, setSongForm] = useState<SongFormNavigationState>({ sections: parseSongForm(initialLyric.body), activeSectionId: null });
   const [mobileSongFormOpen, setMobileSongFormOpen] = useState(false);
   const [mobileOtherLyricsOpen, setMobileOtherLyricsOpen] = useState(false);
@@ -65,7 +66,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
 
   function draft(overrides: Partial<LyricEditorDraft> = {}): LyricEditorDraft {
     return {
-      title: titleRef.current, body: bodyRef.current, memo: memoRef.current, status: statusRef.current,
+      title: titleRef.current, memo: memoRef.current, status: statusRef.current,
       isFavorite: favoriteRef.current, isPinned: pinnedRef.current, pinOrder: pinOrderRef.current,
       ...overrides
     };
@@ -77,23 +78,11 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
     let active = true;
     const controller = new SerializedSaveController<LyricEditorDraft>({
       initialDraft: {
-        title: initialLyric.title, body: initialLyric.body, memo: initialLyric.memo, status: initialLyric.status,
+        title: initialLyric.title, memo: initialLyric.memo, status: initialLyric.status,
         isFavorite: initialLyric.isFavorite, isPinned: initialLyric.isPinned, pinOrder: initialLyric.pinOrder
       },
       initialRowVersion: initialLyric.rowVersion,
-      async save(draft, rowVersion) {
-        const payload = JSON.stringify({ rowVersion, ...draft });
-        const response = await fetch(`/api/lyrics/${initialLyric.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: payload,
-          cache: "no-store",
-          keepalive: new TextEncoder().encode(payload).byteLength <= 60_000
-        });
-        if (!response.ok) throw new Error(response.status === 409 ? "VERSION_CONFLICT" : "SAVE_FAILED");
-        const result = await response.json() as { lyric: LyricRecord };
-        return { rowVersion: result.lyric.rowVersion };
-      },
+      save: createLyricMetadataSaver(initialLyric.id, initialLyric),
       onStateChange(state) { if (active) setSaveState(state); }
     });
     controllerRef.current = controller;
@@ -101,23 +90,27 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
       parent,
       initialValue: initialLyric.body,
       ariaLabel: "가사 본문",
-      onChange(value, context) {
+      readOnly: true,
+      onChange(value) {
         bodyRef.current = value;
-        controller.change(draft({ body: value }), context);
       },
-      onCompositionEnd() { controller.compositionEnd(); },
+      onCompositionStart() { localSyncRef.current?.setComposing(true); },
+      onCompositionEnd() { localSyncRef.current?.setComposing(false); },
       onSongFormNavigationChange: setSongForm,
       onTransaction(transaction) { localSyncRef.current?.applyLocalTransaction(transaction); }
     });
     editorRef.current = editor;
     void createBrowserLyricSync({ ownerId, resourceId: initialLyric.id, initialBody: initialLyric.body,
-      onRemoteBody(value) {
+      onRemoteBody(value, changes) {
         if (!active || value === bodyRef.current) return;
         const currentLength = editorRef.current?.value.length ?? 0;
         bodyRef.current = value;
-        editorRef.current?.applyTransaction({ changes: [{ from: 0, to: currentLength, insert: value }] });
-      }, onStateChange(state) { if (active) setLocalSyncState(state); }
-    }).then((sync) => { if (active) localSyncRef.current = sync; else void sync.destroy(); });
+        editorRef.current?.applyTransaction({ changes: changes ?? [{ from: 0, to: currentLength, insert: value }] });
+      }, onEditableChange(editable) { if (active) editor.setEditable(editable); },
+      onLegacyConflict(conflict) { if (active) setLegacyConflict(conflict); },
+      onStateChange(state) { if (active) setLocalSyncState(state); }
+    }).then((sync) => { if (active) localSyncRef.current = sync; else void sync.destroy(); })
+      .catch(() => { if (active) setLocalSyncState("error"); });
     const flush = () => { void controller.flush(); };
     window.addEventListener("pagehide", flush);
     const focusFrame = requestAnimationFrame(() => editor.focus());
@@ -187,7 +180,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
 
   async function flushBeforeCommand(): Promise<boolean> {
     await controllerRef.current?.flush();
-    if (controllerRef.current?.state.status === "error") {
+    if (controllerRef.current?.state.status === "error" || !await localSyncRef.current?.flush()) {
       setCommandNotice("현재 변경 내용을 먼저 저장해야 합니다. 저장을 다시 시도해 주세요.");
       return false;
     }
@@ -315,7 +308,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
     <header className="lyric-editor-header">
       <div className="lyric-editor-context">
         <a href={`/songs/${initialLyric.songId}`} className="back-inline">← {songTitle}</a>
-        <p className="eyebrow">Lyrics editor · single session</p>
+        <p className="eyebrow">Lyrics editor</p>
       </div>
       <div className="editor-header-actions">
         <button type="button" onClick={copyWhole} title="Alt+Shift+C" aria-keyshortcuts="Alt+Shift+C">전체 복사</button>
@@ -323,10 +316,16 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
         <button type="button" disabled={commandBusy} onClick={duplicateCurrent}>복제</button>
         <button type="button" disabled={commandBusy} className="danger-text" onClick={() => setDeleteOpen(true)}>삭제</button>
       </div>
-      <SaveIndicator state={saveState} onRetry={() => { void controllerRef.current?.retry(); }} />
-      <LocalDraftIndicator state={localSyncState} />
+      <SaveIndicator state={saveState} syncState={localSyncState} onRetry={() => { void controllerRef.current?.retry(); }} />
+      <LocalDraftIndicator state={localSyncState} onRetry={() => localSyncRef.current?.retry()} />
     </header>
     {commandNotice ? <p className="editor-command-notice" role="status">{commandNotice}</p> : null}
+    {legacyConflict ? <details className="editor-command-notice" open>
+      <summary>이전 로컬 초안이 서버와 다릅니다. 두 내용을 보존하고 동기화를 멈췄습니다.</summary>
+      <label>이전 로컬 초안<textarea readOnly value={legacyConflict.localBody} /></label>
+      <label>서버 본문<textarea readOnly value={legacyConflict.serverBody} /></label>
+      <button type="button" onClick={() => { void writeClipboard(legacyConflict.localBody, "이전 로컬 초안"); }}>이전 초안 복사</button>
+    </details> : null}
     <div className="lyric-editor-title">
       <label id="lyric-title-label" htmlFor="lyric-title">가사 제목</label>
       <input id="lyric-title" value={title} aria-invalid={!title.trim()} onChange={(event) => changeTitle(event.target.value)}
@@ -344,7 +343,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
         <div className="lyric-editor-surface" data-lyric-id={initialLyric.id} ref={mountRef} />
         <footer className="lyric-editor-footer">
           <span>순수 텍스트 · 최대 100,000자</span>
-          <span>자동 저장 · 약 1초</span>
+          <span>본문 자동 동기화</span>
         </footer>
       </div>
       <aside className="other-lyrics-panel" aria-label="다른 가사">
@@ -472,16 +471,26 @@ function CopySelectionActions({ selectedCount, onClear, onCopy }: { selectedCoun
   </div>;
 }
 
-function SaveIndicator({ state, onRetry }: { state: SaveState; onRetry: () => void }) {
-  const label = state.status === "dirty" ? "변경 내용 있음" : state.status === "saving" ? "변경 내용을 저장하는 중…" : state.status === "error" ? "저장하지 못했습니다" : state.lastSavedAt ? "방금 저장됨" : "서버에 저장됨";
+function SaveIndicator({ state, syncState, onRetry }: { state: SaveState; syncState: LocalSyncState; onRetry: () => void }) {
+  if (state.status === "saved" && syncState !== "ready") return null;
+  const label = state.status === "dirty" ? "변경 내용 있음" : state.status === "saving" ? "변경 내용을 저장하는 중…" : state.status === "error" ? "저장하지 못했습니다" : "방금 저장됨";
   return <div className={`save-indicator is-${state.status}`} role="status" aria-live="polite">
     <span aria-hidden="true" />{label}
     {state.status === "error" ? <button type="button" onClick={onRetry}>다시 시도</button> : null}
   </div>;
 }
 
-function LocalDraftIndicator({ state }: { state: LocalSyncState }) {
+function LocalDraftIndicator({ state, onRetry }: { state: LocalSyncState; onRetry: () => void }) {
   if (state === "ready") return null;
-  const label = state === "loading" ? "로컬 초안 확인 중…" : state === "offline" ? "오프라인 · 이 기기에 임시 저장됨" : "이 기기에 임시 저장됨";
-  return <p className={`local-draft-state state-${state}`} role="status">{label}</p>;
+  const labels: Record<Exclude<LocalSyncState, "ready">, string> = {
+    loading: "초안과 서버 연결 확인 중…", "saving-local": "이 기기에 저장하는 중…",
+    local: "이 기기에 임시 저장됨 · 서버 연결 대기", syncing: "이 기기에 임시 저장됨 · 서버 동기화 중…",
+    projection: "서버에 저장됨 · 검색 반영 중…", offline: "오프라인 · 이 기기에 임시 저장됨",
+    error: "동기화를 완료하지 못했습니다. 현재 입력을 복사해 보관해 주세요.",
+    unavailable: "로그인 또는 문서 접근을 확인해 주세요. 현재 입력은 보존됩니다.",
+    conflict: "초안을 자동으로 합칠 수 없어 동기화를 멈췄습니다."
+  };
+  return <p className={`local-draft-state state-${state}`} role="status">{labels[state]}
+    {state === "error" || state === "local" ? <button type="button" onClick={onRetry}>동기화 다시 시도</button> : null}
+  </p>;
 }

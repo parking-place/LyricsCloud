@@ -49,6 +49,10 @@ export class PostgresLyricStore {
       const current = await lockLyric(client, ownerId, resourceId);
       if (!current) return null;
       if (current.rowVersion !== input.rowVersion) throw new LyricConflictError();
+      if (input.body !== undefined) {
+        const sync = await client.query("select 1 from sync_documents where resource_id=$1 and owner_id=$2", [resourceId, ownerId]);
+        if (sync.rowCount) throw new LyricConflictError();
+      }
       const changes: string[] = [];
       const values: unknown[] = [resourceId, ownerId];
       for (const [field, column] of [["title", "title"], ["isFavorite", "is_favorite"], ["isPinned", "is_pinned"], ["pinOrder", "pin_order"]] as const) {

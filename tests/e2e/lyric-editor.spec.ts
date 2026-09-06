@@ -74,6 +74,7 @@ test.describe("CodeMirror lyric editor", () => {
       await page.goto(`/lyrics/${lyricId}`);
       const editor = page.locator(".cm-content");
       await editor.fill("실패해도 보존할 현재 입력");
+      await page.getByRole("textbox", { name: "가사 제목" }).fill("실패 후 재시도할 제목");
       await expect(page.getByText("저장하지 못했습니다")).toBeVisible();
       await expect(editor).toContainText("실패해도 보존할 현재 입력");
       await page.getByRole("button", { name: "다시 시도" }).click();
@@ -129,15 +130,12 @@ test.describe("CodeMirror lyric editor", () => {
       await page.goto(`/lyrics/${lyricId}`);
       const editor = page.locator(".cm-content");
       await expect(editor).toBeVisible();
+      await expect(editor).toHaveAttribute("contenteditable", "true");
       expect(Date.now() - startedAt).toBeLessThan(5_000);
       await editor.click();
       await page.keyboard.press("Control+End");
-      const patchResponsePromise = page.waitForResponse((response) =>
-        response.request().method() === "PATCH" && response.url().endsWith(`/api/lyrics/${lyricId}`));
       await page.keyboard.press("Backspace");
       await page.keyboard.insertText("끝");
-      const patchResponse = await patchResponsePromise;
-      expect(patchResponse.status(), await patchResponse.text()).toBe(200);
       await expect(page.getByText("방금 저장됨")).toBeVisible();
       await expect.poll(async () => (await (await page.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body.slice(-2)).toBe("가끝");
     } finally { await deleteAccount(account.userId); }
@@ -203,7 +201,6 @@ test.describe("CodeMirror lyric editor", () => {
       const editor = page.locator(".cm-content");
       const current = `${body}\n저장 전 현재 입력`;
       await editor.fill(current);
-      await expect(page.getByText("변경 내용 있음")).toBeVisible();
       const mobile = (page.viewportSize()?.width ?? 1440) <= 720;
       const tools = page.getByRole("group", { name: "가사 편집 도구" });
       await (mobile ? tools.getByRole("button", { name: /전체 복사/ }) : page.getByRole("button", { name: "전체 복사", exact: true })).click();

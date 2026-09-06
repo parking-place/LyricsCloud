@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.3.1"
 current_phase: "3phase.md"
-state: "complete"
+state: "review"
 owner: "Codex"
-started_at: "2026-09-05 16:24 KST"
-updated_at: "2026-09-05"
-next_action: "0.3.1 Phase 4 수정 기록, 비교와 비파괴 복원 구현"
+started_at: "2026-09-06 KST"
+updated_at: "2026-09-06"
+next_action: "Phase 3 로컬 보완 검토 후 승인된 원격 반영·CI·동일 SHA 개발 배포 검증; 이후 Phase 4"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -37,7 +37,7 @@ next_action: "0.3.1 Phase 4 수정 기록, 비교와 비파괴 복원 구현"
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
 | 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
 | 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
-| 0.3.1 | in_progress | Phase 1~3 완료, Phase 4 대기 | 0.3.0 완료 |
+| 0.3.1 | in_progress | Phase 1~2 기존 완료 기록, Phase 3 로컬 보완 검토, Phase 4 대기 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
 | 0.5.0 | planned | 없음 | 0.4.0 완료 |
 | 0.6.0 | planned | 없음 | 0.5.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.3.1 Phase 4 수정 기록, 비교와 비파괴 복원 구현"
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| — | — | — | 현재 활성 작업 없음 | — | — | — |
+| Codex | 0.3.1 / Phase 3 | LC-031-P3-01~08 통합 보완 | apps/collaboration, apps/web, packages/editor, packages/database, tests, compose/infra, CI, lockfile, 관련 문서 | 624eaa9 기준선, 사용자 로컬 보완 승인 | 2026-09-06 KST | review |
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -85,12 +85,12 @@ next_action: "0.3.1 Phase 4 수정 기록, 비교와 비파괴 복원 구현"
 
 ## 범위 밖 인계
 
-- 루트 README의 초기 버전 안내가 STATUS보다 오래됨.
 - ADR-0002의 전체 세션 로그아웃과 현재 단일 세션 폐기 구현 차이는 0.3.1 계정 격리 검증 시 재검토한다.
+- ADR-0005의 `y-codemirror.next` 명시와 현재 transaction adapter 구현은 Phase 5 문서 정합성 검토에 인계한다. 이번 보완은 기존 adapter를 유지한다.
 
 ## 다음 작업
 
-사용자의 2026-09-05 후속 지시에 따라 0.5.0까지 Phase를 순서대로 진행한다. 0.3.0은 다섯 Phase와 개발 배포까지 완료했다. 다음은 [0.3.1 Phase 1](./0.3.1/1phase.md)이며 Accepted `ADR-0004`, `ADR-0005`와 [editor·CRDT·revision 인계](../../docs/architecture/0.3.1-EDITOR-CRDT-REVISION-HANDOFF.md)를 먼저 읽는다.
+2026-09-06 인수인계 검토에서 Phase 3의 브라우저 transport와 배포 의존성 누락을 재현해 로컬에서 보완했다. 결과와 GitHub 경계는 [로컬 검토 기록](../../docs/runbooks/0.3.1-local-handoff-review.md)을 따른다. 현재 승인은 로컬 보완까지이며, 원격 push는 Docker Hub 발행을 동반하므로 그 영향을 포함한 승인이 필요하다. 원격 CI, 같은 SHA의 개발 배포, 실제 OAuth·PC/모바일 smoke를 확인한 다음 [Phase 4](./0.3.1/4phase.md)의 수정 기록·비교·비파괴 복원으로 진행한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 

@@ -28,6 +28,8 @@ describe.runIf(enabled)("durable owner-only collaboration state", () => {
     expect(mapping).not.toBeNull();
     expect(await sync!.ensureDocument(bob, lyric.id)).toBeNull();
     expect(await sync!.loadDocument(bob, mapping!.document_key)).toBeNull();
+    await expect(lyrics!.updateLyricCurrent(alice, lyric.id, { rowVersion: lyric.rowVersion, body: "stale REST body" })).rejects.toThrow("VERSION_CONFLICT");
+    expect(await lyrics!.updateLyricCurrent(alice, lyric.id, { rowVersion: lyric.rowVersion, title: "관계형 제목 수정" })).toMatchObject({ title: "관계형 제목 수정" });
 
     const loaded = await sync!.loadDocument(alice, mapping!.document_key);
     const client = materialize(loaded!.snapshot, loaded!.updates);

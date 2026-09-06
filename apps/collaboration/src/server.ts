@@ -2,13 +2,14 @@ import { createHash } from "node:crypto";
 import { createServer, type IncomingMessage } from "node:http";
 import { readRuntimeConfig } from "@lyricscloud/config";
 import { checkDatabase, DatabaseHealthError, PostgresAuthStore } from "@lyricscloud/database";
-import { parseSyncUpdateEnvelope } from "@lyricscloud/domain";
+import { parseSyncUpdateEnvelope, SYNC_LIMITS } from "@lyricscloud/domain";
 import { WebSocket, WebSocketServer } from "ws";
 import * as Y from "yjs";
 import { CollaborationStore } from "./store.js";
 
 const config = readRuntimeConfig(process.env);
 const port = Number(process.env.COLLABORATION_PORT ?? "3001");
+const appOrigin = new URL(process.env.APP_ORIGIN ?? "http://localhost:8080").origin;
 const auth = new PostgresAuthStore(config.databaseUrl);
 const documents = new CollaborationStore(config.databaseUrl);
 const sockets = new Map<string, Set<WebSocket>>();
@@ -16,9 +17,22 @@ const contexts = new WeakMap<WebSocket, ConnectionContext>();
 const projectionRetry = setInterval(async () => {
   const result = await documents.retryPendingProjections().catch(() => ({ attempted: 0, recovered: 0 }));
   if (result.attempted) console.log(JSON.stringify({ event: "sync_projection_retry", ...result }));
+  if (result.recovered) {
+    for (const peers of sockets.values()) for (const peer of peers) {
+      const context = contexts.get(peer);
+      if (!context || !await authorized(peer)) continue;
+      const loaded = await documents.loadDocument(context.ownerId, context.documentKey).catch(() => null);
+      if (loaded && peer.readyState === WebSocket.OPEN) peer.send(JSON.stringify({ type: "projection", projection: loaded.projectionPending ? "pending" : "current" }));
+    }
+  }
 }, 5_000);
 projectionRetry.unref();
+const reauthenticate = setInterval(() => {
+  for (const peers of sockets.values()) for (const peer of peers) void authorized(peer, true);
+}, 5 * 60_000);
+reauthenticate.unref();
 const server = createServer(async (request, response) => {
+  try {
   response.setHeader("content-type", "application/json");
   response.setHeader("cache-control", "no-store");
   if (request.url === "/health/live") return response.end(JSON.stringify({ status: "ok", service: "collaboration", check: "liveness", build: { version: config.appVersion, id: config.buildId } }));
@@ -38,6 +52,7 @@ const server = createServer(async (request, response) => {
   }
   const documentRequest = request.method === "POST" && request.url?.match(/^\/documents\/([0-9a-f-]{36})$/i);
   if (documentRequest) {
+    if (request.headers.origin !== appOrigin) return unavailable(response, 403);
     const session = await authenticate(request);
     if (!session) return unavailable(response, 401);
     const document = await documents.ensureDocument(session.userId, documentRequest[1]!);
@@ -46,12 +61,13 @@ const server = createServer(async (request, response) => {
   }
   response.statusCode = 404;
   return response.end(JSON.stringify({ error: "NOT_FOUND" }));
+  } catch { return unavailable(response, 503); }
 });
 
-const websocket = new WebSocketServer({ noServer: true, maxPayload: 1_048_576 + 1024 });
+const websocket = new WebSocketServer({ noServer: true, maxPayload: Math.ceil(SYNC_LIMITS.updateBytes / 3) * 4 + 1024 });
 server.on("upgrade", async (request, socket, head) => {
   try {
-    const match = request.url?.match(/^\/sync\/([0-9a-f-]{36})$/i);
+    const match = request.headers.origin === appOrigin && request.url?.match(/^\/sync\/([0-9a-f-]{36})$/i);
     const session = match ? await authenticate(request) : null;
     const loaded = match && session ? await documents.loadDocument(session.userId, match[1]!) : null;
     if (!match || !session || !loaded) {
@@ -60,7 +76,7 @@ server.on("upgrade", async (request, socket, head) => {
       return;
     }
     websocket.handleUpgrade(request, socket, head, (client) => {
-      contexts.set(client, { documentKey: match[1]!, ownerId: session.userId, snapshot: loaded.snapshot, updates: loaded.updates });
+      contexts.set(client, { documentKey: match[1]!, ownerId: session.userId, request });
       websocket.emit("connection", client, request);
     });
   } catch {
@@ -75,7 +91,13 @@ websocket.on("connection", (client, request) => {
   const peers = sockets.get(context.documentKey) ?? new Set<WebSocket>();
   peers.add(client);
   sockets.set(context.documentKey, peers);
-  client.send(JSON.stringify({ type: "snapshot", payload: Buffer.from(merge(context.snapshot, context.updates)).toString("base64") }));
+  // Join broadcasts first, then take a consistent snapshot so an update during
+  // the HTTP upgrade cannot fall between the snapshot and the subscription.
+  void documents.loadDocument(context.ownerId, context.documentKey).then((loaded) => {
+    if (!loaded) return closeUnavailable(client);
+    if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({ type: "snapshot",
+      payload: Buffer.from(merge(loaded.snapshot, loaded.updates)).toString("base64"), projection: loaded.projectionPending ? "pending" : "current" }));
+  }).catch(() => client.close(1013, "SYNC_TEMPORARILY_UNAVAILABLE"));
   log("sync_connected", context.documentKey, { connections: peers.size });
 
   client.on("message", async (raw, binary) => {
@@ -91,11 +113,12 @@ websocket.on("connection", (client, request) => {
       if (!result) return closeUnavailable(client);
       client.send(JSON.stringify({ type: "ack", updateId: envelope.updateId, duplicate: result.duplicate,
         projection: result.projectionPending ? "pending" : "current" }));
-      if (!result.duplicate) for (const peer of peers) if (peer !== client && peer.readyState === WebSocket.OPEN) {
+      if (!result.duplicate) for (const peer of peers) if (peer !== client && await authorized(peer) && peer.readyState === WebSocket.OPEN) {
         peer.send(JSON.stringify({ type: "update", updateId: envelope.updateId, payload: input.payload }));
       }
       log("sync_update_committed", context.documentKey, { bytes: envelope.payload.byteLength, duplicate: result.duplicate });
     } catch (error) {
+      if (error && typeof error === "object" && "code" in error) return client.close(1013, "SYNC_TEMPORARILY_UNAVAILABLE");
       const code = error instanceof Error && /^SYNC_/.test(error.message) ? error.message : "SYNC_UPDATE_INVALID";
       log("sync_update_rejected", context.documentKey, { code });
       closeProtocol(client, code);
@@ -112,10 +135,25 @@ server.listen(port, "0.0.0.0", () => console.log(JSON.stringify({ event: "servic
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) process.on(signal, () => {
   clearInterval(projectionRetry);
+  clearInterval(reauthenticate);
+  for (const peers of sockets.values()) for (const peer of peers) peer.close(1012, "SYNC_RESTARTING");
   server.close(async () => { await Promise.all([auth.close(), documents.close()]); process.exit(0); });
 });
 
-interface ConnectionContext { documentKey: string; ownerId: string; snapshot: Uint8Array; updates: readonly Uint8Array[] }
+interface ConnectionContext { documentKey: string; ownerId: string; request: IncomingMessage }
+
+async function authorized(client: WebSocket, checkDocument = false): Promise<boolean> {
+  const context = contexts.get(client);
+  try {
+    const session = context ? await authenticate(context.request) : null;
+    if (!context || !session || session.userId !== context.ownerId
+      || (checkDocument && !await documents.loadDocument(context.ownerId, context.documentKey))) {
+      closeUnavailable(client);
+      return false;
+    }
+    return client.readyState === WebSocket.OPEN;
+  } catch { client.close(1013, "SYNC_TEMPORARILY_UNAVAILABLE"); return false; }
+}
 
 async function authenticate(request: IncomingMessage) {
   const token = readCookie(request.headers.cookie, "__Host-lc_session") ?? readCookie(request.headers.cookie, "lc_session");
