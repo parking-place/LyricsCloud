@@ -32,9 +32,9 @@ async function DashboardData({ ownerId, song, returnTo }: { ownerId: string; son
   const [countsResult, lyricsResult, rhymesResult, promptsResult] = await Promise.allSettled([
     context.songs.getSongDashboardCounts(ownerId, song.id),
     context.lyrics.listSongLyrics(ownerId, song.id),
-    context.rhymes.listRhymeNotes(ownerId, { songId: song.id, sort: "updated_desc", limit: 3 }),
+    context.rhymes.listRhymeNotes(ownerId, { songId: song.id, sort: "updated_desc", limit: 50 }),
     context.prompts.listPrompts(ownerId, {
-      songId: song.id, favoriteOnly: false, recentlyUsedOnly: false, sort: "updated_desc", limit: 3
+      songId: song.id, favoriteOnly: false, recentlyUsedOnly: false, sort: "updated_desc", limit: 50
     })
   ]);
   const counts = countsResult.status === "fulfilled" ? countsResult.value : null;

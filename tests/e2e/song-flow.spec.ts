@@ -8,6 +8,7 @@ test.describe("complete song flow", () => {
   test.skip(!process.env.E2E_DATABASE_URL, "E2E_DATABASE_URL is required for song flow integration");
 
   test("list, create, dashboard, edit, ownership, and soft delete remain consistent", async ({ browser, context, page }, testInfo) => {
+    test.setTimeout(90_000);
     if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 360, height: 800 });
     const owner = await createAccount(context, "전체 흐름 사용자");
     const otherContext = await browser.newContext({ baseURL: origin });
@@ -49,6 +50,17 @@ test.describe("complete song flow", () => {
         expect(linkedBox!.y).toBeLessThan(notesBox!.y);
       }
 
+      const manageButton = page.getByRole("button", { name: "연결 관리" });
+      await manageButton.click();
+      let manager = page.getByRole("dialog", { name: "전체 흐름 곡 연결 자료 관리" });
+      await expect(manager).toContainText("아직 만든 라임 노트가 없습니다.");
+      await manager.getByRole("tab", { name: "프롬프트" }).click();
+      await expect(manager).toContainText("아직 만든 프롬프트가 없습니다.");
+      await manager.getByRole("button", { name: "취소" }).click();
+      await expect(manager).toHaveCount(0);
+      await expect(manageButton).toBeFocused();
+      await page.locator(".linked-panel").getByRole("tab", { name: /라임 노트/ }).click();
+
       const linked = await createLinkedDashboardResources(page, songId);
       await page.route(`**/api/songs/${songId}`, (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
       await page.getByRole("button", { name: "자료 수 새로 고침" }).click();
@@ -57,24 +69,83 @@ test.describe("complete song flow", () => {
       await countError.getByRole("button", { name: "다시 시도" }).click();
       await expect(page.locator(".count-grid strong")).toHaveText(["1", "1", "1"]);
 
-      await page.route(`**/api/songs/${songId}/lyrics`, (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
-      await page.getByRole("button", { name: "목록 새로 고침" }).click();
       const lyricsPanel = page.locator(".lyrics-panel");
+      await page.route(`**/api/songs/${songId}/lyrics`, (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
+      await lyricsPanel.getByRole("button", { name: "목록 새로 고침" }).click();
       await expect(lyricsPanel).toContainText("가사 버전을 불러오지 못했습니다.");
       await lyricsPanel.getByRole("button", { name: "다시 시도" }).click();
       const lyricCard = page.locator(".lyric-card", { hasText: linked.lyricTitle });
       await expect(lyricCard).toContainText("현재 작업");
       await expect(lyricCard).toContainText("첫 줄 · 둘째 줄");
 
-      const rhymeSection = page.getByRole("heading", { name: "라임 노트", exact: true }).locator("..").locator("..");
-      await page.route("**/api/rhymes?*", (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
-      await rhymeSection.getByRole("button", { name: "새로 고침" }).click();
-      await expect(rhymeSection).toContainText("연결 라임을 불러오지 못했습니다.");
-      await rhymeSection.getByRole("button", { name: "다시 시도" }).click();
-      await expect(rhymeSection.getByRole("link", { name: /대시보드 라임/ })).toContainText("chair · flare");
-      const promptSection = page.getByRole("heading", { name: "프롬프트", exact: true }).locator("..").locator("..");
-      await promptSection.getByRole("button", { name: "새로 고침" }).click();
-      await expect(promptSection.getByRole("link", { name: /대시보드 프롬프트/ })).toContainText("cinematic, female vocal");
+      const linkedPanel = page.locator(".linked-panel");
+      await page.route(`**/api/songs/${songId}/links?type=rhyme_note&state=linked&limit=50`, (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
+      await linkedPanel.getByRole("button", { name: "목록 새로 고침" }).click();
+      await expect(linkedPanel).toContainText("연결 라임 노트를 불러오지 못했습니다.");
+      await linkedPanel.getByRole("button", { name: "다시 시도" }).click();
+      await expect(linkedPanel.getByRole("link", { name: /대시보드 라임/ })).toContainText("chair · flare");
+      await linkedPanel.getByRole("tab", { name: /프롬프트/ }).click();
+      await linkedPanel.getByRole("button", { name: "목록 새로 고침" }).click();
+      await expect(linkedPanel.getByRole("link", { name: /대시보드 프롬프트/ })).toContainText("cinematic, female vocal");
+      await linkedPanel.getByRole("tab", { name: /라임 노트/ }).click();
+
+      await manageButton.click();
+      manager = page.getByRole("dialog", { name: "전체 흐름 곡 연결 자료 관리" });
+      await expect(manager).toBeVisible();
+      if (page.viewportSize()!.width <= 720) {
+        const managerBox = await manager.boundingBox();
+        expect(managerBox!.y).toBeGreaterThan(80);
+      }
+      await manager.getByRole("button", { name: "미연결" }).click();
+      await manager.getByLabel("라임 노트 검색").fill("candidate-tone");
+      for (const title of linked.unlinkedRhymeTitles) {
+        const option = manager.locator(".song-link-option", { hasText: title });
+        await expect(option).toBeVisible();
+        await option.getByRole("checkbox").check();
+      }
+      await manager.getByRole("button", { name: "변경 2개 적용" }).click();
+      await expect(manager).toHaveCount(0);
+      await expect(manageButton).toBeFocused();
+      await expect(page.locator(".count-grid strong")).toHaveText(["1", "1", "3"]);
+      await expect(page.locator(".linked-preview-list")).toContainText(linked.unlinkedRhymeTitles[0]);
+
+      await manageButton.click();
+      manager = page.getByRole("dialog", { name: "전체 흐름 곡 연결 자료 관리" });
+      await manager.getByRole("button", { name: "연결됨" }).click();
+      await manager.getByLabel("라임 노트 검색").fill(linked.unlinkedRhymeTitles[0]);
+      await manager.locator(".song-link-option", { hasText: linked.unlinkedRhymeTitles[0] }).getByRole("checkbox").uncheck();
+      await page.route(`**/api/songs/${songId}/links`, (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
+      await manager.getByRole("button", { name: "변경 1개 적용" }).click();
+      let unlinkDialog = manager.getByRole("alertdialog");
+      await expect(unlinkDialog).toContainText("전체 흐름 곡");
+      await expect(unlinkDialog).toContainText(linked.unlinkedRhymeTitles[0]);
+      await expect(unlinkDialog).toContainText("자료 자체는 삭제되지 않고 원래 라이브러리에 그대로 남습니다.");
+      await unlinkDialog.getByRole("button", { name: "연결 해제 포함 적용" }).click();
+      await expect(manager.getByRole("alert")).toContainText("선택은 유지");
+      await manager.getByRole("button", { name: "변경 1개 적용" }).click();
+      unlinkDialog = manager.getByRole("alertdialog");
+      await unlinkDialog.getByRole("button", { name: "연결 해제 포함 적용" }).click();
+      await expect(manager).toHaveCount(0);
+      await expect(page.locator(".count-grid strong")).toHaveText(["1", "1", "2"]);
+      expect((await page.request.get(`/api/rhymes/${linked.unlinkedRhymeIds[0]}`)).status()).toBe(200);
+
+      await page.getByRole("tab", { name: /프롬프트/ }).click();
+      await expect(page.locator(".linked-preview-list")).toContainText("대시보드 프롬프트");
+      await manageButton.click();
+      manager = page.getByRole("dialog", { name: "전체 흐름 곡 연결 자료 관리" });
+      await expect(manager.getByRole("tab", { name: "프롬프트" })).toHaveAttribute("aria-selected", "true");
+      await manager.getByRole("button", { name: "미연결" }).click();
+      await manager.getByLabel("프롬프트 검색").fill("없는검색");
+      await expect(manager).toContainText("검색 결과가 없습니다.");
+      await manager.getByLabel("프롬프트 검색").fill("unused-token");
+      const promptOption = manager.locator(".song-link-option", { hasText: linked.unlinkedPromptTitle });
+      await expect(promptOption).toBeVisible();
+      await promptOption.getByRole("checkbox").check();
+      await manager.getByRole("button", { name: "변경 1개 적용" }).click();
+      await expect(manager).toHaveCount(0);
+      await expect(page.locator(".count-grid strong")).toHaveText(["1", "2", "2"]);
+      await expect(page.locator(".linked-preview-list")).toContainText(linked.unlinkedPromptTitle);
+      expect(await hasHorizontalOverflow(page)).toBe(false);
 
       await page.getByRole("button", { name: "곡 메모 편집" }).click();
       let noteDialog = page.getByRole("dialog", { name: "전체 흐름 곡 작업 메모" });
@@ -248,7 +319,21 @@ async function createLinkedDashboardResources(page: Page, songId: string) {
   expect(promptResponse.status()).toBe(201);
   const promptId = (await promptResponse.json()).prompt.id as string;
   expect((await page.request.put(`/api/prompts/${promptId}/songs/${songId}`, { headers })).status()).toBe(200);
-  return { lyricId, lyricTitle };
+  const unlinkedRhymeTitles = ["후보 라임 A", "후보 라임 B"];
+  const unlinkedRhymeIds: string[] = [];
+  for (const [index, title] of unlinkedRhymeTitles.entries()) {
+    const response = await page.request.post("/api/rhymes", { headers, data: {
+      requestId: randomUUID(), title, body: `candidate-tone ${index}\nrhyme body`
+    } });
+    expect(response.status()).toBe(201);
+    unlinkedRhymeIds.push((await response.json()).rhyme.id as string);
+  }
+  const unlinkedPromptTitle = "후보 프롬프트";
+  const unlinkedPrompt = await page.request.post("/api/prompts", { headers, data: {
+    requestId: randomUUID(), title: unlinkedPromptTitle, tokens: ["unused-token", "ambient"]
+  } });
+  expect(unlinkedPrompt.status()).toBe(201);
+  return { lyricId, lyricTitle, unlinkedRhymeTitles, unlinkedRhymeIds, unlinkedPromptTitle };
 }
 
 async function hasHorizontalOverflow(page: Page) {

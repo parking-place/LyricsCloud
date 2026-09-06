@@ -18,6 +18,24 @@ export const SONG_SORTS = [
 export type SongSort = (typeof SONG_SORTS)[number];
 
 export const SONG_LIST_LIMITS = { default: 20, maximum: 50 } as const;
+export const SONG_LINK_RESOURCE_TYPES = ["rhyme_note", "prompt"] as const;
+export type SongLinkResourceType = (typeof SONG_LINK_RESOURCE_TYPES)[number];
+export const SONG_LINK_STATES = ["all", "linked", "unlinked"] as const;
+export type SongLinkState = (typeof SONG_LINK_STATES)[number];
+
+export interface SongLinkListInput {
+  readonly type: SongLinkResourceType;
+  readonly state: SongLinkState;
+  readonly search?: string;
+  readonly cursor?: string;
+  readonly limit: number;
+}
+
+export interface SongLinkMutationInput {
+  readonly type: SongLinkResourceType;
+  readonly linkIds: readonly string[];
+  readonly unlinkIds: readonly string[];
+}
 
 export interface CreateSongInput {
   readonly requestId: string;
@@ -126,6 +144,36 @@ export function parseSongListInput(params: URLSearchParams): SongListInput {
   return { ...(search ? { search } : {}), ...(status ? { status } : {}), sort, ...(cursor ? { cursor } : {}), limit };
 }
 
+export function parseSongLinkListInput(params: URLSearchParams): SongLinkListInput {
+  const issues: ValidationIssue[] = [];
+  const type = enumValue(params.get("type"), SONG_LINK_RESOURCE_TYPES, "type", issues, "rhyme_note");
+  const state = enumValue(params.get("state") ?? "all", SONG_LINK_STATES, "state", issues, "all");
+  const rawSearch = params.get("search")?.normalize("NFC").trim() ?? "";
+  const search = rawSearch ? textValue(rawSearch, "search", 200, issues) : undefined;
+  const cursor = params.get("cursor")?.trim() || undefined;
+  const rawLimit = params.get("limit");
+  const limit = rawLimit === null ? SONG_LIST_LIMITS.default : Number(rawLimit);
+  if (!Number.isInteger(limit) || limit < 1 || limit > SONG_LIST_LIMITS.maximum) {
+    issues.push({ field: "limit", code: "integer_between_1_and_50" });
+  }
+  if (cursor && cursor.length > 1_024) issues.push({ field: "cursor", code: "too_long" });
+  if (issues.length) throw new SongValidationError(issues);
+  return { type, state, ...(search ? { search } : {}), ...(cursor ? { cursor } : {}), limit };
+}
+
+export function parseSongLinkMutationInput(value: unknown): SongLinkMutationInput {
+  const input = objectInput(value);
+  const issues: ValidationIssue[] = [];
+  const type = enumValue(input.type, SONG_LINK_RESOURCE_TYPES, "type", issues, "rhyme_note");
+  const linkIds = resourceIdList(input.linkIds, "linkIds", issues);
+  const unlinkIds = resourceIdList(input.unlinkIds, "unlinkIds", issues);
+  if (linkIds.length + unlinkIds.length === 0) issues.push({ field: "body", code: "at_least_one_field" });
+  const linked = new Set(linkIds);
+  if (unlinkIds.some((id) => linked.has(id))) issues.push({ field: "unlinkIds", code: "conflicting_value" });
+  if (issues.length) throw new SongValidationError(issues);
+  return { type, linkIds, unlinkIds };
+}
+
 function objectInput(value: unknown): Record<string, unknown> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new SongValidationError([{ field: "body", code: "object_required" }]);
@@ -204,4 +252,15 @@ function uuid(value: unknown, field: string, issues: ValidationIssue[]): string 
   if (typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)) return value;
   issues.push({ field, code: "uuid_required" });
   return "00000000-0000-4000-8000-000000000000";
+}
+
+function resourceIdList(value: unknown, field: string, issues: ValidationIssue[]): readonly string[] {
+  if (!Array.isArray(value)) {
+    issues.push({ field, code: "array_required" });
+    return [];
+  }
+  if (value.length > 50) issues.push({ field, code: "too_many" });
+  const unique = new Set<string>();
+  for (const item of value) unique.add(uuid(item, field, issues));
+  return [...unique];
 }

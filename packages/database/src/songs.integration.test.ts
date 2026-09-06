@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { parseCreateSongInput, type SongListInput, type SongSort } from "@lyricscloud/domain";
+import { parseCreateSongInput, type SongLinkResourceType, type SongListInput, type SongSort } from "@lyricscloud/domain";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PostgresSongStore, SongCursorError, type SongRecord } from "./songs.js";
@@ -99,6 +99,69 @@ describe.runIf(enabled)("song command and list store", () => {
     await expect(store!.listSongs(alice, listInput({ cursor: "not-a-cursor" }))).rejects.toBeInstanceOf(SongCursorError);
   });
 
+  it("lists and atomically changes owner-scoped rhyme and prompt links", async () => {
+    const [alice, bob] = users as [string, string];
+    const song = (await store!.createSong(alice, createInput({ title: "연결 관리 곡", requestId: randomUUID() }))).song;
+    const otherSong = (await store!.createSong(bob, createInput({ title: "타인 연결 곡", requestId: randomUUID() }))).song;
+    const first = await seedLinkedResource(alice, "rhyme_note", "연결 라임", "light 100%_literal");
+    const second = await seedLinkedResource(alice, "rhyme_note", "미연결 라임", "night 검색 본문");
+    const deleted = await seedLinkedResource(alice, "rhyme_note", "삭제 라임", "숨김 본문", true);
+    const other = await seedLinkedResource(bob, "rhyme_note", "타인 라임", "타인 본문");
+    expect(await store!.changeSongLinks(alice, song.id, { type: "rhyme_note", linkIds: [first], unlinkIds: [] }))
+      .toEqual({ linkedIds: [first], unlinkedIds: [] });
+    expect(await store!.changeSongLinks(alice, song.id, { type: "rhyme_note", linkIds: [first], unlinkIds: [] }))
+      .toEqual({ linkedIds: [first], unlinkedIds: [] });
+    expect((await store!.listSongLinks(alice, song.id, { type: "rhyme_note", state: "linked", limit: 20 }))?.items)
+      .toMatchObject([{ id: first, title: "연결 라임", isLinked: true }]);
+    expect((await store!.listSongLinks(alice, song.id, { type: "rhyme_note", state: "unlinked", search: "검색 본문", limit: 20 }))?.items)
+      .toMatchObject([{ id: second, title: "미연결 라임", isLinked: false }]);
+    const all = await store!.listSongLinks(alice, song.id, { type: "rhyme_note", state: "all", search: "라임", limit: 1 });
+    expect(all).toMatchObject({ totalCount: 2, items: [{ id: first, isLinked: true }] });
+    expect(all?.nextCursor).toEqual(expect.any(String));
+    expect((await store!.listSongLinks(alice, song.id, {
+      type: "rhyme_note", state: "all", search: "라임", limit: 1, cursor: all!.nextCursor!
+    }))?.items).toMatchObject([{ id: second, isLinked: false }]);
+    await expect(store!.listSongLinks(alice, song.id, {
+      type: "rhyme_note", state: "linked", search: "라임", limit: 1, cursor: all!.nextCursor!
+    })).rejects.toBeInstanceOf(SongCursorError);
+
+    expect(await store!.changeSongLinks(alice, song.id, { type: "rhyme_note", linkIds: [second], unlinkIds: [first] }))
+      .toEqual({ linkedIds: [second], unlinkedIds: [first] });
+    expect((await store!.listSongLinks(alice, song.id, { type: "rhyme_note", state: "linked", limit: 20 }))?.items)
+      .toMatchObject([{ id: second, isLinked: true }]);
+    expect((await rootPool!.query("select 1 from resources where id=$1 and deleted_at is null", [first])).rowCount).toBe(1);
+    expect(await store!.changeSongLinks(alice, song.id, { type: "rhyme_note", linkIds: [deleted], unlinkIds: [] })).toBeNull();
+    expect(await store!.changeSongLinks(alice, song.id, { type: "rhyme_note", linkIds: [other], unlinkIds: [] })).toBeNull();
+    expect(await store!.listSongLinks(bob, song.id, { type: "rhyme_note", state: "all", limit: 20 })).toBeNull();
+    expect(await store!.changeSongLinks(bob, song.id, { type: "rhyme_note", linkIds: [other], unlinkIds: [] })).toBeNull();
+    expect(await store!.changeSongLinks(alice, otherSong.id, { type: "rhyme_note", linkIds: [first], unlinkIds: [] })).toBeNull();
+
+    const prompt = await seedLinkedResource(alice, "prompt", "Suno 후보", "cinematic, female vocal");
+    expect((await store!.listSongLinks(alice, song.id, { type: "prompt", state: "unlinked", search: "female vocal", limit: 20 }))?.items)
+      .toMatchObject([{ id: prompt, preview: "cinematic, female vocal", isLinked: false }]);
+  });
+
+  it("hides links while a song or resource is deleted and restores the existing relation", async () => {
+    const [alice] = users as [string, string];
+    const song = (await store!.createSong(alice, createInput({ title: "복원 정책 곡", requestId: randomUUID() }))).song;
+    const rhyme = await seedLinkedResource(alice, "rhyme_note", "복원 정책 라임", "relation survives restore");
+    await store!.changeSongLinks(alice, song.id, { type: "rhyme_note", linkIds: [rhyme], unlinkIds: [] });
+
+    await rootPool!.query("update resources set deleted_at=clock_timestamp() where id=$1", [rhyme]);
+    expect((await store!.listSongLinks(alice, song.id, { type: "rhyme_note", state: "linked", limit: 20 }))?.items).toEqual([]);
+    expect((await rootPool!.query("select 1 from song_resource_links where song_resource_id=$1 and linked_resource_id=$2", [song.id, rhyme])).rowCount).toBe(1);
+    await rootPool!.query("update resources set deleted_at=null where id=$1", [rhyme]);
+    expect((await store!.listSongLinks(alice, song.id, { type: "rhyme_note", state: "linked", limit: 20 }))?.items)
+      .toMatchObject([{ id: rhyme, isLinked: true }]);
+
+    expect(await store!.deleteSong(alice, song.id)).toBe(true);
+    expect(await store!.listSongLinks(alice, song.id, { type: "rhyme_note", state: "linked", limit: 20 })).toBeNull();
+    expect((await rootPool!.query("select 1 from song_resource_links where song_resource_id=$1 and linked_resource_id=$2", [song.id, rhyme])).rowCount).toBe(1);
+    await rootPool!.query("update resources set deleted_at=null where id=$1", [song.id]);
+    expect((await store!.listSongLinks(alice, song.id, { type: "rhyme_note", state: "linked", limit: 20 }))?.items)
+      .toMatchObject([{ id: rhyme, isLinked: true }]);
+  });
+
   it("soft deletes idempotently without exposing another owner's existence", async () => {
     const [alice, bob] = users as [string, string];
     const created = await store!.createSong(alice, createInput({ title: "삭제 대상", requestId: randomUUID() }));
@@ -165,4 +228,21 @@ async function seedDashboardResources(ownerId: string, songId: string) {
   } finally {
     client.release();
   }
+}
+
+async function seedLinkedResource(ownerId: string, type: SongLinkResourceType, title: string, preview: string, deleted = false) {
+  const id = randomUUID();
+  const client = await rootPool!.connect();
+  try {
+    await client.query("begin");
+    await client.query("insert into resources(id,owner_id,type,title) values($1,$2,$3,$4)", [id, ownerId, type, title]);
+    if (type === "prompt") await client.query("insert into prompts(resource_id,owner_id,plain_text) values($1,$2,$3)", [id, ownerId, preview]);
+    else await client.query("insert into rhyme_notes(resource_id,owner_id,body) values($1,$2,$3)", [id, ownerId, preview]);
+    if (deleted) await client.query("update resources set deleted_at=clock_timestamp() where id=$1", [id]);
+    await client.query("commit");
+    return id;
+  } catch (error) {
+    await client.query("rollback");
+    throw error;
+  } finally { client.release(); }
 }

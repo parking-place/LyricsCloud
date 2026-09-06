@@ -3,6 +3,8 @@ import {
   SongValidationError,
   parseCreateSongInput,
   parsePinInput,
+  parseSongLinkListInput,
+  parseSongLinkMutationInput,
   parseSongListInput,
   parseUpdateSongInput
 } from "./song-contract.js";
@@ -48,5 +50,19 @@ describe("song command contract", () => {
       search: "한글", status: "idea", sort: "title_asc", limit: 30
     });
     expect(() => parseSongListInput(new URLSearchParams("sort=nope&limit=0"))).toThrow(SongValidationError);
+  });
+
+  it("validates song link candidate filters and deduplicates batch ids", () => {
+    expect(parseSongLinkListInput(new URLSearchParams("type=prompt&state=unlinked&search=%20cinematic%20&limit=40"))).toEqual({
+      type: "prompt", state: "unlinked", search: "cinematic", limit: 40
+    });
+    const first = "00000000-0000-4000-8000-000000000111";
+    const second = "00000000-0000-4000-8000-000000000112";
+    expect(parseSongLinkMutationInput({ type: "rhyme_note", linkIds: [first, first], unlinkIds: [second] })).toEqual({
+      type: "rhyme_note", linkIds: [first], unlinkIds: [second]
+    });
+    expect(() => parseSongLinkListInput(new URLSearchParams("type=lyrics&state=missing"))).toThrow(SongValidationError);
+    expect(() => parseSongLinkMutationInput({ type: "prompt", linkIds: [first], unlinkIds: [first] })).toThrow(SongValidationError);
+    expect(() => parseSongLinkMutationInput({ type: "prompt", linkIds: [], unlinkIds: [] })).toThrow(SongValidationError);
   });
 });

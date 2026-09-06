@@ -2,7 +2,8 @@
 
 import { LYRIC_STATUS_LABELS, type LyricRecord } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState, type MouseEvent } from "react";
+import { SongLinkManager, type SongLinkKind } from "./song-link-manager.js";
 
 type SongStatus = "idea" | "writing_lyrics" | "revising" | "suno_generating" | "mixing" | "completed" | "on_hold";
 type ResourceColor = "red" | "yellow" | "green" | "blue" | "gray";
@@ -125,19 +126,23 @@ export function SongDashboard({ initialSong, initialCounts, initialLyrics, initi
   async function retryLinked(kind: "rhymes" | "prompts") {
     if (retrying) return;
     setRetrying(kind);
-    const endpoint = kind === "rhymes"
-      ? `/api/rhymes?song=${song.id}&sort=updated_desc&limit=3`
-      : `/api/prompts?song=${song.id}&sort=updated_desc&limit=3`;
+    const type = kind === "rhymes" ? "rhyme_note" : "prompt";
+    const endpoint = `/api/songs/${song.id}/links?type=${type}&state=linked&limit=50`;
     try {
       const response = await fetch(endpoint, { cache: "no-store" });
       if (!response.ok) throw new Error();
-      const result = await response.json() as { items: RhymePreview[] | PromptPreview[] };
-      if (kind === "rhymes") setRhymes(result.items as RhymePreview[]);
-      else setPrompts(result.items as PromptPreview[]);
+      const result = await response.json() as { items: { id: string; title: string; preview: string; updatedAt: string }[] };
+      if (kind === "rhymes") setRhymes(result.items.map((item) => ({ ...item, body: item.preview })));
+      else setPrompts(result.items.map((item) => ({ ...item, plainText: item.preview })));
     } catch {
       if (kind === "rhymes") setRhymes(null);
       else setPrompts(null);
     } finally { setRetrying(null); }
+  }
+
+  async function linksChanged(kind: SongLinkKind) {
+    await retryCounts();
+    await retryLinked(kind === "rhyme_note" ? "rhymes" : "prompts");
   }
 
   function editNote(target: NoteTarget) {
@@ -294,7 +299,7 @@ export function SongDashboard({ initialSong, initialCounts, initialLyrics, initi
             {lyrics.filter((lyric) => lyric.memo).map((lyric) => <WorkNote key={lyric.id} label="가사" title={lyric.title} value={lyric.memo} onEdit={() => editNote({ kind: "lyric", lyric, title: lyric.title, value: lyric.memo })} onDelete={() => void writeNote({ kind: "lyric", lyric, title: lyric.title, value: lyric.memo }, "", false)} />)}
           </div>}
         </section>
-        <LinkedResources songId={song.id} rhymes={rhymes} prompts={prompts} retrying={retrying} onRetry={retryLinked} />
+        <LinkedResources songId={song.id} songTitle={song.title} rhymes={rhymes} prompts={prompts} retrying={retrying} onRetry={retryLinked} onChanged={linksChanged} />
         <section className="danger-zone"><h2>곡 관리</h2><p>삭제한 곡은 목록에서 숨겨집니다.</p><button type="button" onClick={() => setDeleteOpen(true)}>곡 삭제</button></section>
       </aside>
     </div>
@@ -336,27 +341,42 @@ function WorkNote({ label, title, value, onEdit, onDelete }: {
   return <article className="work-note"><header><span>{label}</span><strong>{title}</strong></header><p>{value}</p><div><button type="button" onClick={onEdit}>편집</button><button className="danger-text" type="button" onClick={onDelete}>삭제</button></div></article>;
 }
 
-function LinkedResources({ songId, rhymes, prompts, retrying, onRetry }: {
+function LinkedResources({ songId, songTitle, rhymes, prompts, retrying, onRetry, onChanged }: {
   songId: string;
+  songTitle: string;
   rhymes: readonly RhymePreview[] | null;
   prompts: readonly PromptPreview[] | null;
   retrying: "counts" | "lyrics" | "rhymes" | "prompts" | null;
   onRetry: (kind: "rhymes" | "prompts") => void;
+  onChanged: (kind: SongLinkKind) => Promise<void> | void;
 }) {
+  const [activeKind, setActiveKind] = useState<SongLinkKind>("rhyme_note");
+  const [managerKind, setManagerKind] = useState<SongLinkKind | null>(null);
+  const opener = useRef<HTMLButtonElement | null>(null);
   const empty = rhymes?.length === 0 && prompts?.length === 0;
-  return <section className={`dashboard-panel linked-panel${empty ? " linked-empty" : ""}`}><p className="eyebrow">Linked resources</p><h2>연결 자료</h2>
-    <section aria-labelledby="linked-rhymes-title"><div className="linked-section-heading"><h3 id="linked-rhymes-title">라임 노트</h3><span><button type="button" disabled={Boolean(retrying)} onClick={() => onRetry("rhymes")}>{retrying === "rhymes" ? "확인 중…" : "새로 고침"}</button><a href={`/rhymes?song=${songId}`}>전체 보기</a></span></div>
-      {rhymes === null ? <SectionError message="연결 라임을 불러오지 못했습니다." busy={retrying === "rhymes"} onRetry={() => onRetry("rhymes")} />
-        : rhymes.length ? <div className="linked-preview-list">{rhymes.map((rhyme) => <a key={rhyme.id} href={`/rhymes/${rhyme.id}`}><strong>{rhyme.title}</strong><span>{previewText(rhyme.body) || "아직 본문이 없습니다."}</span></a>)}</div>
-          : <p className="linked-none">연결된 라임 노트가 없습니다.</p>}
+  const activeItems = activeKind === "rhyme_note" ? rhymes : prompts;
+  const listKind = activeKind === "rhyme_note" ? "rhymes" : "prompts";
+  const label = activeKind === "rhyme_note" ? "라임 노트" : "프롬프트";
+  function openManager(event: MouseEvent<HTMLButtonElement>) {
+    opener.current = event.currentTarget;
+    setManagerKind(activeKind);
+  }
+  function closeManager() {
+    setManagerKind(null);
+    window.setTimeout(() => opener.current?.focus());
+  }
+  return <>
+    <section className={`dashboard-panel linked-panel${empty ? " linked-empty" : ""}`}><div className="linked-panel-heading"><div><p className="eyebrow">Linked resources</p><h2>연결 자료</h2></div><button className="primary-button" type="button" onClick={openManager}>연결 관리</button></div>
+      <div className="linked-type-tabs" role="tablist" aria-label="연결 자료 유형"><button type="button" role="tab" aria-selected={activeKind === "rhyme_note"} onClick={() => setActiveKind("rhyme_note")}>라임 노트 <strong>{rhymes?.length ?? "–"}</strong></button><button type="button" role="tab" aria-selected={activeKind === "prompt"} onClick={() => setActiveKind("prompt")}>프롬프트 <strong>{prompts?.length ?? "–"}</strong></button></div>
+      <section aria-labelledby="linked-active-title"><div className="linked-section-heading"><h3 id="linked-active-title">연결된 {label}</h3><span><button type="button" disabled={Boolean(retrying)} onClick={() => onRetry(listKind)}>{retrying === listKind ? "확인 중…" : "목록 새로 고침"}</button><a href={activeKind === "rhyme_note" ? `/rhymes?song=${songId}` : `/prompts?song=${songId}`}>라이브러리 보기</a></span></div>
+        {activeItems === null ? <SectionError message={`연결 ${label}를 불러오지 못했습니다.`} busy={retrying === listKind} onRetry={() => onRetry(listKind)} />
+          : activeItems.length ? <div className="linked-preview-list">{activeItems.map((item) => <a key={item.id} href={activeKind === "rhyme_note" ? `/rhymes/${item.id}` : `/prompts/${item.id}`}><strong>{item.title}</strong><span>{previewText("body" in item ? item.body : item.plainText) || (activeKind === "rhyme_note" ? "아직 본문이 없습니다." : "아직 토큰이 없습니다.")}</span></a>)}</div>
+            : <div className="linked-none"><p>연결된 {label}가 없습니다.</p><button type="button" onClick={openManager}>첫 {label} 연결</button></div>}
+      </section>
+      {empty ? <p className="linked-guidance">이 곡을 떠나지 않고 기존 자료를 검색해 여러 개 연결할 수 있습니다.</p> : null}
     </section>
-    <section aria-labelledby="linked-prompts-title"><div className="linked-section-heading"><h3 id="linked-prompts-title">프롬프트</h3><span><button type="button" disabled={Boolean(retrying)} onClick={() => onRetry("prompts")}>{retrying === "prompts" ? "확인 중…" : "새로 고침"}</button><a href={`/prompts?song=${songId}`}>전체 보기</a></span></div>
-      {prompts === null ? <SectionError message="연결 프롬프트를 불러오지 못했습니다." busy={retrying === "prompts"} onRetry={() => onRetry("prompts")} />
-        : prompts.length ? <div className="linked-preview-list">{prompts.map((prompt) => <a key={prompt.id} href={`/prompts/${prompt.id}`}><strong>{prompt.title}</strong><span>{previewText(prompt.plainText) || "아직 토큰이 없습니다."}</span></a>)}</div>
-          : <p className="linked-none">연결된 프롬프트가 없습니다.</p>}
-    </section>
-    {empty ? <p className="linked-guidance">각 자료 편집기에서 이 곡을 연결하면 여기에 바로 표시됩니다.</p> : null}
-  </section>;
+    {managerKind ? <SongLinkManager songId={songId} songTitle={songTitle} kind={managerKind} onKindChange={(kind) => { setManagerKind(kind); setActiveKind(kind); }} onClose={closeManager} onChanged={onChanged} /> : null}
+  </>;
 }
 
 function sortLyrics(values: readonly LyricRecord[]) {

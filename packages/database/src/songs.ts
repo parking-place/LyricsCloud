@@ -1,8 +1,11 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type {
   CreateSongInput,
   ResourceColor,
   SongListInput,
+  SongLinkListInput,
+  SongLinkMutationInput,
+  SongLinkResourceType,
   SongSort,
   SongStatus,
   UpdateSongInput
@@ -47,6 +50,26 @@ export interface SongListResult {
   readonly capabilities: { readonly lyricsSearch: true; readonly linkedResourceFilters: false };
 }
 
+export interface SongLinkItem {
+  readonly id: string;
+  readonly type: SongLinkResourceType;
+  readonly title: string;
+  readonly preview: string;
+  readonly isLinked: boolean;
+  readonly updatedAt: string;
+}
+
+export interface SongLinkListResult {
+  readonly items: readonly SongLinkItem[];
+  readonly totalCount: number;
+  readonly nextCursor: string | null;
+}
+
+export interface SongLinkMutationResult {
+  readonly linkedIds: readonly string[];
+  readonly unlinkedIds: readonly string[];
+}
+
 export class SongCursorError extends Error {
   constructor() { super("SONG_CURSOR_INVALID"); this.name = "SongCursorError"; }
 }
@@ -84,6 +107,20 @@ interface SongDashboardCountRow extends QueryResultRow {
   lyric_count: string;
   prompt_count: string;
   rhyme_count: string;
+}
+
+interface SongLinkRow extends QueryResultRow {
+  id: string;
+  title: string;
+  preview: string;
+  is_linked: boolean;
+  updated_at: Date;
+}
+
+interface SongLinkCursor {
+  readonly version: 1;
+  readonly offset: number;
+  readonly signature: string;
 }
 
 export class PostgresSongStore {
@@ -233,6 +270,70 @@ export class PostgresSongStore {
         nextCursor: hasMore && last ? encodeCursor(makeCursor(last, input.sort)) : null,
         capabilities: { lyricsSearch: true, linkedResourceFilters: false }
       };
+    });
+  }
+
+  listSongLinks(ownerId: string, songId: string, input: SongLinkListInput): Promise<SongLinkListResult | null> {
+    return this.#withUser(ownerId, async (client) => {
+      if (!await activeSongExists(client, ownerId, songId)) return null;
+      const resourceType = input.type;
+      const subtypeTable = input.type === "prompt" ? "prompts" : "rhyme_notes";
+      const previewColumn = input.type === "prompt" ? "plain_text" : "body";
+      const values: unknown[] = [ownerId, songId];
+      const linkedExpression = `exists(select 1 from song_resource_links link
+        where link.owner_id=r.owner_id and link.song_resource_id=$2 and link.linked_resource_id=r.id
+          and link.linked_resource_type='${resourceType}')`;
+      const conditions = ["r.owner_id=$1", "$2::uuid is not null", `r.type='${resourceType}'`, "r.deleted_at is null"];
+      if (input.search) {
+        values.push(input.search);
+        conditions.push(`(strpos(lower(r.title),lower($${values.length}))>0
+          or strpos(lower(subtype.${previewColumn}),lower($${values.length}))>0)`);
+      }
+      if (input.state === "linked") conditions.push(linkedExpression);
+      if (input.state === "unlinked") conditions.push(`not ${linkedExpression}`);
+      const where = conditions.join(" and ");
+      const totalCount = Number((await client.query<{ count: string }>(`select count(*)::text count
+        from resources r join ${subtypeTable} subtype on subtype.resource_id=r.id and subtype.owner_id=r.owner_id
+        where ${where}`, values)).rows[0]?.count ?? 0);
+      const offset = input.cursor ? decodeSongLinkCursor(input.cursor, input).offset : 0;
+      values.push(input.limit + 1, offset);
+      const rows = await client.query<SongLinkRow>(`select r.id,r.title,subtype.${previewColumn} preview,
+        ${linkedExpression} is_linked,r.updated_at
+        from resources r join ${subtypeTable} subtype on subtype.resource_id=r.id and subtype.owner_id=r.owner_id
+        where ${where}
+        order by is_linked desc,lower(r.title),r.id limit $${values.length - 1} offset $${values.length}`, values);
+      const hasMore = rows.rows.length > input.limit;
+      const page = hasMore ? rows.rows.slice(0, input.limit) : rows.rows;
+      return {
+        items: page.map((row) => ({ id: row.id, type: input.type, title: row.title, preview: row.preview,
+          isLinked: row.is_linked, updatedAt: row.updated_at.toISOString() })),
+        totalCount,
+        nextCursor: hasMore ? encodeSongLinkCursor({ version: 1, offset: offset + input.limit,
+          signature: songLinkQuerySignature(input) }) : null
+      };
+    });
+  }
+
+  changeSongLinks(ownerId: string, songId: string, input: SongLinkMutationInput): Promise<SongLinkMutationResult | null> {
+    return this.#withUser(ownerId, async (client) => {
+      const song = await client.query(`select r.id from resources r join songs s on s.resource_id=r.id and s.owner_id=r.owner_id
+        where r.id=$1 and r.owner_id=$2 and r.type='song' and r.deleted_at is null for update of r`, [songId, ownerId]);
+      if (!song.rowCount) return null;
+      const ids = [...input.linkIds, ...input.unlinkIds];
+      const resources = await client.query<{ id: string }>(`select id from resources
+        where owner_id=$1 and type=$2 and id=any($3::uuid[]) and deleted_at is null for update`, [ownerId, input.type, ids]);
+      if (resources.rowCount !== ids.length) return null;
+      if (input.linkIds.length) {
+        await client.query(`insert into song_resource_links(owner_id,song_resource_id,linked_resource_id,linked_resource_type)
+          select $1,$2,id,$3 from unnest($4::uuid[]) as selected(id) on conflict do nothing`,
+        [ownerId, songId, input.type, input.linkIds]);
+      }
+      if (input.unlinkIds.length) {
+        await client.query(`delete from song_resource_links where owner_id=$1 and song_resource_id=$2
+          and linked_resource_type=$3 and linked_resource_id=any($4::uuid[])`, [ownerId, songId, input.type, input.unlinkIds]);
+      }
+      await client.query("update resources set updated_at=clock_timestamp() where owner_id=$1 and id=any($2::uuid[])", [ownerId, ids]);
+      return { linkedIds: input.linkIds, unlinkedIds: input.unlinkIds };
     });
   }
 
@@ -408,4 +509,25 @@ function cursorCondition(cursor: SongCursor, values: unknown[]): string {
     : cursor.sort.startsWith("created_") ? "r.created_at" : "r.updated_at";
   const direction = cursor.sort === "title_asc" || cursor.sort === "created_asc" ? ">" : "<";
   return `(${prefixAfter} or (${samePrefix} and (${field} ${direction} ${value} or (${field} = ${value} and r.id ${direction} ${id}))))`;
+}
+
+function songLinkQuerySignature(input: SongLinkListInput): string {
+  return createHash("sha256").update(JSON.stringify([input.type, input.state, input.search ?? "", input.limit]))
+    .digest("base64url").slice(0, 20);
+}
+
+function encodeSongLinkCursor(cursor: SongLinkCursor): string {
+  return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
+}
+
+function decodeSongLinkCursor(value: string, input: SongLinkListInput): SongLinkCursor {
+  try {
+    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as Partial<SongLinkCursor>;
+    if (parsed.version !== 1 || !Number.isSafeInteger(parsed.offset) || Number(parsed.offset) < 0
+      || parsed.signature !== songLinkQuerySignature(input)) throw new SongCursorError();
+    return parsed as SongLinkCursor;
+  } catch (error) {
+    if (error instanceof SongCursorError) throw error;
+    throw new SongCursorError();
+  }
 }

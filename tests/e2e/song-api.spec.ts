@@ -106,6 +106,46 @@ test.describe("song API owner and command contract", () => {
       song: { counts: { lyrics: { value: 0, available: true }, prompts: { value: 0, available: true }, rhymes: { value: 0, available: true } } }
     });
 
+    const rhymeResponse = await alice.request.post("/api/rhymes", { headers: { Origin: origin }, data: {
+      requestId: randomUUID(), title: `연결 API 라임 ${marker}`, body: "literal 100%_candidate"
+    } });
+    expect(rhymeResponse.status()).toBe(201);
+    const rhymeId = (await rhymeResponse.json()).rhyme.id as string;
+    const promptResponse = await alice.request.post("/api/prompts", { headers: { Origin: origin }, data: {
+      requestId: randomUUID(), title: `연결 API 프롬프트 ${marker}`, tokens: ["cinematic", "candidate token"]
+    } });
+    expect(promptResponse.status()).toBe(201);
+    const promptId = (await promptResponse.json()).prompt.id as string;
+    const candidates = await alice.request.get(`/api/songs/${songId}/links?type=rhyme_note&state=unlinked&search=${encodeURIComponent("%_candidate")}`);
+    expect(candidates.status()).toBe(200);
+    expect(candidates.headers()["cache-control"]).toContain("no-store");
+    expect(await candidates.json()).toMatchObject({ totalCount: 1, items: [{ id: rhymeId, isLinked: false }] });
+    expect((await alice.request.get(`/api/songs/${songId}/links?type=lyrics`)).status()).toBe(400);
+    expect((await alice.request.post(`/api/songs/${songId}/links`, { data: { type: "rhyme_note", linkIds: [rhymeId], unlinkIds: [] } })).status()).toBe(403);
+    expect((await bob.request.get(`/api/songs/${songId}/links?type=rhyme_note`)).status()).toBe(404);
+    expect((await bob.request.post(`/api/songs/${songId}/links`, { headers: { Origin: origin }, data: {
+      type: "rhyme_note", linkIds: [rhymeId], unlinkIds: []
+    } })).status()).toBe(404);
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const linked = await alice.request.post(`/api/songs/${songId}/links`, { headers: { Origin: origin }, data: {
+        type: "rhyme_note", linkIds: [rhymeId, rhymeId], unlinkIds: []
+      } });
+      expect(linked.status()).toBe(200);
+      expect(await linked.json()).toEqual({ linkedIds: [rhymeId], unlinkedIds: [] });
+    }
+    expect(await (await alice.request.get(`/api/songs/${songId}/links?type=rhyme_note&state=linked`)).json())
+      .toMatchObject({ totalCount: 1, items: [{ id: rhymeId, isLinked: true }] });
+    expect((await alice.request.post(`/api/songs/${songId}/links`, { headers: { Origin: origin }, data: {
+      type: "prompt", linkIds: [promptId], unlinkIds: []
+    } })).status()).toBe(200);
+    expect(await (await alice.request.get(`/api/songs/${songId}`)).json()).toMatchObject({ song: { counts: {
+      lyrics: { value: 0, available: true }, prompts: { value: 1, available: true }, rhymes: { value: 1, available: true }
+    } } });
+    expect(await (await alice.request.post(`/api/songs/${songId}/links`, { headers: { Origin: origin }, data: {
+      type: "rhyme_note", linkIds: [], unlinkIds: [rhymeId]
+    } })).json()).toEqual({ linkedIds: [], unlinkedIds: [rhymeId] });
+    expect((await alice.request.get(`/api/rhymes/${rhymeId}`)).status()).toBe(200);
+
     expect(await (await bob.request.delete(`/api/songs/${songId}`, { headers: { Origin: origin } })).json()).toEqual({ deleted: false });
     expect(await (await alice.request.delete(`/api/songs/${songId}`, { headers: { Origin: origin } })).json()).toEqual({ deleted: true });
     expect(await (await alice.request.delete(`/api/songs/${songId}`, { headers: { Origin: origin } })).json()).toEqual({ deleted: false });
@@ -120,5 +160,8 @@ test.describe("song API owner and command contract", () => {
     const response = await request.get(`/api/songs?ownerId=${fixtureUsers.alice.id}`);
     expect(response.status()).toBe(401);
     expect(await response.json()).toMatchObject({ error: { code: "AUTH_REQUIRED" } });
+    const links = await request.get(`/api/songs/${randomUUID()}/links?type=prompt`);
+    expect(links.status()).toBe(401);
+    expect(await links.json()).toMatchObject({ error: { code: "AUTH_REQUIRED" } });
   });
 });
