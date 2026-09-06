@@ -2,6 +2,7 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { Annotation, ChangeSet, Compartment, EditorSelection, EditorState, Transaction } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, keymap, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { findSongFormSection, SongFormIndex, type SongFormSection } from "./songform.js";
+import { REVISION_POLICY } from "@lyricscloud/domain";
 
 export interface SongFormNavigationState {
   readonly sections: readonly SongFormSection[];
@@ -28,6 +29,7 @@ export interface CodeMirrorTextEditorOptions {
   readonly onChange: (value: string, context: { readonly composing: boolean }) => void;
   readonly onCompositionEnd: () => void;
   readonly onCompositionStart?: () => void;
+  readonly beforeLargePaste?: () => Promise<boolean>;
   readonly readOnly?: boolean;
   readonly onSongFormNavigationChange?: (state: SongFormNavigationState) => void;
   readonly onTransaction?: (transaction: EditorDocumentTransaction) => void;
@@ -51,6 +53,12 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
   const editable = new Compartment();
   let compositionChanges: ChangeSet | null = null;
   let compositionTimer: ReturnType<typeof setTimeout> | undefined;
+  let pastePending = false;
+  let requestedEditable = !options.readOnly;
+  let disposed = false;
+  const refreshEditable = () => view.dispatch({ effects: editable.reconfigure([
+    EditorState.readOnly.of(!requestedEditable || pastePending), EditorView.editable.of(requestedEditable && !pastePending)
+  ]) });
   let navigationFrame: number | null = null;
   let pendingNavigation: SongFormNavigationState | null = null;
   let lastNavigationSignature = "";
@@ -125,6 +133,18 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
         }
       }),
       EditorView.domEventHandlers({
+        paste(event) {
+          const input = event.clipboardData?.getData("text/plain");
+          if (!options.beforeLargePaste || !input || [...input].length < REVISION_POLICY.largePasteCharacters) return false;
+          event.preventDefault();
+          if (pastePending || !requestedEditable || view.compositionStarted) return true;
+          pastePending = true;
+          refreshEditable();
+          void options.beforeLargePaste().then((saved) => {
+            if (saved && !disposed) view.dispatch(view.state.replaceSelection(normalizeLineEndings(input)), { userEvent: "input.paste" });
+          }).catch(() => undefined).finally(() => { pastePending = false; if (!disposed) { refreshEditable(); view.focus(); } });
+          return true;
+        },
         compositionstart: () => {
           compositionChanges ??= ChangeSet.empty(view.state.doc.length);
           options.onCompositionStart?.();
@@ -189,8 +209,9 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       return true;
     },
     focus() { view.focus(); },
-    setEditable(value) { view.dispatch({ effects: editable.reconfigure([EditorState.readOnly.of(!value), EditorView.editable.of(value)]) }); },
+    setEditable(value) { requestedEditable = value; refreshEditable(); },
     destroy() {
+      disposed = true;
       clearTimeout(compositionTimer);
       if (navigationFrame !== null) cancelAnimationFrame(navigationFrame);
       navigationFrame = null;

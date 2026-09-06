@@ -40,6 +40,7 @@ try {
     } finally { client.release(); }
     await assert.rejects(target.query(rollback), /0310_ROLLBACK_REQUIRES_EMPTY_SYNC_DOCUMENTS/);
     await target.query("delete from resources where id=$1", [lyric]);
+    await target.query(await readFile(resolve("packages/database/rollback/0311_lyric_revisions.sql"), "utf8"));
     await target.query(rollback);
     assert.equal((await target.query("select to_regclass('public.sync_documents')::text value")).rows[0].value, null);
     migrate(); migrate();

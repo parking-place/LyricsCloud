@@ -18,6 +18,7 @@ import { LYRIC_STATUSES, LYRIC_STATUS_LABELS, type LyricRecord, type LyricStatus
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createLyricMetadataSaver } from "../lib/lyric-metadata.js";
+import { LyricHistory } from "./lyric-history.js";
 
 interface LyricEditorDraft {
   readonly title: string;
@@ -62,6 +63,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
   const [commandNotice, setCommandNotice] = useState("");
   const [commandBusy, setCommandBusy] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const router = useRouter();
 
   function draft(overrides: Partial<LyricEditorDraft> = {}): LyricEditorDraft {
@@ -96,6 +98,11 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
       },
       onCompositionStart() { localSyncRef.current?.setComposing(true); },
       onCompositionEnd() { localSyncRef.current?.setComposing(false); },
+      async beforeLargePaste() {
+        const saved = await localSyncRef.current?.checkpoint("large_paste") ?? false;
+        if (active) setCommandNotice(saved ? "" : "붙여넣기 전 수정 기록을 저장하지 못했습니다. 연결을 확인한 뒤 다시 붙여넣어 주세요.");
+        return saved;
+      },
       onSongFormNavigationChange: setSongForm,
       onTransaction(transaction) { localSyncRef.current?.applyLocalTransaction(transaction); }
     });
@@ -111,7 +118,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
       onStateChange(state) { if (active) setLocalSyncState(state); }
     }).then((sync) => { if (active) localSyncRef.current = sync; else void sync.destroy(); })
       .catch(() => { if (active) setLocalSyncState("error"); });
-    const flush = () => { void controller.flush(); };
+    const flush = () => { void controller.flush(); localSyncRef.current?.leave(); };
     window.addEventListener("pagehide", flush);
     const focusFrame = requestAnimationFrame(() => editor.focus());
     return () => {
@@ -119,6 +126,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
       cancelAnimationFrame(focusFrame);
       window.removeEventListener("pagehide", flush);
       editor.destroy();
+      localSyncRef.current?.leave();
       void localSyncRef.current?.destroy();
       localSyncRef.current = null;
       if (editorRef.current === editor) editorRef.current = null;
@@ -178,23 +186,27 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
     }
   }
 
-  async function flushBeforeCommand(): Promise<boolean> {
+  async function flushBeforeCommand(reason?: "leave" | "duplicate"): Promise<boolean> {
     await controllerRef.current?.flush();
     if (controllerRef.current?.state.status === "error" || !await localSyncRef.current?.flush()) {
       setCommandNotice("현재 변경 내용을 먼저 저장해야 합니다. 저장을 다시 시도해 주세요.");
+      return false;
+    }
+    if (reason && !await localSyncRef.current?.checkpoint(reason)) {
+      setCommandNotice("작업 전 수정 기록을 저장하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.");
       return false;
     }
     return true;
   }
 
   async function openLyric(lyricId: string) {
-    if (lyricId === initialLyric.id || commandBusy || !await flushBeforeCommand()) return;
+    if (lyricId === initialLyric.id || commandBusy || !await flushBeforeCommand("leave")) return;
     setMobileOtherLyricsOpen(false);
     router.push(`/lyrics/${lyricId}`);
   }
 
   async function duplicateCurrent() {
-    if (commandBusy || !await flushBeforeCommand()) return;
+    if (commandBusy || !await flushBeforeCommand("duplicate")) return;
     setCommandBusy(true);
     setCommandNotice("");
     try {
@@ -307,10 +319,15 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
   return <section className={`lyric-editor-page${focusMode ? " is-focus-mode" : ""}`} aria-labelledby="lyric-title-label">
     <header className="lyric-editor-header">
       <div className="lyric-editor-context">
-        <a href={`/songs/${initialLyric.songId}`} className="back-inline">← {songTitle}</a>
+        <a href={`/songs/${initialLyric.songId}`} className="back-inline" onClick={(event) => {
+          if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+          event.preventDefault();
+          void flushBeforeCommand("leave").then((saved) => { if (saved) router.push(`/songs/${initialLyric.songId}`); });
+        }}>← {songTitle}</a>
         <p className="eyebrow">Lyrics editor</p>
       </div>
       <div className="editor-header-actions">
+        <button type="button" onClick={() => setHistoryOpen(true)}>버전 비교</button>
         <button type="button" onClick={copyWhole} title="Alt+Shift+C" aria-keyshortcuts="Alt+Shift+C">전체 복사</button>
         <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} title="Alt+Shift+F" aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 모드 종료" : "집중 모드"}</button>
         <button type="button" disabled={commandBusy} onClick={duplicateCurrent}>복제</button>
@@ -358,6 +375,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
         onClick={() => setMobileSongFormOpen(true)}>☷ 송폼 <span>{songForm.sections.length}</span></button>
       <button type="button" onClick={copyWhole} aria-keyshortcuts="Alt+Shift+C">⧉ 전체 복사</button>
       <button type="button" aria-haspopup="dialog" aria-expanded={mobileOtherLyricsOpen} onClick={() => setMobileOtherLyricsOpen(true)}>≋ 다른 가사 <span>{songLyrics.length}</span></button>
+      <button type="button" onClick={() => setHistoryOpen(true)}>기록·비교</button>
       <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 종료" : "집중 모드"}</button>
     </div>
     {mobileSongFormOpen ? <div className="editor-sheet-backdrop" onPointerDown={(event) => {
@@ -381,6 +399,20 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
         onMemoCompositionStart={() => { memoComposingRef.current = true; }} onMemoCompositionEnd={() => { memoComposingRef.current = false; controllerRef.current?.compositionEnd(); }} />
       <OtherLyricsList lyrics={songLyrics} currentId={initialLyric.id} currentTitle={title} currentStatus={status} currentFavorite={isFavorite} onOpen={(id) => { void openLyric(id); }} />
     </section></div> : null}
+    {historyOpen ? <LyricHistory lyricId={initialLyric.id} versions={songLyrics} onClose={() => setHistoryOpen(false)}
+      readHistory={async () => {
+        const sync = localSyncRef.current;
+        if (!sync || !await sync.flush()) throw new Error("REVISION_UNAVAILABLE");
+        return sync.listRevisions();
+      }}
+      readRevision={async (id) => {
+        if (!localSyncRef.current) throw new Error("REVISION_UNAVAILABLE");
+        return localSyncRef.current.getRevision(id);
+      }}
+      restore={async (id, input) => {
+        if (!await flushBeforeCommand() || !localSyncRef.current) throw new Error("REVISION_UNAVAILABLE");
+        await localSyncRef.current.restoreRevision(id, input);
+      }} /> : null}
     {toast ? <div className="copy-toast" role="status" aria-live="polite">{toast}</div> : null}
     {manualCopy ? <div className="dialog-backdrop" role="presentation" onPointerDown={(event) => {
       if (event.target === event.currentTarget) setManualCopy(null);

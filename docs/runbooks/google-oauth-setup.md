@@ -2,17 +2,30 @@
 
 실제 자격 증명은 저장소나 채팅에 남기지 않고 로컬 `.env`에만 둔다. 로그인 허용 메일은 환경마다 별도의 `.test_users`에 둔다. 두 파일 모두 Git과 Docker 이미지에서 제외된다.
 
-1. Google Cloud Console에서 프로젝트를 선택하고 OAuth 동의 화면을 구성한다. 테스트 상태라면 로그인할 Google 계정을 테스트 사용자로 등록한다.
+1. Google Cloud Console에서 프로젝트를 선택하고 OAuth 동의 화면을 구성한다. 현재 요청 범위인 `openid email profile`만 사용하면 Testing 상태에서도 Google 테스트 사용자 등록은 필수가 아니다. 다른 scope를 추가하면 아래 Audience 정책을 다시 확인한다.
 2. OAuth client 유형을 `Web application`으로 만들고 개발용 승인 redirect URI를 `http://localhost:8080/api/auth/callback`으로 등록한다.
-3. 저장소 루트에서 `.env.example`을 `.env`로, `.test_users.example`을 `.test_users`로 복사하고 모든 `CHANGE_ME`를 교체한다.
+3. 저장소 루트에 파일이 없을 때만 `.env.example`을 `.env`로, `.test_users.example`을 `.test_users`로 복사한다. 기존 파일의 DB 비밀번호·세션 비밀 값은 보존하고 OAuth 자리 표시자만 교체한다.
 4. `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`에는 Web client 값을 넣는다.
-5. `SESSION_SECRET`에는 최소 32바이트의 새 무작위 값을 넣는다. 예: `openssl rand -base64 48`의 출력.
+5. `SESSION_SECRET`이 아직 자리 표시자인 경우에만 최소 32바이트의 새 무작위 값을 넣는다. 예: `openssl rand -base64 48`의 출력.
 6. `.test_users`에는 로그인 허용 계정을 한 줄에 하나씩 넣는다. 이 목록 밖의 검증된 Google 계정에는 세션이 발급되지 않는다.
 7. `docker compose config --quiet`과 `docker compose up --build --wait`를 실행한 뒤 `http://localhost:8080/api/auth/login`에서 확인한다.
 
+### 현재 Windows 로컬 작업 사본
+
+개인 Google Cloud 프로젝트에서 `Web application` 클라이언트를 사용한다. `Authorized JavaScript origins`는 `http://localhost:8080`, `Authorized redirect URIs`는 **`http://localhost:8080/api/auth/callback`**이다. 로그인할 계정은 로컬 `.test_users`에 등록한다. 요청 범위가 `openid email profile`뿐이므로 Google Audience 테스트 사용자 등록은 선택 사항이다. 원 개발자의 클라이언트나 서버 설정을 복사하지 않는다. [Google OpenID Connect 설정](https://developers.google.com/identity/openid-connect/openid-connect#settingupop), [Testing 예외 정책](https://support.google.com/cloud/answer/15549945?hl=en)
+
+현재 작업 사본은 `.env`의 DB와 세션 값이 준비돼 있다. `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`만 해당 로컬 파일에서 교체하고 `.test_users`에 계정 주소를 적는다. 값을 채팅에 붙이지 않는다. 현재 실행 중인 별도 Compose 프로젝트에는 다음 명령으로 적용한다.
+
+```powershell
+docker compose -p lyricscloud-local -f compose.yaml -f .private/compose.local.yaml config --quiet
+docker compose -p lyricscloud-local -f compose.yaml -f .private/compose.local.yaml up -d --no-build --no-deps --force-recreate web
+```
+
+이 명령은 기존 DB와 다른 개인 컨테이너를 유지한다. 로컬 소스는 이미지에 복사되어 있으므로 코드 변경을 적용할 때는 해당 개발 이미지를 다시 빌드해야 한다. OAuth 환경변수만 바꿀 때는 web 재생성으로 충분하다. 실제 로그인·callback·보호 화면·로그아웃을 확인하기 전에는 Google OAuth 검증 완료로 기록하지 않는다.
+
 ## 허용 메일 추가
 
-LyricsCloud 개발 로그인에는 서로 독립적인 허용 목록이 두 개 있다. 같은 Google 계정을 두 곳에 모두 추가한다.
+Google의 테스트 사용자 목록과 LyricsCloud의 로그인 허용 목록은 서로 독립적이다. 현재 신원 scope만 요청하는 구성에서는 Google 테스트 사용자 등록이 선택 사항이고, LyricsCloud `.test_users` 등록은 필수다.
 
 | 허용 목록 | 위치 | 역할 |
 |---|---|---|
@@ -31,7 +44,7 @@ Google 테스트 사용자 등록만으로 LyricsCloud 로그인이 허용되지
 6. 실제 로그인 시험에 사용할 Google 계정의 이메일 주소를 입력한다. 여러 명이면 입력란에 각각 추가한다.
 7. `Save`를 누른 뒤 Test users 목록에 해당 주소가 표시되는지 확인한다.
 
-Google의 현재 정책에서 Testing 상태는 일반적으로 등록한 테스트 사용자를 대상으로 한다. 다만 LyricsCloud처럼 기본 신원 scope인 `openid`, `email`, `profile`만 요청하는 경우에는 테스트 사용자 목록 제한·경고·7일 승인 만료의 예외가 적용될 수 있다. 이 예외와 관계없이 비공개 베타 대상을 명확히 하기 위해 개발 계정을 Test users에 등록한다. Google Workspace 계정은 조직 관리자가 외부 앱을 차단하면 목록에 있어도 승인되지 않을 수 있다.
+Google의 현재 정책에서 Testing 상태는 일반적으로 등록한 테스트 사용자를 대상으로 한다. 다만 LyricsCloud처럼 기본 신원 scope인 `openid`, `email`, `profile`만 요청하는 경우에는 테스트 사용자 목록 제한·경고·7일 승인 만료의 예외가 적용된다. 협업 환경에서 개발 계정을 따로 관리하고 싶다면 Test users에 등록할 수 있다. Google Workspace 계정은 조직 관리자가 외부 앱을 차단하면 목록에 있어도 승인되지 않을 수 있다.
 
 `Test users`가 보이지 않으면 다음을 확인한다.
 
@@ -112,7 +125,7 @@ Google 공식 문서는 Test users 관리를 Console의 Audience 화면 절차�
 http://localhost:8080/api/auth/login
 ```
 
-정상적인 허용 계정은 Google callback 후 LyricsCloud 내부 세션을 받는다. Google 인증은 성공했지만 `.env` 목록에 없는 계정은 세션을 받지 않고 다음 오류로 종료된다.
+정상적인 허용 계정은 Google callback 후 LyricsCloud 내부 세션을 받는다. Google 인증은 성공했지만 `.test_users`에 없는 계정은 세션을 받지 않고 다음 오류로 종료된다.
 
 ```text
 AUTH_NOT_ALLOWED

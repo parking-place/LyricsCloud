@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { createServer, type IncomingMessage } from "node:http";
 import { readRuntimeConfig } from "@lyricscloud/config";
 import { checkDatabase, DatabaseHealthError, PostgresAuthStore } from "@lyricscloud/database";
-import { parseSyncUpdateEnvelope, SYNC_LIMITS } from "@lyricscloud/domain";
+import { isResourceId, parseCheckpointReason, parseRestoreRevisionInput, parseSyncUpdateEnvelope, SYNC_LIMITS } from "@lyricscloud/domain";
 import { WebSocket, WebSocketServer } from "ws";
 import * as Y from "yjs";
 import { CollaborationStore } from "./store.js";
@@ -31,6 +31,17 @@ const reauthenticate = setInterval(() => {
   for (const peers of sockets.values()) for (const peer of peers) void authorized(peer, true);
 }, 5 * 60_000);
 reauthenticate.unref();
+let maintainingRevisions = false;
+const revisionMaintenance = setInterval(async () => {
+  if (maintainingRevisions) return;
+  maintainingRevisions = true;
+  try {
+    const result = await documents.maintainRevisions();
+    if (result.checked || result.prunedDocuments || result.failed) console.log(JSON.stringify({ event: "revision_maintenance", ...result }));
+  } catch { console.log(JSON.stringify({ event: "revision_maintenance_failed" })); }
+  finally { maintainingRevisions = false; }
+}, 30_000);
+revisionMaintenance.unref();
 const server = createServer(async (request, response) => {
   try {
   response.setHeader("content-type", "application/json");
@@ -59,9 +70,45 @@ const server = createServer(async (request, response) => {
     if (!document) return unavailable(response, 404);
     return response.end(JSON.stringify({ documentKey: document.document_key }));
   }
+  const revisionRequest = request.url?.match(/^\/documents\/([0-9a-f-]{36})\/revisions(?:\/([0-9a-f-]{36})(\/restore)?)?$/i);
+  if (revisionRequest) {
+    const [, key, revisionId, restore] = revisionRequest;
+    if (!isResourceId(key) || (revisionId && !isResourceId(revisionId))) return unavailable(response, 404);
+    if (request.method !== "GET" && request.method !== "POST") return unavailable(response, 405);
+    if (request.method === "POST" && request.headers.origin !== appOrigin) return unavailable(response, 403);
+    const session = await authenticate(request);
+    if (!session) return unavailable(response, 401);
+    if (request.method === "GET" && !restore) {
+      const result = revisionId ? await documents.getRevision(session.userId, key, revisionId) : await documents.listRevisions(session.userId, key);
+      if (!result) return unavailable(response, 404);
+      return response.end(JSON.stringify(result));
+    }
+    if (request.method === "POST" && !revisionId) {
+      const input = await readJson(request);
+      const revision = await documents.checkpoint(session.userId, key, parseCheckpointReason(input.reason));
+      if (!revision) return unavailable(response, 404);
+      return response.end(JSON.stringify({ revision }));
+    }
+    if (request.method === "POST" && restore && revisionId) {
+      const result = await documents.restoreRevision(session.userId, key, revisionId, parseRestoreRevisionInput(await readJson(request)));
+      if (!result) return unavailable(response, 404);
+      const payload = Buffer.from(result.snapshot).toString("base64");
+      for (const peer of sockets.get(key) ?? []) if (await authorized(peer, true)) {
+        peer.send(JSON.stringify({ type: "update", payload }));
+        peer.send(JSON.stringify({ type: "projection", projection: "current" }));
+      }
+      return response.end(JSON.stringify({ duplicate: result.duplicate, payload }));
+    }
+  }
   response.statusCode = 404;
   return response.end(JSON.stringify({ error: "NOT_FOUND" }));
-  } catch { return unavailable(response, 503); }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("REVISION_")) {
+      response.statusCode = error.message === "REVISION_INPUT_INVALID" ? 400 : 409;
+      return response.end(JSON.stringify({ error: error.message }));
+    }
+    return unavailable(response, 503);
+  }
 });
 
 const websocket = new WebSocketServer({ noServer: true, maxPayload: Math.ceil(SYNC_LIMITS.updateBytes / 3) * 4 + 1024 });
@@ -136,6 +183,7 @@ server.listen(port, "0.0.0.0", () => console.log(JSON.stringify({ event: "servic
 for (const signal of ["SIGINT", "SIGTERM"] as const) process.on(signal, () => {
   clearInterval(projectionRetry);
   clearInterval(reauthenticate);
+  clearInterval(revisionMaintenance);
   for (const peers of sockets.values()) for (const peer of peers) peer.close(1012, "SYNC_RESTARTING");
   server.close(async () => { await Promise.all([auth.close(), documents.close()]); process.exit(0); });
 });
@@ -159,6 +207,21 @@ async function authenticate(request: IncomingMessage) {
   const token = readCookie(request.headers.cookie, "__Host-lc_session") ?? readCookie(request.headers.cookie, "lc_session");
   if (!token) return null;
   return auth.readSession(createHash("sha256").update(token).digest("base64url"), new Date());
+}
+
+async function readJson(request: IncomingMessage): Promise<Record<string, unknown>> {
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of request) {
+    size += chunk.length;
+    if (size > 8_192) throw new Error("REVISION_INPUT_INVALID");
+    chunks.push(Buffer.from(chunk));
+  }
+  try {
+    const input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error();
+    return input;
+  } catch { throw new Error("REVISION_INPUT_INVALID"); }
 }
 
 function readCookie(header: string | undefined, name: string) {

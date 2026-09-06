@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.3.1"
-current_phase: "3phase.md"
+current_phase: "4phase.md"
 state: "review"
 owner: "Codex"
 started_at: "2026-09-06 KST"
 updated_at: "2026-09-06"
-next_action: "Phase 3 로컬 보완 검토 후 승인된 원격 반영·CI·동일 SHA 개발 배포 검증; 이후 Phase 4"
+next_action: "Phase 4 로컬 구현·개인 OAuth 로그인 검토; Phase 3/4 원격 승인·CI·동일 SHA 개발 배포 대기, 다음 계획은 Phase 5"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -37,7 +37,7 @@ next_action: "Phase 3 로컬 보완 검토 후 승인된 원격 반영·CI·동�
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
 | 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
 | 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
-| 0.3.1 | in_progress | Phase 1~2 기존 완료 기록, Phase 3 로컬 보완 검토, Phase 4 대기 | 0.3.0 완료 |
+| 0.3.1 | in_progress | Phase 1~2 기존 완료 기록, Phase 3/4 로컬 구현 검토·원격 검증 대기 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
 | 0.5.0 | planned | 없음 | 0.4.0 완료 |
 | 0.6.0 | planned | 없음 | 0.5.0 완료 |
@@ -54,6 +54,9 @@ next_action: "Phase 3 로컬 보완 검토 후 승인된 원격 반영·CI·동�
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
 | Codex | 0.3.1 / Phase 3 | LC-031-P3-01~08 통합 보완 | apps/collaboration, apps/web, packages/editor, packages/database, tests, compose/infra, CI, lockfile, 관련 문서 | 624eaa9 기준선, 사용자 로컬 보완 승인 | 2026-09-06 KST | review |
+| Codex | 0.3.1 / Phase 4 | LC-031-P4-01~08 | apps/collaboration, apps/web, packages/domain, packages/editor, packages/database/migrations·rollback, tests, scripts, 관련 문서 | 010a974의 로컬 동기화 검증, 사용자 기능 개발 계속 지시 | 2026-09-06 KST | review |
+
+2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -90,7 +93,7 @@ next_action: "Phase 3 로컬 보완 검토 후 승인된 원격 반영·CI·동�
 
 ## 다음 작업
 
-2026-09-06 인수인계 검토에서 Phase 3의 브라우저 transport와 배포 의존성 누락을 재현해 로컬에서 보완했다. 결과와 GitHub 경계는 [로컬 검토 기록](../../docs/runbooks/0.3.1-local-handoff-review.md)을 따른다. 현재 승인은 로컬 보완까지이며, 원격 push는 Docker Hub 발행을 동반하므로 그 영향을 포함한 승인이 필요하다. 원격 CI, 같은 SHA의 개발 배포, 실제 OAuth·PC/모바일 smoke를 확인한 다음 [Phase 4](./0.3.1/4phase.md)의 수정 기록·비교·비파괴 복원으로 진행한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+2026-09-06 Phase 3 로컬 보완에 이어 사용자 지시로 Phase 4의 수정 기록·비교·비파괴 복원을 구현·검증하고 개인 OAuth 환경에 반영했다. [Phase 4 검증 기록](../../docs/runbooks/0.3.1-phase4-local-validation.md)을 따른다. 사용자가 실제 Google 로그인과 작업 공간 진입을 확인했다. 다음 계획은 [Phase 5](./0.3.1/5phase.md)이며, 원격 반영·CI·같은 SHA 배포는 아직 수행하지 않았다. 공유 Docker Hub alias를 바꾸는 Phase 브랜치 push에는 그 후속 효과를 포함한 승인이 필요하다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
