@@ -91,8 +91,8 @@ export function PromptNewScreen({ ownerId }: { ownerId: string }) {
     return () => window.clearTimeout(timer);
   }, [items, ownerId, ready, title]);
 
-  function updateTitle(value: string) { dirtySince.current ??= Date.now(); titleRef.current = value; setTitle(value); }
-  function updateItems(next: readonly PromptBuilderItem[]) { dirtySince.current ??= Date.now(); itemsRef.current = next; setItems(next); }
+  function updateTitle(value: string) { dirtySince.current ??= Date.now(); setState("saving"); titleRef.current = value; setTitle(value); }
+  function updateItems(next: readonly PromptBuilderItem[]) { dirtySince.current ??= Date.now(); setState("saving"); itemsRef.current = next; setItems(next); }
   async function discard() { await clearPromptCreationDraft(ownerId).catch(() => undefined); router.push("/prompts"); }
   function cancel() { if (titleRef.current || itemsRef.current.length) setCancelOpen(true); else void discard(); }
 
