@@ -18,6 +18,7 @@ import { LYRIC_STATUSES, LYRIC_STATUS_LABELS, type LyricRecord, type LyricStatus
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createLyricMetadataSaver } from "../lib/lyric-metadata.js";
+import { registerLogoutSave } from "../lib/account-cache.js";
 import { LyricHistory } from "./lyric-history.js";
 
 interface LyricEditorDraft {
@@ -119,12 +120,19 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
     }).then((sync) => { if (active) localSyncRef.current = sync; else void sync.destroy(); })
       .catch(() => { if (active) setLocalSyncState("error"); });
     const flush = () => { void controller.flush(); localSyncRef.current?.leave(); };
+    const unregisterLogout = registerLogoutSave(async () => {
+      if (titleComposingRef.current || memoComposingRef.current) return false;
+      await controller.flush();
+      if (controller.state.status !== "saved") return false;
+      return await localSyncRef.current?.checkpoint("leave") ?? false;
+    }, () => ({ resourceId: initialLyric.id, title: titleRef.current, body: bodyRef.current, memo: memoRef.current }));
     window.addEventListener("pagehide", flush);
     const focusFrame = requestAnimationFrame(() => editor.focus());
     return () => {
       active = false;
       cancelAnimationFrame(focusFrame);
       window.removeEventListener("pagehide", flush);
+      unregisterLogout();
       editor.destroy();
       localSyncRef.current?.leave();
       void localSyncRef.current?.destroy();
@@ -523,6 +531,6 @@ function LocalDraftIndicator({ state, onRetry }: { state: LocalSyncState; onRetr
     conflict: "초안을 자동으로 합칠 수 없어 동기화를 멈췄습니다."
   };
   return <p className={`local-draft-state state-${state}`} role="status">{labels[state]}
-    {state === "error" || state === "local" ? <button type="button" onClick={onRetry}>동기화 다시 시도</button> : null}
+    {state === "error" || state === "local" || state === "unavailable" ? <button type="button" onClick={onRetry}>동기화 다시 시도</button> : null}
   </p>;
 }

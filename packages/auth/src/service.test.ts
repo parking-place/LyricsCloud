@@ -42,7 +42,10 @@ class MemoryStore implements AuthStore {
     const row = this.sessions.get(hash); if (!row || row.revoked) return Promise.resolve(false);
     row.expiresAt = expiresAt; return Promise.resolve(true);
   }
-  revokeSession(hash: string) { const row = this.sessions.get(hash); if (row) row.revoked = true; return Promise.resolve(); }
+  async revokeSession(hash: string, now: Date) {
+    const session = await this.readSession(hash, now);
+    if (session) for (const row of this.sessions.values()) if (row.userId === session.userId) row.revoked = true;
+  }
   close() { return Promise.resolve(); }
 }
 

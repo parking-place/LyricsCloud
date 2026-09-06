@@ -3,6 +3,7 @@ import { Pool, type PoolClient } from "pg";
 import * as Y from "yjs";
 import { REVISION_POLICY, type CheckpointReason, type RestoreRevisionInput } from "@lyricscloud/domain";
 import { bodyHash, captureRevision, pruneRevisions, summarize, type RevisionRow } from "./revisions.js";
+import { createDatabasePool } from "@lyricscloud/database";
 
 interface DocumentRows {
   document_key: string; resource_id: string; snapshot: Buffer; snapshot_sequence: string; projection_error_code?: string | null;
@@ -10,7 +11,7 @@ interface DocumentRows {
 
 export class CollaborationStore {
   readonly #pool: Pool;
-  constructor(databaseUrl: string) { this.#pool = new Pool({ connectionString: databaseUrl, max: 10, connectionTimeoutMillis: 2_000 }); }
+  constructor(databaseUrl: string) { this.#pool = createDatabasePool(databaseUrl, 10); }
   close() { return this.#pool.end(); }
 
   async ensureDocument(ownerId: string, resourceId: string) {

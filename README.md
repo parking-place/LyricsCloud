@@ -4,11 +4,12 @@ LyricsCloud는 Suno 음악 제작 과정의 곡, 여러 가사 버전, 라임 �
 
 ## 현재 상태
 
-- 완료 기록: `0.0.0`~`0.3.0`; 현재 `0.3.1 Phase 4` 수정 기록·비교·복원 로컬 검토, Phase 3/4 원격 검증 대기
-- 다음 Phase: [`0.3.1/5phase.md`](<./0.Plans/1. Dev-phase/0.3.1/5phase.md>) — 장애·계정 격리·인수 검증
+- 완료 기록: `0.0.0`~`0.3.0`; 현재 `0.3.1 Phase 5` 장애·계정 격리 로컬 검토, 실제 기기와 Phase 3~5 원격 검증 대기
+- 다음 단계: [`0.3.1/5phase.md`](<./0.Plans/1. Dev-phase/0.3.1/5phase.md>) 인수·원격 검증 후 `0.4.0` 진입. 후속 기능은 아직 시작하지 않음
 - 상태 원본: [`STATUS.md`](<./0.Plans/1. Dev-phase/STATUS.md>)
 - 애플리케이션 코드: Google 로그인·소유권, 곡·가사 CRUD, CodeMirror 편집·복사, 동일 owner 본문 동기화, 수정 기록·버전 비교·비파괴 복원
 - 개인 OAuth·수정 기록의 로컬 검증: [`Phase 4 기록`](./docs/runbooks/0.3.1-phase4-local-validation.md)
+- 다중 탭·장애 복구·초안 보존 검증과 남는 인수 항목: [`Phase 5 기록`](./docs/runbooks/0.3.1-phase5-local-validation.md)
 - 인수인계·로컬 실행·현재 검증 한계: [`0.3.1 로컬 검토`](./docs/runbooks/0.3.1-local-handoff-review.md)
 - 기획, 화면 목업, 기술 선택, `0.0.0 → 1.0.0` 실행 계획과 Docker 개발 골격: 준비됨
 - 기준선 검증: [`0.0.0 통합 검증 보고서`](./docs/runbooks/0.0.0-release-readiness.md) 통과, 원격 Phase 브랜치 확인 완료

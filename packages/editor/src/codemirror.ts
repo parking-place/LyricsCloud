@@ -110,7 +110,7 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       history(),
       keymap.of([...defaultKeymap, ...historyKeymap]),
       EditorView.lineWrapping,
-      EditorView.contentAttributes.of({ "aria-label": options.ariaLabel, spellcheck: "true" }),
+      EditorView.contentAttributes.of({ "aria-label": options.ariaLabel, spellcheck: "true", tabindex: "0" }),
       EditorView.clipboardInputFilter.of(normalizeLineEndings),
       songFormPlugin,
       EditorView.updateListener.of((update) => {
@@ -209,7 +209,10 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       return true;
     },
     focus() { view.focus(); },
-    setEditable(value) { requestedEditable = value; refreshEditable(); },
+    setEditable(value) {
+      if (requestedEditable === value) return;
+      requestedEditable = value; refreshEditable();
+    },
     destroy() {
       disposed = true;
       clearTimeout(compositionTimer);

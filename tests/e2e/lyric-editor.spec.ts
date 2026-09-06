@@ -74,6 +74,7 @@ test.describe("CodeMirror lyric editor", () => {
       await page.goto(`/lyrics/${lyricId}`);
       await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
       const editor = page.locator(".cm-content");
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
       await editor.fill("실패해도 보존할 현재 입력");
       await page.getByRole("textbox", { name: "가사 제목" }).fill("실패 후 재시도할 제목");
       await expect(page.getByText("저장하지 못했습니다")).toBeVisible();
@@ -176,7 +177,12 @@ test.describe("CodeMirror lyric editor", () => {
 
   test("keeps hundreds of sections responsive and can reach the final repeated-free target", async ({ context, page }) => {
     const account = await createAccount(context, "장문 송폼 사용자");
+    let releaseBootstrap: (() => void) | undefined;
     try {
+      await page.route("**/collaboration/documents/*", async (route) => {
+        await new Promise<void>((resolve) => { releaseBootstrap = resolve; });
+        await route.continue();
+      });
       const body = Array.from({ length: 400 }, (_, index) => `[Verse ${index + 1}]\n${"가".repeat(220)}`).join("\n");
       const { lyricId } = await createLyric(page, body);
       const startedAt = Date.now();
@@ -189,9 +195,13 @@ test.describe("CodeMirror lyric editor", () => {
         ? page.getByRole("dialog", { name: "송폼 이동" }).getByRole("navigation", { name: "인식된 송폼 구간" })
         : page.getByRole("complementary", { name: "송폼 목차" }).getByRole("navigation", { name: "인식된 송폼 구간" });
       await navigation.getByRole("button", { name: "Verse 400 구간으로 이동" }).click();
+      await expect(page.locator(".cm-content")).toHaveAttribute("contenteditable", "false");
       await expect(page.locator(".cm-content")).toBeFocused();
       await expect(page.locator(".cm-content").getByText("[Verse 400]", { exact: true })).toBeVisible();
-    } finally { await deleteAccount(account.userId); }
+      await expect.poll(() => Boolean(releaseBootstrap)).toBe(true);
+      releaseBootstrap!();
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
+    } finally { releaseBootstrap?.(); await deleteAccount(account.userId); }
   });
 
   test("copies the current document and selected sections in source order", async ({ context, page }) => {

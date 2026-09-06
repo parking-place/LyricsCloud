@@ -92,6 +92,10 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .private-badge { padding: .35rem .6rem; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: .68rem; }
 .top-logout { min-height: 2.35rem; padding: 0 .8rem; border: 1px solid var(--line); border-radius: .55rem; background: transparent; color: var(--muted); font-size: .75rem; cursor: pointer; }
 .top-logout:hover { color: var(--ink); border-color: var(--muted); }
+.account-error { margin: 1rem; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: .65rem; color: var(--ink); background: var(--surface); line-height: 1.6; }
+.account-error p { margin: 0 0 .65rem; }
+.account-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.workspace-shell.has-account-error .main-shell { grid-template-rows: 4.5rem auto minmax(0, 1fr); }
 .workspace-content { min-width: 0; display: grid; align-content: start; justify-items: start; padding: clamp(2rem, 5vw, 5.4rem); overflow: auto; }
 .workspace-content > h1 { margin: .8rem 0 .7rem; font-size: clamp(2.2rem, 4.8vw, 4.8rem); line-height: 1.03; letter-spacing: -.065em; }
 .workspace-content > p:not(.eyebrow) { margin: 0; color: var(--muted); }
@@ -409,6 +413,10 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .workspace-shell, .workspace-shell.is-collapsed { min-height: 100svh; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; }
   .side-nav { display: none; }
   .main-shell { display: contents; }
+  .workspace-shell.has-account-error { grid-template-rows: auto auto minmax(0, 1fr) auto; }
+  .account-messages { grid-row: 2; min-width: 0; }
+  .workspace-shell.has-account-error .main-shell > :last-child { grid-row: 3; }
+  .workspace-shell.has-account-error .mobile-bottom-nav { grid-row: 4; }
   .topbar { display: none; }
   .mobile-header { grid-row: 1; display: flex; align-items: center; justify-content: space-between; padding: max(.85rem, var(--lc-safe-top)) max(1rem, var(--lc-safe-right)) .85rem max(1rem, var(--lc-safe-left)); border-bottom: 1px solid var(--line); background: #0c0f13; }
   .mobile-header .brand { font-size: .7rem; }

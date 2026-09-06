@@ -5,6 +5,7 @@ import {
   type CreateLyricInput, type LyricRecord, type LyricStatus, type UpdateLyricInput
 } from "@lyricscloud/domain";
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
+import { createDatabasePool } from "./pool.js";
 
 interface LyricRow extends QueryResultRow {
   id: string; song_id: string; title: string; body: string; memo: string; status: LyricStatus;
@@ -23,7 +24,7 @@ const LYRIC_SELECT = `select r.id, r.title, r.is_favorite, r.is_pinned, r.pin_or
 export class PostgresLyricStore {
   readonly #pool: Pool;
   constructor(databaseUrl: string, maxConnections = 8) {
-    this.#pool = new Pool({ connectionString: databaseUrl, max: maxConnections, connectionTimeoutMillis: 2_000 });
+    this.#pool = createDatabasePool(databaseUrl, maxConnections);
   }
 
   createLyric(ownerId: string, value: CreateLyricInput): Promise<CreatedLyric | null> {

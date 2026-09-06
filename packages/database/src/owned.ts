@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool, type PoolClient } from "pg";
+import { createDatabasePool } from "./pool.js";
 import { userProfiles } from "./schema.js";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -25,7 +26,7 @@ export class PostgresOwnedDataStore {
   readonly #pool: Pool;
 
   constructor(databaseUrl: string, maxConnections = 5) {
-    this.#pool = new Pool({ connectionString: databaseUrl, max: maxConnections, connectionTimeoutMillis: 2_000 });
+    this.#pool = createDatabasePool(databaseUrl, maxConnections);
   }
 
   getProfile(authenticatedUserId: string, targetUserId = authenticatedUserId): Promise<UserProfile | null> {
