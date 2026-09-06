@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { parseCreateLyricInput, parseCreateSongInput } from "@lyricscloud/domain";
-import { PostgresLyricStore, PostgresSongStore } from "@lyricscloud/database";
+import { parseCreateLyricInput, parseCreateRhymeNoteInput, parseCreateSongInput } from "@lyricscloud/domain";
+import { PostgresLyricStore, PostgresRhymeStore, PostgresSongStore } from "@lyricscloud/database";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as Y from "yjs";
@@ -12,6 +12,7 @@ const pool = enabled ? new Pool({ connectionString: databaseUrl }) : null;
 const sync = enabled ? new CollaborationStore(databaseUrl) : null;
 const songs = enabled ? new PostgresSongStore(databaseUrl, 2) : null;
 const lyrics = enabled ? new PostgresLyricStore(databaseUrl, 2) : null;
+const rhymes = enabled ? new PostgresRhymeStore(databaseUrl, 2) : null;
 const users: string[] = [];
 
 describe.runIf(enabled)("durable owner-only collaboration state", () => {
@@ -68,9 +69,30 @@ describe.runIf(enabled)("durable owner-only collaboration state", () => {
     await lyrics!.deleteLyric(alice, lyric.id);
     expect(await sync!.applyUpdate(alice, mapping!.document_key, randomUUID(), update)).toBeNull();
   });
+
+  it("reuses owner-only CRDT projection and revisions for rhyme notes", async () => {
+    const [alice, bob] = users as [string, string];
+    const rhyme = (await rhymes!.createRhymeNote(alice, parseCreateRhymeNoteInput({ requestId: randomUUID(), title: "라임 노트", body: "air\r\nchair" }))).rhyme;
+    const mapping = await sync!.ensureDocument(alice, rhyme.id);
+    expect(mapping).toMatchObject({ resource_type: "rhyme_note" });
+    expect(await sync!.ensureDocument(bob, rhyme.id)).toBeNull();
+    const loaded = (await sync!.loadDocument(alice, mapping!.document_key))!;
+    expect(loaded.resourceType).toBe("rhyme_note");
+    const document = materialize(loaded.snapshot, loaded.updates);
+    const vector = Y.encodeStateVector(document);
+    document.getText("body").insert(document.getText("body").length, "\nflare 🎵");
+    await sync!.applyUpdate(alice, mapping!.document_key, randomUUID(), Y.encodeStateAsUpdate(document, vector));
+    expect((await rhymes!.getRhymeNote(alice, rhyme.id))!.body).toBe("air\nchair\nflare 🎵");
+    const revision = await sync!.checkpoint(alice, mapping!.document_key, "leave");
+    expect(revision).toMatchObject({ reason: "leave" });
+    expect((await sync!.listRevisions(alice, mapping!.document_key))!.items).toHaveLength(1);
+    await rhymes!.deleteRhymeNote(alice, rhyme.id);
+    expect(await sync!.loadDocument(alice, mapping!.document_key)).toBeNull();
+    document.destroy();
+  });
 });
 
 afterAll(async () => {
   if (pool && users.length) await pool.query("delete from app_users where id=any($1::uuid[])", [users]);
-  await Promise.all([sync?.close(), songs?.close(), lyrics?.close(), pool?.end()]);
+  await Promise.all([sync?.close(), songs?.close(), lyrics?.close(), rhymes?.close(), pool?.end()]);
 });

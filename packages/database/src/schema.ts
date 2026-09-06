@@ -76,3 +76,43 @@ export const lyricCreateRequests = pgTable("lyric_create_requests", {
   sourceId: uuid("source_id").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [primaryKey({ columns: [table.ownerId, table.requestId] })]);
+
+export const rhymeNotes = pgTable("rhyme_notes", {
+  resourceId: uuid("resource_id").primaryKey(),
+  ownerId: uuid("owner_id").notNull(),
+  body: text("body").notNull().default("")
+});
+
+export const rhymeNoteCreateRequests = pgTable("rhyme_note_create_requests", {
+  ownerId: uuid("owner_id").notNull(),
+  requestId: uuid("request_id").notNull(),
+  resourceId: uuid("resource_id").notNull(),
+  operation: text("operation").$type<"create" | "duplicate">().notNull(),
+  requestSha256: text("request_sha256").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.requestId] })]);
+
+export const tags = pgTable("tags", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ownerId: uuid("owner_id").notNull(),
+  displayValue: text("display_value").notNull(),
+  normalizedValue: text("normalized_value").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true })
+});
+
+export const resourceTags = pgTable("resource_tags", {
+  ownerId: uuid("owner_id").notNull(),
+  resourceId: uuid("resource_id").notNull(),
+  tagId: uuid("tag_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.resourceId, table.tagId] })]);
+
+export const songResourceLinks = pgTable("song_resource_links", {
+  ownerId: uuid("owner_id").notNull(),
+  songResourceId: uuid("song_resource_id").notNull(),
+  linkedResourceId: uuid("linked_resource_id").notNull(),
+  linkedResourceType: text("linked_resource_type").$type<"rhyme_note" | "prompt">().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.songResourceId, table.linkedResourceId] })]);

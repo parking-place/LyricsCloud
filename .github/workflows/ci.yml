@@ -70,15 +70,17 @@ jobs:
         run: pnpm test:migration:0310
       - name: Verify 0.3.1 revision migration recovery
         run: pnpm test:migration:0311
+      - name: Verify 0.4.0 rhyme migration recovery
+        run: pnpm test:migration:0400
       - name: Static checks
         run: pnpm check
       - name: Shell and Docker cleanup contract
         run: |
           bash -n scripts/*.sh
           ./scripts/cleanup-docker.sh --dry-run --build-cache
-          test "$(./scripts/docker-image-tag.sh branch phase/0.3.1-p1-crdt-contract 0123456789abcdef0123456789abcdef01234567 web dev)" = "0.3.1"
-          test "$(./scripts/docker-image-tag.sh tag v0.3.1 0123456789abcdef0123456789abcdef01234567 web release)" = "0.3.1"
-          if ./scripts/docker-image-tag.sh tag v0.3.1 0123456789abcdef0123456789abcdef01234567 web dev; then exit 1; fi
+          test "$(./scripts/docker-image-tag.sh branch phase/0.4.0-p1-rhyme-domain 0123456789abcdef0123456789abcdef01234567 web dev)" = "0.4.0"
+          test "$(./scripts/docker-image-tag.sh tag v0.4.0 0123456789abcdef0123456789abcdef01234567 web release)" = "0.4.0"
+          if ./scripts/docker-image-tag.sh tag v0.4.0 0123456789abcdef0123456789abcdef01234567 web dev; then exit 1; fi
           if ./scripts/docker-image-tag.sh branch main 0123456789abcdef0123456789abcdef01234567 web release; then exit 1; fi
       - name: Unit tests
         run: pnpm test
