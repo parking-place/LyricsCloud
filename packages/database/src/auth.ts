@@ -1,4 +1,5 @@
 import { Pool, type PoolClient } from "pg";
+import { createDatabasePool } from "./pool.js";
 
 export interface AuthIdentityInput {
   readonly issuer: string;
@@ -22,6 +23,7 @@ export interface AuthStore {
   createSession(tokenHash: string, userId: string, expiresAt: Date, absoluteExpiresAt: Date, now: Date): Promise<void>;
   readSession(tokenHash: string, now: Date): Promise<StoredSession | null>;
   renewSession(tokenHash: string, expiresAt: Date, now: Date): Promise<boolean>;
+  /** Revoke this active token's owner sessions; expired/revoked tokens cannot affect a later login. */
   revokeSession(tokenHash: string, now: Date): Promise<void>;
   close(): Promise<void>;
 }
@@ -30,7 +32,7 @@ export class PostgresAuthStore implements AuthStore {
   readonly #pool: Pool;
 
   constructor(databaseUrl: string) {
-    this.#pool = new Pool({ connectionString: databaseUrl, max: 5, connectionTimeoutMillis: 2_000 });
+    this.#pool = createDatabasePool(databaseUrl, 5);
   }
 
   async registerTransaction(stateHash: string, expiresAt: Date): Promise<void> {
@@ -129,7 +131,11 @@ export class PostgresAuthStore implements AuthStore {
 
   async revokeSession(tokenHash: string, now: Date): Promise<void> {
     await this.#pool.query(
-      "update auth_sessions set revoked_at = coalesce(revoked_at, $2) where token_hash = $1",
+      `update auth_sessions set revoked_at = $2
+       where revoked_at is null and user_id = (
+         select user_id from auth_sessions where token_hash = $1 and revoked_at is null
+           and expires_at > $2 and absolute_expires_at > $2
+       )`,
       [tokenHash, now]
     );
   }

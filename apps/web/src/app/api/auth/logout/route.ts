@@ -1,4 +1,4 @@
-import { clearSessionCookie, cookieNames, readCookie } from "@lyricscloud/auth";
+import { AuthError, clearSessionCookie, cookieNames, readCookie } from "@lyricscloud/auth";
 import { getAuthContext } from "../../../../lib/auth-context.js";
 import { errorResponse, privateResponseHeaders } from "../../../../lib/http-response.js";
 
@@ -10,6 +10,14 @@ export async function POST(request: Request): Promise<Response> {
     const { config, service } = getAuthContext();
     if (request.headers.get("origin") !== config.appOrigin) return errorResponse("FORBIDDEN", 403);
     const token = readCookie(request.headers.get("cookie"), cookieNames(config).session);
+    const expectedOwner = request.headers.get("x-expected-owner");
+    if (token && expectedOwner) {
+      try {
+        if ((await service.resolveSession(token)).userId !== expectedOwner) return errorResponse("FORBIDDEN", 403);
+      } catch (error) {
+        if (!(error instanceof AuthError && error.code === "AUTH_SESSION_EXPIRED")) throw error;
+      }
+    }
     await service.logout(token);
     return Response.json(
       { authenticated: false },

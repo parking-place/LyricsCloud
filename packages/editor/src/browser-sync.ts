@@ -316,8 +316,10 @@ export async function createBrowserLyricSync(options: {
       if (halted) throw new Error("REVISION_LOCAL_SAVE_FAILED");
     },
     retry() {
-      if (halted === "conflict" || halted === "unavailable" || destroyed) return;
+      if (halted === "conflict" || destroyed) return;
       if (halted === "error") { halted = undefined; persist(Y.encodeStateAsUpdate(document)); }
+      // Revalidate the owner and document after a user completes login again.
+      if (halted === "unavailable") halted = undefined;
       online();
       void pump();
     },
@@ -331,6 +333,37 @@ export async function clearOwnerLocalDrafts(ownerId: string): Promise<void> {
   channel.postMessage("clear");
   channel.close();
   for (const name of await Dexie.getDatabaseNames()) if (name.startsWith(prefix)) await Dexie.delete(name);
+}
+export async function hasOwnerPendingDrafts(ownerId: string): Promise<boolean> {
+  const name = `${await ownerPrefix(ownerId)}sync-v2`;
+  if (!(await Dexie.getDatabaseNames()).includes(name)) return false;
+  const storage = new SyncStorage(name);
+  try { return (await storage.updates.count()) > 0; }
+  finally { storage.close(); }
+}
+export async function readOwnerPendingDrafts(ownerId: string): Promise<Array<{ resourceId: string; body: string }>> {
+  const name = `${await ownerPrefix(ownerId)}sync-v2`;
+  if (!(await Dexie.getDatabaseNames()).includes(name)) return [];
+  const storage = new SyncStorage(name);
+  try {
+    return await storage.transaction("r", storage.documents, storage.updates, async () => {
+      const pending = new Set((await storage.updates.toArray()).map(({ documentKey }) => documentKey));
+      return (await storage.documents.toArray()).filter(({ documentKey }) => pending.has(documentKey)).map((cached) => {
+        const document = createLyricDocument();
+        try { Y.applyUpdate(document, cached.snapshot); return { resourceId: cached.resourceId, body: lyricBody(document).toString() }; }
+        finally { document.destroy(); }
+      });
+    });
+  } finally { storage.close(); }
+}
+export async function clearOtherOwnerLocalDrafts(ownerId: string): Promise<void> {
+  const current = await ownerPrefix(ownerId);
+  const names = (await Dexie.getDatabaseNames()).filter((name) => /^lyricscloud-draft-[a-f0-9]{64}-/.test(name) && !name.startsWith(current));
+  for (const prefix of new Set(names.map((name) => name.slice(0, "lyricscloud-draft-".length + 65)))) {
+    const channel = new BroadcastChannel(prefix);
+    channel.postMessage("clear"); channel.close();
+  }
+  for (const name of names) await Dexie.delete(name);
 }
 async function readLegacyDraft(name: string): Promise<string | null> {
   if (!(await Dexie.getDatabaseNames()).includes(name)) return null;

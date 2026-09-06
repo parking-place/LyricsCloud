@@ -74,6 +74,7 @@ test.describe("CodeMirror lyric editor", () => {
       await page.goto(`/lyrics/${lyricId}`);
       await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
       const editor = page.locator(".cm-content");
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
       await editor.fill("실패해도 보존할 현재 입력");
       await page.getByRole("textbox", { name: "가사 제목" }).fill("실패 후 재시도할 제목");
       await expect(page.getByText("저장하지 못했습니다")).toBeVisible();

@@ -1,12 +1,13 @@
-import { Pool } from "pg";
+import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "0310_crdt_sync.sql";
+export const CURRENT_SCHEMA_VERSION = "0311_lyric_revisions.sql";
 
 export * from "./auth.js";
 export * from "./owned.js";
 export * from "./schema.js";
 export * from "./songs.js";
 export * from "./lyrics.js";
+export * from "./pool.js";
 
 export type DatabaseHealthCode =
   | "DATABASE_AUTH_FAILED"
@@ -28,7 +29,7 @@ export interface DatabaseHealth {
 }
 
 export async function checkDatabase(databaseUrl: string): Promise<DatabaseHealth> {
-  const pool = new Pool({ connectionString: databaseUrl, max: 1, connectionTimeoutMillis: 2_000 });
+  const pool = createDatabasePool(databaseUrl, 1);
   try {
     await pool.query("select 1");
     const result = await pool.query<{ applied: boolean }>(

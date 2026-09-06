@@ -22,3 +22,7 @@ Yjs `Y.Doc`/`Y.Text`와 `y-codemirror.next`를 사용한다. collaboration 서�
 - 한글 IME, 두 탭 동시 입력, 오프라인 재연결, duplicate/out-of-order update, server restart 후 수렴을 시험한다.
 - update 크기·속도 제한, owner 확인, 최대 문서 크기와 compaction budget을 둔다.
 - Yjs 교체 전 평문과 portable snapshot을 export하고 adapter contract test를 통과해야 한다.
+
+## 2026-09-06 구현 대조
+
+현행 구현은 Yjs와 CodeMirror의 transaction adapter를 직접 연결하며 `y-codemirror.next`를 설치하지 않는다. Phase 5는 기존 adapter의 한글 조합·같은 owner 병합·복구 계약을 검증하고 유지한다. 초기 권고의 binding 패키지 서술과 실제 구현을 구분한 기록이며 새 라이브러리 교체 승인을 뜻하지 않는다. awareness/presence도 현재 프로토콜에 없고 같은 owner의 본문 동기화만 제공한다. [실제 인터페이스와 인수 경계](../architecture/0.3.1-SYNC-ADAPTER-HANDOFF.md)를 따른다.

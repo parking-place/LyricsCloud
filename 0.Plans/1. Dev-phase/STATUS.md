@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.3.1"
-current_phase: "4phase.md"
-state: "review"
+current_phase: "5phase.md"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-06 KST"
 updated_at: "2026-09-06"
-next_action: "Phase 4 로컬 구현·개인 OAuth 로그인 검토; Phase 3/4 원격 승인·CI·동일 SHA 개발 배포 대기, 다음 계획은 Phase 5"
+next_action: "0.4.0 Phase 1 진입: 라임 노트 데이터·소유권 계약과 PROD-0006 인계 확인"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -37,7 +37,7 @@ next_action: "Phase 4 로컬 구현·개인 OAuth 로그인 검토; Phase 3/4 �
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
 | 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
 | 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
-| 0.3.1 | in_progress | Phase 1~2 기존 완료 기록, Phase 3/4 로컬 구현 검토·원격 검증 대기 | 0.3.0 완료 |
+| 0.3.1 | complete | Phase 1~5 완료, 자동 장애 회귀·실제 기기·원격 CI·image·동일 SHA 개발 배포 검증 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
 | 0.5.0 | planned | 없음 | 0.4.0 완료 |
 | 0.6.0 | planned | 없음 | 0.5.0 완료 |
@@ -53,10 +53,19 @@ next_action: "Phase 4 로컬 구현·개인 OAuth 로그인 검토; Phase 3/4 �
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.3.1 / Phase 3 | LC-031-P3-01~08 통합 보완 | apps/collaboration, apps/web, packages/editor, packages/database, tests, compose/infra, CI, lockfile, 관련 문서 | 624eaa9 기준선, 사용자 로컬 보완 승인 | 2026-09-06 KST | review |
-| Codex | 0.3.1 / Phase 4 | LC-031-P4-01~08 | apps/collaboration, apps/web, packages/domain, packages/editor, packages/database/migrations·rollback, tests, scripts, 관련 문서 | 010a974의 로컬 동기화 검증, 사용자 기능 개발 계속 지시 | 2026-09-06 KST | review |
+| 없음 | - | - | - | - | - | - |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
+
+2026-09-06: 사용자의 Phase 5 Goal 진행과 worker 활용 지시에 따라 로컬 통합 검증을 계속한다. 원격 Phase 완료를 선행 완료로 가정하지 않으며, 실제 기기·원격 CI·image 발행·개발 서버 배포는 별도 증거가 필요한 인수 항목으로 남긴다. 현재 Goal은 로컬 구현·검증·커밋과 검토 가능한 인계 준비까지다.
+
+문서·브라우저 worker의 담당 파일은 인계받았다. 부모가 실행 검증과 필요한 코드를 수정했고 GLM 5.3 Flash는 로그아웃 변경 경계의 읽기 전용 검토를 맡았다. 결과는 [Phase 5 로컬 검증 기록](../../docs/runbooks/0.3.1-phase5-local-validation.md)에 모았다.
+
+2026-09-06 GitHub 반영: Phase 3 보완 [PR #2](https://github.com/parking-place/LyricsCloud/pull/2) → Phase 4 [PR #3](https://github.com/parking-place/LyricsCloud/pull/3) → `phase/0.3.1-p5-resilience` 순서의 초안 PR로 인계한다. 원격 CI에서 확인한 초기화 대기 누락은 본문 입력 시험에 반영했고 편집기 PC·모바일 20개를 국소 재검증했다. 앱 코드는 기존 로컬 검증본과 같다. 각 push의 verify·네 개발 이미지 발행과 tag digest 일치를 확인한 뒤 다음 Phase 브랜치를 올린다. main·release 변경이나 개발 서버 배포는 이 GitHub 반영에 포함하지 않는다.
+
+2026-09-06 원격·개발 인수: Phase 5 기능 head `7734bf23713b8b405b3a63bc86af36d7036fec20`에서 로컬 check와 30 files/104 tests를 통과했다. push CI `34026897897`과 PR CI `34026900854`는 migration 복구, production image 복구, 전체 E2E와 secret scan을 통과했다. 네 Docker Hub repository의 `0.3.1`·전체 SHA·`Dev`·`Dev-latest` tag는 서비스별 같은 digest를 가리킨다. 로컬과 개발 서버 live/ready는 같은 SHA·0.3.1·`0311_lyric_revisions.sql`을 반환했고 공개 PC/모바일 가사 작성·저장·복제·다중 탭 로그아웃 smoke를 통과한 뒤 합성 자료를 제거했다.
+
+2026-09-06 실제 기기 인수: 사용자는 안내된 실제 Android/iOS·OS 한글 IME·LTE/5G의 동일 owner 동기화, 브라우저 종료·재접속 복구와 실제 Google 로그인·로그아웃 체크리스트가 통과했다고 보고했다. 제공되지 않은 기종·OS·브라우저 세부사항은 추정하지 않는다.
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -86,19 +95,21 @@ next_action: "Phase 4 로컬 구현·개인 OAuth 로그인 검토; Phase 3/4 �
 | 곡 삭제와 연결 자료 | `PROD-0010` | 0.2.0, 0.8.0 | 당시 활성 소속 가사만 함께 숨기고 같은 삭제 작업분만 복원, 독립 연결 자료·관계는 보존으로 Accepted |
 | 목업 전용 보완 기능 | 관련 `PROD-*` 또는 담당 Phase 계약 | 담당 버전 | 버전 비교, 상세 필터, 저장 상태, 비드래그 이동 수단은 1.0 범위에 포함 |
 
-## 범위 밖 인계
+## 결정과 구현 대조
 
-- ADR-0002의 전체 세션 로그아웃과 현재 단일 세션 폐기 구현 차이는 0.3.1 계정 격리 검증 시 재검토한다.
-- ADR-0005의 `y-codemirror.next` 명시와 현재 transaction adapter 구현은 Phase 5 문서 정합성 검토에 인계한다. 이번 보완은 기존 adapter를 유지한다.
+- ADR-0002의 동일 계정 전체 세션 로그아웃은 Phase 5에서 구현하고 다른 계정·폐기된 예전 토큰 경계를 검증했다.
+- ADR-0005에 명시된 binding·awareness와 현재 transaction adapter·presence 미구현의 차이를 해당 ADR의 구현 대조와 [어댑터 인계](../../docs/architecture/0.3.1-SYNC-ADAPTER-HANDOFF.md)에 기록했다. 기존 adapter를 유지하며 재설계나 공유 편집을 추가하지 않았다.
 
 ## 다음 작업
 
-2026-09-06 Phase 3 로컬 보완에 이어 사용자 지시로 Phase 4의 수정 기록·비교·비파괴 복원을 구현·검증하고 개인 OAuth 환경에 반영했다. [Phase 4 검증 기록](../../docs/runbooks/0.3.1-phase4-local-validation.md)을 따른다. 사용자가 실제 Google 로그인과 작업 공간 진입을 확인했다. 다음 계획은 [Phase 5](./0.3.1/5phase.md)이며, 원격 반영·CI·같은 SHA 배포는 아직 수행하지 않았다. 공유 Docker Hub alias를 바꾸는 Phase 브랜치 push에는 그 후속 효과를 포함한 승인이 필요하다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.3.1은 자동 장애 회귀와 실제 기기 인수를 모두 마쳤다. 0.4.0 Phase 1은 [동기화 어댑터 인계](../../docs/architecture/0.3.1-SYNC-ADAPTER-HANDOFF.md), `PROD-0006`과 라임 목업을 먼저 읽고 라임 노트 데이터·소유권 계약만 구현한다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-06 | 0.3.1 / Phase 5 | Codex | 다중 탭·기기 자동 병합, 장애 복구, 저장 상태, 수정 기록·복원과 계정 격리를 통합 검증하고 실제 기기 인수를 완료 | 30 files/104 tests, 전체 production 복구·E2E, CI `34026897897`·`34026900854`, 네 image tag/digest, `7734bf2` 동일 SHA 개발 배포·공개 Chromium smoke, 사용자 보고 실제 기기·OS IME·다른 물리 네트워크·Google 로그아웃 인수; [검증 기록](../../docs/runbooks/0.3.1-phase5-local-validation.md) | 0.4.0 Phase 1이 owner 전용 동기화·revision 계약을 라임 노트에 재사용 |
+| 2026-09-06 | 0.3.1 / Phase 4 | Codex | 5분·중요 작업 전 revision, 180일/200개 정리, PC·모바일 비교와 비파괴 복원을 구현 | DB 정책·원자 복원·재시도·offline 병합, PC/mobile 비교·복원, Phase 5 통합 검증; [검증 기록](../../docs/runbooks/0.3.1-phase4-local-validation.md) | Phase 5 통합 장애 회귀와 실제 기기 인수 |
 | 2026-09-05 | 0.3.1 / Phase 3 | Codex | 인증 WebSocket, 멱등 update ACK, snapshot·raw update·receipt 영속화, 평문 projection·재처리·압축과 내용 없는 지표를 구현 | 0310 migration 복구, check, 93 tests, production build/images, PC/mobile E2E 76개, CI 33953374325, 네 image tag/digest 일치, `e2d7a27` 개발 배포; [검증 기록](../../docs/runbooks/0.3.1-phase3-validation.md) | Phase 4가 durable CRDT snapshot과 projector를 자동 revision·비파괴 복원에 사용 |
 | 2026-09-05 | 0.3.1 / Phase 2 | Codex | IndexedDB Yjs 초안, BroadcastChannel 탭 병합, offline 복구·계정별 삭제와 저장 상태를 편집기에 연결 | check, 90 tests, production build, PC/mobile E2E 76개; [검증 기록](../../docs/runbooks/0.3.1-phase2-validation.md) | Phase 3이 local update를 인증 collaboration 서버에 ACK·projection transaction으로 연결 |
 | 2026-09-05 | 0.3.1 / Phase 1 | Codex | 동일 owner Yjs 본문, opaque document/update ID, fail-closed 접근, 중복·역순·snapshot과 관계형 제목+CRDT 본문 projection 계약을 구현 | check, 24 files/90 tests, production build, secret scan, PC/mobile baseline 재검증; [검증 기록](../../docs/runbooks/0.3.1-phase1-validation.md) | Phase 2가 owner+document key IndexedDB와 BroadcastChannel 병합·저장 상태를 구현 |

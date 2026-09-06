@@ -209,7 +209,10 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       return true;
     },
     focus() { view.focus(); },
-    setEditable(value) { requestedEditable = value; refreshEditable(); },
+    setEditable(value) {
+      if (requestedEditable === value) return;
+      requestedEditable = value; refreshEditable();
+    },
     destroy() {
       disposed = true;
       clearTimeout(compositionTimer);

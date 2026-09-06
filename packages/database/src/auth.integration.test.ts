@@ -10,6 +10,27 @@ const pool = enabled ? new Pool({ connectionString: databaseUrl }) : null;
 const createdUsers: string[] = [];
 
 describe.runIf(enabled)("PostgreSQL auth store", () => {
+  it("logs out all sessions of the authenticated owner without revoking another owner or a later login", async () => {
+    if (!store || !pool || !/lyricscloud_test(?:\?|$)/.test(databaseUrl)) throw new Error("requires lyricscloud_test");
+    const now = new Date();
+    const expiry = new Date(now.getTime() + 60_000);
+    const owner = (await pool.query<{ id: string }>("insert into app_users default values returning id")).rows[0]!.id;
+    const other = (await pool.query<{ id: string }>("insert into app_users default values returning id")).rows[0]!.id;
+    createdUsers.push(owner, other);
+    const [first, second, foreign, later] = Array.from({ length: 4 }, () => randomUUID());
+    await store.createSession(first!, owner, expiry, expiry, now);
+    await store.createSession(second!, owner, expiry, expiry, now);
+    await store.createSession(foreign!, other, expiry, expiry, now);
+    await store.revokeSession(first!, now);
+    expect(await store.readSession(first!, now)).toBeNull();
+    expect(await store.readSession(second!, now)).toBeNull();
+    expect(await store.readSession(foreign!, now)).toMatchObject({ userId: other });
+    await store.createSession(later!, owner, expiry, expiry, now);
+    await store.revokeSession(first!, now);
+    await store.revokeSession("unknown", now);
+    expect(await store.readSession(later!, now)).toMatchObject({ userId: owner });
+  });
+
   it("consumes a transaction once and maps repeat login without storing provider credentials", async () => {
     if (!store || !pool || !/lyricscloud_test(?:\?|$)/.test(databaseUrl)) throw new Error("AUTH_DATABASE_INTEGRATION requires lyricscloud_test");
     const suffix = randomUUID();
