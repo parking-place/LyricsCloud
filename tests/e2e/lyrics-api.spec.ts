@@ -69,7 +69,7 @@ async function assertCount(request: APIRequestContext, songId: string, count: nu
   const detail = await request.get(`/api/songs/${songId}`);
   expect(detail.status()).toBe(200);
   expect(await detail.json()).toMatchObject({ song: { lyricCount: count, counts: {
-    lyrics: { value: count, available: true }, prompts: { value: 0, available: false }, rhymes: { value: 0, available: false }
+    lyrics: { value: count, available: true }, prompts: { value: 0, available: true }, rhymes: { value: 0, available: true }
   } } });
   const response = await request.get("/api/songs");
   expect(response.status()).toBe(200);

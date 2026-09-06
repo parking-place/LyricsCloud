@@ -35,7 +35,7 @@ describe.runIf(enabled)("song command and list store", () => {
     expect(counts.rows[0]).toEqual({ resources: "1", requests: "1" });
   });
 
-  it("updates fields and explicit metadata while returning honest dashboard availability", async () => {
+  it("updates fields and returns active owner-scoped dashboard counts", async () => {
     const [alice, bob] = users as [string, string];
     const created = await store!.createSong(alice, createInput({ title: "수정 전", requestId: randomUUID() }));
     const updated = await store!.updateSong(alice, created.song.id, {
@@ -45,12 +45,18 @@ describe.runIf(enabled)("song command and list store", () => {
     expect(await store!.setFavorite(alice, created.song.id, true)).toMatchObject({ isFavorite: true });
     expect(await store!.setPin(alice, created.song.id, true, 3)).toMatchObject({ isPinned: true, pinOrder: 3 });
     expect(await store!.setColor(alice, created.song.id, "blue")).toMatchObject({ color: "blue" });
+    await seedDashboardResources(alice, created.song.id);
     expect(await store!.getSong(alice, created.song.id)).toMatchObject({
       counts: {
-        lyrics: { value: 0, available: true },
-        prompts: { value: 0, available: false },
-        rhymes: { value: 0, available: false }
+        lyrics: { value: 1, available: true },
+        prompts: { value: 1, available: true },
+        rhymes: { value: 1, available: true }
       }
+    });
+    expect(await store!.getSongDashboardCounts(alice, created.song.id)).toEqual({
+      lyrics: { value: 1, available: true },
+      prompts: { value: 1, available: true },
+      rhymes: { value: 1, available: true }
     });
     expect(await store!.getSong(bob, created.song.id)).toBeNull();
     expect(await store!.updateSong(bob, created.song.id, { title: "침범" })).toBeNull();
@@ -128,4 +134,35 @@ async function collectPages(ownerId: string, input: SongListInput): Promise<Song
     cursor = page.nextCursor ?? undefined;
   } while (cursor);
   return result;
+}
+
+async function seedDashboardResources(ownerId: string, songId: string) {
+  const activeLyric = randomUUID();
+  const deletedLyric = randomUUID();
+  const activePrompt = randomUUID();
+  const deletedPrompt = randomUUID();
+  const activeRhyme = randomUUID();
+  const deletedRhyme = randomUUID();
+  const client = await rootPool!.connect();
+  try {
+    await client.query("begin");
+    for (const [id, deleted] of [[activeLyric, false], [deletedLyric, true]] as const) {
+      await client.query("insert into resources(id,owner_id,type,title) values($1,$2,'lyrics',$3)", [id, ownerId, `가사 ${id}`]);
+      await client.query("insert into lyrics(resource_id,owner_id,song_id,body) values($1,$2,$3,'본문')", [id, ownerId, songId]);
+      if (deleted) await client.query("update resources set deleted_at=clock_timestamp() where id=$1", [id]);
+    }
+    for (const [id, type, deleted] of [[activePrompt, "prompt", false], [deletedPrompt, "prompt", true], [activeRhyme, "rhyme_note", false], [deletedRhyme, "rhyme_note", true]] as const) {
+      await client.query("insert into resources(id,owner_id,type,title) values($1,$2,$3,$4)", [id, ownerId, type, `${type} ${id}`]);
+      if (type === "prompt") await client.query("insert into prompts(resource_id,owner_id,plain_text) values($1,$2,'prompt')", [id, ownerId]);
+      else await client.query("insert into rhyme_notes(resource_id,owner_id,body) values($1,$2,'rhyme')", [id, ownerId]);
+      await client.query("insert into song_resource_links(owner_id,song_resource_id,linked_resource_id,linked_resource_type) values($1,$2,$3,$4)", [ownerId, songId, id, type]);
+      if (deleted) await client.query("update resources set deleted_at=clock_timestamp() where id=$1", [id]);
+    }
+    await client.query("commit");
+  } catch (error) {
+    await client.query("rollback");
+    throw error;
+  } finally {
+    client.release();
+  }
 }

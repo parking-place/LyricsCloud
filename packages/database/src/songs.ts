@@ -31,11 +31,13 @@ export interface SongRecord {
 }
 
 export interface SongDashboard extends SongRecord {
-  readonly counts: {
-    readonly lyrics: { readonly value: number; readonly available: true };
-    readonly prompts: { readonly value: 0; readonly available: false };
-    readonly rhymes: { readonly value: 0; readonly available: false };
-  };
+  readonly counts: SongDashboardCounts;
+}
+
+export interface SongDashboardCounts {
+  readonly lyrics: { readonly value: number; readonly available: true };
+  readonly prompts: { readonly value: number; readonly available: true };
+  readonly rhymes: { readonly value: number; readonly available: true };
 }
 
 export interface SongListResult {
@@ -78,6 +80,12 @@ interface SongCursor {
   readonly id: string;
 }
 
+interface SongDashboardCountRow extends QueryResultRow {
+  lyric_count: string;
+  prompt_count: string;
+  rhyme_count: string;
+}
+
 export class PostgresSongStore {
   readonly #pool: Pool;
 
@@ -115,8 +123,18 @@ export class PostgresSongStore {
   getSong(ownerId: string, resourceId: string): Promise<SongDashboard | null> {
     return this.#withUser(ownerId, async (client) => {
       const song = await selectSong(client, ownerId, resourceId, true);
-      return song ? dashboard(song) : null;
+      if (!song) return null;
+      const counts = await selectDashboardCounts(client, ownerId, resourceId);
+      return counts ? { ...song, counts } : null;
     });
+  }
+
+  getSongSummary(ownerId: string, resourceId: string): Promise<SongRecord | null> {
+    return this.#withUser(ownerId, (client) => selectSong(client, ownerId, resourceId, true));
+  }
+
+  getSongDashboardCounts(ownerId: string, resourceId: string): Promise<SongDashboardCounts | null> {
+    return this.#withUser(ownerId, (client) => selectDashboardCounts(client, ownerId, resourceId));
   }
 
   updateSong(ownerId: string, resourceId: string, input: UpdateSongInput): Promise<SongRecord | null> {
@@ -291,15 +309,34 @@ function mapSong(row: SongRow): SongRecord {
   };
 }
 
-function dashboard(song: SongRecord): SongDashboard {
-  return {
-    ...song,
-    counts: {
-      lyrics: { value: song.lyricCount, available: true },
-      prompts: { value: 0, available: false },
-      rhymes: { value: 0, available: false }
-    }
-  };
+async function selectDashboardCounts(
+  client: PoolClient,
+  ownerId: string,
+  resourceId: string
+): Promise<SongDashboardCounts | null> {
+  const result = await client.query<SongDashboardCountRow>(`
+    select
+      (select count(*)::text from lyrics l
+        join resources lyric_resource on lyric_resource.id = l.resource_id and lyric_resource.owner_id = l.owner_id
+        where l.owner_id = song.owner_id and l.song_id = song.id
+          and lyric_resource.type = 'lyrics' and lyric_resource.deleted_at is null) as lyric_count,
+      (select count(*)::text from song_resource_links link
+        join resources prompt_resource on prompt_resource.id = link.linked_resource_id and prompt_resource.owner_id = link.owner_id
+        where link.owner_id = song.owner_id and link.song_resource_id = song.id and link.linked_resource_type = 'prompt'
+          and prompt_resource.type = 'prompt' and prompt_resource.deleted_at is null) as prompt_count,
+      (select count(*)::text from song_resource_links link
+        join resources rhyme_resource on rhyme_resource.id = link.linked_resource_id and rhyme_resource.owner_id = link.owner_id
+        where link.owner_id = song.owner_id and link.song_resource_id = song.id and link.linked_resource_type = 'rhyme_note'
+          and rhyme_resource.type = 'rhyme_note' and rhyme_resource.deleted_at is null) as rhyme_count
+    from resources song
+    where song.id = $1 and song.owner_id = $2 and song.type = 'song' and song.deleted_at is null
+  `, [resourceId, ownerId]);
+  const row = result.rows[0];
+  return row ? {
+    lyrics: { value: Number(row.lyric_count), available: true },
+    prompts: { value: Number(row.prompt_count), available: true },
+    rhymes: { value: Number(row.rhyme_count), available: true }
+  } : null;
 }
 
 function sortOrder(sort: SongSort): string {

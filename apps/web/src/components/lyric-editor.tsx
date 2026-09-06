@@ -30,7 +30,14 @@ interface LyricEditorDraft {
   readonly pinOrder: number | null;
 }
 
-export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { ownerId: string; initialLyric: LyricRecord; songTitle: string; songLyrics: readonly LyricRecord[] }) {
+export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dashboardHref, returnTo }: {
+  ownerId: string;
+  initialLyric: LyricRecord;
+  songTitle: string;
+  songLyrics: readonly LyricRecord[];
+  dashboardHref: string;
+  returnTo: string;
+}) {
   const mountRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<CodeMirrorTextEditor | null>(null);
   const controllerRef = useRef<SerializedSaveController<LyricEditorDraft> | null>(null);
@@ -66,6 +73,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const router = useRouter();
+  const lyricReturnSuffix = `?returnTo=${encodeURIComponent(returnTo)}`;
 
   function draft(overrides: Partial<LyricEditorDraft> = {}): LyricEditorDraft {
     return {
@@ -210,7 +218,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
   async function openLyric(lyricId: string) {
     if (lyricId === initialLyric.id || commandBusy || !await flushBeforeCommand("leave")) return;
     setMobileOtherLyricsOpen(false);
-    router.push(`/lyrics/${lyricId}`);
+    router.push(`/lyrics/${lyricId}${lyricReturnSuffix}`);
   }
 
   async function duplicateCurrent() {
@@ -223,7 +231,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
       });
       if (!response.ok) throw new Error();
       const result = await response.json() as { lyric: LyricRecord };
-      router.push(`/lyrics/${result.lyric.id}`);
+      router.push(`/lyrics/${result.lyric.id}${lyricReturnSuffix}`);
       router.refresh();
     } catch {
       setCommandBusy(false);
@@ -243,7 +251,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
       const currentLyrics = listResponse.ok ? (await listResponse.json() as { items: LyricRecord[] }).items : songLyrics;
       const next = currentLyrics.filter((lyric) => lyric.id !== initialLyric.id)
         .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt) || right.id.localeCompare(left.id))[0];
-      router.replace(next ? `/lyrics/${next.id}` : `/songs/${initialLyric.songId}`);
+      router.replace(next ? `/lyrics/${next.id}${lyricReturnSuffix}` : dashboardHref);
       router.refresh();
     } catch {
       setCommandBusy(false);
@@ -327,10 +335,10 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics }: { 
   return <section className={`lyric-editor-page${focusMode ? " is-focus-mode" : ""}`} aria-labelledby="lyric-title-label">
     <header className="lyric-editor-header">
       <div className="lyric-editor-context">
-        <a href={`/songs/${initialLyric.songId}`} className="back-inline" onClick={(event) => {
+        <a href={dashboardHref} className="back-inline" onClick={(event) => {
           if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
           event.preventDefault();
-          void flushBeforeCommand("leave").then((saved) => { if (saved) router.push(`/songs/${initialLyric.songId}`); });
+          void flushBeforeCommand("leave").then((saved) => { if (saved) router.push(dashboardHref); });
         }}>← {songTitle}</a>
         <p className="eyebrow">Lyrics editor</p>
       </div>

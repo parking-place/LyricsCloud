@@ -7,7 +7,8 @@ const origin = "http://127.0.0.1:3000";
 test.describe("complete song flow", () => {
   test.skip(!process.env.E2E_DATABASE_URL, "E2E_DATABASE_URL is required for song flow integration");
 
-  test("list, create, dashboard, edit, ownership, and soft delete remain consistent", async ({ browser, context, page }) => {
+  test("list, create, dashboard, edit, ownership, and soft delete remain consistent", async ({ browser, context, page }, testInfo) => {
+    if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 360, height: 800 });
     const owner = await createAccount(context, "전체 흐름 사용자");
     const otherContext = await browser.newContext({ baseURL: origin });
     const other = await createAccount(otherContext, "다른 흐름 사용자");
@@ -32,8 +33,7 @@ test.describe("complete song flow", () => {
       await expect(page.getByRole("heading", { name: "연결 자료" })).toBeVisible();
       await expect(page.getByRole("heading", { name: "작업 메모" })).toBeVisible();
       await expect(page.locator(".count-grid strong")).toHaveText(["0", "0", "0"]);
-      await expect(page.getByText("현재 자료")).toHaveCount(1);
-      await expect(page.getByText("아직 지원 전")).toHaveCount(2);
+      await expect(page.getByText("삭제되지 않은 현재 자료")).toHaveCount(3);
       await expect(page.getByText("첫 줄 작업 메모")).toContainText("둘째 줄도 그대로 보존");
       expect(await hasHorizontalOverflow(page)).toBe(false);
       const mainBox = await page.locator(".dashboard-main").boundingBox();
@@ -48,6 +48,62 @@ test.describe("complete song flow", () => {
         const notesBox = await page.locator(".notes-panel").boundingBox();
         expect(linkedBox!.y).toBeLessThan(notesBox!.y);
       }
+
+      const linked = await createLinkedDashboardResources(page, songId);
+      await page.route(`**/api/songs/${songId}`, (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
+      await page.getByRole("button", { name: "자료 수 새로 고침" }).click();
+      const countError = page.locator(".count-error");
+      await expect(countError).toContainText("자료 수를 불러오지 못했습니다.");
+      await countError.getByRole("button", { name: "다시 시도" }).click();
+      await expect(page.locator(".count-grid strong")).toHaveText(["1", "1", "1"]);
+
+      await page.route(`**/api/songs/${songId}/lyrics`, (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
+      await page.getByRole("button", { name: "목록 새로 고침" }).click();
+      const lyricsPanel = page.locator(".lyrics-panel");
+      await expect(lyricsPanel).toContainText("가사 버전을 불러오지 못했습니다.");
+      await lyricsPanel.getByRole("button", { name: "다시 시도" }).click();
+      const lyricCard = page.locator(".lyric-card", { hasText: linked.lyricTitle });
+      await expect(lyricCard).toContainText("현재 작업");
+      await expect(lyricCard).toContainText("첫 줄 · 둘째 줄");
+
+      const rhymeSection = page.getByRole("heading", { name: "라임 노트", exact: true }).locator("..").locator("..");
+      await page.route("**/api/rhymes?*", (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
+      await rhymeSection.getByRole("button", { name: "새로 고침" }).click();
+      await expect(rhymeSection).toContainText("연결 라임을 불러오지 못했습니다.");
+      await rhymeSection.getByRole("button", { name: "다시 시도" }).click();
+      await expect(rhymeSection.getByRole("link", { name: /대시보드 라임/ })).toContainText("chair · flare");
+      const promptSection = page.getByRole("heading", { name: "프롬프트", exact: true }).locator("..").locator("..");
+      await promptSection.getByRole("button", { name: "새로 고침" }).click();
+      await expect(promptSection.getByRole("link", { name: /대시보드 프롬프트/ })).toContainText("cinematic, female vocal");
+
+      await page.getByRole("button", { name: "곡 메모 편집" }).click();
+      let noteDialog = page.getByRole("dialog", { name: "전체 흐름 곡 작업 메모" });
+      await noteDialog.getByLabel("메모 내용").fill("대시보드에서 고친 곡 메모");
+      await noteDialog.getByRole("button", { name: "메모 저장" }).click();
+      await expect(page.locator(".work-note", { hasText: "전체 흐름 곡" })).toContainText("대시보드에서 고친 곡 메모");
+      await lyricCard.getByRole("button", { name: "메모 추가" }).click();
+      noteDialog = page.getByRole("dialog", { name: `${linked.lyricTitle} 작업 메모` });
+      await noteDialog.getByLabel("메모 내용").fill("후렴 호흡 다시 확인");
+      await noteDialog.getByRole("button", { name: "메모 저장" }).click();
+      await expect(page.locator(".work-note", { hasText: linked.lyricTitle })).toContainText("후렴 호흡 다시 확인");
+
+      await lyricCard.getByRole("link", { name: "열기" }).click();
+      await expect(page).toHaveURL(new RegExp(`/lyrics/${linked.lyricId}\\?returnTo=`));
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 20_000 });
+      await page.getByRole("link", { name: `← 전체 흐름 곡` }).click();
+      await expect(page.getByRole("heading", { name: "전체 흐름 곡" })).toBeVisible();
+
+      const sourceCard = page.locator(".lyric-card", { hasText: linked.lyricTitle });
+      await sourceCard.getByRole("button", { name: "복제" }).click();
+      await expect(page).toHaveURL(/\/lyrics\/[0-9a-f-]+\?returnTo=/);
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 20_000 });
+      await page.getByRole("link", { name: `← 전체 흐름 곡` }).click();
+      const copiedCard = page.locator(".lyric-card", { hasText: `${linked.lyricTitle} (복사본)` });
+      await copiedCard.getByRole("button", { name: "삭제" }).click();
+      await expect(page.getByRole("dialog")).toContainText(`‘${linked.lyricTitle} (복사본)’ 가사를 삭제할까요?`);
+      await expect(page.getByRole("button", { name: "취소" })).toBeFocused();
+      await page.getByRole("button", { name: "가사 삭제 확인" }).click();
+      await expect(copiedCard).toHaveCount(0);
 
       await page.route(`**/api/songs/${songId}/pin`, (route) => route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: { code: "DATABASE_UNAVAILABLE" } }) }));
       await page.getByRole("button", { name: "⌁ 고정" }).click();
@@ -110,6 +166,45 @@ test.describe("complete song flow", () => {
       await deleteAccount(other.userId);
     }
   });
+
+  test("dashboard and lyric round trips preserve song filters and list scroll", async ({ context, page }) => {
+    const owner = await createAccount(context, "목록 복원 사용자");
+    const marker = `스크롤-${randomUUID().slice(0, 8)}`;
+    try {
+      for (let index = 0; index < 18; index += 1) {
+        const response = await page.request.post("/api/songs", { headers: { Origin: origin }, data: {
+          requestId: randomUUID(), title: `${marker}-${String(index).padStart(2, "0")}`, status: "idea",
+          description: "목록 스크롤 복원 확인을 위한 충분히 긴 카드 설명입니다."
+        } });
+        expect(response.status()).toBe(201);
+      }
+      await page.goto(`/songs?search=${encodeURIComponent(marker)}&status=idea&sort=title_asc`);
+      await expect(page.getByText("총 18곡")).toBeVisible();
+      await page.getByRole("button", { name: "더 불러오기" }).click();
+      await expect(page.getByRole("button", { name: "모든 곡을 불러왔습니다" })).toBeVisible();
+      await scrollSongListToBottom(page);
+      const scrollBefore = await songListScrollTop(page);
+      expect(scrollBefore).toBeGreaterThan(100);
+      const lastCard = page.locator(".song-card").last();
+      const title = await lastCard.getByRole("heading").innerText();
+      await lastCard.getByRole("link", { name: `${title} 대시보드 열기` }).click();
+      await expect(page.getByRole("heading", { name: title })).toBeVisible();
+      await page.getByRole("button", { name: "＋ 새 가사" }).click();
+      await expect(page).toHaveURL(/\/lyrics\/[0-9a-f-]+\?returnTo=/);
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 20_000 });
+      await page.getByRole("link", { name: `← ${title}` }).click();
+      await expect(page.getByRole("heading", { name: title })).toBeVisible();
+      await page.getByRole("link", { name: "← 곡 목록" }).click();
+      await expect(page.getByText("총 18곡")).toBeVisible();
+      const restoredUrl = new URL(page.url());
+      expect(restoredUrl.searchParams.get("search")).toBe(marker);
+      expect(restoredUrl.searchParams.get("status")).toBe("idea");
+      expect(restoredUrl.searchParams.get("sort")).toBe("title_asc");
+      await expect.poll(() => songListScrollTop(page)).toBeGreaterThan(scrollBefore - 80);
+    } finally {
+      await deleteAccount(owner.userId);
+    }
+  });
 });
 
 async function createAccount(context: BrowserContext, displayName: string) {
@@ -131,6 +226,42 @@ async function deleteAccount(userId: string) {
   await withE2eDatabase((pool) => pool.query("delete from app_users where id = $1", [userId]).then(() => undefined));
 }
 
+async function createLinkedDashboardResources(page: Page, songId: string) {
+  const headers = { Origin: origin };
+  const lyricTitle = "대시보드 가사";
+  const lyricResponse = await page.request.post(`/api/songs/${songId}/lyrics`, { headers, data: {
+    requestId: randomUUID(), title: lyricTitle, body: "첫 줄\n둘째 줄", memo: "", status: "revising"
+  } });
+  expect(lyricResponse.status()).toBe(201);
+  const lyricId = (await lyricResponse.json()).lyric.id as string;
+
+  const rhymeResponse = await page.request.post("/api/rhymes", { headers, data: {
+    requestId: randomUUID(), title: "대시보드 라임", body: "chair\nflare"
+  } });
+  expect(rhymeResponse.status()).toBe(201);
+  const rhymeId = (await rhymeResponse.json()).rhyme.id as string;
+  expect((await page.request.put(`/api/rhymes/${rhymeId}/songs/${songId}`, { headers })).status()).toBe(200);
+
+  const promptResponse = await page.request.post("/api/prompts", { headers, data: {
+    requestId: randomUUID(), title: "대시보드 프롬프트", tokens: ["cinematic", "female vocal"]
+  } });
+  expect(promptResponse.status()).toBe(201);
+  const promptId = (await promptResponse.json()).prompt.id as string;
+  expect((await page.request.put(`/api/prompts/${promptId}/songs/${songId}`, { headers })).status()).toBe(200);
+  return { lyricId, lyricTitle };
+}
+
 async function hasHorizontalOverflow(page: Page) {
   return page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+}
+
+async function scrollSongListToBottom(page: Page) {
+  await page.locator(".songs-page").evaluate((element) => {
+    if (element.scrollHeight > element.clientHeight + 1) element.scrollTo({ top: element.scrollHeight });
+    else window.scrollTo({ top: document.scrollingElement?.scrollHeight ?? document.documentElement.scrollHeight });
+  });
+}
+
+async function songListScrollTop(page: Page) {
+  return page.locator(".songs-page").evaluate((element) => element.scrollHeight > element.clientHeight + 1 ? element.scrollTop : window.scrollY);
 }

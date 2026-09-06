@@ -22,8 +22,8 @@ test.describe("complete lyric flow", () => {
       await expect(page.locator(".count-grid article", { hasText: "가사" }).locator("strong")).toHaveText("0");
 
       await page.getByRole("button", { name: "첫 가사 작성" }).click();
-      await expect(page).toHaveURL(/\/lyrics\/[0-9a-f-]+$/);
-      const firstId = page.url().split("/").at(-1)!;
+      await expect(page).toHaveURL(/\/lyrics\/[0-9a-f-]+\?returnTo=/);
+      const firstId = new URL(page.url()).pathname.split("/").at(-1)!;
       await page.getByRole("textbox", { name: "가사 제목" }).fill("한글 1차 가사");
       const body = `[Verse]\n${marker} 첫 절\n\n[Hook]\n첫 후렴\n[Verse 2]\n둘째 절\n[Hook]\n마지막 후렴`;
       await page.locator(".cm-content").fill(body);
@@ -74,7 +74,7 @@ test.describe("complete lyric flow", () => {
       const otherLyrics = mobile ? page.getByRole("dialog", { name: "다른 가사와 설정" }).getByLabel("다른 가사 목록") : page.getByRole("complementary", { name: "다른 가사" }).getByLabel("다른 가사 목록");
       await expect(otherLyrics.getByRole("button")).toHaveCount(2);
       await otherLyrics.getByRole("button", { name: /한글 1차 가사/ }).click();
-      await expect(page).toHaveURL(new RegExp(`/lyrics/${firstId}$`));
+      await expect(page).toHaveURL(new RegExp(`/lyrics/${firstId}\\?returnTo=`));
       await expect(page.locator(".cm-content")).toContainText(marker);
 
       await page.getByRole("link", { name: `← 가사 전체 흐름 곡` }).click();
@@ -82,8 +82,8 @@ test.describe("complete lyric flow", () => {
       await expect(firstCard).toContainText("수정 중");
       await expect(firstCard.getByRole("button", { name: "한글 1차 가사 즐겨찾기 해제" })).toHaveAttribute("aria-pressed", "true");
       await firstCard.getByRole("button", { name: "복제" }).click();
-      await expect(page).toHaveURL(/\/lyrics\/[0-9a-f-]+$/);
-      const copyId = page.url().split("/").at(-1)!;
+      await expect(page).toHaveURL(/\/lyrics\/[0-9a-f-]+\?returnTo=/);
+      const copyId = new URL(page.url()).pathname.split("/").at(-1)!;
       expect(copyId).not.toBe(firstId);
       await expect(page.getByRole("textbox", { name: "가사 제목" })).toHaveValue("한글 1차 가사 (복사본)");
       await expect(page.locator(".cm-content")).toContainText(marker);
@@ -95,7 +95,7 @@ test.describe("complete lyric flow", () => {
         await page.getByRole("button", { name: "삭제", exact: true }).click();
       }
       await page.getByRole("dialog", { name: /가사를 삭제할까요/ }).getByRole("button", { name: "가사 삭제 확인" }).click();
-      await expect(page).not.toHaveURL(new RegExp(`/lyrics/${copyId}$`));
+      await expect.poll(() => new URL(page.url()).pathname).not.toBe(`/lyrics/${copyId}`);
       await page.getByRole("link", { name: `← 가사 전체 흐름 곡` }).click();
       await expect(page.locator(".lyric-card")).toHaveCount(2);
       await expect(page.locator(".count-grid article", { hasText: "가사" }).locator("strong")).toHaveText("2");
