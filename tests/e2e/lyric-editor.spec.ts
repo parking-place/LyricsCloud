@@ -256,6 +256,8 @@ test.describe("CodeMirror lyric editor", () => {
       const body = Array.from({ length: 80 }, (_, index) => `[Verse ${index + 1}]\n줄 ${index + 1}`).join("\n");
       const { lyricId } = await createLyric(page, body);
       await page.goto(`/lyrics/${lyricId}`);
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
+      await context.setOffline(true);
       const editor = page.locator(".cm-content");
       const scroller = page.locator(".cm-scroller");
       await editor.click();
@@ -274,7 +276,7 @@ test.describe("CodeMirror lyric editor", () => {
       const afterScroll = await scroller.evaluate((element) => element.scrollTop);
       expect(Math.abs(afterScroll - beforeScroll)).toBeLessThan(40);
       await page.keyboard.press("Alt+Shift+c");
-      await expect.poll(() => copiedText(page)).toContain("아직 저장 전인 문장");
+      await expect.poll(() => copiedText(page)).toBe(`${body}\n아직 저장 전인 문장`);
       await page.evaluate(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "f", altKey: true, shiftKey: true, isComposing: true })));
       await expect(page.locator(".lyric-editor-page")).toHaveClass(/is-focus-mode/);
       await page.keyboard.press("Alt+Shift+f");
