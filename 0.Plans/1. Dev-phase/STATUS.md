@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.6.0"
-current_phase: "2phase.md"
+current_phase: "3phase.md"
 state: "in_progress"
 owner: "Codex"
-started_at: "2026-09-07 07:02 KST"
+started_at: "2026-09-07 07:55 KST"
 updated_at: "2026-09-07"
-next_action: "0.6.0 Phase 2 곡-라임·프롬프트 전체 목록·검색·다중 연결·해제와 PC modal·모바일 sheet를 구현"
+next_action: "0.6.0 Phase 3 가사 편집 우측 자료 패널의 네 탭·검색·상태 보존·PC panel·모바일 sheet를 구현"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -40,7 +40,7 @@ next_action: "0.6.0 Phase 2 곡-라임·프롬프트 전체 목록·검색·다�
 | 0.3.1 | complete | Phase 1~5 완료, 자동 장애 회귀·실제 기기·원격 CI·image·동일 SHA 개발 배포 검증 | 0.3.0 완료 |
 | 0.4.0 | complete | Phase 1~5 완료 | 0.3.1 완료 |
 | 0.5.0 | complete | Phase 1~5 완료 | 0.4.0 완료 |
-| 0.6.0 | in_progress | Phase 1 완료, Phase 2 진행 중 | 0.5.0 완료 |
+| 0.6.0 | in_progress | Phase 1~2 완료, Phase 3 진행 중 | 0.5.0 완료 |
 | 0.7.0 | planned | 없음 | 0.6.0 완료 |
 | 0.8.0 | planned | 없음 | 0.7.0 완료 |
 | 0.9.0 | planned | 없음 | 0.8.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.6.0 Phase 2 곡-라임·프롬프트 전체 목록·검색·다�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.6.0 / Phase 2 | LC-060-P2-01~08 | 연결 전체 목록·검색/필터·다중 연결·해제·modal/sheet·E2E·Phase 문서 | Phase 1 완료 | 2026-09-07 07:02 KST | 진행 중 |
+| Codex | 0.6.0 / Phase 3 | LC-060-P3-01~08 | 가사 편집 자료 패널 네 탭·연결 우선/전체 검색·PC panel·모바일 sheet·상태/focus 보존·E2E | Phase 2 완료 | 2026-09-07 07:55 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,12 +102,13 @@ next_action: "0.6.0 Phase 2 곡-라임·프롬프트 전체 목록·검색·다�
 
 ## 다음 작업
 
-0.6.0 Phase 1은 곡 hero·실제 count·가사 카드·분리 메모·연결 preview와 영역별 실패·목록 상태 복원을 완료했다. 다음은 Phase 2의 곡-라임·프롬프트 연결 관리다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.6.0 Phase 2는 곡 중심 라임·프롬프트 유형 탭, owner 검색·연결 상태 필터, 다중 연결·확인 해제와 PC modal·모바일 sheet를 완료했다. 다음은 Phase 3의 가사 편집 우측 자료 패널이다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-07 | 0.6.0 / Phase 2 | Codex | 곡 대시보드의 라임·프롬프트 유형 탭과 연결 목록, owner 제목·본문/토큰 검색, 연결됨·미연결 필터, 다중 선택·멱등 연결, 이름 확인 해제와 원본 보존, PC modal·모바일 sheet 및 실패 후 선택 유지·focus 복원을 구현 | 35 files/143 tests, 0200~0501 migration 복구, production build·4 image 복구, PC/mobile E2E 156 통과·2 skip, CI `34064718164`, 네 image tag/digest, `cc85917` 동일 SHA 개발 배포와 공개 연결 smoke; [검증 기록](../../docs/runbooks/0.6.0-phase2-validation.md) | Phase 3이 owner 연결 query를 가사 편집기의 다른 곡·다른 가사·라임·프롬프트 네 탭에서 소비 |
 | 2026-09-07 | 0.6.0 / Phase 1 | Codex | 곡 hero·실제 가사/프롬프트/라임 count, 가사 카드·생성/열기/복제/이름 확인 삭제, 곡·가사 분리 메모, 연결 preview, 영역별 실패·재시도와 목록 filter·scroll 왕복을 PC·모바일에 구현 | 35 files/140 tests, 0200~0501 migration 복구, production build·4 image 복구, PC/mobile E2E 156 통과·2 skip, CI `34061711046`, 네 image tag/digest, `ce278d1` 동일 SHA 개발 배포와 공개 대시보드 smoke; [검증 기록](../../docs/runbooks/0.6.0-phase1-validation.md) | Phase 2가 기존 N:M 관계와 preview를 전체 목록·검색·다중 연결·확인 해제로 확장 |
 | 2026-09-07 | 0.5.0 / Phase 5 | Codex | Phase 1~4의 32개 작업을 증적에 연결하고 빈 목록부터 작성·자동완성·중복 정리·순서 변경·복사·즐겨찾기·곡 연결·필터·길게 복사·독립 복제까지 통합 검증, 오프라인 재정렬 직후 오래된 저장 완료 상태가 노출되는 경쟁 조건 수정 | 35 files/140 tests, 0200~0501 migration 복구, production build·4 image 복구, PC/mobile E2E 154 통과·2 skip, CI `34059279073`, 네 image tag/digest, `9197524` 동일 SHA 개발 배포와 공개 Phase 2~5 smoke; [검증 기록](../../docs/runbooks/0.5.0-phase5-validation.md) | 0.6.0은 [프롬프트 인계](../../docs/architecture/0.5.0-PROMPT-HANDOFF.md)의 owner N:M·`plainText` 계약을 곡 중심 연결 패널에서 소비 |
 | 2026-09-07 | 0.5.0 / Phase 4 | Codex | handle drag·버튼·방향키와 focus/announcement를 갖춘 토큰 순서 변경, 동시 이동·삭제 수렴, 정확한 복사·수동 대안, 중요 기록 후 멱등 복제, 즐겨찾기·핀과 owner 곡 연결·확인 해제를 구현 | 35 files/140 tests, 0200~0501 migration 복구, production build·4 image 복구, PC/mobile E2E 152 통과·2 skip, CI `34056950606`, 네 image tag/digest, `99bbc3e` 동일 SHA 개발 배포와 공개 Phase 2~4 smoke; [검증 기록](../../docs/runbooks/0.5.0-phase4-validation.md) | Phase 5가 08~09번 프롬프트 전체 흐름·격리·동기화·접근성을 통합 검증 |
