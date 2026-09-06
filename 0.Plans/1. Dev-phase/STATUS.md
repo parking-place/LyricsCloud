@@ -9,7 +9,7 @@ state: "review"
 owner: "Codex"
 started_at: "2026-09-06 KST"
 updated_at: "2026-09-06"
-next_action: "Phase 3→4→5 PR·CI·개발 이미지 결과 확인과 실제 기기·동일 SHA 개발 서버 인수; 0.4.0 미시작"
+next_action: "실제 Android/iOS·OS 한글 IME·서로 다른 물리 네트워크의 동일 owner 동기화와 실제 Google 로그아웃 인수; 0.4.0 미시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -37,7 +37,7 @@ next_action: "Phase 3→4→5 PR·CI·개발 이미지 결과 확인과 실제 �
 | 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
 | 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
 | 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
-| 0.3.1 | review | Phase 1~2 기존 완료 기록, Phase 3~5 로컬 검토·실제 기기와 원격 검증 대기 | 0.3.0 완료 |
+| 0.3.1 | review | Phase 1~2 기존 완료 기록, Phase 3~5 로컬·원격 CI·image·동일 SHA 개발 배포 검증 완료, 실제 기기 인수 대기 | 0.3.0 완료 |
 | 0.4.0 | planned | 없음 | 0.3.1 완료 |
 | 0.5.0 | planned | 없음 | 0.4.0 완료 |
 | 0.6.0 | planned | 없음 | 0.5.0 완료 |
@@ -64,6 +64,8 @@ next_action: "Phase 3→4→5 PR·CI·개발 이미지 결과 확인과 실제 �
 문서·브라우저 worker의 담당 파일은 인계받았다. 부모가 실행 검증과 필요한 코드를 수정했고 GLM 5.3 Flash는 로그아웃 변경 경계의 읽기 전용 검토를 맡았다. 결과는 [Phase 5 로컬 검증 기록](../../docs/runbooks/0.3.1-phase5-local-validation.md)에 모았다.
 
 2026-09-06 GitHub 반영: Phase 3 보완 [PR #2](https://github.com/parking-place/LyricsCloud/pull/2) → Phase 4 [PR #3](https://github.com/parking-place/LyricsCloud/pull/3) → `phase/0.3.1-p5-resilience` 순서의 초안 PR로 인계한다. 원격 CI에서 확인한 초기화 대기 누락은 본문 입력 시험에 반영했고 편집기 PC·모바일 20개를 국소 재검증했다. 앱 코드는 기존 로컬 검증본과 같다. 각 push의 verify·네 개발 이미지 발행과 tag digest 일치를 확인한 뒤 다음 Phase 브랜치를 올린다. main·release 변경이나 개발 서버 배포는 이 GitHub 반영에 포함하지 않는다.
+
+2026-09-06 원격·개발 인수: 최신 Phase 4의 포커스 보정과 crash-test 진단을 Phase 5에 병합한 `5a4816c25208422560fc57c2e46f544195539e95`에서 로컬 check와 30 files/104 tests를 통과했다. push CI `34025423721`과 PR CI `34025425935`는 migration 복구, production image 복구, 전체 E2E와 secret scan을 통과했다. 네 Docker Hub repository의 `0.3.1`·전체 SHA·`Dev`·`Dev-latest` tag는 서비스별 같은 digest를 가리킨다. 로컬과 개발 서버 live/ready는 같은 SHA·0.3.1·`0311_lyric_revisions.sql`을 반환했고 공개 PC/모바일 가사 작성·저장·복제 smoke를 통과한 뒤 합성 자료를 제거했다. 실제 물리 기기·OS IME·서로 다른 물리 네트워크와 실제 Google 로그아웃 수용은 아직 별도 인수다.
 
 ## 0.0.0에서 닫아야 할 기술 게이트
 
@@ -100,7 +102,7 @@ next_action: "Phase 3→4→5 PR·CI·개발 이미지 결과 확인과 실제 �
 
 ## 다음 작업
 
-2026-09-06 Phase 3 보완 → Phase 4 수정 기록 → Phase 5 통합 장애·계정 격리 순으로 로컬 개발을 진행했다. [Phase 5 검증 기록](../../docs/runbooks/0.3.1-phase5-local-validation.md)과 [요구사항 추적표](../../docs/architecture/0.3.1-REQUIREMENTS-TRACEABILITY.md)를 먼저 읽는다. 개인 앱은 `http://localhost:8080`의 `phase5-local`이며 기존 OAuth·DB volume을 보존했다. 원격 PR은 위 Phase 연쇄를 따르고 현재 head SHA의 GitHub Actions와 네 image digest를 확인한다. 실제 모바일·IME 인수와 동일 SHA의 개발 서버 배포·공개 smoke는 남아 있다. 해당 인수 전에는 complete 또는 0.4.0으로 진행하지 않는다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+2026-09-06 Phase 3 보완 → Phase 4 수정 기록 → Phase 5 통합 장애·계정 격리 순으로 개발했고, 최신 Phase 4 보완도 Phase 5에 병합했다. [Phase 5 검증 기록](../../docs/runbooks/0.3.1-phase5-local-validation.md)과 [요구사항 추적표](../../docs/architecture/0.3.1-REQUIREMENTS-TRACEABILITY.md)를 먼저 읽는다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 기존 OAuth·DB volume을 보존했다. 원격 CI·네 image digest·동일 SHA 개발 서버·공개 PC/모바일 Chromium smoke는 확인했다. 실제 Android/iOS·OS 한글 IME·서로 다른 물리 네트워크와 실제 Google 로그아웃 인수 전에는 complete 또는 0.4.0으로 진행하지 않는다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
