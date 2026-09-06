@@ -6,7 +6,8 @@ import { bodyHash, captureRevision, pruneRevisions, summarize, type RevisionRow 
 import { createDatabasePool } from "@lyricscloud/database";
 
 interface DocumentRows {
-  document_key: string; resource_id: string; snapshot: Buffer; snapshot_sequence: string; projection_error_code?: string | null;
+  document_key: string; resource_id: string; resource_type: "lyrics" | "rhyme_note";
+  snapshot: Buffer; snapshot_sequence: string; projection_error_code?: string | null;
 }
 
 export class CollaborationStore {
@@ -17,16 +18,24 @@ export class CollaborationStore {
   async ensureDocument(ownerId: string, resourceId: string) {
     return this.#owned(ownerId, async (client) => {
       await client.query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [resourceId]);
-      const lyric = await client.query<{ body: string }>(`select l.body from lyrics l join resources r on r.id=l.resource_id and r.owner_id=l.owner_id
-        where l.resource_id=$1 and l.owner_id=$2 and r.deleted_at is null for update of r`, [resourceId, ownerId]);
-      if (!lyric.rowCount) return null;
-      const existing = await client.query<DocumentRows>("select document_key, resource_id, snapshot, snapshot_sequence::text from sync_documents where resource_id=$1", [resourceId]);
+      const editable = await client.query<{ resource_type: "lyrics" | "rhyme_note"; body: string }>(`select r.type resource_type,
+        case r.type when 'lyrics' then l.body when 'rhyme_note' then n.body end body
+        from resources r left join lyrics l on l.resource_id=r.id and l.owner_id=r.owner_id
+        left join rhyme_notes n on n.resource_id=r.id and n.owner_id=r.owner_id
+        where r.id=$1 and r.owner_id=$2 and r.type in ('lyrics','rhyme_note') and r.deleted_at is null
+          and ((r.type='lyrics' and l.resource_id is not null) or (r.type='rhyme_note' and n.resource_id is not null))
+        for update of r`, [resourceId, ownerId]);
+      if (!editable.rowCount) return null;
+      const existing = await client.query<DocumentRows>("select document_key,resource_id,resource_type,snapshot,snapshot_sequence::text from sync_documents where resource_id=$1", [resourceId]);
       if (existing.rows[0]) return existing.rows[0];
-      const document = new Y.Doc(); const body = lyric.rows[0]!.body.replace(/\r\n?/g, "\n");
+      const resource = editable.rows[0]!;
+      const document = new Y.Doc(); const body = resource.body.replace(/\r\n?/g, "\n");
       if (body) document.getText("body").insert(0, body);
-      const created = await client.query<DocumentRows>(`insert into sync_documents(resource_id,owner_id,snapshot,projected_at,revision_body_sha256)
-        values($1,$2,$3,statement_timestamp(),$4) returning document_key,resource_id,snapshot,snapshot_sequence::text`, [resourceId, ownerId, Buffer.from(Y.encodeStateAsUpdate(document)), bodyHash(body)]);
-      if (body !== lyric.rows[0]!.body) await client.query("update lyrics set body=$3 where resource_id=$1 and owner_id=$2", [resourceId, ownerId, body]);
+      const created = await client.query<DocumentRows>(`insert into sync_documents(resource_id,owner_id,resource_type,snapshot,projected_at,revision_body_sha256)
+        values($1,$2,$3,$4,statement_timestamp(),$5)
+        returning document_key,resource_id,resource_type,snapshot,snapshot_sequence::text`,
+        [resourceId, ownerId, resource.resource_type, Buffer.from(Y.encodeStateAsUpdate(document)), bodyHash(body)]);
+      if (body !== resource.body) await projectBody(client, resource.resource_type, resourceId, ownerId, body);
       document.destroy(); return created.rows[0]!;
     });
   }
@@ -58,7 +67,7 @@ export class CollaborationStore {
       let projectionPending = false;
       await client.query("savepoint project_plaintext");
       try {
-        await client.query("update lyrics set body=$3 where resource_id=$1 and owner_id=$2", [loaded.resourceId, ownerId, body]);
+        await projectBody(client, loaded.resourceType, loaded.resourceId, ownerId, body);
         await client.query("update sync_documents set projected_at=statement_timestamp(),projection_error_code=null,updated_at=statement_timestamp() where document_key=$1", [documentKey]);
         await client.query("release savepoint project_plaintext");
       } catch {
@@ -84,7 +93,7 @@ export class CollaborationStore {
       if (!loaded) return false;
       const document = materialize(loaded.snapshot, loaded.updates);
       const body = document.getText("body").toString(); document.destroy();
-      await client.query("update lyrics set body=$3 where resource_id=$1 and owner_id=$2", [loaded.resourceId, ownerId, body]);
+      await projectBody(client, loaded.resourceType, loaded.resourceId, ownerId, body);
       await client.query("update sync_documents set projected_at=statement_timestamp(),projection_error_code=null,updated_at=statement_timestamp() where document_key=$1", [documentKey]);
       return true;
     });
@@ -148,7 +157,7 @@ export class CollaborationStore {
       await client.query(`update sync_documents set snapshot=$2,snapshot_sequence=greatest(snapshot_sequence,$3),
         projected_at=statement_timestamp(),projection_error_code=null,updated_at=statement_timestamp() where document_key=$1`, [key, Buffer.from(snapshot), sequence]);
       await client.query("delete from sync_updates where document_key=$1", [key]);
-      await client.query("update lyrics set body=$3 where resource_id=$1 and owner_id=$2", [loaded.resourceId, ownerId, target.body]);
+      await projectBody(client, loaded.resourceType, loaded.resourceId, ownerId, target.body);
       await client.query("insert into lyric_restore_requests(document_key,owner_id,request_id,request_sha256) values($1,$2,$3,$4)", [key, ownerId, input.requestId, requestHash]);
       await pruneRevisions(client, key, now, [target.id, preserved!.id]);
       return { duplicate: false, snapshot };
@@ -196,12 +205,12 @@ export class CollaborationStore {
   }
 
   async #loadLocked(client: PoolClient, ownerId: string, key: string, lock: boolean) {
-    const result = await client.query<DocumentRows & { deleted_at: Date | null }>(`select d.document_key,d.resource_id,d.snapshot,d.snapshot_sequence::text,d.projection_error_code,r.deleted_at
+    const result = await client.query<DocumentRows & { deleted_at: Date | null }>(`select d.document_key,d.resource_id,d.resource_type,d.snapshot,d.snapshot_sequence::text,d.projection_error_code,r.deleted_at
       from sync_documents d join resources r on r.id=d.resource_id and r.owner_id=d.owner_id
       where d.document_key=$1 and d.owner_id=$2 ${lock ? "for update of r,d" : ""}`, [key, ownerId]);
     const row = result.rows[0]; if (!row || row.deleted_at) return null;
     const updates = await client.query<{ payload: Buffer }>("select payload from sync_updates where document_key=$1 and sequence>$2 order by sequence", [key, row.snapshot_sequence]);
-    return { resourceId: row.resource_id, snapshot: new Uint8Array(row.snapshot), updates: updates.rows.map((item) => new Uint8Array(item.payload)), projectionPending: row.projection_error_code !== null };
+    return { resourceId: row.resource_id, resourceType: row.resource_type, snapshot: new Uint8Array(row.snapshot), updates: updates.rows.map((item) => new Uint8Array(item.payload)), projectionPending: row.projection_error_code !== null };
   }
 
   async #owned<T>(ownerId: string, work: (client: PoolClient) => Promise<T>): Promise<T> {
@@ -216,3 +225,9 @@ export function materialize(snapshot: Uint8Array, updates: readonly Uint8Array[]
 }
 
 export function newUpdateId() { return randomUUID(); }
+
+async function projectBody(client: PoolClient, resourceType: "lyrics" | "rhyme_note", resourceId: string, ownerId: string, body: string): Promise<void> {
+  const table = resourceType === "lyrics" ? "lyrics" : "rhyme_notes";
+  const result = await client.query(`update ${table} set body=$3 where resource_id=$1 and owner_id=$2`, [resourceId, ownerId, body]);
+  if (result.rowCount !== 1) throw new Error("SYNC_DOCUMENT_UNAVAILABLE");
+}

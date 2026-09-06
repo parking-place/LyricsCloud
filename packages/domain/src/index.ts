@@ -5,5 +5,6 @@ export * from "./resource-contract.js";
 export * from "./song-contract.js";
 export * from "./sync-contract.js";
 export * from "./lyric-contract.js";
+export * from "./rhyme-contract.js";
 export * from "./revision-contract.js";
 export * from "./types.js";

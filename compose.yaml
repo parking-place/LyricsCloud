@@ -13,7 +13,7 @@ x-app: &app
     CI: "true"
     NODE_ENV: development
     DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set in .env}
-    APP_VERSION: ${APP_VERSION:-0.3.1}
+    APP_VERSION: ${APP_VERSION:-0.4.0}
     BUILD_ID: ${BUILD_ID:-local}
   volumes:
     - .:/workspace
@@ -71,7 +71,7 @@ services:
       CI: "true"
       NODE_ENV: test
       DATABASE_URL: ${TEST_DATABASE_URL:-postgresql://lyricscloud_test:lyricscloud_test_only@postgres_test:5432/lyricscloud_test}
-      APP_VERSION: ${APP_VERSION:-0.3.1}
+      APP_VERSION: ${APP_VERSION:-0.4.0}
       BUILD_ID: ${BUILD_ID:-local}
     depends_on:
       postgres_test:
@@ -86,7 +86,7 @@ services:
       CI: "true"
       NODE_ENV: development
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set in .env}
-      APP_VERSION: ${APP_VERSION:-0.3.1}
+      APP_VERSION: ${APP_VERSION:-0.4.0}
       BUILD_ID: ${BUILD_ID:-local}
       APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8080}
       COLLABORATION_INTERNAL_URL: http://collaboration:3001

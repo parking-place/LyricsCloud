@@ -18,16 +18,18 @@ export interface BrowserLyricSync {
   retry(): void;
   destroy(): Promise<void>;
 }
-const localOrigin = Symbol("lyricscloud-local");
-const remoteOrigin = Symbol("lyricscloud-remote");
-
-export async function createBrowserLyricSync(options: {
+export type BrowserRhymeSync = BrowserLyricSync;
+export type BrowserEditableSyncOptions = {
   ownerId: string; resourceId: string; initialBody: string;
   onRemoteBody: (body: string, changes?: readonly EditorTextChange[]) => void;
   onStateChange: (state: LocalSyncState) => void;
   onEditableChange?: (editable: boolean) => void;
   onLegacyConflict?: (draft: { localBody: string; serverBody: string }) => void;
-}): Promise<BrowserLyricSync> {
+};
+const localOrigin = Symbol("lyricscloud-local");
+const remoteOrigin = Symbol("lyricscloud-remote");
+
+export async function createBrowserLyricSync(options: BrowserEditableSyncOptions): Promise<BrowserLyricSync> {
   options.onStateChange("loading");
   options.onEditableChange?.(false);
   const prefix = await ownerPrefix(options.ownerId);
@@ -325,6 +327,11 @@ export async function createBrowserLyricSync(options: {
     },
     destroy
   };
+}
+
+/** Rhyme notes reuse the owner-scoped text/outbox protocol; the server validates the resource subtype. */
+export function createBrowserRhymeSync(options: BrowserEditableSyncOptions): Promise<BrowserRhymeSync> {
+  return createBrowserLyricSync(options);
 }
 
 export async function clearOwnerLocalDrafts(ownerId: string): Promise<void> {

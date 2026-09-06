@@ -1,6 +1,6 @@
 import * as Y from "yjs";
 import { describe, expect, it } from "vitest";
-import { applyLyricUpdate, createLyricDocument, encodeLyricSnapshot, lyricBody, projectLyric } from "./crdt.js";
+import { applyLyricUpdate, createLyricDocument, createRhymeDocument, encodeLyricSnapshot, lyricBody, projectLyric, projectRhyme, rhymeBody } from "./crdt.js";
 
 describe("lyric CRDT contract", () => {
   it("converges with reversed and duplicate delivery", () => {
@@ -30,6 +30,13 @@ describe("lyric CRDT contract", () => {
     expect(projectLyric(recovered, "관계형 제목")).toEqual({ title: "관계형 제목", body: "한글\n🙂\n[Hook]" });
     expect(encodeLyricSnapshot(recovered)).toEqual(encodeLyricSnapshot(recovered));
   });
+});
+
+it("uses the same portable text document boundary for rhyme notes", () => {
+  const document = createRhymeDocument("air\r\nchair");
+  expect(rhymeBody(document).toString()).toBe("air\nchair");
+  expect(projectRhyme(document, "라임")).toEqual({ title: "라임", body: "air\nchair" });
+  document.destroy();
 });
 
 function createFrom(update: Uint8Array) {

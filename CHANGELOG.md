@@ -19,6 +19,7 @@
 - 0.3.1 동일 owner Yjs 본문 계약, opaque 문서·업데이트 식별자, 역순·중복 수렴과 결정적 평문 projection 기준
 - owner별 IndexedDB 가사 초안, BroadcastChannel 다중 탭 병합, 오프라인 복구와 실제 영속 수준 저장 상태
 - 인증 WebSocket 가사 동기화, 멱등 update ACK, PostgreSQL snapshot·평문 투영·압축·재시작 복구와 내용 없는 운영 지표
+- 0.4.0 라임 노트·owner별 태그·곡 연결 데이터 계약과 생성·복제 멱등성, 가사와 같은 CRDT·평문·수정 기록 경계
 
 - 제품 기획, 15개 PC·모바일 목업, 구현 기술 결정 기준선
 - `0.0.0`부터 `1.0.0`까지의 버전·Phase 실행 계획
@@ -49,7 +50,7 @@
 
 ### Not yet implemented
 
-- 0.4.0 이후 라임 노트·프롬프트·검색·PWA·내보내기·출시 준비 기능
+- 0.4.0 라임 목록·편집 화면 이후 프롬프트·검색·PWA·내보내기·출시 준비 기능
 
 ### Fixed
 

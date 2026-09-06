@@ -3,13 +3,13 @@
 이 파일은 현재 버전·Phase·담당 작업의 단일 상태 원본입니다. 계획 문서는 범위를 정의하고 이 파일은 실제 진행 상황을 기록합니다.
 
 ```yaml
-current_version: "0.3.1"
-current_phase: "5phase.md"
-state: "complete"
+current_version: "0.4.0"
+current_phase: "1phase.md"
+state: "review"
 owner: "Codex"
 started_at: "2026-09-06 KST"
 updated_at: "2026-09-06"
-next_action: "0.4.0 Phase 1 진입: 라임 노트 데이터·소유권 계약과 PROD-0006 인계 확인"
+next_action: "0.4.0 Phase 1 branch push, 필수 CI·Docker Hub 다중 tag, 동일 SHA 개발 배포와 공개 smoke"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -38,7 +38,7 @@ next_action: "0.4.0 Phase 1 진입: 라임 노트 데이터·소유권 계약과
 | 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
 | 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
 | 0.3.1 | complete | Phase 1~5 완료, 자동 장애 회귀·실제 기기·원격 CI·image·동일 SHA 개발 배포 검증 | 0.3.0 완료 |
-| 0.4.0 | planned | 없음 | 0.3.1 완료 |
+| 0.4.0 | in_progress | Phase 1 로컬 완료, 원격·개발 인수 대기 | 0.3.1 완료 |
 | 0.5.0 | planned | 없음 | 0.4.0 완료 |
 | 0.6.0 | planned | 없음 | 0.5.0 완료 |
 | 0.7.0 | planned | 없음 | 0.6.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.4.0 Phase 1 진입: 라임 노트 데이터·소유권 계약과
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | - |
+| Codex | 0.4.0 / Phase 1 | LC-040-P1-01~08 | VERSION, config, packages/domain·database·editor, apps/collaboration, migrations·rollback·tests, 상태·인계 문서 | 0.3.1 완료, PROD-0002 Accepted | 2026-09-06 KST | review |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,7 +102,7 @@ next_action: "0.4.0 Phase 1 진입: 라임 노트 데이터·소유권 계약과
 
 ## 다음 작업
 
-0.3.1은 자동 장애 회귀와 실제 기기 인수를 모두 마쳤다. 0.4.0 Phase 1은 [동기화 어댑터 인계](../../docs/architecture/0.3.1-SYNC-ADAPTER-HANDOFF.md), `PROD-0006`과 라임 목업을 먼저 읽고 라임 노트 데이터·소유권 계약만 구현한다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.4.0 Phase 1의 라임 노트·태그·곡 연결과 owner 전용 동기화 재사용은 로컬 수용을 통과했다. 필수 CI·image·동일 SHA 개발 배포·공개 smoke가 끝나야 Phase 2의 목록 화면으로 이동한다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
