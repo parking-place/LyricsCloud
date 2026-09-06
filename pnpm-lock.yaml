@@ -153,9 +153,15 @@ importers:
       '@codemirror/view':
         specifier: 6.43.11
         version: 6.43.11
+      '@lyricscloud/domain':
+        specifier: workspace:*
+        version: link:../domain
       dexie:
         specifier: 4.4.5
         version: 4.4.5
+      diff:
+        specifier: 9.0.0
+        version: 9.0.0
       y-indexeddb:
         specifier: 9.0.12
         version: 9.0.12(yjs@13.6.32)
@@ -968,6 +974,10 @@ packages:
 
   dexie@4.4.5:
     resolution: {integrity: sha512-wWCHdihT3dmlUSuNhn5mMZDWSpG0suxjAni7YjjiZdzabZcKmy3uNZGZ7AeYYXBoLbpSXX35fikPLkPC44Osiw==}
+
+  diff@9.0.0:
+    resolution: {integrity: sha512-svtcdpS8CgJyqAjEQIXdb3OjhFVVYjzGAPO8WGCmRbrml64SPw/jJD4GoE98aR7r25A0XcgrK3F02yw9R/vhQw==}
+    engines: {node: '>=0.3.1'}
 
   drizzle-orm@0.44.7:
     resolution: {integrity: sha512-quIpnYznjU9lHshEOAYLoZ9s3jweleHlZIAWR/jX9gAWNg/JhQ1wj0KGRf7/Zm+obRrYd9GjPVJg790QY9N5AQ==}
@@ -1950,6 +1960,8 @@ snapshots:
     optional: true
 
   dexie@4.4.5: {}
+
+  diff@9.0.0: {}
 
   drizzle-orm@0.44.7(@types/pg@8.15.5)(pg@8.16.3):
     optionalDependencies:

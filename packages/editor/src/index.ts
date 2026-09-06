@@ -10,3 +10,4 @@ export * from "./copy.js";
 export * from "./crdt.js";
 export * from "./browser-sync.js";
 export * from "./songform.js";
+export * from "./revision-diff.js";

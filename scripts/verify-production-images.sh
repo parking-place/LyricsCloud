@@ -39,4 +39,5 @@ check_http "$name-collaboration" http://127.0.0.1:3001/health/ready
 check_http "$name-worker" http://127.0.0.1:3002/health/ready
 check_http "$name-web" http://127.0.0.1:3000/api/health/ready
 check_http "$name-web" http://127.0.0.1:3000/collaboration/health/ready
+docker exec -i --workdir /workspace/apps/collaboration "$name-collaboration" node --input-type=module < scripts/verify-production-revisions.mjs
 printf 'Production images: migration completed; web, collaboration, worker and same-origin proxy ready.\n'

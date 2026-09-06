@@ -1,6 +1,8 @@
 import { createHash, randomUUID } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
 import * as Y from "yjs";
+import { REVISION_POLICY, type CheckpointReason, type RestoreRevisionInput } from "@lyricscloud/domain";
+import { bodyHash, captureRevision, pruneRevisions, summarize, type RevisionRow } from "./revisions.js";
 
 interface DocumentRows {
   document_key: string; resource_id: string; snapshot: Buffer; snapshot_sequence: string; projection_error_code?: string | null;
@@ -21,8 +23,8 @@ export class CollaborationStore {
       if (existing.rows[0]) return existing.rows[0];
       const document = new Y.Doc(); const body = lyric.rows[0]!.body.replace(/\r\n?/g, "\n");
       if (body) document.getText("body").insert(0, body);
-      const created = await client.query<DocumentRows>(`insert into sync_documents(resource_id,owner_id,snapshot,projected_at)
-        values($1,$2,$3,statement_timestamp()) returning document_key,resource_id,snapshot,snapshot_sequence::text`, [resourceId, ownerId, Buffer.from(Y.encodeStateAsUpdate(document))]);
+      const created = await client.query<DocumentRows>(`insert into sync_documents(resource_id,owner_id,snapshot,projected_at,revision_body_sha256)
+        values($1,$2,$3,statement_timestamp(),$4) returning document_key,resource_id,snapshot,snapshot_sequence::text`, [resourceId, ownerId, Buffer.from(Y.encodeStateAsUpdate(document)), bodyHash(body)]);
       if (body !== lyric.rows[0]!.body) await client.query("update lyrics set body=$3 where resource_id=$1 and owner_id=$2", [resourceId, ownerId, body]);
       document.destroy(); return created.rows[0]!;
     });
@@ -97,6 +99,91 @@ export class CollaborationStore {
     return { documents: Number(row.documents), pendingProjections: Number(row.pending), maximumProjectionLagMs: Number(row.maximum_projection_lag_ms) };
   }
 
+  async listRevisions(ownerId: string, key: string) {
+    return this.#withDocument(ownerId, key, async (client, loaded, document) => {
+      const rows = await client.query<RevisionRow>(`select * from lyric_revisions where document_key=$1 and created_at >= $2
+        order by created_at desc,sequence desc limit $3`, [key, new Date(Date.now() - REVISION_POLICY.retentionDays * 86_400_000), REVISION_POLICY.maximumCount]);
+      const body = document.getText("body").toString();
+      return { current: { body, hash: bodyHash(body) }, items: rows.rows.map(summarize) };
+    });
+  }
+
+  async getRevision(ownerId: string, key: string, revisionId: string) {
+    return this.#withDocument(ownerId, key, async (client) => {
+      const row = (await client.query<RevisionRow>(`select * from lyric_revisions where document_key=$1 and id=$2
+        and created_at >= statement_timestamp()-interval '180 days'`, [key, revisionId])).rows[0];
+      return row ? { ...summarize(row), body: row.body } : null;
+    });
+  }
+
+  async checkpoint(ownerId: string, key: string, reason: CheckpointReason, now = new Date()) {
+    return this.#withDocument(ownerId, key, async (client, _loaded, document) => {
+      const result = await captureRevision(client, ownerId, key, document.getText("body").toString(), reason, now);
+      await pruneRevisions(client, key, now);
+      return result;
+    });
+  }
+
+  async restoreRevision(ownerId: string, key: string, revisionId: string, input: RestoreRevisionInput) {
+    return this.#withDocument(ownerId, key, async (client, loaded, document) => {
+      const requestHash = bodyHash(`${revisionId}:${input.expectedHash}`);
+      const receipt = (await client.query<{ request_sha256: string }>("select request_sha256 from lyric_restore_requests where document_key=$1 and request_id=$2", [key, input.requestId])).rows[0];
+      if (receipt) {
+        if (receipt.request_sha256 !== requestHash) throw new Error("REVISION_REQUEST_REUSED");
+        return { duplicate: true, snapshot: Y.encodeStateAsUpdate(document) };
+      }
+      const target = (await client.query<RevisionRow>(`select * from lyric_revisions where document_key=$1 and id=$2
+        and created_at >= statement_timestamp()-interval '180 days'`, [key, revisionId])).rows[0];
+      if (!target) return null;
+      const body = document.getText("body");
+      if (bodyHash(body.toString()) !== input.expectedHash) throw new Error("REVISION_CURRENT_CHANGED");
+      const now = new Date();
+      const preserved = await captureRevision(client, ownerId, key, body.toString(), "before_restore", now);
+      document.transact(() => { body.delete(0, body.length); body.insert(0, target.body); });
+      const snapshot = Y.encodeStateAsUpdate(document);
+      // Compact into the existing Yjs history. Never replace the document with a
+      // fresh Y.Doc: offline clients must still merge against the old identities.
+      const sequence = (await client.query<{ sequence: string }>("select coalesce(max(sequence),0)::text sequence from sync_updates where document_key=$1", [key])).rows[0]!.sequence;
+      await client.query(`update sync_documents set snapshot=$2,snapshot_sequence=greatest(snapshot_sequence,$3),
+        projected_at=statement_timestamp(),projection_error_code=null,updated_at=statement_timestamp() where document_key=$1`, [key, Buffer.from(snapshot), sequence]);
+      await client.query("delete from sync_updates where document_key=$1", [key]);
+      await client.query("update lyrics set body=$3 where resource_id=$1 and owner_id=$2", [loaded.resourceId, ownerId, target.body]);
+      await client.query("insert into lyric_restore_requests(document_key,owner_id,request_id,request_sha256) values($1,$2,$3,$4)", [key, ownerId, input.requestId, requestHash]);
+      await pruneRevisions(client, key, now, [target.id, preserved!.id]);
+      return { duplicate: false, snapshot };
+    });
+  }
+
+  async maintainRevisions(limit = 20) {
+    const now = new Date();
+    const due = await this.#pool.query<{ owner_id: string; document_key: string }>(`select d.owner_id,d.document_key from sync_documents d
+      join resources r on r.id=d.resource_id where r.deleted_at is null and d.revision_checked_at <= $1
+      order by d.revision_checked_at limit $2`, [new Date(now.getTime() - REVISION_POLICY.intervalMs), limit]);
+    const expired = await this.#pool.query<{ owner_id: string; document_key: string }>(`select owner_id,document_key from lyric_revisions
+      group by owner_id,document_key having min(created_at)<$1 or count(*)>$2 limit $3`, [new Date(now.getTime() - REVISION_POLICY.retentionDays * 86_400_000), REVISION_POLICY.maximumCount, limit]);
+    let failed = 0;
+    for (const item of due.rows) {
+      try { await this.checkpoint(item.owner_id, item.document_key, "interval", now); } catch { failed++; }
+    }
+    for (const item of expired.rows) {
+      try { await this.#owned(item.owner_id, async (client) => {
+        await client.query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [item.document_key]);
+        await pruneRevisions(client, item.document_key, now);
+      }); } catch { failed++; }
+    }
+    return { checked: due.rows.length, prunedDocuments: expired.rows.length, failed };
+  }
+
+  async #withDocument<T>(ownerId: string, key: string, work: (client: PoolClient, loaded: NonNullable<Awaited<ReturnType<CollaborationStore["loadDocument"]>>>, document: Y.Doc) => Promise<T>) {
+    return this.#owned(ownerId, async (client) => {
+      await client.query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [key]);
+      const loaded = await this.#loadLocked(client, ownerId, key, true);
+      if (!loaded) return null;
+      const document = materialize(loaded.snapshot, loaded.updates);
+      try { return await work(client, loaded, document); } finally { document.destroy(); }
+    });
+  }
+
   async retryPendingProjections(limit = 20) {
     const pending = await this.#pool.query<{ owner_id: string; document_key: string }>(`select owner_id,document_key
       from sync_documents where projection_error_code is not null order by updated_at limit $1`, [limit]);
@@ -110,7 +197,7 @@ export class CollaborationStore {
   async #loadLocked(client: PoolClient, ownerId: string, key: string, lock: boolean) {
     const result = await client.query<DocumentRows & { deleted_at: Date | null }>(`select d.document_key,d.resource_id,d.snapshot,d.snapshot_sequence::text,d.projection_error_code,r.deleted_at
       from sync_documents d join resources r on r.id=d.resource_id and r.owner_id=d.owner_id
-      where d.document_key=$1 and d.owner_id=$2 ${lock ? "for update of d" : ""}`, [key, ownerId]);
+      where d.document_key=$1 and d.owner_id=$2 ${lock ? "for update of r,d" : ""}`, [key, ownerId]);
     const row = result.rows[0]; if (!row || row.deleted_at) return null;
     const updates = await client.query<{ payload: Buffer }>("select payload from sync_updates where document_key=$1 and sequence>$2 order by sequence", [key, row.snapshot_sequence]);
     return { resourceId: row.resource_id, snapshot: new Uint8Array(row.snapshot), updates: updates.rows.map((item) => new Uint8Array(item.payload)), projectionPending: row.projection_error_code !== null };

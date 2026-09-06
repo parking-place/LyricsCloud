@@ -1,5 +1,6 @@
 import { Dexie } from "dexie";
 import * as Y from "yjs";
+import type { CheckpointReason, LyricRevision, RestoreRevisionInput, RevisionHistory } from "@lyricscloud/domain";
 import type { EditorDocumentTransaction, EditorTextChange } from "./codemirror.js";
 import { createLyricDocument, lyricBody } from "./crdt.js";
 import { SyncStorage, type QueuedUpdate } from "./sync-storage.js";
@@ -9,6 +10,11 @@ export interface BrowserLyricSync {
   applyLocalTransaction(transaction: EditorDocumentTransaction): void;
   setComposing(composing: boolean): void;
   flush(): Promise<boolean>;
+  checkpoint(reason: Exclude<CheckpointReason, "interval">): Promise<boolean>;
+  leave(): void;
+  listRevisions(): Promise<RevisionHistory>;
+  getRevision(id: string): Promise<LyricRevision>;
+  restoreRevision(id: string, input: RestoreRevisionInput): Promise<void>;
   retry(): void;
   destroy(): Promise<void>;
 }
@@ -169,7 +175,7 @@ export async function createBrowserLyricSync(options: {
     retryDelay = Math.min(30_000, retryDelay * 2);
   }
   async function connect() {
-    if (destroyed || halted || connecting || !navigator.onLine || socket?.readyState === WebSocket.OPEN) return;
+    if (destroyed || halted || connecting || !navigator.onLine || (socket && socket.readyState <= WebSocket.OPEN)) return;
     connecting = true;
     try {
       const response = await fetch(`/collaboration/documents/${options.resourceId}`, {
@@ -235,6 +241,30 @@ export async function createBrowserLyricSync(options: {
   storage.on("versionchange", () => { fail("unavailable"); void destroy(); });
   window.addEventListener("online", online);
   window.addEventListener("offline", offline);
+  async function flush(): Promise<boolean> {
+    await writes;
+    if (halted || composing || !navigator.onLine || destroyed) return false;
+    if (state === "ready") return true;
+    return new Promise<boolean>((resolve) => {
+      const finish = (saved: boolean) => { clearTimeout(timer); waiters.delete(finish); resolve(saved); };
+      const timer = setTimeout(() => finish(false), 8_000);
+      waiters.add(finish);
+      void pump();
+    });
+  }
+  async function revisionRequest<T>(path = "", input?: unknown): Promise<T> {
+    if (!documentKey || halted || destroyed || !navigator.onLine) throw new Error("REVISION_UNAVAILABLE");
+    const response = await fetch(`/collaboration/documents/${documentKey}/revisions${path}`, {
+      method: input ? "POST" : "GET", credentials: "same-origin", cache: "no-store",
+      ...(input ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) } : {}),
+      signal: AbortSignal.any([abort.signal, AbortSignal.timeout(10_000)])
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({})) as { error?: string };
+      throw new Error(error.error ?? "REVISION_UNAVAILABLE");
+    }
+    return response.json() as Promise<T>;
+  }
   try {
     const cached = await storage.documents.get(options.resourceId);
     if (cached) {
@@ -262,16 +292,28 @@ export async function createBrowserLyricSync(options: {
       composing = value;
       if (!value) for (const update of remoteQueue.splice(0)) applyRemote(update);
     },
-    async flush() {
+    flush,
+    async checkpoint(reason) {
+      if (!await flush()) return false;
+      try { await revisionRequest("", { reason }); return true; } catch { return false; }
+    },
+    leave() {
+      // Browsers may terminate pagehide work. Capture the durable server state;
+      // unacknowledged edits remain in the existing local outbox for reconnect.
+      if (!documentKey || halted || destroyed || !navigator.onLine) return;
+      void fetch(`/collaboration/documents/${documentKey}/revisions`, { method: "POST", credentials: "same-origin", keepalive: true,
+        headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reason: "leave" }) }).catch(() => undefined);
+    },
+    listRevisions() { return revisionRequest<RevisionHistory>(); },
+    getRevision(id) { return revisionRequest<LyricRevision>(`/${id}`); },
+    async restoreRevision(id, input) {
+      if (!await flush()) throw new Error("REVISION_UNAVAILABLE");
+      const result = await revisionRequest<{ payload: string }>(`/${id}/restore`, input);
+      applyRemote(decode(result.payload));
+      projectionPending = false;
       await writes;
-      if (halted || composing || !navigator.onLine || destroyed) return false;
-      if (state === "ready") return true;
-      return new Promise<boolean>((resolve) => {
-        const finish = (saved: boolean) => { clearTimeout(timer); waiters.delete(finish); resolve(saved); };
-        const timer = setTimeout(() => finish(false), 8_000);
-        waiters.add(finish);
-        void pump();
-      });
+      await report();
+      if (halted) throw new Error("REVISION_LOCAL_SAVE_FAILED");
     },
     retry() {
       if (halted === "conflict" || halted === "unavailable" || destroyed) return;
