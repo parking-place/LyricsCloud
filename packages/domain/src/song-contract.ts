@@ -17,6 +17,9 @@ export const SONG_SORTS = [
 ] as const;
 export type SongSort = (typeof SONG_SORTS)[number];
 
+export const SONG_WORK_FILTERS = ["all", "has_linked_resources", "no_lyrics"] as const;
+export type SongWorkFilter = (typeof SONG_WORK_FILTERS)[number];
+
 export const SONG_LIST_LIMITS = { default: 20, maximum: 50 } as const;
 export const SONG_LINK_RESOURCE_TYPES = ["rhyme_note", "prompt"] as const;
 export type SongLinkResourceType = (typeof SONG_LINK_RESOURCE_TYPES)[number];
@@ -59,6 +62,7 @@ export interface UpdateSongInput {
 export interface SongListInput {
   readonly search?: string;
   readonly status?: SongStatus;
+  readonly work: SongWorkFilter;
   readonly sort: SongSort;
   readonly cursor?: string;
   readonly limit: number;
@@ -132,6 +136,7 @@ export function parseSongListInput(params: URLSearchParams): SongListInput {
   const search = rawSearch ? textValue(rawSearch, "search", 200, issues) : undefined;
   const rawStatus = params.get("status")?.trim();
   const status = rawStatus ? enumValue(rawStatus, SONG_STATUSES, "status", issues, "idea") : undefined;
+  const work = enumValue(params.get("work") ?? "all", SONG_WORK_FILTERS, "work", issues, "all");
   const sort = enumValue(params.get("sort") ?? "updated_desc", SONG_SORTS, "sort", issues, "updated_desc");
   const cursor = params.get("cursor")?.trim() || undefined;
   const rawLimit = params.get("limit");
@@ -141,7 +146,7 @@ export function parseSongListInput(params: URLSearchParams): SongListInput {
   }
   if (cursor && cursor.length > 1_024) issues.push({ field: "cursor", code: "too_long" });
   if (issues.length) throw new SongValidationError(issues);
-  return { ...(search ? { search } : {}), ...(status ? { status } : {}), sort, ...(cursor ? { cursor } : {}), limit };
+  return { ...(search ? { search } : {}), ...(status ? { status } : {}), work, sort, ...(cursor ? { cursor } : {}), limit };
 }
 
 export function parseSongLinkListInput(params: URLSearchParams): SongLinkListInput {

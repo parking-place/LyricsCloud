@@ -46,10 +46,11 @@ describe("song command contract", () => {
   });
 
   it("validates list filters, sort, cursor size, and bounds", () => {
-    expect(parseSongListInput(new URLSearchParams("search=%20한글%20&status=idea&sort=title_asc&limit=30"))).toEqual({
-      search: "한글", status: "idea", sort: "title_asc", limit: 30
+    expect(parseSongListInput(new URLSearchParams("search=%20한글%20&status=idea&work=no_lyrics&sort=title_asc&limit=30"))).toEqual({
+      search: "한글", status: "idea", work: "no_lyrics", sort: "title_asc", limit: 30
     });
-    expect(() => parseSongListInput(new URLSearchParams("sort=nope&limit=0"))).toThrow(SongValidationError);
+    expect(parseSongListInput(new URLSearchParams())).toMatchObject({ work: "all" });
+    expect(() => parseSongListInput(new URLSearchParams("work=nope&sort=nope&limit=0"))).toThrow(SongValidationError);
   });
 
   it("validates song link candidate filters and deduplicates batch ids", () => {

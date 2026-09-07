@@ -1,6 +1,6 @@
 :root {
-  --lc-breakpoint-mobile: 390px;
-  --lc-breakpoint-tablet: 1024px;
+  --lc-breakpoint-mobile: 720px;
+  --lc-breakpoint-tablet: 960px;
   --lc-canvas-max: 1440px;
   --lc-space-1: 0.25rem;
   --lc-space-2: 0.5rem;

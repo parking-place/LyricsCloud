@@ -306,6 +306,61 @@ test.describe("prompt creation and editor", () => {
     } finally { await removeAccount(owner.userId); }
   });
 
+  test("appends a template without replacing existing tags and moves a confirmed deletion to trash", async ({ browser, context, page }) => {
+    const owner = await account([context]);
+    const outsiderContext = await browser.newContext({ baseURL: origin });
+    const outsider = await account([outsiderContext]);
+    try {
+      const target = await create(page, { title: "템플릿 추가와 삭제", tokens: ["keep me"] });
+      const templateResponse = await page.request.post("/api/templates", { headers, data: {
+        requestId: randomUUID(), type: "prompt", title: "편집기 추가 템플릿", tokens: ["warm synth", "clear vocal"]
+      } });
+      expect(templateResponse.status()).toBe(201);
+      expect((await page.request.delete(`/api/prompts/${target.id}`)).status()).toBe(403);
+      const denied = await outsiderContext.request.delete(`/api/prompts/${target.id}`, { headers });
+      expect(denied.status()).toBe(200);
+      expect(await denied.json()).toEqual({ deleted: false });
+      expect((await page.request.get(`/api/prompts/${target.id}`)).status()).toBe(200);
+
+      await page.goto(`/prompts/${target.id}`);
+      await ready(page);
+      const templateButton = page.getByRole("button", { name: "템플릿 불러오기" });
+      await templateButton.click();
+      let dialog = page.getByRole("dialog", { name: "프롬프트 템플릿 불러오기" });
+      await expect(dialog).toBeVisible();
+      await dialog.getByRole("button", { name: "닫기" }).focus();
+      await page.keyboard.press("Shift+Tab");
+      await expect(dialog.getByRole("button").last()).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(templateButton).toBeFocused();
+
+      await templateButton.click();
+      dialog = page.getByRole("dialog", { name: "프롬프트 템플릿 불러오기" });
+      await dialog.getByRole("button", { name: /편집기 추가 템플릿/ }).click();
+      await expect(page.locator(".prompt-editor-token")).toHaveCount(3);
+      await expect.poll(() => prompt(page, target.id).then((value) => value.plainText)).toBe("keep me, warm synth, clear vocal");
+      await expect(page.getByText(/기존 내용은 보존했습니다/)).toBeVisible();
+
+      const deleteButton = page.getByRole("button", { name: "프롬프트 삭제" });
+      await deleteButton.click();
+      let confirm = page.getByRole("dialog", { name: "‘템플릿 추가와 삭제’ 프롬프트를 삭제할까요?" });
+      await expect(confirm).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(deleteButton).toBeFocused();
+      await deleteButton.click();
+      confirm = page.getByRole("dialog", { name: "‘템플릿 추가와 삭제’ 프롬프트를 삭제할까요?" });
+      await confirm.getByRole("button", { name: "프롬프트 삭제 확인" }).click();
+      await expect(page).toHaveURL("/prompts");
+      expect((await page.request.get(`/api/prompts/${target.id}`)).status()).toBe(404);
+      await page.goto("/trash");
+      await expect(page.locator(".trash-table-wrap:visible, .trash-card-list:visible").getByText("템플릿 추가와 삭제", { exact: true }).first()).toBeVisible();
+    } finally {
+      await outsiderContext.close();
+      await removeAccount(owner.userId);
+      await removeAccount(outsider.userId);
+    }
+  });
+
   test("keeps invalid new titles local and confirms a named discard", async ({ context, page }) => {
     const owner = await account([context]);
     try {

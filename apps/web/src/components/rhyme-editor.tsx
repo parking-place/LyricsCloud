@@ -8,6 +8,7 @@ import { RESOURCE_COLORS, RHYME_LIMITS, type ResourceColor, type RhymeNoteRecord
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
+import { trapDialogTab } from "../lib/dialog-focus.js";
 import { createRhymeMetadataSaver } from "../lib/rhyme-metadata.js";
 import { RhymeHistory } from "./rhyme-history.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
@@ -58,6 +59,23 @@ export function RhymeEditor({ ownerId, initialRhyme, returnTo = "/rhymes" }: { o
   const [notice, setNotice] = useState("");
   const copyFeedback = useCopyFeedback();
   const router = useRouter();
+  const settingsButtonRef = useRef<HTMLButtonElement>(null);
+  const settingsDialogRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const frame = requestAnimationFrame(() => settingsDialogRef.current?.querySelector<HTMLInputElement>("input")?.focus());
+    function keyboard(event: KeyboardEvent) {
+      if (event.key === "Escape") { event.preventDefault(); setSettingsOpen(false); }
+      else trapDialogTab(event, ".rhyme-settings-sheet");
+    }
+    document.addEventListener("keydown", keyboard);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", keyboard);
+      requestAnimationFrame(() => settingsButtonRef.current?.focus());
+    };
+  }, [settingsOpen]);
 
   function draft(overrides: Partial<MetadataDraft> = {}): MetadataDraft {
     return { title: titleRef.current, isFavorite: favoriteRef.current, isPinned: pinnedRef.current,
@@ -281,10 +299,10 @@ export function RhymeEditor({ ownerId, initialRhyme, returnTo = "/rhymes" }: { o
       <button type="button" onClick={copyBody}>⧉ 전체 복사</button>
       <button type="button" onClick={copySelection}>⌁ 선택 복사</button>
       <button type="button" onClick={() => setHistoryOpen(true)}>◴ 수정 기록</button>
-      <button type="button" aria-haspopup="dialog" aria-expanded={settingsOpen} onClick={() => setSettingsOpen(true)}>⚙ 태그·설정</button>
+      <button ref={settingsButtonRef} type="button" aria-haspopup="dialog" aria-expanded={settingsOpen} onClick={() => setSettingsOpen(true)}>⚙ 태그·설정</button>
     </div>
     {settingsOpen ? <div className="editor-sheet-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) setSettingsOpen(false); }}>
-      <section className="songform-sheet rhyme-settings-sheet" role="dialog" aria-modal="true" aria-labelledby="rhyme-settings-title">
+      <section ref={settingsDialogRef} className="songform-sheet rhyme-settings-sheet" role="dialog" aria-modal="true" aria-labelledby="rhyme-settings-title">
         <header><h2 id="rhyme-settings-title">태그와 표시 설정</h2><button type="button" onClick={() => setSettingsOpen(false)}>닫기</button></header>
         <RhymeSettings idPrefix="mobile" tags={tags} tagInput={tagInput} tagBusy={tagBusy} isFavorite={isFavorite} isPinned={isPinned} color={color}
           onTagInput={setTagInput} onAddTag={addTag} onRemoveTag={(tag) => void removeTag(tag)}

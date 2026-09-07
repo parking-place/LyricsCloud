@@ -27,6 +27,7 @@ test.describe("song list UI", () => {
   test("30 songs support cards, URL filters, safe toggles, and cursor focus", async ({ context, page }, testInfo) => {
     const account = await createAccount(context, "목록 곡 사용자");
     try {
+      const songIds: string[] = [];
       for (let index = 0; index < 30; index += 1) {
         const response = await page.request.post("/api/songs", {
           headers: { Origin: origin },
@@ -39,7 +40,18 @@ test.describe("song list UI", () => {
           }
         });
         expect(response.status()).toBe(201);
+        songIds.push((await response.json()).song.id as string);
       }
+      const rhymeResponse = await page.request.post("/api/rhymes", { headers: { Origin: origin }, data: {
+        requestId: randomUUID(), title: "곡 필터 연결 자료", body: "synthetic linked resource"
+      } });
+      const rhymeId = (await rhymeResponse.json()).rhyme.id as string;
+      expect((await page.request.post(`/api/songs/${songIds[0]}/links`, { headers: { Origin: origin }, data: {
+        type: "rhyme_note", linkIds: [rhymeId], unlinkIds: []
+      } })).status()).toBe(200);
+      expect((await page.request.post(`/api/songs/${songIds[1]}/lyrics`, { headers: { Origin: origin }, data: {
+        requestId: randomUUID(), title: "곡 필터 가사", body: "synthetic lyric"
+      } })).status()).toBe(201);
 
       await page.goto("/songs");
       await expect(page.getByText("총 30곡")).toBeVisible();
@@ -75,6 +87,14 @@ test.describe("song list UI", () => {
       await expect(page.getByText("총 5곡")).toBeVisible();
       if (testInfo.project.name === "desktop") await page.getByLabel("곡 상태 필터").selectOption("");
       else await page.getByRole("button", { name: "전체", exact: true }).click();
+      await page.getByLabel("곡 작업 조건 필터").selectOption("has_linked_resources");
+      await expect(page).toHaveURL(/work=has_linked_resources/);
+      await expect(page.getByText("총 1곡")).toBeVisible();
+      await expect(page.getByRole("heading", { name: "목록 곡 00" })).toBeVisible();
+      await page.getByLabel("곡 작업 조건 필터").selectOption("no_lyrics");
+      await expect(page).toHaveURL(/work=no_lyrics/);
+      await expect(page.getByText("총 29곡")).toBeVisible();
+      await page.getByLabel("곡 작업 조건 필터").selectOption("all");
       await page.getByLabel("곡 정렬").selectOption("title_asc");
       await expect(page).toHaveURL(/sort=title_asc/);
       await expect(cards.first().getByRole("heading")).toHaveText("목록 곡 00");

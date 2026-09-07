@@ -87,15 +87,22 @@ describe.runIf(enabled)("song command and list store", () => {
     const filtered = await store!.listSongs(alice, listInput({ status: "completed" }));
     expect(filtered.items.map(({ title }) => title)).toEqual([`${marker} 가나다`]);
 
+    await seedDashboardResources(alice, created[0]!.id);
+    const linked = await store!.listSongs(alice, listInput({ search: marker, work: "has_linked_resources" }));
+    expect(linked.items.map(({ id }) => id)).toEqual([created[0]!.id]);
+    const withoutLyrics = await store!.listSongs(alice, listInput({ search: marker, work: "no_lyrics" }));
+    expect(withoutLyrics.totalCount).toBe(fixtures.length - 1);
+    expect(withoutLyrics.items.map(({ id }) => id)).not.toContain(created[0]!.id);
+
     for (const sort of ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"] satisfies SongSort[]) {
-      const items = await collectPages(alice, { search: marker, sort, limit: 2 });
+      const items = await collectPages(alice, { search: marker, work: "all", sort, limit: 2 });
       expect(items).toHaveLength(fixtures.length);
       expect(new Set(items.map(({ id }) => id)).size).toBe(fixtures.length);
       expect(items[0]?.id).toBe(created[0]?.id);
     }
     const firstPage = await store!.listSongs(alice, listInput({ search: marker, limit: 2 }));
     expect(firstPage.totalCount).toBe(fixtures.length);
-    expect(firstPage.capabilities).toEqual({ lyricsSearch: true, linkedResourceFilters: false });
+    expect(firstPage.capabilities).toEqual({ lyricsSearch: true, linkedResourceFilters: true });
     await expect(store!.listSongs(alice, listInput({ cursor: "not-a-cursor" }))).rejects.toBeInstanceOf(SongCursorError);
   });
 
@@ -185,7 +192,7 @@ function createInput(overrides: Record<string, unknown>) {
 }
 
 function listInput(overrides: Partial<SongListInput>): SongListInput {
-  return { sort: "updated_desc", limit: 20, ...overrides };
+  return { work: "all", sort: "updated_desc", limit: 20, ...overrides };
 }
 
 async function collectPages(ownerId: string, input: SongListInput): Promise<SongRecord[]> {

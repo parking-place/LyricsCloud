@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { clearAccountCache, clearOtherAccountCaches, coordinateAccountLogout, downloadRecoveryDrafts } from "../lib/account-cache.js";
+import { trapDialogTab } from "../lib/dialog-focus.js";
 import { commandForKeyboardEvent, isEditableShortcutTarget, requestShortcutNavigation } from "../lib/shortcut-runtime.js";
 import { Brand } from "./auth-screen.js";
 import { QuickAdd } from "./quick-add.js";
@@ -46,11 +47,30 @@ export function WorkspaceShell({
   const [sessionExpired, setSessionExpired] = useState(false);
   const [accountPaused, setAccountPaused] = useState(false);
   const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const logoutPending = useRef(false);
   const mainShell = useRef<HTMLDivElement>(null);
   const pausedFocus = useRef<HTMLElement | null>(null);
   const guard = useRef<ReturnType<typeof coordinateAccountLogout> | null>(null);
+  const mobileMoreButton = useRef<HTMLButtonElement>(null);
+  const mobileMoreDialog = useRef<HTMLElement>(null);
   const closeShortcutHelp = useCallback(() => setShortcutHelpOpen(false), []);
+  const closeMobileMore = useCallback(() => setMobileMoreOpen(false), []);
+
+  useEffect(() => {
+    if (!mobileMoreOpen) return;
+    const frame = requestAnimationFrame(() => mobileMoreDialog.current?.querySelector<HTMLAnchorElement>("a")?.focus());
+    function keyboard(event: KeyboardEvent) {
+      if (event.key === "Escape") { event.preventDefault(); closeMobileMore(); }
+      else trapDialogTab(event, "[data-mobile-more-dialog]");
+    }
+    document.addEventListener("keydown", keyboard);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", keyboard);
+      requestAnimationFrame(() => mobileMoreButton.current?.focus());
+    };
+  }, [closeMobileMore, mobileMoreOpen]);
 
   useEffect(() => {
     let composing = false;
@@ -212,14 +232,25 @@ export function WorkspaceShell({
     <nav className="mobile-bottom-nav" aria-label="모바일 주 메뉴">
       <a href="/songs" className={`mobile-nav-item${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><strong>곡</strong></a>
       <a href="/rhymes" className={`mobile-nav-item${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><strong>라임</strong></a>
-      {active === "templates" ? <a href="/templates" className="mobile-nav-item active" aria-current="page"><span aria-hidden="true">▦</span><strong>템플릿</strong></a>
-        : active === "trash" ? <a href="/trash" className="mobile-nav-item active" aria-current="page"><span aria-hidden="true">♲</span><strong>휴지통</strong></a>
-        : <a href="/prompts" className={`mobile-nav-item${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><strong>프롬프트</strong></a>}
+      <a href="/prompts" className={`mobile-nav-item${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><strong>프롬프트</strong></a>
       <span className="mobile-nav-spacer" aria-hidden="true" />
       <a href="/search" className={`mobile-nav-item${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}><span aria-hidden="true">⌕</span><strong>검색</strong></a>
-      <a href="/recent" className={`mobile-nav-item${active === "recent" ? " active" : ""}`} aria-current={active === "recent" ? "page" : undefined}><span aria-hidden="true">↺</span><strong>최근</strong></a>
       <a href="/favorites" aria-label="즐겨찾기" className={`mobile-nav-item${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><strong aria-hidden="true">저장</strong></a>
+      <button ref={mobileMoreButton} type="button" className={`mobile-nav-item mobile-more-button${["recent", "templates", "trash", "settings"].includes(active) ? " active" : ""}`}
+        aria-haspopup="dialog" aria-expanded={mobileMoreOpen} onClick={() => setMobileMoreOpen(true)}><span aria-hidden="true">•••</span><strong>더보기</strong></button>
     </nav>
+    {mobileMoreOpen ? <div className="mobile-more-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) closeMobileMore(); }}>
+      <section ref={mobileMoreDialog} className="mobile-more-sheet" role="dialog" aria-modal="true" aria-labelledby="mobile-more-title" data-mobile-more-dialog>
+        <div className="sheet-handle" aria-hidden="true" />
+        <header><div><p className="eyebrow">Workspace</p><h2 id="mobile-more-title">더보기</h2></div><button type="button" onClick={closeMobileMore}>닫기</button></header>
+        <nav aria-label="모바일 추가 메뉴">
+          <a href="/recent" aria-current={active === "recent" ? "page" : undefined}><span aria-hidden="true">↺</span><span><strong>최근 작업</strong><small>마지막 작업 위치로 돌아가기</small></span></a>
+          <a href="/templates" aria-current={active === "templates" ? "page" : undefined}><span aria-hidden="true">▦</span><span><strong>템플릿</strong><small>가사 구조와 프롬프트 재사용</small></span></a>
+          <a href="/trash" aria-current={active === "trash" ? "page" : undefined}><span aria-hidden="true">♲</span><span><strong>휴지통</strong><small>삭제한 자료 복원과 완전 삭제</small></span></a>
+          <a href="/settings" aria-current={active === "settings" ? "page" : undefined}><span aria-hidden="true">⚙</span><span><strong>설정</strong><small>표시, 단축키와 계정 관리</small></span></a>
+        </nav>
+      </section>
+    </div> : null}
     <QuickAdd ownerId={profile.userId} currentSongId={currentSongId} />
     <ShortcutHelpDialog open={shortcutHelpOpen} onClose={closeShortcutHelp} />
   </main>;

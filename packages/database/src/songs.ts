@@ -47,7 +47,7 @@ export interface SongListResult {
   readonly items: readonly SongRecord[];
   readonly totalCount: number;
   readonly nextCursor: string | null;
-  readonly capabilities: { readonly lyricsSearch: true; readonly linkedResourceFilters: false };
+  readonly capabilities: { readonly lyricsSearch: true; readonly linkedResourceFilters: true };
 }
 
 export interface SongLinkItem {
@@ -244,6 +244,24 @@ export class PostgresSongStore {
         values.push(input.status);
         conditions.push(`s.status = $${values.length}`);
       }
+      if (input.work === "has_linked_resources") {
+        conditions.push(`exists (
+          select 1 from song_resource_links work_link
+          join resources linked_resource on linked_resource.id = work_link.linked_resource_id
+            and linked_resource.owner_id = work_link.owner_id
+          where work_link.owner_id = r.owner_id and work_link.song_resource_id = r.id
+            and linked_resource.deleted_at is null
+        )`);
+      }
+      if (input.work === "no_lyrics") {
+        conditions.push(`not exists (
+          select 1 from lyrics work_lyric
+          join resources lyric_resource on lyric_resource.id = work_lyric.resource_id
+            and lyric_resource.owner_id = work_lyric.owner_id
+          where work_lyric.owner_id = r.owner_id and work_lyric.song_id = r.id
+            and lyric_resource.deleted_at is null
+        )`);
+      }
 
       const baseWhere = conditions.join(" and ");
       const count = await client.query<{ count: string }>(`
@@ -268,7 +286,7 @@ export class PostgresSongStore {
         items: pageRows.map(mapSong),
         totalCount: Number(count.rows[0]?.count ?? 0),
         nextCursor: hasMore && last ? encodeCursor(makeCursor(last, input.sort)) : null,
-        capabilities: { lyricsSearch: true, linkedResourceFilters: false }
+        capabilities: { lyricsSearch: true, linkedResourceFilters: true }
       };
     });
   }

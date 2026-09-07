@@ -119,8 +119,8 @@ jobs:
           done
       - name: Run production images with a fresh database
         run: bash scripts/verify-production-images.sh "${{ github.sha }}"
-      - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Install Playwright Chromium and WebKit
+        run: pnpm exec playwright install --with-deps chromium webkit
       - name: Auth and ownership E2E
         env:
           E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test

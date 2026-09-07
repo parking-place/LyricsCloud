@@ -76,6 +76,9 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const titleComposingRef = useRef(false);
   const memoComposingRef = useRef(false);
   const rhymeSelectionRef = useRef<HTMLTextAreaElement>(null);
+  const mobileSongFormButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileSongFormDialogRef = useRef<HTMLElement>(null);
+  const restoreSongFormFocusRef = useRef(false);
   const [title, setTitle] = useState(initialLyric.title);
   const [memo, setMemo] = useState(initialLyric.memo);
   const [status, setStatus] = useState(initialLyric.status);
@@ -119,6 +122,23 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       requestAnimationFrame(() => editorRef.current?.focus());
     };
   }, [displaySettingsOpen]);
+
+  useEffect(() => {
+    if (!mobileSongFormOpen) return;
+    const frame = requestAnimationFrame(() => mobileSongFormDialogRef.current?.querySelector<HTMLButtonElement>("header button")?.focus());
+    function keyboard(event: KeyboardEvent) {
+      if (event.key === "Escape") { event.preventDefault(); restoreSongFormFocusRef.current = true; setMobileSongFormOpen(false); }
+      else trapDialogTab(event, ".songform-sheet");
+    }
+    document.addEventListener("keydown", keyboard);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", keyboard);
+      const restoreFocus = restoreSongFormFocusRef.current;
+      restoreSongFormFocusRef.current = false;
+      if (restoreFocus) requestAnimationFrame(() => mobileSongFormButtonRef.current?.focus());
+    };
+  }, [mobileSongFormOpen]);
 
   function draft(overrides: Partial<LyricEditorDraft> = {}): LyricEditorDraft {
     return {
@@ -525,6 +545,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
 
   function goToSection(sectionId: string) {
     editorRef.current?.goToSongFormSection(sectionId);
+    restoreSongFormFocusRef.current = false;
     setMobileSongFormOpen(false);
   }
 
@@ -559,6 +580,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
 
   function toggleFocusMode() {
     setFocusMode((current) => !current);
+    restoreSongFormFocusRef.current = false;
     setMobileSongFormOpen(false);
     setMobileResourcesOpen(false);
     requestAnimationFrame(() => editorRef.current?.focus());
@@ -696,19 +718,19 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
             onMemoCompositionStart={() => { memoComposingRef.current = true; }} onMemoCompositionEnd={() => { memoComposingRef.current = false; controllerRef.current?.compositionEnd(); }} /></>} />
     </div>
     <div className="mobile-editor-dock" role="group" aria-label="가사 편집 도구">
-      <button type="button" aria-haspopup="dialog" aria-expanded={mobileSongFormOpen}
-        onClick={() => setMobileSongFormOpen(true)}>☷ 송폼 <span>{songForm.sections.length}</span></button>
+      <button ref={mobileSongFormButtonRef} type="button" aria-haspopup="dialog" aria-expanded={mobileSongFormOpen}
+        onClick={() => { restoreSongFormFocusRef.current = false; setMobileSongFormOpen(true); }}>☷ 송폼 <span>{songForm.sections.length}</span></button>
       <button type="button" onClick={copyWhole} aria-keyshortcuts="Alt+Shift+C">⧉ 전체 복사</button>
       <button type="button" aria-haspopup="dialog" aria-expanded={mobileResourcesOpen} onClick={() => setMobileResourcesOpen(true)}>≋ 다른 가사 <span>{songLyrics.length}</span> · 자료</button>
       <button type="button" onClick={() => setHistoryOpen(true)}>기록·비교</button>
       <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 종료" : "집중 모드"}</button>
     </div>
     {mobileSongFormOpen ? <div className="editor-sheet-backdrop" onPointerDown={(event) => {
-      if (event.target === event.currentTarget) setMobileSongFormOpen(false);
+      if (event.target === event.currentTarget) { restoreSongFormFocusRef.current = true; setMobileSongFormOpen(false); }
     }}>
-      <section className="songform-sheet" role="dialog" aria-modal="true" aria-labelledby="songform-sheet-title">
+      <section ref={mobileSongFormDialogRef} className="songform-sheet" role="dialog" aria-modal="true" aria-labelledby="songform-sheet-title">
         <div className="sheet-handle" aria-hidden="true" />
-        <header><div><h2 id="songform-sheet-title">송폼 이동</h2><p>{selectedSectionIds.size}개 선택됨</p></div><button type="button" onClick={() => setMobileSongFormOpen(false)}>닫기</button></header>
+        <header><div><h2 id="songform-sheet-title">송폼 이동</h2><p>{selectedSectionIds.size}개 선택됨</p></div><button type="button" onClick={() => { restoreSongFormFocusRef.current = true; setMobileSongFormOpen(false); }}>닫기</button></header>
         <SongFormList sections={songForm.sections} activeSectionId={songForm.activeSectionId} selectedSectionIds={selectedSectionIds} onSelect={goToSection} onToggle={toggleSection} />
         <CopySelectionActions selectedCount={selectedSectionIds.size} onClear={() => setSelectedSectionIds(new Set())} onCopy={copySelected} />
       </section>

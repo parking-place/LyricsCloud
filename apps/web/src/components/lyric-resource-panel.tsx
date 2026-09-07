@@ -10,6 +10,7 @@ import {
 } from "@lyricscloud/domain";
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { trapDialogTab } from "../lib/dialog-focus.js";
 
 const TAB_LABELS: Record<EditorResourceTab, string> = {
   songs: "다른 곡", lyrics: "다른 가사", rhymes: "라임", prompts: "프롬프트"
@@ -36,7 +37,14 @@ export function LyricResourcePanel({ lyricId, desktopOpen, mobileOpen, width, se
   const [error, setError] = useState(false);
   const [retry, setRetry] = useState(0);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const priorFocus = useRef<HTMLElement | null>(null);
+  const restoreFocusOnClose = useRef(false);
   const search = searches[tab];
+
+  function closeMobileDialog() {
+    restoreFocusOnClose.current = true;
+    onClose();
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -61,17 +69,25 @@ export function LyricResourcePanel({ lyricId, desktopOpen, mobileOpen, width, se
 
   useEffect(() => {
     if (!mobileOpen) return;
+    restoreFocusOnClose.current = false;
+    priorFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const frame = requestAnimationFrame(() => tabRefs.current[EDITOR_RESOURCE_TABS.indexOf(tab)]?.focus());
-    return () => cancelAnimationFrame(frame);
-  }, [mobileOpen, tab]);
+    return () => {
+      cancelAnimationFrame(frame);
+      const restoreFocus = restoreFocusOnClose.current;
+      restoreFocusOnClose.current = false;
+      if (restoreFocus) requestAnimationFrame(() => priorFocus.current?.focus());
+    };
+  }, [mobileOpen]);
 
   useEffect(() => {
     if (!mobileOpen) return;
     function escape(event: globalThis.KeyboardEvent) {
-      if (event.key === "Escape" && !event.defaultPrevented) { event.preventDefault(); onClose(); }
+      if (event.key === "Escape" && !event.defaultPrevented) { event.preventDefault(); closeMobileDialog(); }
+      else trapDialogTab(event, ".editor-resource-shell.is-mobile-open");
     }
-    window.addEventListener("keydown", escape);
-    return () => window.removeEventListener("keydown", escape);
+    document.addEventListener("keydown", escape);
+    return () => document.removeEventListener("keydown", escape);
   }, [mobileOpen, onClose]);
 
   function moveTab(event: KeyboardEvent<HTMLButtonElement>, index: number) {
@@ -109,13 +125,13 @@ export function LyricResourcePanel({ lyricId, desktopOpen, mobileOpen, width, se
     && result.search === search.trim();
 
   return <div className={`editor-resource-shell${desktopOpen ? " is-desktop-open" : ""}${mobileOpen ? " is-mobile-open" : ""}`}
-    onPointerDown={(event) => { if (mobileOpen && event.target === event.currentTarget) onClose(); }}>
+    onPointerDown={(event) => { if (mobileOpen && event.target === event.currentTarget) closeMobileDialog(); }}>
     <aside className="editor-resource-panel" style={{ "--resource-panel-width": `${width}px` } as CSSProperties}
       role={mobileOpen ? "dialog" : "complementary"} aria-modal={mobileOpen || undefined} aria-labelledby="editor-resource-title">
       <div className="sheet-handle" aria-hidden="true" />
       <header className="editor-resource-heading">
         <div><p className="eyebrow">Reference</p><h2 id="editor-resource-title">작업 자료 · 다른 가사와 설정</h2></div>
-        <button type="button" onClick={onClose}>{mobileOpen ? "닫기" : "패널 접기"}</button>
+        <button type="button" onClick={mobileOpen ? closeMobileDialog : onClose}>{mobileOpen ? "닫기" : "패널 접기"}</button>
       </header>
       <details className="editor-current-settings" open={settingsOpen} onToggle={(event) => setSettingsOpen(event.currentTarget.open)}><summary>현재 가사 설정</summary>{settings}</details>
       <div className="editor-resource-tabs" role="tablist" aria-label="작업 자료 종류">

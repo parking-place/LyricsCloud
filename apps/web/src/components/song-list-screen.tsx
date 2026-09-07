@@ -4,13 +4,16 @@ import { useEffect, useRef, useState } from "react";
 
 const STATUSES = ["idea", "writing_lyrics", "revising", "suno_generating", "mixing", "completed", "on_hold"] as const;
 const SORTS = ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"] as const;
+const WORK_FILTERS = ["all", "has_linked_resources", "no_lyrics"] as const;
 type SongStatus = (typeof STATUSES)[number];
 type SongSort = (typeof SORTS)[number];
+type SongWorkFilter = (typeof WORK_FILTERS)[number];
 type ResourceColor = "red" | "yellow" | "green" | "blue" | "gray";
 
 export interface SongListQuery {
   readonly search: string;
   readonly status: SongStatus | "";
+  readonly work: SongWorkFilter;
   readonly sort: SongSort;
 }
 
@@ -33,7 +36,7 @@ interface SongListResponse {
   readonly items: Song[];
   readonly totalCount: number;
   readonly nextCursor: string | null;
-  readonly capabilities: { readonly lyricsSearch: true; readonly linkedResourceFilters: false };
+  readonly capabilities: { readonly lyricsSearch: true; readonly linkedResourceFilters: true };
 }
 
 const STATUS_LABELS: Record<SongStatus, string> = {
@@ -52,11 +55,17 @@ const SORT_LABELS: Record<SongSort, string> = {
   title_asc: "제목순",
   favorite_first: "즐겨찾기 우선"
 };
+const WORK_FILTER_LABELS: Record<SongWorkFilter, string> = {
+  all: "전체 작업",
+  has_linked_resources: "연결 자료 있음",
+  no_lyrics: "가사 없음"
+};
 
 export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }) {
   const [search, setSearch] = useState(initialQuery.search);
   const [appliedSearch, setAppliedSearch] = useState(initialQuery.search.trim());
   const [status, setStatus] = useState<SongStatus | "">(initialQuery.status);
+  const [work, setWork] = useState<SongWorkFilter>(initialQuery.work);
   const [sort, setSort] = useState<SongSort>(initialQuery.sort);
   const [songs, setSongs] = useState<Song[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -80,6 +89,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     const params = new URLSearchParams();
     if (appliedSearch) params.set("search", appliedSearch);
     if (status) params.set("status", status);
+    if (work !== "all") params.set("work", work);
     if (sort !== "updated_desc") params.set("sort", sort);
     window.history.replaceState(null, "", `/songs${params.size ? `?${params}` : ""}`);
 
@@ -90,6 +100,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     const apiParams = new URLSearchParams({ sort, limit: "12" });
     if (appliedSearch) apiParams.set("search", appliedSearch);
     if (status) apiParams.set("status", status);
+    if (work !== "all") apiParams.set("work", work);
     void fetch(`/api/songs?${apiParams}`, { cache: "no-store", signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error("목록을 불러오지 못했습니다.");
@@ -110,7 +121,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
       })
       .finally(() => { if (sequence === requestSequence.current) setLoading(false); });
     return () => controller.abort();
-  }, [appliedSearch, status, sort, retryKey]);
+  }, [appliedSearch, status, work, sort, retryKey]);
 
   async function loadMore(restoreFocus = true) {
     if (!nextCursor || loadingMore) return;
@@ -120,6 +131,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     const params = new URLSearchParams({ sort, limit: "12", cursor: nextCursor });
     if (appliedSearch) params.set("search", appliedSearch);
     if (status) params.set("status", status);
+    if (work !== "all") params.set("work", work);
     try {
       const response = await fetch(`/api/songs?${params}`, { cache: "no-store" });
       if (!response.ok) throw new Error("다음 곡을 불러오지 못했습니다.");
@@ -157,10 +169,11 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     }
   }
 
-  const filtered = Boolean(appliedSearch || status);
+  const filtered = Boolean(appliedSearch || status || work !== "all");
   const returnParams = new URLSearchParams();
   if (appliedSearch) returnParams.set("search", appliedSearch);
   if (status) returnParams.set("status", status);
+  if (work !== "all") returnParams.set("work", work);
   if (sort !== "updated_desc") returnParams.set("sort", sort);
   const returnTo = `/songs${returnParams.size ? `?${returnParams}` : ""}`;
   const newSongHref = `/songs/new?returnTo=${encodeURIComponent(returnTo)}`;
@@ -198,6 +211,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     <div className="song-toolbar">
       <label className="search-field"><span className="sr-only">곡 검색</span><span aria-hidden="true">⌕</span><input value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} placeholder="곡 제목·메모 또는 가사 검색" type="search" /></label>
       <label className="select-field"><span>상태</span><select aria-label="곡 상태 필터" value={status} onChange={(event) => setStatus(event.target.value as SongStatus | "")}><option value="">전체 상태</option>{STATUSES.map((value) => <option key={value} value={value}>{STATUS_LABELS[value]}</option>)}</select></label>
+      <label className="select-field"><span>작업</span><select aria-label="곡 작업 조건 필터" value={work} onChange={(event) => setWork(event.target.value as SongWorkFilter)}>{WORK_FILTERS.map((value) => <option key={value} value={value}>{WORK_FILTER_LABELS[value]}</option>)}</select></label>
       <label className="select-field"><span>정렬</span><select aria-label="곡 정렬" value={sort} onChange={(event) => setSort(event.target.value as SongSort)}>{SORTS.map((value) => <option key={value} value={value}>{SORT_LABELS[value]}</option>)}</select></label>
     </div>
     <div className="status-chips" aria-label="곡 상태 빠른 필터"><button className={!status ? "active" : ""} aria-pressed={!status} onClick={() => setStatus("")}>전체</button>{STATUSES.map((value) => <button key={value} className={status === value ? "active" : ""} aria-pressed={status === value} onClick={() => setStatus(value)}>{STATUS_LABELS[value]}</button>)}</div>
@@ -207,7 +221,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     {error ? <div className="list-error" role="alert"><strong>{error}</strong><button type="button" onClick={() => setRetryKey((value) => value + 1)}>다시 시도</button></div> : null}
 
     {loading ? <div className="song-grid" aria-label="곡 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="song-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
-    {!loading && !error && songs.length === 0 ? <div className="empty-state song-empty"><span aria-hidden="true">{filtered ? "⌕" : "♪"}</span><h2>{filtered ? "조건에 맞는 곡이 없어요" : "아직 만든 곡이 없어요"}</h2><p>{filtered ? "검색어나 상태 필터를 바꾸면 다른 곡을 찾을 수 있어요." : "떠오른 아이디어를 첫 곡으로 기록해보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={() => { setSearch(""); setStatus(""); }}>검색 조건 지우기</button> : <a className="primary-link" href={newSongHref}>첫 곡 만들기</a>}</div> : null}
+    {!loading && !error && songs.length === 0 ? <div className="empty-state song-empty"><span aria-hidden="true">{filtered ? "⌕" : "♪"}</span><h2>{filtered ? "조건에 맞는 곡이 없어요" : "아직 만든 곡이 없어요"}</h2><p>{filtered ? "검색어나 필터를 바꾸면 다른 곡을 찾을 수 있어요." : "떠오른 아이디어를 첫 곡으로 기록해보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={() => { setSearch(""); setStatus(""); setWork("all"); }}>검색 조건 지우기</button> : <a className="primary-link" href={newSongHref}>첫 곡 만들기</a>}</div> : null}
     {!loading && songs.length > 0 ? <div className="song-grid">{songs.map((song) => <SongCard song={song} returnTo={returnTo} key={song.id} onOpen={rememberScroll} onToggle={toggle} />)}</div> : null}
     {!loading && songs.length > 0 ? <div className="load-more-wrap"><button ref={loadButton} className="secondary-button load-more" type="button" disabled={!nextCursor || loadingMore} onClick={() => void loadMore()}>{loadingMore ? "불러오는 중…" : nextCursor ? "더 불러오기" : "모든 곡을 불러왔습니다"}</button></div> : null}
   </section>;

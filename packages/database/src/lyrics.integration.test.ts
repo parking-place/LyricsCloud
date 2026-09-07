@@ -35,7 +35,7 @@ describe.runIf(enabled)("lyrics ownership, concurrency and current text", () => 
     expect(first.id).not.toBe(second.id);
     expect(await store!.getLyric(alice, first.id)).toMatchObject({ body, memo: "별도 메모", title: second.title });
     expect(await songs!.getSong(alice, parent.id)).toMatchObject({ lyricCount: 2, counts: { lyrics: { value: 2, available: true } } });
-    expect((await songs!.listSongs(alice, { sort: "updated_desc", limit: 100 })).items.find(({ id }) => id === parent.id)?.lyricCount).toBe(2);
+    expect((await songs!.listSongs(alice, { work: "all", sort: "updated_desc", limit: 100 })).items.find(({ id }) => id === parent.id)?.lyricCount).toBe(2);
     const edited = await store!.updateLyricCurrent(alice, first.id, { rowVersion: first.rowVersion, body: "변경", memo: "새 메모", title: "편집본", status: "final", isFavorite: true, isPinned: true, pinOrder: 2 });
     expect(edited).toMatchObject({ body: "변경", title: "편집본", status: "final", isFavorite: true, isPinned: true, pinOrder: 2 });
     expect(edited!.rowVersion).toBeGreaterThan(first.rowVersion);
@@ -119,11 +119,11 @@ describe.runIf(enabled)("lyrics ownership, concurrency and current text", () => 
     const otherParent = await song(bob);
     const active = (await store!.createLyric(alice, input(parent.id, { title: `${marker} 제목`, body: `본문 ${marker}-body` })))!.lyric;
     await store!.createLyric(bob, input(otherParent.id, { title: `${marker} 타인 제목`, body: `타인 ${marker}-foreign` }));
-    expect((await songs!.listSongs(alice, { search: `${marker}-body`, sort: "updated_desc", limit: 20 })).items.map(({ id }) => id)).toEqual([parent.id]);
-    expect((await songs!.listSongs(bob, { search: `${marker}-body`, sort: "updated_desc", limit: 20 })).items).toEqual([]);
-    expect((await songs!.listSongs(alice, { search: `${marker}-foreign`, sort: "updated_desc", limit: 20 })).items).toEqual([]);
+    expect((await songs!.listSongs(alice, { search: `${marker}-body`, work: "all", sort: "updated_desc", limit: 20 })).items.map(({ id }) => id)).toEqual([parent.id]);
+    expect((await songs!.listSongs(bob, { search: `${marker}-body`, work: "all", sort: "updated_desc", limit: 20 })).items).toEqual([]);
+    expect((await songs!.listSongs(alice, { search: `${marker}-foreign`, work: "all", sort: "updated_desc", limit: 20 })).items).toEqual([]);
     await store!.deleteLyric(alice, active.id);
-    expect((await songs!.listSongs(alice, { search: marker, sort: "updated_desc", limit: 20 })).items).toEqual([]);
+    expect((await songs!.listSongs(alice, { search: marker, work: "all", sort: "updated_desc", limit: 20 })).items).toEqual([]);
   });
 
   it("leaves no active orphan when parent deletion races creation", async () => {

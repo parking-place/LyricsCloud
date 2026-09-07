@@ -3,10 +3,11 @@
 import {
   createBrowserPromptSync, type BrowserPromptSync, type LocalSyncState, type PromptEditorSnapshot
 } from "@lyricscloud/editor";
-import { PROMPT_LIMITS, type PromptRecord } from "@lyricscloud/domain";
+import { PROMPT_LIMITS, type PromptRecord, type TemplateRecord } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
+import { trapDialogTab } from "../lib/dialog-focus.js";
 import { PromptHistory } from "./prompt-history.js";
 import { PromptTokenBuilder } from "./prompt-token-builder.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
@@ -34,6 +35,12 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
   const [songRetryKey, setSongRetryKey] = useState(0);
   const [songBusyId, setSongBusyId] = useState<string | null>(null);
   const [unlinkCandidate, setUnlinkCandidate] = useState<SongCandidate | null>(null);
+  const [templateOpen, setTemplateOpen] = useState(false);
+  const [templates, setTemplates] = useState<readonly TemplateRecord[]>([]);
+  const [templateLoading, setTemplateLoading] = useState(false);
+  const [templateError, setTemplateError] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [linkedSongIds, setLinkedSongIds] = useState(() => new Set(initialPrompt.linkedSongIds));
   const snapshotRef = useRef(snapshot);
   const syncRef = useRef<BrowserPromptSync | null>(null);
@@ -41,6 +48,40 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
   const duplicateRequest = useRef<string | null>(null);
   const copyFeedback = useCopyFeedback();
   const router = useRouter();
+  const templateButtonRef = useRef<HTMLButtonElement>(null);
+  const templateDialogRef = useRef<HTMLElement>(null);
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
+  const deleteDialogRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!templateOpen) return;
+    const frame = requestAnimationFrame(() => templateDialogRef.current?.querySelector<HTMLButtonElement>("button")?.focus());
+    function keyboard(event: KeyboardEvent) {
+      if (event.key === "Escape") { event.preventDefault(); setTemplateOpen(false); }
+      else trapDialogTab(event, ".prompt-template-dialog");
+    }
+    document.addEventListener("keydown", keyboard);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", keyboard);
+      requestAnimationFrame(() => templateButtonRef.current?.focus());
+    };
+  }, [templateOpen]);
+
+  useEffect(() => {
+    if (!deleteOpen) return;
+    const frame = requestAnimationFrame(() => deleteDialogRef.current?.querySelector<HTMLButtonElement>("button")?.focus());
+    function keyboard(event: KeyboardEvent) {
+      if (event.key === "Escape") { event.preventDefault(); setDeleteOpen(false); }
+      else trapDialogTab(event, ".prompt-delete-dialog");
+    }
+    document.addEventListener("keydown", keyboard);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", keyboard);
+      requestAnimationFrame(() => deleteButtonRef.current?.focus());
+    };
+  }, [deleteOpen]);
 
   useEffect(() => {
     let active = true;
@@ -133,6 +174,44 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
     } catch { setDuplicating(false); setNotice("복제 전 수정 기록 또는 복사본을 만들지 못했습니다. 같은 요청으로 다시 시도할 수 있습니다."); }
   }
 
+  async function openTemplates() {
+    setTemplateOpen(true); setTemplateLoading(true); setTemplateError("");
+    try {
+      const response = await fetch("/api/templates?type=prompt&source=all&sort=favorite_first", { cache: "no-store" });
+      if (!response.ok) throw new Error();
+      setTemplates(((await response.json()) as { items: readonly TemplateRecord[] }).items);
+    } catch { setTemplates([]); setTemplateError("프롬프트 템플릿을 불러오지 못했습니다."); }
+    finally { setTemplateLoading(false); }
+  }
+
+  async function appendTemplate(template: TemplateRecord) {
+    const sync = syncRef.current;
+    if (!sync || !editable) return;
+    setTemplateError("");
+    if (snapshotRef.current.items.length + template.tokens.length > PROMPT_LIMITS.tokensPerPrompt) {
+      setTemplateError(`이 템플릿을 추가하면 태그 ${PROMPT_LIMITS.tokensPerPrompt}개 제한을 넘습니다. 일부 태그를 지운 뒤 다시 시도해 주세요.`);
+      return;
+    }
+    try {
+      if (!await sync.checkpoint("large_paste")) throw new Error();
+      sync.insertTokens(template.tokens.map(({ displayValue }) => displayValue));
+      setTemplateOpen(false);
+      setNotice(`‘${template.title}’ 템플릿을 현재 태그 뒤에 추가했습니다. 기존 내용은 보존했습니다.`);
+    } catch { setTemplateError("템플릿 적용 전 수정 기록을 저장하지 못했습니다. 현재 내용은 변경하지 않았습니다."); }
+  }
+
+  async function deleteCurrent() {
+    if (deleting) return;
+    setDeleting(true); setNotice("");
+    try {
+      if (!await flushBeforeLeave()) throw new Error();
+      const response = await fetch(`/api/prompts/${initialPrompt.id}`, { method: "DELETE" });
+      const result = await response.json().catch(() => ({})) as { deleted?: boolean };
+      if (!response.ok || !result.deleted) throw new Error();
+      window.location.assign("/prompts");
+    } catch { setDeleting(false); setDeleteOpen(false); setNotice("프롬프트를 휴지통으로 옮기지 못했습니다. 현재 내용은 보존했습니다."); }
+  }
+
   async function toggleMetadata(field: "favorite" | "pin") {
     if (metadataBusy) return;
     const previous = field === "favorite" ? isFavorite : isPinned;
@@ -207,7 +286,7 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
             <button type="button" aria-pressed={song.isLinked} disabled={songBusyId !== null}
               onClick={() => song.isLinked ? setUnlinkCandidate(song) : void changeSong(song)}>{songBusyId === song.id ? "처리 중…" : song.isLinked ? "연결 해제" : "연결"}</button></li>)}</ul> : null}
         </section>
-        <section className="prompt-template-handoff"><h2>템플릿</h2><p>프롬프트 템플릿은 0.8.0에서 기존 내용을 보호하는 적용 규칙과 함께 제공됩니다.</p></section>
+        <section className="prompt-template-handoff"><h2>템플릿과 삭제</h2><p>템플릿 태그는 현재 내용 뒤에 추가되며 기존 태그는 보존됩니다. 삭제한 프롬프트는 휴지통에서 복원할 수 있습니다.</p><div className="prompt-template-actions"><button ref={templateButtonRef} type="button" disabled={!editable} onClick={() => void openTemplates()}>템플릿 불러오기</button><button ref={deleteButtonRef} type="button" className="danger-text" disabled={!editable || deleting} onClick={() => setDeleteOpen(true)}>프롬프트 삭제</button></div></section>
         <section><h2>자동 저장</h2><p>제목과 태그 순서는 이 기기에 먼저 보관되고 같은 계정의 탭·기기에 병합됩니다.</p></section>
       </aside>
     </div>
@@ -219,6 +298,18 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
       <p className="eyebrow">연결만 해제</p><h2 id="prompt-unlink-title">‘{unlinkCandidate.title}’ 곡 연결을 해제할까요?</h2><p>프롬프트와 곡 원본은 삭제되지 않으며 다른 곡 연결도 그대로 유지됩니다.</p>
       <div><button type="button" autoFocus disabled={songBusyId !== null} onClick={() => setUnlinkCandidate(null)}>취소</button>
         <button type="button" disabled={songBusyId !== null} onClick={() => void changeSong(unlinkCandidate)}>{songBusyId ? "해제 중…" : "연결 해제 확인"}</button></div>
+    </section></div> : null}
+    {templateOpen ? <div className="dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) setTemplateOpen(false); }}><section ref={templateDialogRef} className="prompt-template-dialog" role="dialog" aria-modal="true" aria-labelledby="prompt-template-title">
+      <header><div><p className="eyebrow">Append safely</p><h2 id="prompt-template-title">프롬프트 템플릿 불러오기</h2></div><button type="button" onClick={() => setTemplateOpen(false)}>닫기</button></header>
+      <p>선택한 템플릿의 태그를 현재 프롬프트 뒤에 추가합니다. 중복은 표시한 뒤 직접 정리할 수 있습니다.</p>
+      {templateLoading ? <p role="status">템플릿을 불러오는 중…</p> : null}
+      {templateError ? <p role="alert">{templateError} <button type="button" onClick={() => void openTemplates()}>다시 시도</button></p> : null}
+      {!templateLoading && !templateError && templates.length ? <ul>{templates.map((template) => <li key={template.id}><button type="button" onClick={() => void appendTemplate(template)}><span><strong>{template.title}</strong><small>{template.source === "default" ? "기본 템플릿" : "내 템플릿"} · {template.tokens.length}개 태그</small></span><span aria-hidden="true">＋</span></button></li>)}</ul> : null}
+      {!templateLoading && !templateError && !templates.length ? <p>사용할 수 있는 프롬프트 템플릿이 없습니다. <a href="/templates?type=prompt">템플릿 관리 열기</a></p> : null}
+    </section></div> : null}
+    {deleteOpen ? <div className="dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget && !deleting) setDeleteOpen(false); }}><section ref={deleteDialogRef} className="delete-dialog prompt-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="prompt-delete-title">
+      <p className="eyebrow">휴지통으로 이동</p><h2 id="prompt-delete-title">‘{snapshot.title}’ 프롬프트를 삭제할까요?</h2><p>프롬프트와 곡 연결은 숨겨지며 30일 동안 휴지통에서 복원할 수 있습니다.</p>
+      <div><button type="button" autoFocus className="secondary-button" disabled={deleting} onClick={() => setDeleteOpen(false)}>취소</button><button type="button" className="danger-button" disabled={deleting} onClick={() => void deleteCurrent()}>{deleting ? "삭제 중…" : "프롬프트 삭제 확인"}</button></div>
     </section></div> : null}
     <CopyFeedback state={copyFeedback} onManualComplete={completeManualCopy}
       dialogTitle={() => "프롬프트를 직접 복사해 주세요"} textareaLabel={() => "수동 복사할 프롬프트"} />

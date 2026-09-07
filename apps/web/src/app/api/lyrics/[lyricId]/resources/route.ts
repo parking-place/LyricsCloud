@@ -28,7 +28,7 @@ export async function GET(request: Request, { params }: Context): Promise<Respon
     let totalCount: number;
     if (input.tab === "songs") {
       const result = await context.songs.listSongs(auth.userId, {
-        ...(input.search ? { search: input.search } : {}), sort: "updated_desc", limit: input.limit
+        ...(input.search ? { search: input.search } : {}), work: "all", sort: "updated_desc", limit: input.limit
       });
       items = result.items.filter(({ id }) => id !== lyric.songId).map((song) => ({
         id: song.id, kind: "song", title: song.title,
