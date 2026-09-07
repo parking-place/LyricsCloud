@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.9.0"
-current_phase: "4phase.md"
-state: "in_progress"
+current_phase: "5phase.md"
+state: "ready"
 owner: "Codex"
-started_at: "2026-09-08 04:28 KST"
-updated_at: "2026-09-08 04:28 KST"
-next_action: "15개 화면의 접근성·빈 화면·오류·저장·오프라인 상태를 감사하고 공통 계약과 회귀 테스트로 보정"
+started_at: null
+updated_at: "2026-09-08 05:56 KST"
+next_action: "0.9.0 Phase 5 출시 후보 통합 행렬과 실제 기기 인수 증거를 준비"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -43,7 +43,7 @@ next_action: "15개 화면의 접근성·빈 화면·오류·저장·오프라�
 | 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
 | 0.7.0 | complete | Phase 1~5 완료 | 0.6.0 완료 |
 | 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
-| 0.9.0 | in_progress | Phase 3 완료, Phase 4 진행 중 | 0.8.0 완료 |
+| 0.9.0 | in_progress | Phase 4 완료, Phase 5 준비 | 0.8.0 완료 |
 | 0.9.1 | planned | 없음 | 0.9.0 완료 |
 | 1.0.0 | planned | 없음 | 0.9.1 release gate 통과 |
 
@@ -53,7 +53,6 @@ next_action: "15개 화면의 접근성·빈 화면·오류·저장·오프라�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.9.0 / Phase 4 | LC-090-P4-01~09 | `apps/web/**`, `tests/**`, `docs/runbooks/**`, Phase 상태 문서 | 0.9.0 Phase 3 완료 | 2026-09-08 04:28 KST | in_progress |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,12 +101,13 @@ next_action: "15개 화면의 접근성·빈 화면·오류·저장·오프라�
 
 ## 다음 작업
 
-0.9.0 Phase 4를 시작한다. Phase 3이 고정한 install manifest·static-only service worker·owner IndexedDB upgrade·dirty update guard·account cleanup 계약을 15개 화면의 접근성·빈 화면·오류·저장 상태 감사에 인계한다. 개발 서버는 Phase 3 기능 SHA `10312ed`와 schema `0802_lifecycle.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.9.0 Phase 5를 시작할 준비가 되었다. Phase 4가 고정한 15개 화면의 landmark·대비·공통 상태·dialog focus·본문과 cursor 보존 계약을 출시 후보 브라우저·실기기·PWA·복구 행렬에 인계한다. 개발 서버는 Phase 4 기능 SHA `2d0ec0a`와 schema `0802_lifecycle.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-08 | 0.9.0 / Phase 4 | Codex | 15개 화면에 하나의 주 제목·명명된 main, 공통 빈 화면·오류 상태, 양 테마 대비, dialog focus trap·Escape·호출 지점 복원과 저장 재시도 본문·cursor 보존을 구현 | 57 files/208 tests, production build·4 image/fresh DB 복구, PC/mobile E2E 219 pass·21 skip, Axe serious·critical 0, CI `34160175567`, 네 image digest, `2d0ec0a` 동일 SHA 개발 배포와 공개 양 테마·200% reflow smoke; [검증 기록](../../docs/runbooks/0.9.0-phase4-validation.md) | Phase 5가 실제 iOS Safari·Android Chrome의 IME·복사·설치·오프라인 복구와 출시 후보 통합 행렬을 검증 |
 | 2026-09-08 | 0.9.0 / Phase 3 | Codex | 설치 manifest·192/512 아이콘, immutable Next 정적 자산 전용 service worker, owner IndexedDB 보존 upgrade, offline cold-start 복구, dirty update 승인 gate와 로그아웃 제거를 구현 | 57 files/208 tests, production build·4 image/fresh DB 복구, PC/mobile E2E 213 pass·21 skip, CI `34153262398`, 네 image digest, `10312ed` 동일 SHA 개발 배포와 공개 manifest·static-only cache·offline hit·no-store smoke; [검증 기록](../../docs/runbooks/0.9.0-phase3-validation.md) | Phase 4가 PWA 저장·오프라인·업데이트 상태를 15개 화면의 접근성·빈 화면·오류 표현과 통합 |
 | 2026-09-08 | 0.9.0 / Phase 2 | Codex | 공통 shell breakpoint와 mobile More sheet·tablet editor panel을 정리하고 focus/selection·draft 연속성, prompt template 추가/삭제, 곡 작업 조건을 owner 경계와 함께 구현 | 57 files/208 tests, production build·4 image/fresh DB 복구, 230 E2E(211 pass, 19 skip), CI `34147746032`, 네 image digest, `fc623d8` 동일 SHA 개발 배포와 공개 responsive·filter·prompt delete·schema·no-store smoke; [검증 기록](../../docs/runbooks/0.9.0-phase2-validation.md) | Phase 3이 반응형 shell과 계정별 초안 계약 위에 안전한 PWA 설치·cache·offline·update 흐름을 구현 |
 | 2026-09-08 | 0.9.0 / Phase 1 | Codex | 목업 15개를 실제 route·component·기획 절에 연결하고 추가 제안 7개 원문 행, 상태 15행, 네 viewport의 합성 기준선 60장을 고정했으며 P0 0·P1 4·P2 4·P3 1개로 차이를 분류 | 57 files/208 tests, production build·4 image 복구, PC/mobile E2E 207 통과·17 skip, CI `34138200153`, 네 image digest, `64ef5ed` 동일 SHA 개발 배포와 공개 auth·보호 route 14개·schema·no-store smoke; [검증 기록](../../docs/runbooks/0.9.0-phase1-validation.md) | Phase 2가 P1 shell·mobile navigation·tablet editor panel·prompt editor 결함을 먼저 닫고 320~1440px 접근성을 검증 |

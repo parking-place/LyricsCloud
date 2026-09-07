@@ -6,6 +6,10 @@
 
 ### Added
 
+- 15개 화면의 단일 주 제목·명명된 landmark, 접근 가능한 이름과 양 테마 WCAG 2.1 A/AA 중대 오류 0 기준
+- 설명·다음 행동을 갖춘 공통 빈 화면·로딩·오류·오프라인·권한 없음·삭제 상태와 저장 상태 live 안내
+- modal·sheet·menu의 공통 focus trap·Escape·호출 지점 복원, 200% 확대 reflow와 reduced motion 대응
+- 저장 실패 재시도에서도 가사 본문과 CodeMirror cursor를 보존하는 PC·모바일 회귀 검사
 - owner 전용 repeatable-read snapshot에서 50행씩 스트리밍하는 전체 ZIP 내보내기, UTF-8 자료별 TXT/Markdown과 관계 검증 가능한 `lyricscloud.export.v1` JSON
 - 특수문자·Windows 예약 이름·동일 제목을 안전한 고유 파일명으로 바꾸고 취소·실패에도 임시 산출물을 남기지 않는 다운로드와 설정·탈퇴 전 진입점
 - 곡·가사·라임 노트·프롬프트·owner 템플릿의 정확한 30일 휴지통, 남은 기간·원래 위치·영향 요약과 원자적 개별/다중 복원·이름 확인 완전 삭제
@@ -89,7 +93,7 @@
 
 ### Not yet implemented
 
-- PWA와 출시 준비 기능
+- 실제 기기 출시 후보 인수와 0.9.1 운영 강화, 1.0.0 릴리스 준비
 
 ### Fixed
 
