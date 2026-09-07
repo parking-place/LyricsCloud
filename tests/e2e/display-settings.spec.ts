@@ -90,6 +90,7 @@ test.describe("0.8.0 display settings", () => {
 
       await chooseTheme("시스템");
       await page.getByRole("button", { name: "저장", exact: true }).click();
+      await expect(page.locator(".settings-message")).toContainText("서버에 저장");
       await expect(page.locator("html")).toHaveAttribute("data-theme-preference", "system");
       await page.emulateMedia({ colorScheme: "dark" });
       await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
