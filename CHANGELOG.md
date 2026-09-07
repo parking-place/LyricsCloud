@@ -6,6 +6,8 @@
 
 ### Added
 
+- Chromium·Firefox·WebKit 데스크톱과 Chromium·WebKit 모바일의 15개 화면, 약 10,000줄 한글 가사, 회전·뒤로 가기·수동 복사를 묶은 0.9.0 출시 후보 행렬
+- PC·좁은 PC·태블릿·모바일 15개 화면의 최종 시각 회귀 60장과 실제 iOS Safari·Android Chrome 인수표
 - 15개 화면의 단일 주 제목·명명된 landmark, 접근 가능한 이름과 양 테마 WCAG 2.1 A/AA 중대 오류 0 기준
 - 설명·다음 행동을 갖춘 공통 빈 화면·로딩·오류·오프라인·권한 없음·삭제 상태와 저장 상태 live 안내
 - modal·sheet·menu의 공통 focus trap·Escape·호출 지점 복원, 200% 확대 reflow와 reduced motion 대응
@@ -97,6 +99,7 @@
 
 ### Fixed
 
+- 설정 화면의 테마 미리보기를 늦게 도착한 앱 셸 서버 설정 응답이 덮어쓸 수 있던 경쟁 조건 수정
 - Next.js가 여러 CSS chunk를 생성할 때 개발 배포 검사가 첫 자산만 보고 정상 production 화면을 실패로 판정하던 문제 수정
 - 검색 딥링크로 가사 일치 위치를 선택한 직후 협업 편집기의 편집 가능 전환이 포커스를 잃게 하던 초기화 순서 수정
 - 모바일 자료 bottom sheet 위에서 clipboard 수동 복사 dialog가 뒤에 가려져 닫기·원문 선택을 누를 수 없던 stacking 오류 수정

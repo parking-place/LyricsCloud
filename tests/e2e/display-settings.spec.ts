@@ -40,8 +40,16 @@ test.describe("0.8.0 display settings", () => {
   test("previews, persists and recovers settings with responsive focus management", async ({ browser, context, page }, info) => {
     const account = await createAccount(context, `설정 화면 ${info.project.name}`);
     const externalFonts: string[] = [];
+    let releaseInitialThemeFetch: (() => void) | undefined;
     page.on("request", (request) => { if (request.resourceType() === "font" && !request.url().startsWith(origin)) externalFonts.push(request.url()); });
     try {
+      if (info.project.name === "desktop") {
+        const initialThemeFetch = new Promise<void>((resolve) => { releaseInitialThemeFetch = resolve; });
+        await page.route("**/api/settings", async (route) => {
+          if (route.request().method() === "GET") await initialThemeFetch;
+          await route.continue();
+        }, { times: 1 });
+      }
       if (info.project.name === "mobile") await page.setViewportSize({ width: 360, height: 800 });
       await page.goto("/settings");
       await expect(page.getByRole("heading", { name: "설정", exact: true })).toBeVisible();
@@ -67,6 +75,7 @@ test.describe("0.8.0 display settings", () => {
       }
 
       await chooseTheme("라이트");
+      releaseInitialThemeFetch?.();
       await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
       expect(await contrast(page, "--ink", "--canvas")).toBeGreaterThanOrEqual(4.5);
       expect(await contrast(page, "--acid-ink", "--acid")).toBeGreaterThanOrEqual(4.5);

@@ -101,10 +101,14 @@ export function WorkspaceShell({
 
   useEffect(() => {
     let active = true;
+    const preferenceAtRequest = document.documentElement.dataset.themePreference;
     void fetch("/api/settings", { cache: "no-store" }).then(async (response) => {
       if (!active || !response.ok) return;
       const theme = ((await response.json()) as { settings?: { theme?: unknown } }).settings?.theme;
-      if (theme === "system" || theme === "light" || theme === "dark") (window as ThemeShellWindow).__lcApplyTheme?.(theme);
+      if (
+        document.documentElement.dataset.themePreference === preferenceAtRequest
+        && (theme === "system" || theme === "light" || theme === "dark")
+      ) (window as ThemeShellWindow).__lcApplyTheme?.(theme);
     }).catch(() => undefined);
     return () => { active = false; };
   }, [profile.userId]);

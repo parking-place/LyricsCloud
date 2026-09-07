@@ -95,7 +95,7 @@ jobs:
       - name: Static checks
         run: pnpm check
       - name: Verify 0.9.0 UI audit baseline
-        run: pnpm test:audit:0901
+        run: pnpm test:audit:0901 && pnpm test:release:0905
       - name: Shell and Docker cleanup contract
         run: |
           bash -n scripts/*.sh
@@ -121,12 +121,16 @@ jobs:
           done
       - name: Run production images with a fresh database
         run: bash scripts/verify-production-images.sh "${{ github.sha }}"
-      - name: Install Playwright Chromium and WebKit
-        run: pnpm exec playwright install --with-deps chromium webkit
+      - name: Install Playwright Chromium, Firefox and WebKit
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
       - name: Auth and ownership E2E
         env:
           E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
         run: pnpm test:e2e
+      - name: Release candidate browser matrix
+        env:
+          E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
+        run: pnpm test:e2e:release:0905
       - name: Scan build artifacts for auth secrets
         env:
           GOOGLE_CLIENT_SECRET: synthetic-e2e-client-secret

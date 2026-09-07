@@ -6,7 +6,10 @@ import { hashToken, withE2eDatabase } from "./fixtures.js";
 
 const origin = "http://127.0.0.1:3000";
 const headers = { Origin: origin };
-const evidenceRoot = path.join(process.cwd(), "docs/runbooks/evidence/0.9.0-phase1");
+const evidenceRoot = path.join(
+  process.cwd(),
+  process.env.UI_AUDIT_EVIDENCE_ROOT ?? "docs/runbooks/evidence/0.9.0-phase1"
+);
 
 const viewports = [
   { name: "pc", width: 1440, height: 1000, mobile: false },
