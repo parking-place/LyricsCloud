@@ -106,7 +106,16 @@ test.describe("0.9.0 accessibility and state contract", () => {
     await context.setOffline(false);
 
     await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+    const horizontalOverflow = await page.evaluate(() => {
+      const viewportWidth = document.documentElement.clientWidth;
+      if (document.documentElement.scrollWidth <= viewportWidth) return [];
+      return [...document.querySelectorAll<HTMLElement>("body *")].flatMap((element) => {
+        const bounds = element.getBoundingClientRect();
+        if (bounds.right <= viewportWidth + 1 && bounds.left >= -1) return [];
+        return [`${element.tagName.toLowerCase()}.${element.className || "-"}[${Math.round(bounds.left)},${Math.round(bounds.right)}]`];
+      }).slice(0, 20);
+    });
+    expect(horizontalOverflow).toEqual([]);
     const transition = await page.locator(".search-page").evaluate((element) => getComputedStyle(element).transitionDuration);
     expect(await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
     expect(Number.parseFloat(transition)).toBeLessThanOrEqual(0.01);

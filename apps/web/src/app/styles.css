@@ -788,10 +788,11 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .workspace-shell.has-account-error .main-shell > :last-child { grid-row: 4; }
   .workspace-shell.has-account-error .mobile-bottom-nav { grid-row: 5; }
   .topbar { display: none; }
-  .mobile-header { grid-row: 1; display: flex; align-items: center; justify-content: space-between; padding: max(.85rem, var(--lc-safe-top)) max(1rem, var(--lc-safe-right)) .85rem max(1rem, var(--lc-safe-left)); border-bottom: 1px solid var(--line); background: #0c0f13; }
+  .mobile-header { grid-row: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; padding: max(.85rem, var(--lc-safe-top)) max(1rem, var(--lc-safe-right)) .85rem max(1rem, var(--lc-safe-left)); border-bottom: 1px solid var(--line); background: #0c0f13; }
   .mobile-header .brand { font-size: .7rem; }
   .mobile-header .brand-mark { width: 1.8rem; height: 1.8rem; }
-  .mobile-account { display: flex; align-items: center; gap: .55rem; }
+  .mobile-account { min-width: 0; max-width: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: clamp(.25rem, 2vw, .55rem); }
+  .mobile-account .avatar { display: none; }
   .mobile-logout { min-height: 2.35rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .55rem; background: transparent; color: var(--muted); font-size: .7rem; cursor: pointer; }
   .workspace-content { grid-row: 3; padding: clamp(1.5rem, 7vw, 2.4rem) max(1.1rem, var(--lc-safe-right)) 2rem max(1.1rem, var(--lc-safe-left)); overflow-y: auto; }
   .workspace-content > h1 { font-size: clamp(2.1rem, 11vw, 3.5rem); }
