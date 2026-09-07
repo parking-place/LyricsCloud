@@ -57,7 +57,7 @@ export function CopyFeedback({ state, onManualComplete, dialogTitle, textareaLab
   }, [state.manual]);
   return <>
     {state.toast ? <div className="copy-toast" role="status" aria-live="polite">{state.toast}</div> : null}
-    {state.manual ? <div className="dialog-backdrop" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) state.closeManual(); }}>
+    {state.manual ? <div className="dialog-backdrop copy-dialog-backdrop" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) state.closeManual(); }}>
       <section className="manual-copy-dialog" role="dialog" aria-modal="true" aria-labelledby="shared-copy-title" aria-describedby="shared-copy-description">
         <p className="eyebrow">Clipboard fallback</p><h2 id="shared-copy-title">{dialogTitle?.(state.manual.target) ?? `직접 복사: ${state.manual.target}`}</h2>
         <p id="shared-copy-description">브라우저가 클립보드 쓰기를 허용하지 않았습니다. 아래 원문 전체가 선택되어 있으며 내용은 변경되지 않습니다.</p>

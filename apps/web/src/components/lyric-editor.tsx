@@ -256,6 +256,30 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     }
   }
 
+  async function copyPanelResource(item: EditorResourcePanelItem): Promise<"copied" | "deleted" | "failed"> {
+    if (item.kind !== "rhyme_note" && item.kind !== "prompt") return "failed";
+    try {
+      const response = await fetch(item.kind === "rhyme_note" ? `/api/rhymes/${item.id}` : `/api/prompts/${item.id}`, { cache: "no-store" });
+      if (!response.ok) {
+        setCommandNotice(response.status === 404
+          ? "선택한 자료가 삭제되었거나 더 이상 접근할 수 없습니다. 목록을 다시 확인해 주세요."
+          : "복사할 원문을 불러오지 못했습니다. 현재 가사와 입력은 그대로 유지됩니다.");
+        return response.status === 404 ? "deleted" : "failed";
+      }
+      const result = await response.json() as { rhyme?: { body?: string }; prompt?: { plainText?: string } };
+      const text = item.kind === "rhyme_note" ? result.rhyme?.body : result.prompt?.plainText;
+      if (typeof text !== "string") throw new Error("COPY_SOURCE_UNAVAILABLE");
+      setCommandNotice("");
+      const target = item.kind === "rhyme_note" ? "라임 원문" : "프롬프트";
+      const message = item.kind === "rhyme_note" ? "라임 원문을 복사했습니다" : "프롬프트를 복사했습니다";
+      await copyFeedback.copyText(text, target, message);
+      return "copied";
+    } catch {
+      setCommandNotice("복사할 원문을 불러오지 못했습니다. 현재 가사와 입력은 그대로 유지됩니다.");
+      return "failed";
+    }
+  }
+
   async function beginRhymeInsertion(item: EditorResourcePanelItem, mode: "whole" | "selection") {
     if (commandBusy || item.kind !== "rhyme_note") return;
     const editor = editorRef.current;
@@ -514,6 +538,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       </div>
       <LyricResourcePanel lyricId={initialLyric.id} desktopOpen={desktopResourcesOpen} mobileOpen={mobileResourcesOpen}
         width={resourcePanelWidth} onWidth={setResourcePanelWidth} onClose={closeResourcePanel} onOpen={openPanelResource}
+        onCopy={copyPanelResource}
         onInsertRhyme={(item, mode) => { void beginRhymeInsertion(item, mode); }}
         settings={<><div className="mobile-lyric-commands"><button type="button" disabled={commandBusy} onClick={duplicateCurrent}>현재 가사 복제</button><button type="button" disabled={commandBusy} className="danger-text" onClick={() => { setMobileResourcesOpen(false); setDeleteOpen(true); }}>현재 가사 삭제</button></div>
           <LyricMetadataControls memo={memo} status={status} isFavorite={isFavorite} isPinned={isPinned}

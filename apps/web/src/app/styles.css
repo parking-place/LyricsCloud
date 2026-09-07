@@ -561,6 +561,7 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .lyric-editor-page.is-focus-mode .songform-outline { display: none; }
 .lyric-editor-page.is-focus-mode .other-lyrics-panel, .lyric-editor-page.is-focus-mode .editor-resource-shell { display: none; }
 .copy-toast { position: fixed; z-index: 35; left: 50%; bottom: 1.5rem; translate: -50% 0; padding: .7rem 1rem; border: 1px solid rgb(200 255 61 / 30%); border-radius: 999px; background: #1a2117; color: var(--acid); font-size: .75rem; font-weight: 800; box-shadow: 0 14px 40px rgb(0 0 0 / 50%); }
+.copy-dialog-backdrop { z-index: 70; }
 .manual-copy-dialog { width: min(100%, 38rem); padding: 1.35rem; border: 1px solid rgb(200 255 61 / 25%); border-radius: .9rem; background: var(--surface-raised); box-shadow: 0 30px 90px rgb(0 0 0 / 55%); }
 .manual-copy-dialog h2 { margin: .45rem 0 .55rem; font-size: 1.25rem; }
 .manual-copy-dialog > p:not(.eyebrow) { margin: 0 0 .8rem; color: var(--muted); font-size: .75rem; line-height: 1.65; }
