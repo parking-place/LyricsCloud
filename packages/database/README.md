@@ -19,3 +19,5 @@ readiness는 인증 실패, 시간 초과, 연결 불가, schema 미적용, 기�
 0500은 `prompt` resource의 1:1 평문 subtype, owner별 토큰 dictionary와 순서형 무중복 읽기 projection, 생성·복제·업데이트 멱등 요청을 추가합니다. CRDT의 중복 occurrence는 사용자 정리 전까지 보존하지만 `prompt_tokens`는 정규화 키별 첫 표시 값만 유지합니다. dictionary의 사용 횟수·최근 사용은 owner별 자동완성에만 사용하며, prompt soft delete 뒤에도 과거 사용 이력은 보존합니다. `sync_documents.resource_type`은 `prompt`까지 확장됩니다.
 
 0501은 프롬프트 전체 복사·재사용 횟수와 최근 사용 시각을 owner RLS 아래 원자적으로 기록합니다. 목록 query는 제목·평문 토큰·활성 연결 곡의 문자 그대로 부분 검색, 즐겨찾기·사용 이력·곡 조합 필터, 핀 우선 정렬과 서명된 offset cursor를 제공하며 다른 owner와 soft delete 자료를 count·후보에서도 제외합니다. `rollback/0501_prompt_usage.sql`은 사용 기록이 하나라도 있으면 중단합니다.
+
+0700은 원문과 분리된 NFKC·영문 소문자·공백 축약 검색 생성 열과 GIN trigram 인덱스를 곡·가사·라임·프롬프트·태그에 추가합니다. `PostgresSearchStore`는 RLS와 명시적 owner/soft-delete 조건을 함께 적용하고 제목 완전 일치→시작→포함→태그→본문 점수와 마이크로초 정밀도 keyset cursor를 제공합니다. `%`, `_`, 역슬래시는 `LIKE ... ESCAPE`에서 문자 그대로 처리합니다. `rollback/0700_search_foundation.sql`은 원문 자료와 baseline 소유 `pg_trgm` 확장을 보존한 채 파생 열·인덱스만 제거합니다.

@@ -33,6 +33,7 @@ export const resources = pgTable("resources", {
   ownerId: uuid("owner_id").notNull(),
   type: text("type").$type<ResourceType>().notNull(),
   title: text("title").notNull(),
+  searchTitle: text("search_title"),
   isFavorite: boolean("is_favorite").notNull().default(false),
   isPinned: boolean("is_pinned").notNull().default(false),
   pinOrder: integer("pin_order"),
@@ -64,6 +65,7 @@ export const lyrics = pgTable("lyrics", {
   ownerId: uuid("owner_id").notNull(),
   songId: uuid("song_id").notNull(),
   body: text("body").notNull().default(""),
+  searchBody: text("search_body"),
   memo: text("memo").notNull().default(""),
   status: text("status").$type<LyricStatus>().notNull().default("draft")
 });
@@ -80,7 +82,8 @@ export const lyricCreateRequests = pgTable("lyric_create_requests", {
 export const rhymeNotes = pgTable("rhyme_notes", {
   resourceId: uuid("resource_id").primaryKey(),
   ownerId: uuid("owner_id").notNull(),
-  body: text("body").notNull().default("")
+  body: text("body").notNull().default(""),
+  searchBody: text("search_body")
 });
 
 export const rhymeNoteCreateRequests = pgTable("rhyme_note_create_requests", {
@@ -95,7 +98,8 @@ export const rhymeNoteCreateRequests = pgTable("rhyme_note_create_requests", {
 export const prompts = pgTable("prompts", {
   resourceId: uuid("resource_id").primaryKey(),
   ownerId: uuid("owner_id").notNull(),
-  plainText: text("plain_text").notNull().default("")
+  plainText: text("plain_text").notNull().default(""),
+  searchText: text("search_text")
 });
 
 export const promptTokenDictionary = pgTable("prompt_token_dictionary", {
@@ -134,6 +138,7 @@ export const tags = pgTable("tags", {
   ownerId: uuid("owner_id").notNull(),
   displayValue: text("display_value").notNull(),
   normalizedValue: text("normalized_value").notNull(),
+  searchValue: text("search_value"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true })

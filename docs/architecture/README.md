@@ -21,3 +21,4 @@
 - [`0.5.0 프롬프트 토큰 계약`](./0.5.0-PROMPT-CONTRACT.md)
 - [`0.5.0 프롬프트 증적과 0.6.0·0.8.0 인계`](./0.5.0-PROMPT-HANDOFF.md)
 - [`0.6.0 곡 중심 창작 흐름 증적과 0.7.0 인계`](./0.6.0-CREATIVE-FLOW-HANDOFF.md)
+- [`0.7.0 통합 검색 계약`](./0.7.0-SEARCH-CONTRACT.md)

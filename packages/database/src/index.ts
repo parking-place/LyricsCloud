@@ -1,6 +1,6 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "0501_prompt_usage.sql";
+export const CURRENT_SCHEMA_VERSION = "0700_search_foundation.sql";
 
 export * from "./auth.js";
 export * from "./owned.js";
@@ -10,6 +10,7 @@ export * from "./lyrics.js";
 export * from "./rhymes.js";
 export * from "./rhyme-insertions.js";
 export * from "./prompts.js";
+export * from "./search.js";
 export * from "./pool.js";
 
 export type DatabaseHealthCode =

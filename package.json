@@ -21,6 +21,8 @@
     "test:migration:0400": "node scripts/verify-0400-migration.mjs",
     "test:migration:0500": "node scripts/verify-0500-migration.mjs",
     "test:migration:0501": "node scripts/verify-0501-migration.mjs",
+    "test:migration:0700": "node scripts/verify-0700-migration.mjs",
+    "test:performance:0700": "node scripts/measure-0700-search.mjs",
     "test:migration:0201": "node scripts/verify-0201-migration.mjs",
     "test:e2e": "playwright test",
     "test:watch": "vitest",

@@ -36,6 +36,7 @@
 - [`0.5.0 Phase 4 프롬프트 순서·복사·곡 연결 검증`](./0.5.0-phase4-validation.md)
 - [`0.5.0 Phase 5 프롬프트 통합 검증`](./0.5.0-phase5-validation.md)
 - [`0.6.0 Phase 1 곡 대시보드 검증`](./0.6.0-phase1-validation.md)
+- [`0.7.0 Phase 1 통합 검색 기반 검증`](./0.7.0-phase1-validation.md)
 
 ## 개발 서버 운영
 

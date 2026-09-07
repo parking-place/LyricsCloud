@@ -13,6 +13,7 @@ const admin = new Pool({ connectionString: source.href, max: 1 });
 const rollback = await readFile("packages/database/rollback/0400_rhyme_notes.sql", "utf8");
 const promptRollback = await readFile("packages/database/rollback/0500_prompts.sql", "utf8");
 const promptUsageRollback = await readFile("packages/database/rollback/0501_prompt_usage.sql", "utf8");
+const searchRollback = await readFile("packages/database/rollback/0700_search_foundation.sql", "utf8");
 
 try {
   await admin.query(`create database "${databaseName}"`);
@@ -20,6 +21,7 @@ try {
   migrate();
   const target = new Pool({ connectionString: url.href, max: 1 });
   try {
+    await target.query(searchRollback);
     await target.query(promptUsageRollback);
     await target.query(promptRollback);
     const alice = (await target.query("insert into app_users default values returning id")).rows[0].id;
