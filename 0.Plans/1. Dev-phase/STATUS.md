@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.8.0"
 current_phase: "3phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-07 19:51 KST"
-updated_at: "2026-09-07 19:51 KST"
-next_action: "PROD-0009 명령·키·문맥·충돌 정책을 확정하고 공통 레지스트리, 도움말과 편집기 키보드 흐름을 구현"
+updated_at: "2026-09-07 21:01 KST"
+next_action: "다음 commit에서 0.8.0 Phase 4로 전환하고 휴지통 30일·탈퇴 7일 수명주기와 purge 작업을 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -42,7 +42,7 @@ next_action: "PROD-0009 명령·키·문맥·충돌 정책을 확정하고 공�
 | 0.5.0 | complete | Phase 1~5 완료 | 0.4.0 완료 |
 | 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
 | 0.7.0 | complete | Phase 1~5 완료 | 0.6.0 완료 |
-| 0.8.0 | in_progress | Phase 3 진행 중 | 0.7.0 완료 |
+| 0.8.0 | in_progress | Phase 3 완료 | 0.7.0 완료 |
 | 0.9.0 | planned | 없음 | 0.8.0 완료 |
 | 0.9.1 | planned | 없음 | 0.9.0 완료 |
 | 1.0.0 | planned | 없음 | 0.9.1 release gate 통과 |
@@ -53,7 +53,6 @@ next_action: "PROD-0009 명령·키·문맥·충돌 정책을 확정하고 공�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.8.0 / Phase 3 | LC-080-P3-01~08 | PROD-0009·shortcut registry/help·WorkspaceShell·가사 editor navigation·단위/E2E·Phase 문서 | Phase 2 완료 | 2026-09-07 19:51 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,12 +101,13 @@ next_action: "PROD-0009 명령·키·문맥·충돌 정책을 확정하고 공�
 
 ## 다음 작업
 
-0.8.0 Phase 3을 진행한다. `PROD-0009`에 공통 명령과 운영체제 표기·실행 문맥·충돌 정책을 확정하고, 설정 화면의 검색 가능한 도움말과 편집기 단축키·초안/초점 복원을 구현한다. 개발 서버는 Phase 2 최종 SHA `c846fb4`와 schema `0801_display_settings.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.8.0 Phase 3은 완료됐다. 다음 commit에서 Phase 4로 전환하고 자료별 휴지통 30일, 계정 탈퇴 7일 철회와 멱등 purge 경계를 구현한다. 개발 서버는 Phase 3 기능 SHA `eb6b793`와 schema `0801_display_settings.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-07 | 0.8.0 / Phase 3 | Codex | 운영체제별 8개 공통 명령, 검색 가능한 설정·전역 도움말, IME·입력·브라우저 키 충돌 방지와 편집기 초안·커서·scroll·focus 보존을 구현 | 52 files/193 tests, production build·4 image fresh-volume/재시작 복구, PC/mobile E2E 201 통과·15 skip, Chromium/Firefox/WebKit shortcut 9 통과, CI `34118400109`, 네 image digest, `eb6b793` 동일 SHA 개발 배포와 공개 도움말·편집기 navigation smoke; [검증 기록](../../docs/runbooks/0.8.0-phase3-validation.md) | Phase 4가 설정 계정 관리와 자료 삭제 명령을 휴지통 30일·탈퇴 7일·purge 수명주기에 연결 |
 | 2026-09-07 | 0.8.0 / Phase 2 | Codex | system/light/dark 테마와 계정별 글꼴·크기·줄 간격·자간·집중 모드, 가사별 완전 재정의·초기화, 초기 깜박임 방지와 PC·모바일 설정 화면을 구현 | 51 files/189 tests, 0801 migration 복구, production build·4 image fresh-volume/재시작 복구, PC/mobile E2E 197 통과·13 skip, CI `34110202574`, 네 image digest, `bdf68b1` 동일 SHA 개발 배포와 공개 설정·CAS·owner·병합·SSR smoke; [검증 기록](../../docs/runbooks/0.8.0-phase2-validation.md) | Phase 3이 설정 화면과 편집기 셸에 공통 단축키 안내·개인화 영역을 연결하고 전체 키보드 흐름을 검증 |
 | 2026-09-07 | 0.8.0 / Phase 1 | Codex | 읽기 전용 기본·owner 전용 가사/프롬프트 템플릿, CRUD·복제·soft delete, 사용자별 즐겨찾기·최근 사용, 독립 적용과 PC·360px 선택·미리보기를 구현 | 49 files/185 tests, 0800 migration 복구, production build·4 image fresh-volume 복구, PC/mobile E2E 192 통과·12 skip, CI `34103326904`, 네 image digest, `7f2cf2e` 동일 SHA 개발 배포와 공개 필터·권한·독립 복사 smoke; [검증 기록](../../docs/runbooks/0.8.0-phase1-validation.md) | Phase 2가 템플릿 화면에도 적용될 owner 설정, theme와 글쓰기 표시 기본값을 구현 |
 | 2026-09-07 | 0.7.0 / Phase 5 | Codex | Phase 1~5의 43개 작업 ID를 증적에 연결하고 검색→가사 Hook 편집→최근 저장 cursor 복귀, saved filter URL→새 모바일 기기, 두 owner·삭제 자료 격리, PC·모바일 상태 회귀와 0.6.0→0.7.0 migration을 통합 검증 | 47 files/177 tests, release migration, 합성 2,000 resource 성능 기준, production build·4 image fresh-volume 복구, PC/mobile E2E 189 통과·11 skip, CI `34094881051`, 네 image digest, `ed1de7b` 동일 SHA 개발 배포와 공개 search·recent·saved·owner smoke; [검증 기록](../../docs/runbooks/0.7.0-phase5-validation.md) | 0.8.0 Phase 1이 owner·active resource·content-free URL 계약을 템플릿 목록·적용에 재사용하고 `PROD-0008`을 확정 |
