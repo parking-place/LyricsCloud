@@ -24,18 +24,21 @@ import {
   RHYME_INSERTION_CONTRACT_VERSION,
   type CrdtTextSelectionReference,
   type EditorResourcePanelItem,
+  type LyricDisplaySettingsRecord,
   type LyricRecord,
   type LyricResumePosition,
   type SaveLyricPositionInput,
   type LyricStatus
 } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createLyricMetadataSaver } from "../lib/lyric-metadata.js";
 import { registerLogoutSave } from "../lib/account-cache.js";
+import { trapDialogTab } from "../lib/dialog-focus.js";
 import { LyricHistory } from "./lyric-history.js";
 import { LyricResourcePanel } from "./lyric-resource-panel.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
+import { LyricDisplaySettings } from "./lyric-display-settings.js";
 
 interface LyricEditorDraft {
   readonly title: string;
@@ -46,7 +49,7 @@ interface LyricEditorDraft {
   readonly pinOrder: number | null;
 }
 
-export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dashboardHref, returnTo, initialFind, initialPosition }: {
+export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dashboardHref, returnTo, initialFind, initialPosition, initialDisplaySettings }: {
   ownerId: string;
   initialLyric: LyricRecord;
   songTitle: string;
@@ -55,6 +58,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   returnTo: string;
   initialFind: string;
   initialPosition: LyricResumePosition | null;
+  initialDisplaySettings: LyricDisplaySettingsRecord;
 }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<CodeMirrorTextEditor | null>(null);
@@ -85,7 +89,9 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
   const [resourcePanelWidth, setResourcePanelWidth] = useState(296);
   const [selectedSectionIds, setSelectedSectionIds] = useState<Set<string>>(() => new Set());
-  const [focusMode, setFocusMode] = useState(false);
+  const [focusMode, setFocusMode] = useState(initialDisplaySettings.account.focusModeDefault);
+  const [displaySettings, setDisplaySettings] = useState(initialDisplaySettings);
+  const [displaySettingsOpen, setDisplaySettingsOpen] = useState(false);
   const [rhymeSelection, setRhymeSelection] = useState<{
     item: EditorResourcePanelItem;
     source: PortableTextSource;
@@ -99,6 +105,16 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const copyFeedback = useCopyFeedback();
   const router = useRouter();
   const lyricReturnSuffix = `?returnTo=${encodeURIComponent(returnTo)}`;
+
+  useEffect(() => {
+    if (!displaySettingsOpen) return;
+    function keyboard(event: KeyboardEvent) { if (event.key === "Escape") setDisplaySettingsOpen(false); else trapDialogTab(event, ".lyric-display-dialog"); }
+    document.addEventListener("keydown", keyboard);
+    return () => {
+      document.removeEventListener("keydown", keyboard);
+      requestAnimationFrame(() => editorRef.current?.focus());
+    };
+  }, [displaySettingsOpen]);
 
   function draft(overrides: Partial<LyricEditorDraft> = {}): LyricEditorDraft {
     return {
@@ -559,7 +575,14 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     return () => window.removeEventListener("keydown", onKeyDown);
   });
 
-  return <section className={`lyric-editor-page${focusMode ? " is-focus-mode" : ""}`} aria-labelledby="lyric-title-label">
+  const writingVariables = {
+    "--lyric-font-family": displayFontFamily(displaySettings.effective.font),
+    "--lyric-font-size": `${displaySettings.effective.fontSize}px`,
+    "--lyric-line-height": String(displaySettings.effective.lineHeight),
+    "--lyric-letter-spacing": `${displaySettings.effective.letterSpacing}em`
+  } as CSSProperties;
+
+  return <section className={`lyric-editor-page${focusMode ? " is-focus-mode" : ""}`} aria-labelledby="lyric-title-label" style={writingVariables}>
     <header className="lyric-editor-header">
       <div className="lyric-editor-context">
         <a href={dashboardHref} className="back-inline" onClick={(event) => {
@@ -573,6 +596,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         <button type="button" aria-expanded={desktopResourcesOpen} aria-controls="editor-resource-results"
           onClick={() => { if (desktopResourcesOpen) closeResourcePanel(); else setDesktopResourcesOpen(true); }}>{desktopResourcesOpen ? "자료 패널 접기" : "자료 패널 펼치기"}</button>
         <button type="button" onClick={() => setHistoryOpen(true)}>버전 비교</button>
+        <button type="button" aria-haspopup="dialog" aria-expanded={displaySettingsOpen} onClick={() => setDisplaySettingsOpen(true)}>표시 설정</button>
         <button type="button" onClick={copyWhole} title="Alt+Shift+C" aria-keyshortcuts="Alt+Shift+C">전체 복사</button>
         <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} title="Alt+Shift+F" aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 모드 종료" : "집중 모드"}</button>
         <button type="button" disabled={commandBusy} onClick={duplicateCurrent}>복제</button>
@@ -613,6 +637,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         onCopy={copyPanelResource}
         onInsertRhyme={(item, mode) => { void beginRhymeInsertion(item, mode); }}
         settings={<><div className="mobile-lyric-commands"><button type="button" disabled={commandBusy} onClick={duplicateCurrent}>현재 가사 복제</button><button type="button" disabled={commandBusy} className="danger-text" onClick={() => { setMobileResourcesOpen(false); setDeleteOpen(true); }}>현재 가사 삭제</button></div>
+          <div className="lyric-display-summary"><span>{displaySettings.override ? "가사별 설정" : "계정 기본값"} · {displaySettings.effective.fontSize}px · 줄 {displaySettings.effective.lineHeight.toFixed(1)}</span><button type="button" onClick={() => { setMobileResourcesOpen(false); setDisplaySettingsOpen(true); }}>표시 설정 열기</button></div>
           <LyricMetadataControls memo={memo} status={status} isFavorite={isFavorite} isPinned={isPinned}
             onMemo={changeMemo} onStatus={changeStatus} onFavorite={() => toggleMetadata("favorite")} onPinned={() => toggleMetadata("pinned")}
             onMemoCompositionStart={() => { memoComposingRef.current = true; }} onMemoCompositionEnd={() => { memoComposingRef.current = false; controllerRef.current?.compositionEnd(); }} /></>} />
@@ -634,6 +659,9 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         <SongFormList sections={songForm.sections} activeSectionId={songForm.activeSectionId} selectedSectionIds={selectedSectionIds} onSelect={goToSection} onToggle={toggleSection} />
         <CopySelectionActions selectedCount={selectedSectionIds.size} onClear={() => setSelectedSectionIds(new Set())} onCopy={copySelected} />
       </section>
+    </div> : null}
+    {displaySettingsOpen ? <div className="lyric-display-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) setDisplaySettingsOpen(false); }}>
+      <LyricDisplaySettings lyricId={initialLyric.id} settings={displaySettings} onApply={setDisplaySettings} onCancel={() => setDisplaySettingsOpen(false)} />
     </div> : null}
     {historyOpen ? <LyricHistory lyricId={initialLyric.id} versions={songLyrics} onClose={() => setHistoryOpen(false)}
       readHistory={async () => {
@@ -670,6 +698,12 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     </section></div> : null}
     {deleteOpen ? <div className="dialog-backdrop" role="presentation"><section className="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="editor-delete-title" aria-describedby="editor-delete-description"><p className="eyebrow">Soft delete</p><h2 id="editor-delete-title">‘{title}’ 가사를 삭제할까요?</h2><p id="editor-delete-description">현재 가사를 숨긴 뒤 최근 다른 가사 또는 곡 대시보드로 이동합니다.</p><div><button autoFocus className="secondary-button" type="button" disabled={commandBusy} onClick={() => setDeleteOpen(false)}>취소</button><button className="danger-button" type="button" disabled={commandBusy} onClick={deleteCurrent}>{commandBusy ? "삭제 중…" : "가사 삭제 확인"}</button></div></section></div> : null}
   </section>;
+}
+
+function displayFontFamily(font: LyricDisplaySettingsRecord["effective"]["font"]): string {
+  if (font === "serif") return 'Georgia, "Noto Serif KR", serif';
+  if (font === "mono") return 'ui-monospace, "SFMono-Regular", Consolas, monospace';
+  return 'Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif';
 }
 
 function LyricMetadataControls({ memo, status, isFavorite, isPinned, onMemo, onStatus, onFavorite, onPinned, onMemoCompositionStart, onMemoCompositionEnd }: {

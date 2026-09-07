@@ -27,3 +27,5 @@ readiness는 인증 실패, 시간 초과, 연결 불가, schema 미적용, 기�
 0702는 owner·resource당 하나의 content-free 최근 상태를 추가합니다. 열람 시각은 resource 수정 시각과 분리하고, 가사에만 cursor offset·송폼 label/순번·scroll·viewport를 저장합니다. 복합 owner/type FK와 위치 shape check, 강제 RLS가 교차 owner와 비가사 위치를 차단합니다. 최근 목록은 active resource의 수정 시각과 열람 시각을 함께 사용하므로 migration 전 자료도 최근 수정 항목으로 보이며 soft delete 자료와 삭제된 부모 곡의 가사는 제외합니다. `pnpm test:migration:0702`는 무결성·RLS·rollback/reapply를 검사합니다.
 
 0800은 읽기 전용 기본 템플릿과 owner 전용 가사·프롬프트 템플릿, 원문과 분리된 사용자별 즐겨찾기·최근 사용, 생성·복제·적용 멱등 요청을 추가합니다. 적용은 템플릿 유형과 활성 부모 곡을 확인한 같은 transaction에서 독립된 새 resource로 원문을 복사합니다. `pnpm test:migration:0800`은 기본 원문 불변, payload shape, 강제 RLS와 rollback/reapply를 검사합니다.
+
+0801은 사용자별 테마·작성 표시 기본값과 선택적인 가사별 표시 오버라이드를 추가합니다. 오버라이드 행을 삭제하면 현재 계정 기본값이 즉시 다시 적용되며, 두 테이블 모두 강제 RLS와 범위/allowlist 제약을 사용합니다. `pnpm test:migration:0801`은 owner 격리, DB 제약, rollback/reapply를 검사합니다.

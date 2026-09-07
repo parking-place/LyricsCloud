@@ -1,5 +1,5 @@
 import type { LyricStatus, ResourceColor, ResourceType, SongStatus, TemplateType } from "@lyricscloud/domain";
-import { bigint, boolean, integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { bigint, boolean, doublePrecision, integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const appUsers = pgTable("app_users", {
   id: uuid("id").primaryKey(),
@@ -213,3 +213,27 @@ export const templateRequests = pgTable("template_requests", {
   resultType: text("result_type").$type<"template" | "lyrics" | "prompt">().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [primaryKey({ columns: [table.ownerId, table.requestId] })]);
+
+export const userSettings = pgTable("user_settings", {
+  ownerId: uuid("owner_id").primaryKey(),
+  theme: text("theme").$type<"system" | "light" | "dark">().notNull().default("system"),
+  writingFont: text("writing_font").$type<"sans" | "serif" | "mono">().notNull().default("sans"),
+  fontSize: integer("font_size").notNull().default(18),
+  lineHeight: doublePrecision("line_height").notNull().default(1.8),
+  letterSpacing: doublePrecision("letter_spacing").notNull().default(0),
+  focusModeDefault: boolean("focus_mode_default").notNull().default(false),
+  rowVersion: bigint("row_version", { mode: "number" }).notNull().default(1),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const lyricDisplaySettings = pgTable("lyric_display_settings", {
+  lyricId: uuid("lyric_id").primaryKey(),
+  ownerId: uuid("owner_id").notNull(),
+  resourceType: text("resource_type").$type<"lyrics">().notNull(),
+  writingFont: text("writing_font").$type<"sans" | "serif" | "mono">().notNull(),
+  fontSize: integer("font_size").notNull(),
+  lineHeight: doublePrecision("line_height").notNull(),
+  letterSpacing: doublePrecision("letter_spacing").notNull(),
+  rowVersion: bigint("row_version", { mode: "number" }).notNull().default(1),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+});

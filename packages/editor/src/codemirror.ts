@@ -171,13 +171,13 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
         }
       }),
       EditorView.theme({
-        "&": { height: "100%", backgroundColor: "transparent" },
-        ".cm-scroller": { fontFamily: "inherit", lineHeight: "1.8", overflow: "auto" },
+        "&": { height: "100%", backgroundColor: "transparent", color: "var(--ink)" },
+        ".cm-scroller": { fontFamily: "var(--lyric-font-family, inherit)", fontSize: "var(--lyric-font-size, 18px)", lineHeight: "var(--lyric-line-height, 1.8)", letterSpacing: "var(--lyric-letter-spacing, 0em)", overflow: "auto" },
         ".cm-content": { minHeight: "100%", padding: "1.25rem 0" },
         ".cm-line": { padding: "0 1.5rem" },
-        ".cm-songform-line": { color: "#c8ff3d", fontWeight: "800", backgroundColor: "rgba(200, 255, 61, .045)" },
-        ".cm-cursor": { borderLeftColor: "#c8ff3d" },
-        ".cm-selectionBackground, &.cm-focused .cm-selectionBackground": { backgroundColor: "#334123" },
+        ".cm-songform-line": { color: "var(--acid)", fontWeight: "800", backgroundColor: "color-mix(in srgb, var(--acid) 5%, transparent)" },
+        ".cm-cursor": { borderLeftColor: "var(--acid)" },
+        ".cm-selectionBackground, &.cm-focused .cm-selectionBackground": { backgroundColor: "color-mix(in srgb, var(--acid) 22%, transparent)" },
         ".cm-gutters": { display: "none" },
         "&.cm-focused": { outline: "none" }
       }, { dark: true })

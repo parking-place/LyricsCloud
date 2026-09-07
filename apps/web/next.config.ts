@@ -20,7 +20,7 @@ const config: NextConfig = {
     ];
     return [
       { source: "/:path*", headers: security },
-      ...["/", "/auth", "/workspace", "/songs/:path*"].map((source) => ({ source, headers: noStore }))
+      ...["/", "/auth", "/workspace", "/songs/:path*", "/settings"].map((source) => ({ source, headers: noStore }))
     ];
   }
 };

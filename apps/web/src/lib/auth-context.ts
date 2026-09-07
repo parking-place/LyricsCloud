@@ -1,6 +1,6 @@
 import { AuthService, cookieNames, GoogleOidcAdapter, readCookie, sessionCookie } from "@lyricscloud/auth";
 import { readAuthConfig, readRuntimeConfig, type AuthConfig } from "@lyricscloud/config";
-import { PostgresAuthStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore } from "@lyricscloud/database";
+import { PostgresAuthStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore } from "@lyricscloud/database";
 
 interface AuthContext {
   readonly config: AuthConfig;
@@ -15,6 +15,7 @@ interface AuthContext {
   readonly recentWork: PostgresRecentWorkStore;
   readonly savedResources: PostgresSavedResourceStore;
   readonly templates: PostgresTemplateStore;
+  readonly displaySettings: PostgresDisplaySettingsStore;
 }
 
 export class RequestAuthError extends Error {
@@ -48,7 +49,8 @@ export function getAuthContext(): AuthContext {
     search: new PostgresSearchStore(runtime.databaseUrl),
     recentWork: new PostgresRecentWorkStore(runtime.databaseUrl),
     savedResources: new PostgresSavedResourceStore(runtime.databaseUrl),
-    templates: new PostgresTemplateStore(runtime.databaseUrl)
+    templates: new PostgresTemplateStore(runtime.databaseUrl),
+    displaySettings: new PostgresDisplaySettingsStore(runtime.databaseUrl)
   };
   cached = { key, context, allowedEmails };
   return context;

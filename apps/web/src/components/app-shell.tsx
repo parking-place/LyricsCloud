@@ -22,6 +22,8 @@ interface ShellProfile {
   readonly avatarUrl: string | null;
 }
 
+type ThemeShellWindow = Window & { __lcApplyTheme?: (theme: "system" | "light" | "dark") => void };
+
 export function WorkspaceShell({
   profile,
   loginCompleted = false,
@@ -31,7 +33,7 @@ export function WorkspaceShell({
 }: {
   profile: ShellProfile;
   loginCompleted?: boolean;
-  active?: "home" | "songs" | "rhymes" | "prompts" | "search" | "recent" | "favorites" | "templates";
+  active?: "home" | "songs" | "rhymes" | "prompts" | "search" | "recent" | "favorites" | "templates" | "settings";
   currentSongId?: string;
   children: ReactNode;
 }) {
@@ -45,6 +47,16 @@ export function WorkspaceShell({
   const mainShell = useRef<HTMLDivElement>(null);
   const pausedFocus = useRef<HTMLElement | null>(null);
   const guard = useRef<ReturnType<typeof coordinateAccountLogout> | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    void fetch("/api/settings", { cache: "no-store" }).then(async (response) => {
+      if (!active || !response.ok) return;
+      const theme = ((await response.json()) as { settings?: { theme?: unknown } }).settings?.theme;
+      if (theme === "system" || theme === "light" || theme === "dark") (window as ThemeShellWindow).__lcApplyTheme?.(theme);
+    }).catch(() => undefined);
+    return () => { active = false; };
+  }, [profile.userId]);
 
   useEffect(() => {
     const coordination = coordinateAccountLogout(profile.userId, (paused) => {
@@ -146,6 +158,7 @@ export function WorkspaceShell({
         <a className={`nav-item${active === "recent" ? " active" : ""}`} href="/recent" aria-current={active === "recent" ? "page" : undefined}><span aria-hidden="true">↺</span><span className="nav-text">최근 작업</span></a>
         <a className={`nav-item${active === "favorites" ? " active" : ""}`} href="/favorites" aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><span className="nav-text">즐겨찾기</span></a>
         <a className={`nav-item${active === "templates" ? " active" : ""}`} href="/templates" aria-current={active === "templates" ? "page" : undefined}><span aria-hidden="true">▦</span><span className="nav-text">템플릿</span></a>
+        <a className={`nav-item${active === "settings" ? " active" : ""}`} href="/settings" aria-current={active === "settings" ? "page" : undefined}><span aria-hidden="true">⚙</span><span className="nav-text">설정</span></a>
       </nav>
       <div className="side-spacer" />
       <div className="profile-mini"><Avatar profile={profile} /><span className="nav-text"><strong>{profile.displayName}</strong><small>개인 작업 공간</small></span></div>
@@ -154,7 +167,7 @@ export function WorkspaceShell({
     <div className="main-shell" ref={mainShell}>
       <header className="topbar">
         <nav className="workspace-tabs" aria-label="창작 영역"><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트 <small>0.4.0</small></a><a href="/prompts" className={`workspace-tab${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}>프롬프트 <small>0.5.0</small></a><a href="/templates" className={`workspace-tab${active === "templates" ? " active" : ""}`} aria-current={active === "templates" ? "page" : undefined}>▦ 템플릿</a><a href="/favorites" className={`workspace-tab${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}>★ 즐겨찾기</a><a href="/recent" className={`workspace-tab${active === "recent" ? " active" : ""}`} aria-current={active === "recent" ? "page" : undefined}>↺ 최근</a><a href="/search" className={`workspace-tab${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}>⌕ 검색</a></nav>
-        <span className="topbar-spacer" /><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button>
+        <span className="topbar-spacer" /><a className={`top-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button>
       </header>
       {sessionExpired || logoutError ? <div className="account-messages">
       {sessionExpired ? <div className="account-error" role="alert"><p>로그인이 만료되었습니다. 미전송 초안과 현재 입력을 보존했습니다. <a href="/auth" target="_blank" rel="noopener noreferrer">다시 로그인</a>한 뒤 동기화를 다시 시도해 주세요.</p><button className="secondary-button" type="button" onClick={() => void downloadDrafts()}>초안 내려받기</button></div> : null}
@@ -164,7 +177,7 @@ export function WorkspaceShell({
       </div> : null}
       {children}
     </div>
-    <header className="mobile-header"><Brand /><span className="mobile-account"><Avatar profile={profile} /><button className="mobile-logout" type="button" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button></span></header>
+    <header className="mobile-header"><Brand /><span className="mobile-account"><a className={`mobile-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><Avatar profile={profile} /><button className="mobile-logout" type="button" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button></span></header>
     <nav className="mobile-bottom-nav" aria-label="모바일 주 메뉴">
       <a href="/songs" className={`mobile-nav-item${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><strong>곡</strong></a>
       <a href="/rhymes" className={`mobile-nav-item${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><strong>라임</strong></a>

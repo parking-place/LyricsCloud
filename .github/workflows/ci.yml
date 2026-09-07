@@ -84,6 +84,8 @@ jobs:
         run: pnpm test:migration:0702
       - name: Verify 0.8.0 template migration recovery
         run: pnpm test:migration:0800
+      - name: Verify 0.8.0 display settings migration recovery
+        run: pnpm test:migration:0801
       - name: Verify 0.7.0 fresh and 0.6.0 upgrade release paths
         run: pnpm test:migration:0700-release
       - name: Measure 0.7.0 navigation release baseline

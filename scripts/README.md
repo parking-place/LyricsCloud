@@ -39,6 +39,7 @@ DATABASE_URL=postgresql://.../lyricscloud_test pnpm test:performance:0700-releas
 
 ```bash
 DATABASE_URL=postgresql://.../lyricscloud_test pnpm test:migration:0800
+DATABASE_URL=postgresql://.../lyricscloud_test pnpm test:migration:0801
 ```
 
 ## 허용 메일 파일 이관
