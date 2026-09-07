@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.9.0"
-current_phase: "1phase.md"
-state: "complete"
+current_phase: "2phase.md"
+state: "in_progress"
 owner: "Codex"
-started_at: "2026-09-07 23:51 KST"
-updated_at: "2026-09-08 00:39 KST"
-next_action: "다음 commit에서 0.9.0 Phase 2로 전환하고 P1 반응형 shell·모바일 navigation·태블릿 editor panel과 prompt editor 결함부터 수정"
+started_at: "2026-09-08 00:55 KST"
+updated_at: "2026-09-08 00:55 KST"
+next_action: "P1 반응형 shell·모바일 navigation·태블릿 editor panel·prompt editor 결함을 수정하고 320~1440px 기능 동등성을 검증"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -43,7 +43,7 @@ next_action: "다음 commit에서 0.9.0 Phase 2로 전환하고 P1 반응형 she
 | 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
 | 0.7.0 | complete | Phase 1~5 완료 | 0.6.0 완료 |
 | 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
-| 0.9.0 | in_progress | Phase 1 완료 | 0.8.0 완료 |
+| 0.9.0 | in_progress | Phase 2 진행 중 | 0.8.0 완료 |
 | 0.9.1 | planned | 없음 | 0.9.0 완료 |
 | 1.0.0 | planned | 없음 | 0.9.1 release gate 통과 |
 
@@ -53,6 +53,7 @@ next_action: "다음 commit에서 0.9.0 Phase 2로 전환하고 P1 반응형 she
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 0.9.0 / Phase 2 | LC-090-P2-01~08 | 공통 shell·mobile navigation/sheet·editor responsive CSS·prompt lifecycle·viewport/IME E2E·Phase 문서 | Phase 1 완료 | 2026-09-08 00:55 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -101,7 +102,7 @@ next_action: "다음 commit에서 0.9.0 Phase 2로 전환하고 P1 반응형 she
 
 ## 다음 작업
 
-0.9.0 Phase 1을 완료했다. 다음 commit에서 Phase 2를 시작해 감사 기준선의 P1 반응형 shell·모바일 navigation·태블릿 editor panel·prompt editor 결함을 우선 수정하고 320~1440px 기능 동등성을 검증한다. 개발 서버는 Phase 1 기능 SHA `64ef5ed`와 schema `0802_lifecycle.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.9.0 Phase 2를 시작한다. 감사 기준선의 P1 반응형 shell·모바일 navigation·태블릿 editor panel·prompt editor 결함을 우선 수정하고 320~1440px 기능 동등성을 검증한다. 개발 서버는 Phase 1 최종 SHA `98817ff`와 schema `0802_lifecycle.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
