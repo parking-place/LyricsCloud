@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.7.0"
-current_phase: "4phase.md"
+current_phase: "5phase.md"
 state: "in_progress"
 owner: "Codex"
-started_at: "2026-09-07 14:51 KST"
+started_at: "2026-09-07 15:34 KST"
 updated_at: "2026-09-07"
-next_action: "0.7.0 Phase 4 네 자료 유형의 통합 즐겨찾기·핀, owner별 수동 순서와 URL 필터를 구현"
+next_action: "0.7.0 Phase 5 검색·최근 작업·위치 복원·즐겨찾기·핀의 수직 흐름과 성능·격리 회귀를 통합 검증"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -41,7 +41,7 @@ next_action: "0.7.0 Phase 4 네 자료 유형의 통합 즐겨찾기·핀, owner
 | 0.4.0 | complete | Phase 1~5 완료 | 0.3.1 완료 |
 | 0.5.0 | complete | Phase 1~5 완료 | 0.4.0 완료 |
 | 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
-| 0.7.0 | in_progress | Phase 3 완료, Phase 4 진행 중 | 0.6.0 완료 |
+| 0.7.0 | in_progress | Phase 4 완료, Phase 5 진행 중 | 0.6.0 완료 |
 | 0.8.0 | planned | 없음 | 0.7.0 완료 |
 | 0.9.0 | planned | 없음 | 0.8.0 완료 |
 | 0.9.1 | planned | 없음 | 0.9.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.7.0 Phase 4 네 자료 유형의 통합 즐겨찾기·핀, owner
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.7.0 / Phase 4 | LC-070-P4-01~09 | 통합 즐겨찾기·핀 query/API/UI·수동 순서·URL 필터·브라우저 테스트·Phase 문서 | Phase 3 완료 | 2026-09-07 14:51 KST | 진행 중 |
+| Codex | 0.7.0 / Phase 5 | LC-070-P5-01~08 | 0.7.0 탐색 수직 흐름·성능·격리·시각 회귀·추적표·인계 문서 | Phase 4 완료 | 2026-09-07 15:34 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,12 +102,13 @@ next_action: "0.7.0 Phase 4 네 자료 유형의 통합 즐겨찾기·핀, owner
 
 ## 다음 작업
 
-0.7.0 Phase 4는 Phase 3의 통합 자료 카드·owner 경계를 재사용해 네 자료 유형의 즐겨찾기·핀, 수동 핀 순서와 URL 필터를 구현한다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.7.0 Phase 5는 검색 → 딥링크 편집 → 최근 위치 복귀와 즐겨찾기·핀 → URL 필터 → 새 기기 흐름을 함께 회귀 검증하고 성능·격리·추적 증적을 완성한다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-07 | 0.7.0 / Phase 4 | Codex | 네 자료 공통 즐겨찾기·핀과 content-free 통합 화면, 유형·곡·상태·표시 범위 URL 필터, owner별 새 핀 append·해제 compact·원자 reorder, drag·키보드·버튼 이동과 연속 toggle 직렬화를 구현 | 47 files/177 tests, production build·4 image fresh-volume 복구, PC/mobile E2E 183 통과·9 skip, CI `34090441547`, 네 image tag/digest, `325e70f` 동일 SHA 개발 배포와 공개 saved API/UI smoke; [검증 기록](../../docs/runbooks/0.7.0-phase4-validation.md) | Phase 5가 검색·최근 위치·즐겨찾기·핀·URL 딥링크를 하나의 owner 격리 수직 흐름으로 검증 |
 | 2026-09-07 | 0.7.0 / Phase 3 | Codex | 수정과 열람 시각을 분리한 네 자료 통합 최근 작업, content-free 문맥 카드, 2초/15초 병합 위치 저장, 같은 viewport cursor·scroll과 다른 viewport 송폼 우선 복원, 삭제·owner 경계를 구현 | 46 files/175 tests, 0200~0702 migration 복구, production build·4 image 및 fresh-volume 복구, PC/mobile E2E 180 통과·8 skip, CI `34087267900`, 네 image tag/digest, `21cb464` 동일 SHA 개발 배포와 공개 health·owner/API/UI smoke; [검증 기록](../../docs/runbooks/0.7.0-phase3-validation.md) | Phase 4가 통합 자료 표현과 owner 경계를 즐겨찾기·핀, 수동 순서와 URL 필터에 재사용 |
 | 2026-09-07 | 0.7.0 / Phase 2 | Codex | PC·모바일 통합 검색, URL 유형 필터, 안전한 강조, 자료·가사 본문 deep link, 키보드 탐색, 일반화된 비노출 오류와 owner별 최근 검색어를 구현 | 43 files/165 tests, 0200~0701 migration 복구, production build·4 image 복구, PC/mobile E2E 177 통과·7 skip, CI `34082482383`, 네 image tag/digest, `5ae8ee2` 동일 SHA 개발 배포와 공개 검색 기반·인증 API/UI smoke; [검증 기록](../../docs/runbooks/0.7.0-phase2-validation.md) | Phase 3이 공통 `returnTo`·가사 본문 위치 계약을 최근 작업과 마지막 편집 위치 복원에 재사용 |
 | 2026-09-07 | 0.7.0 / Phase 1 | Codex | 곡·가사·라임·프롬프트의 owner 전용 통합 검색 계약, 원문과 분리된 NFKC projection, 문자 그대로 부분 검색, `pg_trgm` GIN index, 제목·태그·본문 점수와 안정 keyset을 구현 | 42 files/158 tests, 0200~0700 migration 복구, production build·4 image 복구, PC/mobile E2E 173 통과·5 skip, CI `34079253245`, 네 image tag/digest, `9ed1011` 동일 SHA 개발 배포와 공개 health·projection·index smoke; [검증 기록](../../docs/runbooks/0.7.0-phase1-validation.md) | Phase 2가 공통 결과와 점수·cursor만 소비해 통합 검색 UI·유형 filter·deep link를 구현 |
