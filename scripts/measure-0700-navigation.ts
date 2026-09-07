@@ -45,7 +45,10 @@ try {
     }
   } finally { await target.end(); }
 } finally {
-  await admin.query(`drop database if exists "${databaseName}" with (force)`).catch(() => undefined);
+  // Every target pool is closed above. A forced drop can still race PostgreSQL's
+  // socket shutdown and surface a late 57P01 error from an otherwise finished
+  // pg Pool, so let PostgreSQL verify that no target connection remains.
+  await admin.query(`drop database if exists "${databaseName}"`);
   await admin.end();
 }
 }
