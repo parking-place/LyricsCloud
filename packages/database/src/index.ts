@@ -12,6 +12,7 @@ export * from "./rhyme-insertions.js";
 export * from "./prompts.js";
 export * from "./search.js";
 export * from "./recent-work.js";
+export * from "./saved-resources.js";
 export * from "./pool.js";
 
 export type DatabaseHealthCode =

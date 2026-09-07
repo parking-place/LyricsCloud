@@ -17,7 +17,7 @@ export const productRoutes = [
   { screen: "09-prompt-editor", path: "/prompts/:promptId", access: "authenticated", availability: "planned" },
   { screen: "10-search", path: "/search", access: "authenticated", availability: "available" },
   { screen: "11-recent", path: "/recent", access: "authenticated", availability: "planned" },
-  { screen: "12-favorites", path: "/favorites", access: "authenticated", availability: "planned" },
+  { screen: "12-favorites", path: "/favorites", access: "authenticated", availability: "available" },
   { screen: "13-trash", path: "/trash", access: "authenticated", availability: "planned" },
   { screen: "14-templates", path: "/templates", access: "authenticated", availability: "planned" },
   { screen: "15-settings", path: "/settings", access: "authenticated", availability: "planned" }
