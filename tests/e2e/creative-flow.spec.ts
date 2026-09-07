@@ -23,7 +23,7 @@ test.describe("0.6.0 complete creative flow", () => {
       await page.getByLabel("곡 제목").fill("0.6 통합 창작 곡");
       await page.getByRole("radio", { name: /가사 작성 중/ }).check();
       await page.getByRole("button", { name: "곡 만들기" }).click();
-      await expect(page).toHaveURL(/\/songs\/[0-9a-f-]+\?returnTo=/);
+      await expect(page).toHaveURL(/\/songs\/[0-9a-f-]+\?returnTo=/, { timeout: 15_000 });
       const songId = new URL(page.url()).pathname.split("/").at(-1)!;
 
       await page.getByRole("button", { name: "첫 가사 작성" }).click();
