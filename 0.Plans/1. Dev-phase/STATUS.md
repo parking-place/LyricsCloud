@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.8.0"
 current_phase: "5phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-07 22:44 KST"
-updated_at: "2026-09-07 22:44 KST"
-next_action: "내보내기 schema와 snapshot 경계를 정의하고 owner 전용 스트리밍 ZIP 생성·정리·탈퇴 진입점·통합 회귀를 구현"
+updated_at: "2026-09-07 23:34 KST"
+next_action: "0.9.0 Phase 1을 시작해 15개 구현 화면과 PC·모바일 목업의 차이, 상태, 토큰, 접근성 우선순위를 감사"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -42,7 +42,7 @@ next_action: "내보내기 schema와 snapshot 경계를 정의하고 owner 전�
 | 0.5.0 | complete | Phase 1~5 완료 | 0.4.0 완료 |
 | 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
 | 0.7.0 | complete | Phase 1~5 완료 | 0.6.0 완료 |
-| 0.8.0 | in_progress | Phase 4 완료, Phase 5 준비 | 0.7.0 완료 |
+| 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
 | 0.9.0 | planned | 없음 | 0.8.0 완료 |
 | 0.9.1 | planned | 없음 | 0.9.0 완료 |
 | 1.0.0 | planned | 없음 | 0.9.1 release gate 통과 |
@@ -53,7 +53,6 @@ next_action: "내보내기 schema와 snapshot 경계를 정의하고 owner 전�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.8.0 / Phase 5 | LC-080-P5-01~09 | export 계약·database snapshot·API/UI·임시 산출물 정리·revision 보존·통합 E2E·추적표·Phase 문서 | Phase 4 완료 | 2026-09-07 22:44 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,12 +101,13 @@ next_action: "내보내기 schema와 snapshot 경계를 정의하고 owner 전�
 
 ## 다음 작업
 
-0.8.0 Phase 5를 시작한다. 같은 DB snapshot에서 TXT/Markdown과 JSON 전체 내보내기를 생성하고 owner 권한·안전한 파일명·대용량·임시 파일 정리와 13~15번 화면 회귀를 검증한다. 개발 서버는 Phase 4 기능 SHA `77e0af8`와 schema `0802_lifecycle.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.9.0 Phase 1을 시작한다. 15개 구현 화면과 PC·모바일 목업을 일대일로 대조하고 상태·공통 셸·디자인 토큰·접근성 차이를 우선순위가 있는 추적 기준선으로 고정한다. 개발 서버는 0.8.0 Phase 5 기능 SHA `b47b387`와 schema `0802_lifecycle.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-07 | 0.8.0 / Phase 5 | Codex | owner 전용 repeatable-read snapshot에서 50행씩 읽는 UTF-8 TXT/Markdown+versioned JSON 스트리밍 ZIP, 안전한 고유 파일명, 탈퇴 전 실제 다운로드와 취소 rollback을 구현하고 0.8.0의 45개 작업 ID를 추적 | 57 files/208 tests, production build·표준 ZIP CRC·4 image fresh-volume/재시작 복구, PC/mobile E2E 206 통과·16 skip, CI `34132291134`, 네 image digest, `b47b387` 동일 SHA 개발 배포와 공개 대용량 ZIP·schema·owner smoke; [검증 기록](../../docs/runbooks/0.8.0-phase5-validation.md) | 0.9.0 Phase 1이 15개 화면의 PC·모바일 차이와 상태·토큰·접근성 결함을 합성 export fixture와 함께 전수 감사 |
 | 2026-09-07 | 0.8.0 / Phase 4 | Codex | 자료·템플릿의 정확한 30일 휴지통, batch 곡·가사 복원, 제목 확인 hard delete, 탈퇴 즉시 차단·7일 철회, content-free 멱등 purge worker와 로컬 개인 cache 정리를 구현 | 54 files/201 tests, 0802 migration·복구, production build·4 image fresh-volume/재시작 복구, PC/mobile E2E 204 통과·16 skip, CI `34125931148`, 네 image digest, `77e0af8` 동일 SHA 개발 배포와 공개 휴지통·owner·탈퇴·철회·worker smoke; [검증 기록](../../docs/runbooks/0.8.0-phase4-validation.md) | Phase 5가 탈퇴 전 안내를 실제 전체 내보내기 진입점으로 바꾸고 13~15번 화면·시간 정책을 통합 검증 |
 | 2026-09-07 | 0.8.0 / Phase 3 | Codex | 운영체제별 8개 공통 명령, 검색 가능한 설정·전역 도움말, IME·입력·브라우저 키 충돌 방지와 편집기 초안·커서·scroll·focus 보존을 구현 | 52 files/193 tests, production build·4 image fresh-volume/재시작 복구, PC/mobile E2E 201 통과·15 skip, Chromium/Firefox/WebKit shortcut 9 통과, CI `34118400109`, 네 image digest, `eb6b793` 동일 SHA 개발 배포와 공개 도움말·편집기 navigation smoke; [검증 기록](../../docs/runbooks/0.8.0-phase3-validation.md) | Phase 4가 설정 계정 관리와 자료 삭제 명령을 휴지통 30일·탈퇴 7일·purge 수명주기에 연결 |
 | 2026-09-07 | 0.8.0 / Phase 2 | Codex | system/light/dark 테마와 계정별 글꼴·크기·줄 간격·자간·집중 모드, 가사별 완전 재정의·초기화, 초기 깜박임 방지와 PC·모바일 설정 화면을 구현 | 51 files/189 tests, 0801 migration 복구, production build·4 image fresh-volume/재시작 복구, PC/mobile E2E 197 통과·13 skip, CI `34110202574`, 네 image digest, `bdf68b1` 동일 SHA 개발 배포와 공개 설정·CAS·owner·병합·SSR smoke; [검증 기록](../../docs/runbooks/0.8.0-phase2-validation.md) | Phase 3이 설정 화면과 편집기 셸에 공통 단축키 안내·개인화 영역을 연결하고 전체 키보드 흐름을 검증 |
