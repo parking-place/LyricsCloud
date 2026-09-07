@@ -294,15 +294,10 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     if (!rhymeSelection) return;
     rhymeSelectionRangeRef.current = { anchor: 0, head: rhymeSelection.source.body.length };
     const area = rhymeSelectionRef.current;
-    const rememberSelection = () => {
-      if (area) rhymeSelectionRangeRef.current = { anchor: area.selectionStart, head: area.selectionEnd };
-    };
-    area?.addEventListener("select", rememberSelection);
     requestAnimationFrame(() => {
       area?.focus();
       area?.setSelectionRange(0, rhymeSelection.source.body.length);
     });
-    return () => area?.removeEventListener("select", rememberSelection);
   }, [rhymeSelection]);
 
   function changeTitle(value: string) {
@@ -769,7 +764,12 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       <p className="eyebrow">Rhyme selection</p>
       <h2 id="rhyme-selection-title">‘{rhymeSelection.item.title}’에서 표현 선택</h2>
       <p id="rhyme-selection-description">아래 원문에서 삽입할 부분을 드래그해 선택하세요. 현재 가사의 커서·선택 위치는 CRDT 기준으로 보존됩니다.</p>
-      <textarea ref={rhymeSelectionRef} readOnly aria-label="삽입할 라임 표현 선택" value={rhymeSelection.source.body} />
+      <textarea ref={(area) => {
+        rhymeSelectionRef.current = area;
+        if (area) area.onselect = () => {
+          rhymeSelectionRangeRef.current = { anchor: area.selectionStart, head: area.selectionEnd };
+        };
+      }} readOnly aria-label="삽입할 라임 표현 선택" value={rhymeSelection.source.body} />
       <div className="dialog-actions"><button type="button" onClick={() => setRhymeSelection(null)}>취소</button><button type="button" className="primary-link" onClick={() => {
         const area = rhymeSelectionRef.current;
         if (area && !commandBusy) {
