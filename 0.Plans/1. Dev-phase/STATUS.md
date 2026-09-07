@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.9.0"
 current_phase: "5phase.md"
-state: "ready"
+state: "in_progress"
 owner: "Codex"
-started_at: null
-updated_at: "2026-09-08 05:56 KST"
-next_action: "0.9.0 Phase 5 출시 후보 통합 행렬과 실제 기기 인수 증거를 준비"
+started_at: "2026-09-08 06:18 KST"
+updated_at: "2026-09-08 06:18 KST"
+next_action: "지원 행렬·15개 화면 회귀·PWA/IME/clipboard/복구 출시 후보 증거를 만들고 실제 iOS·Android 인수 항목을 확정"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -43,7 +43,7 @@ next_action: "0.9.0 Phase 5 출시 후보 통합 행렬과 실제 기기 인수 
 | 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
 | 0.7.0 | complete | Phase 1~5 완료 | 0.6.0 완료 |
 | 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
-| 0.9.0 | in_progress | Phase 4 완료, Phase 5 준비 | 0.8.0 완료 |
+| 0.9.0 | in_progress | Phase 4 완료, Phase 5 진행 중 | 0.8.0 완료 |
 | 0.9.1 | planned | 없음 | 0.9.0 완료 |
 | 1.0.0 | planned | 없음 | 0.9.1 release gate 통과 |
 
@@ -53,6 +53,7 @@ next_action: "0.9.0 Phase 5 출시 후보 통합 행렬과 실제 기기 인수 
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 0.9.0 / Phase 5 | LC-090-P5-01~09 | `tests/**`, `docs/runbooks/**`, Phase 상태 문서 | 0.9.0 Phase 4 완료 | 2026-09-08 06:18 KST | in_progress |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -101,7 +102,7 @@ next_action: "0.9.0 Phase 5 출시 후보 통합 행렬과 실제 기기 인수 
 
 ## 다음 작업
 
-0.9.0 Phase 5를 시작할 준비가 되었다. Phase 4가 고정한 15개 화면의 landmark·대비·공통 상태·dialog focus·본문과 cursor 보존 계약을 출시 후보 브라우저·실기기·PWA·복구 행렬에 인계한다. 개발 서버는 Phase 4 기능 SHA `2d0ec0a`와 schema `0802_lifecycle.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.9.0 Phase 5를 시작한다. Phase 4가 고정한 15개 화면의 landmark·대비·공통 상태·dialog focus·본문과 cursor 보존 계약을 출시 후보 브라우저·실기기·PWA·복구 행렬에 인계한다. 개발 서버는 Phase 4 문서 최종 SHA `7a8f429`와 schema `0802_lifecycle.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
