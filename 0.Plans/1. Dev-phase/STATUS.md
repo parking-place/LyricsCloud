@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.9.0"
 current_phase: "1phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-07 23:51 KST"
-updated_at: "2026-09-07 23:51 KST"
-next_action: "15개 화면을 route·component·기획·목업과 연결하고 네 viewport·상태·토큰·공통 shell·접근성 차이를 우선순위로 감사"
+updated_at: "2026-09-08 00:39 KST"
+next_action: "다음 commit에서 0.9.0 Phase 2로 전환하고 P1 반응형 shell·모바일 navigation·태블릿 editor panel과 prompt editor 결함부터 수정"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -43,7 +43,7 @@ next_action: "15개 화면을 route·component·기획·목업과 연결하고 �
 | 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
 | 0.7.0 | complete | Phase 1~5 완료 | 0.6.0 완료 |
 | 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
-| 0.9.0 | in_progress | Phase 1 진행 중 | 0.8.0 완료 |
+| 0.9.0 | in_progress | Phase 1 완료 | 0.8.0 완료 |
 | 0.9.1 | planned | 없음 | 0.9.0 완료 |
 | 1.0.0 | planned | 없음 | 0.9.1 release gate 통과 |
 
@@ -53,7 +53,6 @@ next_action: "15개 화면을 route·component·기획·목업과 연결하고 �
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.9.0 / Phase 1 | LC-090-P1-01~08 | 15개 화면·추가 제안 추적표, 네 viewport 합성 캡처, UI token·shell·상태·접근성 차이 감사, Phase 문서 | 0.8.0 완료 | 2026-09-07 23:51 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,12 +101,13 @@ next_action: "15개 화면을 route·component·기획·목업과 연결하고 �
 
 ## 다음 작업
 
-0.9.0 Phase 1을 시작한다. 15개 구현 화면과 PC·모바일 목업을 일대일로 대조하고 상태·공통 셸·디자인 토큰·접근성 차이를 우선순위가 있는 추적 기준선으로 고정한다. 개발 서버는 0.8.0 Phase 5 기능 SHA `b47b387`와 schema `0802_lifecycle.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.9.0 Phase 1을 완료했다. 다음 commit에서 Phase 2를 시작해 감사 기준선의 P1 반응형 shell·모바일 navigation·태블릿 editor panel·prompt editor 결함을 우선 수정하고 320~1440px 기능 동등성을 검증한다. 개발 서버는 Phase 1 기능 SHA `64ef5ed`와 schema `0802_lifecycle.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-08 | 0.9.0 / Phase 1 | Codex | 목업 15개를 실제 route·component·기획 절에 연결하고 추가 제안 7개 원문 행, 상태 15행, 네 viewport의 합성 기준선 60장을 고정했으며 P0 0·P1 4·P2 4·P3 1개로 차이를 분류 | 57 files/208 tests, production build·4 image 복구, PC/mobile E2E 207 통과·17 skip, CI `34138200153`, 네 image digest, `64ef5ed` 동일 SHA 개발 배포와 공개 auth·보호 route 14개·schema·no-store smoke; [검증 기록](../../docs/runbooks/0.9.0-phase1-validation.md) | Phase 2가 P1 shell·mobile navigation·tablet editor panel·prompt editor 결함을 먼저 닫고 320~1440px 접근성을 검증 |
 | 2026-09-07 | 0.8.0 / Phase 5 | Codex | owner 전용 repeatable-read snapshot에서 50행씩 읽는 UTF-8 TXT/Markdown+versioned JSON 스트리밍 ZIP, 안전한 고유 파일명, 탈퇴 전 실제 다운로드와 취소 rollback을 구현하고 0.8.0의 45개 작업 ID를 추적 | 57 files/208 tests, production build·표준 ZIP CRC·4 image fresh-volume/재시작 복구, PC/mobile E2E 206 통과·16 skip, CI `34132291134`, 네 image digest, `b47b387` 동일 SHA 개발 배포와 공개 대용량 ZIP·schema·owner smoke; [검증 기록](../../docs/runbooks/0.8.0-phase5-validation.md) | 0.9.0 Phase 1이 15개 화면의 PC·모바일 차이와 상태·토큰·접근성 결함을 합성 export fixture와 함께 전수 감사 |
 | 2026-09-07 | 0.8.0 / Phase 4 | Codex | 자료·템플릿의 정확한 30일 휴지통, batch 곡·가사 복원, 제목 확인 hard delete, 탈퇴 즉시 차단·7일 철회, content-free 멱등 purge worker와 로컬 개인 cache 정리를 구현 | 54 files/201 tests, 0802 migration·복구, production build·4 image fresh-volume/재시작 복구, PC/mobile E2E 204 통과·16 skip, CI `34125931148`, 네 image digest, `77e0af8` 동일 SHA 개발 배포와 공개 휴지통·owner·탈퇴·철회·worker smoke; [검증 기록](../../docs/runbooks/0.8.0-phase4-validation.md) | Phase 5가 탈퇴 전 안내를 실제 전체 내보내기 진입점으로 바꾸고 13~15번 화면·시간 정책을 통합 검증 |
 | 2026-09-07 | 0.8.0 / Phase 3 | Codex | 운영체제별 8개 공통 명령, 검색 가능한 설정·전역 도움말, IME·입력·브라우저 키 충돌 방지와 편집기 초안·커서·scroll·focus 보존을 구현 | 52 files/193 tests, production build·4 image fresh-volume/재시작 복구, PC/mobile E2E 201 통과·15 skip, Chromium/Firefox/WebKit shortcut 9 통과, CI `34118400109`, 네 image digest, `eb6b793` 동일 SHA 개발 배포와 공개 도움말·편집기 navigation smoke; [검증 기록](../../docs/runbooks/0.8.0-phase3-validation.md) | Phase 4가 설정 계정 관리와 자료 삭제 명령을 휴지통 30일·탈퇴 7일·purge 수명주기에 연결 |
