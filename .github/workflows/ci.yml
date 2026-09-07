@@ -94,6 +94,8 @@ jobs:
         run: pnpm test:performance:0700-release
       - name: Static checks
         run: pnpm check
+      - name: Verify 0.9.0 UI audit baseline
+        run: pnpm test:audit:0901
       - name: Shell and Docker cleanup contract
         run: |
           bash -n scripts/*.sh
