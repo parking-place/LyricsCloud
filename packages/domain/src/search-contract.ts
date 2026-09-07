@@ -28,6 +28,20 @@ export interface UnifiedSearchPage {
   readonly nextCursor: string | null;
 }
 
+export const RECENT_SEARCH_LIMIT = 8;
+
+export interface RecentSearchRecord {
+  readonly id: string;
+  readonly query: string;
+  readonly type: SearchTypeFilter;
+  readonly searchedAt: string;
+}
+
+export interface RecordRecentSearchInput {
+  readonly query: string;
+  readonly type: SearchTypeFilter;
+}
+
 export class SearchValidationError extends Error {
   readonly code = "VALIDATION_FAILED";
   constructor(readonly issues: readonly ValidationIssue[]) {
@@ -42,6 +56,42 @@ export function normalizeSearchText(value: string): string {
 
 export function escapeSearchLikeLiteral(value: string): string {
   return value.replaceAll("\\", "\\\\").replaceAll("%", "\\%").replaceAll("_", "\\_");
+}
+
+export function findSearchLiteralRange(text: string, query: string): { readonly from: number; readonly to: number } | null {
+  const needle = normalizeSearchText(query);
+  if (!needle) return null;
+  let normalized = "";
+  const offsets: Array<{ from: number; to: number }> = [];
+  let sourceOffset = 0;
+  let pendingSpace: { from: number; to: number } | null = null;
+  const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text);
+  for (const { segment: point } of graphemes) {
+    const from = sourceOffset;
+    sourceOffset += point.length;
+    if (/^\s+$/u.test(point)) {
+      if (normalized) {
+        const spaceFrom: number = pendingSpace === null ? from : pendingSpace.from;
+        pendingSpace = { from: spaceFrom, to: sourceOffset };
+      }
+      continue;
+    }
+    if (pendingSpace) {
+      normalized += " ";
+      offsets.push(pendingSpace);
+      pendingSpace = null;
+    }
+    for (const normalizedPoint of point.normalize("NFKC").toLowerCase()) {
+      normalized += normalizedPoint;
+      offsets.push({ from, to: sourceOffset });
+    }
+  }
+  const index = normalized.indexOf(needle);
+  if (index < 0) return null;
+  const pointIndex = [...normalized.slice(0, index)].length;
+  const start = offsets[pointIndex];
+  const end = offsets[pointIndex + [...needle].length - 1];
+  return start && end ? { from: start.from, to: end.to } : null;
 }
 
 export function parseUnifiedSearchInput(params: URLSearchParams): UnifiedSearchInput {
@@ -65,4 +115,17 @@ export function parseUnifiedSearchInput(params: URLSearchParams): UnifiedSearchI
   }
   if (issues.length) throw new SearchValidationError(issues);
   return { query, type, limit, ...(cursor ? { cursor } : {}) };
+}
+
+export function parseRecordRecentSearchInput(value: unknown): RecordRecentSearchInput {
+  const issues: ValidationIssue[] = [];
+  const input = typeof value === "object" && value !== null ? value as Record<string, unknown> : {};
+  const query = normalizeSearchText(typeof input.query === "string" ? input.query : "");
+  if (!query) issues.push({ field: "query", code: "required" });
+  if ([...query].length > 200) issues.push({ field: "query", code: "too_long" });
+  const type = typeof input.type === "string" && (["all", ...SEARCH_RESOURCE_TYPES] as readonly string[]).includes(input.type)
+    ? input.type as SearchTypeFilter
+    : (issues.push({ field: "type", code: "invalid" }), "all" as const);
+  if (issues.length) throw new SearchValidationError(issues);
+  return { query, type };
 }

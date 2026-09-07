@@ -23,7 +23,7 @@ interface SongCandidate { readonly id: string; readonly title: string; readonly 
 
 const colorLabels: Record<ResourceColor, string> = { red: "빨강", yellow: "노랑", green: "초록", blue: "파랑", gray: "회색" };
 
-export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initialRhyme: RhymeNoteRecord }) {
+export function RhymeEditor({ ownerId, initialRhyme, returnTo = "/rhymes" }: { ownerId: string; initialRhyme: RhymeNoteRecord; returnTo?: string }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<CodeMirrorTextEditor | null>(null);
   const syncRef = useRef<BrowserRhymeSync | null>(null);
@@ -167,7 +167,7 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
 
   async function goBack() {
     if (busy || !await flushBeforeCommand(true)) return;
-    router.push("/rhymes");
+    router.push(returnTo);
   }
 
   async function addTag(event: FormEvent) {
@@ -234,7 +234,7 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
       const response = await fetch(`/api/rhymes/${initialRhyme.id}`, { method: "DELETE" });
       const result = await response.json() as { deleted?: boolean };
       if (!response.ok || !result.deleted) throw new Error();
-      router.replace("/rhymes"); router.refresh();
+      router.replace(returnTo); router.refresh();
     } catch { setBusy(false); setDeleteOpen(false); setNotice("라임 노트를 삭제하지 못했습니다. 현재 화면을 유지합니다."); }
   }
 

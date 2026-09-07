@@ -1,6 +1,6 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "0700_search_foundation.sql";
+export const CURRENT_SCHEMA_VERSION = "0701_recent_searches.sql";
 
 export * from "./auth.js";
 export * from "./owned.js";

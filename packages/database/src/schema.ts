@@ -158,3 +158,12 @@ export const songResourceLinks = pgTable("song_resource_links", {
   linkedResourceType: text("linked_resource_type").$type<"rhyme_note" | "prompt">().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [primaryKey({ columns: [table.ownerId, table.songResourceId, table.linkedResourceId] })]);
+
+export const recentSearches = pgTable("recent_searches", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ownerId: uuid("owner_id").notNull(),
+  query: text("query").notNull(),
+  searchType: text("search_type").$type<"all" | "song" | "lyrics" | "rhyme_note" | "prompt">().notNull().default("all"),
+  normalizedQuery: text("normalized_query"),
+  searchedAt: timestamp("searched_at", { withTimezone: true }).notNull().defaultNow()
+});

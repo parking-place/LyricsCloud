@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  escapeSearchLikeLiteral, normalizeSearchText, parseUnifiedSearchInput, SearchValidationError
+  escapeSearchLikeLiteral, findSearchLiteralRange, normalizeSearchText, parseRecordRecentSearchInput, parseUnifiedSearchInput, SearchValidationError
 } from "./search-contract.js";
 
 describe("unified search contract", () => {
@@ -24,5 +24,24 @@ describe("unified search contract", () => {
     ] as Array<Record<string, string>>) {
       expect(() => parseUnifiedSearchInput(new URLSearchParams(input))).toThrow(SearchValidationError);
     }
+  });
+
+  it("parses the bounded recent-search write contract", () => {
+    expect(parseRecordRecentSearchInput({ query: "  ＦＩＲＥ  ", type: "lyrics" }))
+      .toEqual({ query: "fire", type: "lyrics" });
+    expect(() => parseRecordRecentSearchInput({ query: "", type: "all" })).toThrow(SearchValidationError);
+    expect(() => parseRecordRecentSearchInput({ query: "ok", type: "template" })).toThrow(SearchValidationError);
+  });
+
+  it("maps normalized literal matches back to safe authored-text offsets", () => {
+    const text = "앞  ＦＩＲＥ\n\tVerse １ 뒤";
+    const range = findSearchLiteralRange(text, "fire verse 1");
+    expect(range && text.slice(range.from, range.to)).toBe("ＦＩＲＥ\n\tVerse １");
+    expect(findSearchLiteralRange("<script>alert(1)</script>", "<script>"))
+      .toEqual({ from: 0, to: 8 });
+    const decomposed = "Cafe\u0301 후렴";
+    const decomposedRange = findSearchLiteralRange(decomposed, "CAFÉ");
+    expect(decomposedRange && decomposed.slice(decomposedRange.from, decomposedRange.to)).toBe("Cafe\u0301");
+    expect(findSearchLiteralRange(text, "missing")).toBeNull();
   });
 });

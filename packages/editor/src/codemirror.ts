@@ -2,7 +2,7 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { Annotation, ChangeSet, Compartment, EditorSelection, EditorState, Transaction } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, keymap, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { findSongFormSection, SongFormIndex, type SongFormSection } from "./songform.js";
-import { REVISION_POLICY } from "@lyricscloud/domain";
+import { findSearchLiteralRange, REVISION_POLICY } from "@lyricscloud/domain";
 
 export interface SongFormNavigationState {
   readonly sections: readonly SongFormSection[];
@@ -45,6 +45,7 @@ export interface CodeMirrorTextEditor {
   replace(from: number, to: number, value: string, requestId?: string): void;
   applyTransaction(transaction: Omit<EditorDocumentTransaction, "origin" | "composing">): void;
   goToSongFormSection(sectionId: string): boolean;
+  goToTextMatch(query: string): boolean;
   focus(): void;
   setEditable(editable: boolean): void;
   destroy(): void;
@@ -217,6 +218,16 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       view.dispatch({
         selection: EditorSelection.cursor(section.tagFrom),
         effects: EditorView.scrollIntoView(section.tagFrom, { y: "start", yMargin: 72 })
+      });
+      view.focus();
+      return true;
+    },
+    goToTextMatch(query) {
+      const range = findSearchLiteralRange(view.state.doc.toString(), query);
+      if (!range) return false;
+      view.dispatch({
+        selection: EditorSelection.range(range.from, range.to),
+        effects: EditorView.scrollIntoView(range.from, { y: "center", yMargin: 72 })
       });
       view.focus();
       return true;

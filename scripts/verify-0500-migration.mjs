@@ -12,12 +12,14 @@ const admin = new Pool({ connectionString: source.href, max: 1 });
 const rollback = await readFile("packages/database/rollback/0500_prompts.sql", "utf8");
 const usageRollback = await readFile("packages/database/rollback/0501_prompt_usage.sql", "utf8");
 const searchRollback = await readFile("packages/database/rollback/0700_search_foundation.sql", "utf8");
+const recentSearchRollback = await readFile("packages/database/rollback/0701_recent_searches.sql", "utf8");
 
 try {
   await admin.query(`create database "${databaseName}"`);
   migrate(); migrate();
   const target = new Pool({ connectionString: url.href, max: 1 });
   try {
+    await target.query(recentSearchRollback);
     await target.query(searchRollback);
     await target.query(usageRollback);
     const alice = (await target.query("insert into app_users default values returning id")).rows[0].id;

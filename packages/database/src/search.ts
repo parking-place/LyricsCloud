@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import {
-  escapeSearchLikeLiteral, normalizeSearchText, type SearchMatchField, type SearchResourceType,
+  escapeSearchLikeLiteral, normalizeSearchText, RECENT_SEARCH_LIMIT, type RecentSearchRecord,
+  type RecordRecentSearchInput, type SearchMatchField, type SearchResourceType,
   type UnifiedSearchInput, type UnifiedSearchPage, type UnifiedSearchResult
 } from "@lyricscloud/domain";
 import { Pool, type PoolClient } from "pg";
@@ -27,6 +28,13 @@ interface SearchCursor {
   readonly updatedAt: string;
   readonly type: SearchResourceType;
   readonly id: string;
+}
+
+interface RecentSearchRow {
+  readonly id: string;
+  readonly query: string;
+  readonly search_type: RecordRecentSearchInput["type"];
+  readonly searched_at: Date;
 }
 
 export class SearchCursorError extends Error {
@@ -63,6 +71,54 @@ export class PostgresSearchStore {
         items: rows.map(mapResult),
         nextCursor: hasMore && last ? encodeCursor(makeCursor(last, normalizedInput)) : null
       };
+    });
+  }
+
+  async listRecentSearches(ownerId: string): Promise<readonly RecentSearchRecord[]> {
+    return this.#withUser(ownerId, async (client) => {
+      const result = await client.query<RecentSearchRow>(`
+        select id,query,search_type,searched_at from recent_searches
+        where owner_id=$1 order by searched_at desc,id desc limit $2
+      `, [ownerId, RECENT_SEARCH_LIMIT]);
+      return result.rows.map(mapRecentSearch);
+    });
+  }
+
+  async recordRecentSearch(ownerId: string, input: RecordRecentSearchInput): Promise<RecentSearchRecord> {
+    const query = normalizeSearchText(input.query);
+    if (!query || [...query].length > 200 || !["all", "song", "lyrics", "rhyme_note", "prompt"].includes(input.type)) {
+      throw new Error("SEARCH_INPUT_INVALID");
+    }
+    return this.#withUser(ownerId, async (client) => {
+      await client.query("select pg_advisory_xact_lock(hashtextextended($1,701))", [ownerId]);
+      const result = await client.query<RecentSearchRow>(`
+        insert into recent_searches(owner_id,query,search_type) values($1,$2,$3)
+        on conflict(owner_id,normalized_query,search_type) do update
+          set query=excluded.query,searched_at=clock_timestamp()
+        returning id,query,search_type,searched_at
+      `, [ownerId, query, input.type]);
+      await client.query(`
+        delete from recent_searches where owner_id=$1 and id in (
+          select id from recent_searches where owner_id=$1
+          order by searched_at desc,id desc offset $2
+        )
+      `, [ownerId, RECENT_SEARCH_LIMIT]);
+      return mapRecentSearch(result.rows[0]!);
+    });
+  }
+
+  async deleteRecentSearch(ownerId: string, id: string): Promise<boolean> {
+    if (!UUID.test(id)) return false;
+    return this.#withUser(ownerId, async (client) => {
+      const result = await client.query("delete from recent_searches where owner_id=$1 and id=$2", [ownerId, id]);
+      return result.rowCount === 1;
+    });
+  }
+
+  async clearRecentSearches(ownerId: string): Promise<number> {
+    return this.#withUser(ownerId, async (client) => {
+      const result = await client.query("delete from recent_searches where owner_id=$1", [ownerId]);
+      return result.rowCount ?? 0;
     });
   }
 
@@ -172,6 +228,10 @@ function mapResult(row: SearchRow): UnifiedSearchResult {
     preview: row.preview, linkedSongIds: row.linked_song_ids,
     score: Number(row.score), updatedAt: row.updated_at.toISOString()
   };
+}
+
+function mapRecentSearch(row: RecentSearchRow): RecentSearchRecord {
+  return { id: row.id, query: row.query, type: row.search_type, searchedAt: row.searched_at.toISOString() };
 }
 
 function signature(input: UnifiedSearchInput): string {

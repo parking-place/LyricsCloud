@@ -15,7 +15,7 @@ export const productRoutes = [
   { screen: "07-rhyme-editor", path: "/rhymes/:rhymeId", access: "authenticated", availability: "planned" },
   { screen: "08-prompts", path: "/prompts", access: "authenticated", availability: "planned" },
   { screen: "09-prompt-editor", path: "/prompts/:promptId", access: "authenticated", availability: "planned" },
-  { screen: "10-search", path: "/search", access: "authenticated", availability: "planned" },
+  { screen: "10-search", path: "/search", access: "authenticated", availability: "available" },
   { screen: "11-recent", path: "/recent", access: "authenticated", availability: "planned" },
   { screen: "12-favorites", path: "/favorites", access: "authenticated", availability: "planned" },
   { screen: "13-trash", path: "/trash", access: "authenticated", availability: "planned" },

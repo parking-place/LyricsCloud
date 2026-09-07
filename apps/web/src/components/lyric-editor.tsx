@@ -43,13 +43,14 @@ interface LyricEditorDraft {
   readonly pinOrder: number | null;
 }
 
-export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dashboardHref, returnTo }: {
+export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dashboardHref, returnTo, initialFind }: {
   ownerId: string;
   initialLyric: LyricRecord;
   songTitle: string;
   songLyrics: readonly LyricRecord[];
   dashboardHref: string;
   returnTo: string;
+  initialFind: string;
 }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<CodeMirrorTextEditor | null>(null);
@@ -106,6 +107,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     const parent = mountRef.current;
     if (!parent) return;
     let active = true;
+    let deepLinkFocusPending = Boolean(initialFind);
     const controller = new SerializedSaveController<LyricEditorDraft>({
       initialDraft: {
         title: initialLyric.title, memo: initialLyric.memo, status: initialLyric.status,
@@ -141,7 +143,16 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         const currentLength = editorRef.current?.value.length ?? 0;
         bodyRef.current = value;
         editorRef.current?.applyTransaction({ changes: changes ?? [{ from: 0, to: currentLength, insert: value }] });
-      }, onEditableChange(editable) { if (active) editor.setEditable(editable); },
+      }, onEditableChange(editable) {
+        if (!active) return;
+        editor.setEditable(editable);
+        if (editable && deepLinkFocusPending) {
+          deepLinkFocusPending = false;
+          requestAnimationFrame(() => {
+            if (active && editor.goToTextMatch(initialFind)) setCommandNotice("검색 결과와 일치하는 첫 위치로 이동했습니다.");
+          });
+        }
+      },
       onLegacyConflict(conflict) { if (active) setLegacyConflict(conflict); },
       onStateChange(state) { if (active) setLocalSyncState(state); }
     }).then((sync) => { if (active) localSyncRef.current = sync; else void sync.destroy(); })
@@ -154,7 +165,10 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       return await localSyncRef.current?.checkpoint("leave") ?? false;
     }, () => ({ resourceId: initialLyric.id, title: titleRef.current, body: bodyRef.current, memo: memoRef.current }));
     window.addEventListener("pagehide", flush);
-    const focusFrame = requestAnimationFrame(() => editor.focus());
+    const focusFrame = requestAnimationFrame(() => {
+      if (initialFind && editor.goToTextMatch(initialFind)) setCommandNotice("검색 결과와 일치하는 첫 위치로 이동했습니다.");
+      else editor.focus();
+    });
     return () => {
       active = false;
       cancelAnimationFrame(focusFrame);
@@ -168,7 +182,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       void controller.dispose();
       controllerRef.current = null;
     };
-  }, [initialLyric.body, initialLyric.id, initialLyric.isFavorite, initialLyric.isPinned, initialLyric.memo, initialLyric.pinOrder, initialLyric.rowVersion, initialLyric.status, initialLyric.title, ownerId]);
+  }, [initialFind, initialLyric.body, initialLyric.id, initialLyric.isFavorite, initialLyric.isPinned, initialLyric.memo, initialLyric.pinOrder, initialLyric.rowVersion, initialLyric.status, initialLyric.title, ownerId]);
 
   useEffect(() => {
     const currentIds = new Set(songForm.sections.map((section) => section.id));

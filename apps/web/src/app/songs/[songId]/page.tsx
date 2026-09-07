@@ -4,7 +4,7 @@ import { WorkspaceShell } from "../../../components/app-shell.js";
 import { SongDashboard, type DashboardSong } from "../../../components/song-dashboard.js";
 import { getAuthContext } from "../../../lib/auth-context.js";
 import { resolvePageUser } from "../../../lib/page-auth.js";
-import { safeSongReturnTo } from "../../../lib/song-return.js";
+import { safeWorkspaceReturnTo } from "../../../lib/workspace-return.js";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -23,7 +23,7 @@ export default async function SongDashboardPage({
   const context = getAuthContext();
   const song = await context.songs.getSongSummary(user.userId, songId).catch(() => null);
   if (!song) notFound();
-  const returnTo = safeSongReturnTo(query.returnTo);
+  const returnTo = safeWorkspaceReturnTo(query.returnTo);
   return <WorkspaceShell profile={user} active="songs" currentSongId={song.id}><Suspense fallback={<DashboardLoading />}><DashboardData ownerId={user.userId} song={song} returnTo={returnTo} /></Suspense></WorkspaceShell>;
 }
 

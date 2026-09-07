@@ -78,6 +78,8 @@ jobs:
         run: pnpm test:migration:0501
       - name: Verify 0.7.0 search foundation migration recovery
         run: pnpm test:migration:0700
+      - name: Verify 0.7.0 recent search migration recovery
+        run: pnpm test:migration:0701
       - name: Static checks
         run: pnpm check
       - name: Shell and Docker cleanup contract

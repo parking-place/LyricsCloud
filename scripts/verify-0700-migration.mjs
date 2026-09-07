@@ -10,6 +10,7 @@ const databaseName = `lyricscloud_0700_${randomUUID().replaceAll("-", "")}`;
 const url = new URL(source); url.pathname = `/${databaseName}`;
 const admin = new Pool({ connectionString: source.href, max: 1 });
 const rollback = await readFile("packages/database/rollback/0700_search_foundation.sql", "utf8");
+const recentRollback = await readFile("packages/database/rollback/0701_recent_searches.sql", "utf8");
 
 try {
   await admin.query(`create database "${databaseName}"`);
@@ -40,6 +41,7 @@ try {
     assert.equal(projected.title, "ＦＩＲＥ  Verse １");
     assert.equal(projected.search_title, "fire verse 1");
 
+    await target.query(recentRollback);
     await target.query(rollback);
     assert.equal((await target.query("select title from resources where id=$1", [song])).rows[0].title, "ＦＩＲＥ  Verse １");
     assert.equal((await target.query("select 1 from pg_extension where extname='pg_trgm'")).rowCount, 1);

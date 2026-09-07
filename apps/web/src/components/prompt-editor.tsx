@@ -13,7 +13,7 @@ import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 
 interface SongCandidate { readonly id: string; readonly title: string; readonly isLinked: boolean }
 
-export function PromptEditor({ ownerId, initialPrompt }: { ownerId: string; initialPrompt: PromptRecord }) {
+export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: { ownerId: string; initialPrompt: PromptRecord; returnTo?: string }) {
   const [snapshot, setSnapshot] = useState<PromptEditorSnapshot>({
     title: initialPrompt.title,
     items: initialPrompt.tokens.map((token, index) => ({ occurrenceId: `initial-${index}`, displayValue: token.displayValue })),
@@ -80,7 +80,7 @@ export function PromptEditor({ ownerId, initialPrompt }: { ownerId: string; init
     if (!await sync.checkpoint("leave")) { setNotice("이동 전 수정 기록을 저장하지 못했습니다. 연결을 확인해 주세요."); return false; }
     return true;
   }
-  async function back() { if (await flushBeforeLeave()) router.push("/prompts"); }
+  async function back() { if (await flushBeforeLeave()) router.push(returnTo); }
   async function addTokens(values: readonly string[], bulk: boolean) {
     const sync = syncRef.current;
     if (!sync) throw new Error();

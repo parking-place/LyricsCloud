@@ -82,6 +82,35 @@ describe.runIf(enabled)("unified private search", () => {
     expect((await store!.search(alice, input(marker, "lyrics"))).items).toEqual([]);
     await expect(store!.search(alice, input("   "))).rejects.toThrow("SEARCH_INPUT_INVALID");
   });
+
+  it("keeps a bounded recent-search list private, refreshes duplicates and supports removal", async () => {
+    const [alice, bob] = users as [string, string];
+    const first = await store!.recordRecentSearch(alice, { query: "  ＦＩＲＥ  ", type: "all" });
+    const refreshed = await store!.recordRecentSearch(alice, { query: "fire", type: "all" });
+    expect(refreshed.id).toBe(first.id);
+    expect(await store!.listRecentSearches(bob)).toEqual([]);
+
+    for (let index = 0; index < 10; index += 1) {
+      await store!.recordRecentSearch(alice, { query: `recent-${index}`, type: index % 2 ? "lyrics" : "song" });
+    }
+    const recent = await store!.listRecentSearches(alice);
+    expect(recent).toHaveLength(8);
+    expect(recent[0]).toMatchObject({ query: "recent-9", type: "lyrics" });
+    expect(recent.some(({ id }) => id === first.id)).toBe(false);
+    expect(await store!.deleteRecentSearch(bob, recent[0]!.id)).toBe(false);
+    expect(await store!.deleteRecentSearch(alice, recent[0]!.id)).toBe(true);
+    expect(await store!.clearRecentSearches(alice)).toBe(7);
+    expect(await store!.listRecentSearches(alice)).toEqual([]);
+  });
+
+  it("keeps the recent-search bound under concurrent writes", async () => {
+    const [alice] = users as [string, string];
+    await Promise.all(Array.from({ length: 16 }, (_, index) => store!.recordRecentSearch(alice, {
+      query: `concurrent-${index}`,
+      type: index % 2 === 0 ? "all" : "lyrics"
+    })));
+    expect(await store!.listRecentSearches(alice)).toHaveLength(8);
+  });
 });
 
 afterAll(async () => {
