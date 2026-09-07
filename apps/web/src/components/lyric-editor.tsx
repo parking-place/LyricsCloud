@@ -2,6 +2,7 @@
 
 import {
   copySongFormSections,
+  capturePortableTextSelection,
   createBrowserLyricSync,
   copyWholeLyric,
   createCodeMirrorTextEditor,
@@ -12,15 +13,26 @@ import {
   type LocalSyncState,
   type SaveState,
   type SongFormNavigationState,
+  type PortableTextSource,
   type SongFormSection
 } from "@lyricscloud/editor";
-import { LYRIC_STATUSES, LYRIC_STATUS_LABELS, type EditorResourcePanelItem, type LyricRecord, type LyricStatus } from "@lyricscloud/domain";
+import {
+  LYRIC_STATUSES,
+  LYRIC_LIMITS,
+  LYRIC_STATUS_LABELS,
+  RHYME_INSERTION_CONTRACT_VERSION,
+  type CrdtTextSelectionReference,
+  type EditorResourcePanelItem,
+  type LyricRecord,
+  type LyricStatus
+} from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createLyricMetadataSaver } from "../lib/lyric-metadata.js";
 import { registerLogoutSave } from "../lib/account-cache.js";
 import { LyricHistory } from "./lyric-history.js";
 import { LyricResourcePanel } from "./lyric-resource-panel.js";
+import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 
 interface LyricEditorDraft {
   readonly title: string;
@@ -52,8 +64,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const pinOrderRef = useRef(initialLyric.pinOrder);
   const titleComposingRef = useRef(false);
   const memoComposingRef = useRef(false);
-  const manualCopyRef = useRef<HTMLTextAreaElement>(null);
-  const toastTimerRef = useRef<number | null>(null);
+  const rhymeSelectionRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState(initialLyric.title);
   const [memo, setMemo] = useState(initialLyric.memo);
   const [status, setStatus] = useState(initialLyric.status);
@@ -69,12 +80,17 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const [resourcePanelWidth, setResourcePanelWidth] = useState(296);
   const [selectedSectionIds, setSelectedSectionIds] = useState<Set<string>>(() => new Set());
   const [focusMode, setFocusMode] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-  const [manualCopy, setManualCopy] = useState<{ text: string; target: string } | null>(null);
+  const [rhymeSelection, setRhymeSelection] = useState<{
+    item: EditorResourcePanelItem;
+    source: PortableTextSource;
+    target: CrdtTextSelectionReference;
+    requestId: string;
+  } | null>(null);
   const [commandNotice, setCommandNotice] = useState("");
   const [commandBusy, setCommandBusy] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const copyFeedback = useCopyFeedback();
   const router = useRouter();
   const lyricReturnSuffix = `?returnTo=${encodeURIComponent(returnTo)}`;
 
@@ -163,14 +179,12 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   }, [songForm.sections]);
 
   useEffect(() => {
-    if (!manualCopy) return;
-    manualCopyRef.current?.focus();
-    manualCopyRef.current?.select();
-  }, [manualCopy]);
-
-  useEffect(() => () => {
-    if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current);
-  }, []);
+    if (!rhymeSelection) return;
+    requestAnimationFrame(() => {
+      rhymeSelectionRef.current?.focus();
+      rhymeSelectionRef.current?.setSelectionRange(0, rhymeSelection.source.body.length);
+    });
+  }, [rhymeSelection]);
 
   function changeTitle(value: string) {
     titleRef.current = value;
@@ -242,6 +256,112 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     }
   }
 
+  async function beginRhymeInsertion(item: EditorResourcePanelItem, mode: "whole" | "selection") {
+    if (commandBusy || item.kind !== "rhyme_note") return;
+    const editor = editorRef.current;
+    const sync = localSyncRef.current;
+    if (!editor || !sync) {
+      setCommandNotice("삽입할 가사 편집기를 아직 준비하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      return;
+    }
+    for (let attempt = 0; editor.composing && attempt < 12; attempt += 1) {
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 25));
+    }
+    if (editor.composing) {
+      setCommandNotice("한글 조합 입력을 먼저 확정했습니다. 현재 입력은 보존되었으니 다시 삽입해 주세요.");
+      editor.focus();
+      return;
+    }
+    const target = sync.captureSelection(editor.selection);
+    if (!target) {
+      setCommandNotice("현재 가사의 삽입 위치를 보존하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.");
+      return;
+    }
+    setCommandBusy(true);
+    setCommandNotice("");
+    try {
+      const response = await fetch(`/api/rhymes/${item.id}/insertion-source`, { cache: "no-store" });
+      if (!response.ok) throw new Error(response.status === 404 ? "SOURCE_DELETED" : "SOURCE_UNAVAILABLE");
+      const { source } = await response.json() as { source: PortableTextSource };
+      if (mode === "selection") {
+        setRhymeSelection({ item, source, target, requestId: crypto.randomUUID() });
+      } else {
+        await commitRhymeInsertion(source, target, 0, source.body.length, crypto.randomUUID());
+      }
+    } catch (error) {
+      setCommandNotice(error instanceof Error && error.message === "SOURCE_DELETED"
+        ? "선택한 라임이 삭제되었거나 접근 권한이 없습니다. 현재 가사는 변경하지 않았습니다."
+        : "라임 원문을 확인하지 못했습니다. 현재 가사는 변경하지 않았습니다.");
+    } finally { setCommandBusy(false); }
+  }
+
+  async function commitRhymeInsertion(source: PortableTextSource, target: CrdtTextSelectionReference, anchor: number, head: number, requestId: string) {
+    const from = Math.min(anchor, head);
+    const to = Math.max(anchor, head);
+    const text = source.body.slice(from, to);
+    if (!text) {
+      setCommandNotice("삽입할 라임 표현을 선택해 주세요.");
+      return;
+    }
+    const currentBody = editorRef.current?.value ?? bodyRef.current;
+    const targetSelection = localSyncRef.current?.resolveSelection(target);
+    if (targetSelection && [...`${currentBody.slice(0, targetSelection.from)}${text}${currentBody.slice(targetSelection.to)}`].length > LYRIC_LIMITS.body) {
+      preserveInsertionFallback(text, `가사 본문은 ${LYRIC_LIMITS.body.toLocaleString()}자를 넘을 수 없습니다. 아래 원문을 직접 복사할 수 있습니다.`);
+      return;
+    }
+    const sourceReference = capturePortableTextSelection(source, anchor, head);
+    const sync = localSyncRef.current;
+    const editor = editorRef.current;
+    if (!sourceReference || !sync || !editor || !await sync.flush()) {
+      preserveInsertionFallback(text, "삽입 위치를 서버와 확인하지 못했습니다. 아래 원문을 직접 복사할 수 있습니다.");
+      return;
+    }
+    try {
+      const response = await fetch(`/api/lyrics/${initialLyric.id}/rhyme-insertion`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          version: RHYME_INSERTION_CONTRACT_VERSION,
+          requestId,
+          source: sourceReference,
+          target: {
+            resourceId: target.resourceId,
+            documentKey: target.documentKey,
+            relativePosition: target.anchorRelativePosition
+          },
+          text
+        })
+      });
+      const result = await response.json().catch(() => ({})) as { valid?: boolean; reason?: string };
+      if (!response.ok || !result.valid) {
+        const message = result.reason === "target_deleted" ? "현재 가사가 삭제되었거나 접근할 수 없습니다."
+          : result.reason === "target_changed" ? "현재 가사가 전환되었거나 삽입 위치가 더 이상 유효하지 않습니다."
+          : "라임 원문이 변경되어 안전하게 삽입할 수 없습니다.";
+        preserveInsertionFallback(text, `${message} 아래 원문을 직접 복사할 수 있습니다.`);
+        return;
+      }
+      const resolved = sync.resolveSelection(target);
+      if (!resolved) {
+        preserveInsertionFallback(text, "원격 변경으로 삽입 위치를 찾지 못했습니다. 아래 원문을 직접 복사할 수 있습니다.");
+        return;
+      }
+      editor.replace(resolved.from, resolved.to, text, requestId);
+      setRhymeSelection(null);
+      setMobileResourcesOpen(false);
+      setCommandNotice("");
+      copyFeedback.showToast(resolved.from === resolved.to ? "라임을 현재 커서에 삽입했습니다" : "선택 영역을 라임으로 바꿨습니다");
+      requestAnimationFrame(() => editor.focus());
+    } catch {
+      preserveInsertionFallback(text, "삽입 요청을 확인하지 못했습니다. 아래 원문을 직접 복사할 수 있습니다.");
+    }
+  }
+
+  function preserveInsertionFallback(text: string, message: string) {
+    setRhymeSelection(null);
+    setCommandNotice(message);
+    copyFeedback.openManual(text, "라임 표현");
+  }
+
   function closeResourcePanel() {
     if (mobileResourcesOpen) setMobileResourcesOpen(false);
     else setDesktopResourcesOpen(false);
@@ -301,20 +421,8 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     });
   }
 
-  function showToast(message: string) {
-    if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current);
-    setToast(message);
-    toastTimerRef.current = window.setTimeout(() => setToast(null), 3_000);
-  }
-
   async function writeClipboard(text: string, target: string) {
-    try {
-      if (!navigator.clipboard?.writeText) throw new Error("CLIPBOARD_UNAVAILABLE");
-      await navigator.clipboard.writeText(text);
-      showToast(target === "가사 전체" ? "가사를 복사했습니다" : `${target}을 복사했습니다`);
-    } catch {
-      setManualCopy({ text, target });
-    }
+    await copyFeedback.copyText(text, target, target === "가사 전체" ? "가사를 복사했습니다" : `${target}을 복사했습니다`);
   }
 
   function copyWhole() {
@@ -342,10 +450,6 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && manualCopy) {
-        setManualCopy(null);
-        return;
-      }
       if (event.isComposing || event.defaultPrevented || !event.altKey || !event.shiftKey) return;
       if (event.key.toLowerCase() === "c") {
         event.preventDefault();
@@ -410,6 +514,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       </div>
       <LyricResourcePanel lyricId={initialLyric.id} desktopOpen={desktopResourcesOpen} mobileOpen={mobileResourcesOpen}
         width={resourcePanelWidth} onWidth={setResourcePanelWidth} onClose={closeResourcePanel} onOpen={openPanelResource}
+        onInsertRhyme={(item, mode) => { void beginRhymeInsertion(item, mode); }}
         settings={<><div className="mobile-lyric-commands"><button type="button" disabled={commandBusy} onClick={duplicateCurrent}>현재 가사 복제</button><button type="button" disabled={commandBusy} className="danger-text" onClick={() => { setMobileResourcesOpen(false); setDeleteOpen(true); }}>현재 가사 삭제</button></div>
           <LyricMetadataControls memo={memo} status={status} isFavorite={isFavorite} isPinned={isPinned}
             onMemo={changeMemo} onStatus={changeStatus} onFavorite={() => toggleMetadata("favorite")} onPinned={() => toggleMetadata("pinned")}
@@ -447,15 +552,24 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         if (!await flushBeforeCommand() || !localSyncRef.current) throw new Error("REVISION_UNAVAILABLE");
         await localSyncRef.current.restoreRevision(id, input);
       }} /> : null}
-    {toast ? <div className="copy-toast" role="status" aria-live="polite">{toast}</div> : null}
-    {manualCopy ? <div className="dialog-backdrop" role="presentation" onPointerDown={(event) => {
-      if (event.target === event.currentTarget) setManualCopy(null);
-    }}><section className="manual-copy-dialog" role="dialog" aria-modal="true" aria-labelledby="manual-copy-title" aria-describedby="manual-copy-description">
-      <p className="eyebrow">Clipboard unavailable</p>
-      <h2 id="manual-copy-title">{manualCopy.target}{manualCopy.target === "가사 전체" ? "를" : "을"} 직접 복사해 주세요</h2>
-      <p id="manual-copy-description">브라우저가 클립보드 쓰기를 허용하지 않았습니다. 아래에는 같은 내용이 선택되어 있습니다.</p>
-      <textarea ref={manualCopyRef} readOnly aria-label="수동 복사할 가사" value={manualCopy.text} />
-      <button type="button" onClick={() => setManualCopy(null)}>닫기</button>
+    <CopyFeedback state={copyFeedback}
+      dialogTitle={(target) => target === "가사 전체" ? "가사 전체를 직접 복사해 주세요" : `직접 복사: ${target}`}
+      textareaLabel={(target) => target === "가사 전체" ? "수동 복사할 가사" : `수동 복사할 ${target}`} />
+    {rhymeSelection ? <div className="dialog-backdrop rhyme-selection-backdrop" role="presentation" onPointerDown={(event) => {
+      if (event.target === event.currentTarget) setRhymeSelection(null);
+    }}><section className="manual-copy-dialog rhyme-selection-dialog" role="dialog" aria-modal="true" aria-labelledby="rhyme-selection-title" aria-describedby="rhyme-selection-description">
+      <p className="eyebrow">Rhyme selection</p>
+      <h2 id="rhyme-selection-title">‘{rhymeSelection.item.title}’에서 표현 선택</h2>
+      <p id="rhyme-selection-description">아래 원문에서 삽입할 부분을 드래그해 선택하세요. 현재 가사의 커서·선택 위치는 CRDT 기준으로 보존됩니다.</p>
+      <textarea ref={rhymeSelectionRef} readOnly aria-label="삽입할 라임 표현 선택" value={rhymeSelection.source.body} />
+      <div className="dialog-actions"><button type="button" onClick={() => setRhymeSelection(null)}>취소</button><button type="button" className="primary-link" onClick={() => {
+        const area = rhymeSelectionRef.current;
+        if (area && !commandBusy) {
+          setCommandBusy(true);
+          void commitRhymeInsertion(rhymeSelection.source, rhymeSelection.target, area.selectionStart, area.selectionEnd, rhymeSelection.requestId)
+            .finally(() => setCommandBusy(false));
+        }
+      }} disabled={commandBusy}>{commandBusy ? "확인 중…" : "선택 영역 삽입"}</button></div>
     </section></div> : null}
     {deleteOpen ? <div className="dialog-backdrop" role="presentation"><section className="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="editor-delete-title" aria-describedby="editor-delete-description"><p className="eyebrow">Soft delete</p><h2 id="editor-delete-title">‘{title}’ 가사를 삭제할까요?</h2><p id="editor-delete-description">현재 가사를 숨긴 뒤 최근 다른 가사 또는 곡 대시보드로 이동합니다.</p><div><button autoFocus className="secondary-button" type="button" disabled={commandBusy} onClick={() => setDeleteOpen(false)}>취소</button><button className="danger-button" type="button" disabled={commandBusy} onClick={deleteCurrent}>{commandBusy ? "삭제 중…" : "가사 삭제 확인"}</button></div></section></div> : null}
   </section>;

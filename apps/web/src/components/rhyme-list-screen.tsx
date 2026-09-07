@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 
 const SORTS = ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"] as const;
 const COLORS = [null, "red", "yellow", "green", "blue", "gray"] as const;
@@ -45,11 +46,10 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [manualCopy, setManualCopy] = useState<{ title: string; body: string } | null>(null);
   const [retryKey, setRetryKey] = useState(0);
   const requestSequence = useRef(0);
   const metadataQueue = useRef(new Map<string, MetadataQueueEntry<unknown>>());
-  const manualText = useRef<HTMLTextAreaElement>(null);
+  const copyFeedback = useCopyFeedback();
 
   useEffect(() => {
     const timer = window.setTimeout(() => setAppliedSearch(search.trim()), 300);
@@ -82,10 +82,6 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
       .finally(() => { if (sequence === requestSequence.current) setLoading(false); });
     return () => controller.abort();
   }, [appliedSearch, tag, song, sort, retryKey]);
-
-  useEffect(() => {
-    if (manualCopy) window.requestAnimationFrame(() => { manualText.current?.focus(); manualText.current?.select(); });
-  }, [manualCopy]);
 
   useEffect(() => {
     if (!notice) return;
@@ -165,10 +161,7 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
   function patchNote(id: string, patch: Partial<RhymeNote>) { setNotes((current) => current.map((item) => item.id === id ? { ...item, ...patch } : item)); }
 
   async function copy(note: RhymeNote) {
-    try {
-      if (!navigator.clipboard?.writeText) throw new Error();
-      await navigator.clipboard.writeText(note.body); setNotice(`${note.title}의 본문 전체를 복사했습니다.`);
-    } catch { setManualCopy({ title: note.title, body: note.body }); }
+    await copyFeedback.copyText(note.body, `${note.title} 라임 노트`, `${note.title}의 본문 전체를 복사했습니다.`);
   }
 
   function clearFilters() { setSearch(""); setAppliedSearch(""); setTag(""); setSong(""); }
@@ -188,7 +181,7 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
     {!loading && !error && notes.length === 0 ? <div className="empty-state rhyme-empty"><span aria-hidden="true">{filtered ? "⌕" : "≈"}</span><h2>{filtered ? "조건에 맞는 라임 노트가 없어요" : "아직 라임 노트가 없어요"}</h2><p>{filtered ? "검색어·태그·연결 곡 조건을 바꿔보세요." : "떠오른 단어나 표현을 짧게라도 남겨보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={clearFilters}>검색 조건 지우기</button> : <a className="primary-link" href="/rhymes/new">첫 라임 노트 만들기</a>}</div> : null}
     {!loading && notes.length ? <div className="rhyme-grid">{notes.map((note) => <RhymeCard key={note.id} note={note} onToggle={toggle} onColor={cycleColor} onCopy={copy} />)}</div> : null}
     {!loading && notes.length ? <div className="load-more-wrap"><button className="secondary-button load-more" type="button" disabled={!nextCursor || loadingMore} onClick={() => void loadMore()}>{loadingMore ? "불러오는 중…" : nextCursor ? "더 불러오기" : "모든 라임 노트를 불러왔습니다"}</button></div> : null}
-    {manualCopy ? <div className="rhyme-dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) setManualCopy(null); }}><section className="manual-copy-dialog" role="dialog" aria-modal="true" aria-labelledby="rhyme-copy-title"><p className="eyebrow">Clipboard fallback</p><h2 id="rhyme-copy-title">{manualCopy.title} 본문을 직접 복사해 주세요</h2><p>브라우저가 클립보드 쓰기를 허용하지 않았습니다. 아래에는 원문 전체가 선택되어 있습니다.</p><textarea ref={manualText} readOnly value={manualCopy.body} /><button type="button" onClick={() => setManualCopy(null)}>닫기</button></section></div> : null}
+    <CopyFeedback state={copyFeedback} />
   </section>;
 }
 

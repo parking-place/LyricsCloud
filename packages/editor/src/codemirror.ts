@@ -20,6 +20,7 @@ export interface EditorDocumentTransaction {
   readonly selection?: { readonly anchor: number; readonly head: number };
   readonly origin: "user" | "external";
   readonly composing: boolean;
+  readonly requestId?: string;
 }
 
 export interface CodeMirrorTextEditorOptions {
@@ -38,9 +39,10 @@ export interface CodeMirrorTextEditorOptions {
 export interface CodeMirrorTextEditor {
   readonly value: string;
   readonly visibleRange: { readonly from: number; readonly to: number };
-  readonly selection: { readonly from: number; readonly to: number };
+  readonly selection: { readonly anchor: number; readonly head: number; readonly from: number; readonly to: number };
+  readonly composing: boolean;
   readonly songForm: SongFormNavigationState;
-  replace(from: number, to: number, value: string): void;
+  replace(from: number, to: number, value: string, requestId?: string): void;
   applyTransaction(transaction: Omit<EditorDocumentTransaction, "origin" | "composing">): void;
   goToSongFormSection(sectionId: string): boolean;
   focus(): void;
@@ -50,6 +52,7 @@ export interface CodeMirrorTextEditor {
 
 export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions): CodeMirrorTextEditor {
   const transactionOrigin = Annotation.define<EditorDocumentTransaction["origin"]>();
+  const transactionRequestId = Annotation.define<string>();
   const editable = new Compartment();
   let compositionChanges: ChangeSet | null = null;
   let compositionTimer: ReturnType<typeof setTimeout> | undefined;
@@ -124,11 +127,13 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
             changes.push({ from, to, insert: inserted.toString() });
           });
           const origin = update.transactions.map((transaction) => transaction.annotation(transactionOrigin)).find(Boolean) ?? "user";
+          const requestId = update.transactions.map((transaction) => transaction.annotation(transactionRequestId)).find(Boolean);
           options.onTransaction({
             changes,
             selection: { anchor: update.state.selection.main.anchor, head: update.state.selection.main.head },
             origin,
-            composing
+            composing,
+            ...(requestId ? { requestId } : {})
           });
         }
       }),
@@ -181,14 +186,22 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
   return {
     get value() { return view.state.doc.toString(); },
     get visibleRange() { return { from: view.viewport.from, to: view.viewport.to }; },
-    get selection() { return { from: view.state.selection.main.from, to: view.state.selection.main.to }; },
+    get selection() {
+      const selection = view.state.selection.main;
+      return { anchor: selection.anchor, head: selection.head, from: selection.from, to: selection.to };
+    },
+    get composing() { return compositionChanges !== null || view.compositionStarted; },
     get songForm() {
       const sections = view.plugin(songFormPlugin)?.sections ?? [];
       return navigationState(sections, view.state.selection.main.head);
     },
-    replace(from, to, value) {
+    replace(from, to, value, requestId) {
       const normalized = normalizeLineEndings(value);
-      view.dispatch({ changes: { from, to, insert: normalized }, selection: EditorSelection.cursor(from + normalized.length) });
+      view.dispatch({
+        changes: { from, to, insert: normalized },
+        selection: EditorSelection.cursor(from + normalized.length),
+        ...(requestId ? { annotations: transactionRequestId.of(requestId) } : {})
+      });
     },
     applyTransaction(transaction) {
       view.dispatch({

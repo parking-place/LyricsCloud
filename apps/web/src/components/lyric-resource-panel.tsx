@@ -15,7 +15,7 @@ const TAB_LABELS: Record<EditorResourceTab, string> = {
   songs: "다른 곡", lyrics: "다른 가사", rhymes: "라임", prompts: "프롬프트"
 };
 
-export function LyricResourcePanel({ lyricId, desktopOpen, mobileOpen, width, settings, onClose, onWidth, onOpen }: {
+export function LyricResourcePanel({ lyricId, desktopOpen, mobileOpen, width, settings, onClose, onWidth, onOpen, onInsertRhyme }: {
   lyricId: string;
   desktopOpen: boolean;
   mobileOpen: boolean;
@@ -24,6 +24,7 @@ export function LyricResourcePanel({ lyricId, desktopOpen, mobileOpen, width, se
   onClose: () => void;
   onWidth: (width: number) => void;
   onOpen: (item: EditorResourcePanelItem) => Promise<"opened" | "deleted" | "failed">;
+  onInsertRhyme: (item: EditorResourcePanelItem, mode: "whole" | "selection") => void;
 }) {
   const [tab, setTab] = useState<EditorResourceTab>("lyrics");
   const [scope, setScope] = useState<EditorResourceScope>("linked");
@@ -123,7 +124,7 @@ export function LyricResourcePanel({ lyricId, desktopOpen, mobileOpen, width, se
       <div className="editor-resource-results" id="editor-resource-results" role="tabpanel" aria-labelledby={`resource-tab-${tab}`} aria-busy={loading}>
         {loading ? <PanelMessage title="자료를 불러오는 중…" detail={`${TAB_LABELS[tab]} 목록을 확인하고 있습니다.`} />
           : error ? <PanelMessage title="자료를 불러오지 못했습니다" detail="현재 가사와 입력은 그대로 유지됩니다." action={<button type="button" onClick={() => setRetry((value) => value + 1)}>다시 시도</button>} />
-          : visible && result && result.items.length ? <ul aria-label={tab === "lyrics" ? "다른 가사 목록" : `${TAB_LABELS[tab]} 목록`}>{result.items.map((item) => <ResourceItem key={`${item.kind}-${item.id}`} item={item} onOpen={(candidate) => { void openItem(candidate); }} />)}</ul>
+          : visible && result && result.items.length ? <ul aria-label={tab === "lyrics" ? "다른 가사 목록" : `${TAB_LABELS[tab]} 목록`}>{result.items.map((item) => <ResourceItem key={`${item.kind}-${item.id}`} item={item} onOpen={(candidate) => { void openItem(candidate); }} onInsertRhyme={onInsertRhyme} />)}</ul>
           : <EmptyMessage tab={tab} scope={scope} searched={Boolean(search.trim())} />}
       </div>
       <label className="editor-resource-width"><span>패널 너비</span><input type="range" min="240" max="400" step="8" value={width} onChange={(event) => onWidth(Number(event.target.value))} /><output>{width}px</output></label>
@@ -131,7 +132,11 @@ export function LyricResourcePanel({ lyricId, desktopOpen, mobileOpen, width, se
   </div>;
 }
 
-function ResourceItem({ item, onOpen }: { item: EditorResourcePanelItem; onOpen: (item: EditorResourcePanelItem) => void }) {
+function ResourceItem({ item, onOpen, onInsertRhyme }: {
+  item: EditorResourcePanelItem;
+  onOpen: (item: EditorResourcePanelItem) => void;
+  onInsertRhyme: (item: EditorResourcePanelItem, mode: "whole" | "selection") => void;
+}) {
   const deleted = item.availability === "deleted";
   const href = item.kind === "song" ? `/songs/${item.id}` : item.kind === "lyrics" ? `/lyrics/${item.id}`
     : item.kind === "rhyme_note" ? `/rhymes/${item.id}` : `/prompts/${item.id}`;
@@ -143,6 +148,10 @@ function ResourceItem({ item, onOpen }: { item: EditorResourcePanelItem; onOpen:
     <p>{deleted ? "이 자료는 삭제되어 더 이상 열 수 없습니다." : item.preview || "미리보기 내용이 없습니다."}</p>
     <small>{item.kind === "lyrics" ? `${LYRIC_STATUS_LABELS[item.status]} · ` : item.kind === "song" ? `가사 ${item.lyricCount}개 · ` : ""}{formatDate(item.updatedAt)}</small>
     <div className="editor-resource-actions">
+      {item.kind === "rhyme_note" && !deleted ? <>
+        <button type="button" onClick={() => onInsertRhyme(item, "whole")}>전체 삽입</button>
+        <button type="button" onClick={() => onInsertRhyme(item, "selection")}>선택 삽입</button>
+      </> : null}
       <button type="button" aria-label={`${item.title} ${item.kind === "song" ? "이 곡으로 전환" : item.kind === "lyrics" ? "이 가사로 전환" : "자료 열기"}`}
         disabled={deleted || item.availability === "current"} onClick={() => onOpen(item)}>{item.kind === "song" ? "이 곡으로 전환" : item.kind === "lyrics" ? "이 가사로 전환" : "자료 열기"}</button>
       {!deleted && item.availability !== "current" ? <a href={href} target="_blank" rel="noreferrer">새 창에서 열기</a> : null}

@@ -980,6 +980,65 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .prompt-editor-info > h2, .prompt-editor-info > p { padding-inline: .9rem; }
 .prompt-copy-preview { white-space: pre-wrap; font-family: ui-monospace, monospace; }
 .prompt-copy-button { border-color: rgb(200 255 61 / 45%) !important; color: var(--acid) !important; }
+
+/* 0.6.0 global quick add and lyric parent picker */
+.workspace-shell { position: relative; }
+.top-quick-add { position: absolute; z-index: 12; top: 1.05rem; right: 10.7rem; min-height: 2.35rem; padding: 0 .8rem; border: 1px solid rgb(200 255 61 / 35%); border-radius: .55rem; background: rgb(200 255 61 / 8%); color: var(--acid); font-size: .74rem; font-weight: 800; cursor: pointer; }
+.quick-add { display: none; }
+.quick-add-notice { position: fixed; z-index: 18; right: 1rem; bottom: 1rem; max-width: min(30rem, calc(100vw - 2rem)); margin: 0; padding: .7rem .9rem; border: 1px solid var(--line); border-radius: .65rem; background: var(--surface-raised); color: var(--muted); font-size: .7rem; line-height: 1.5; box-shadow: 0 16px 45px rgb(0 0 0 / 45%); }
+.quick-add-notice a { color: var(--acid); font-weight: 800; }
+.quick-add-backdrop { z-index: 60; }
+.quick-add-dialog { width: min(100%, 43rem); max-height: min(44rem, calc(100svh - 2rem)); display: grid; gap: 1rem; padding: 1.25rem; overflow-y: auto; border: 1px solid rgb(200 255 61 / 25%); border-radius: 1rem; background: var(--surface-raised); box-shadow: 0 30px 90px rgb(0 0 0 / 58%); }
+.quick-add-dialog > header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
+.quick-add-dialog h2 { margin: .35rem 0 0; font-size: 1.45rem; }
+.quick-add-dialog > header > button { min-height: 2.2rem; padding: .35rem .65rem; border: 1px solid var(--line); border-radius: .48rem; background: transparent; color: var(--muted); cursor: pointer; }
+.quick-add-types { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .55rem; }
+.quick-add-types a { min-width: 0; display: grid; gap: .25rem; padding: .85rem .7rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--surface); text-decoration: none; }
+.quick-add-types a:hover { border-color: rgb(200 255 61 / 45%); }
+.quick-add-types a > span { color: var(--acid); font-size: 1.25rem; }
+.quick-add-types strong { font-size: .78rem; }
+.quick-add-types small { color: var(--subtle); font-size: .61rem; line-height: 1.4; }
+.quick-idea-capture { display: grid; grid-template-columns: minmax(0, 1fr) 9rem; gap: .7rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.quick-idea-capture > div { display: grid; gap: .2rem; }
+.quick-idea-capture > div span, .quick-idea-capture label > span { color: var(--subtle); font-size: .65rem; }
+.quick-idea-capture label { display: grid; gap: .3rem; }
+.quick-idea-capture select, .quick-idea-capture textarea { border: 1px solid var(--line); border-radius: .55rem; outline: none; background: var(--canvas); color: var(--ink); }
+.quick-idea-capture select { min-height: 2.5rem; padding: .45rem; }
+.quick-idea-capture textarea { grid-column: 1 / -1; min-height: 7rem; padding: .75rem; resize: vertical; font: .82rem/1.6 inherit; }
+.quick-idea-capture textarea:focus, .quick-idea-capture select:focus { border-color: var(--acid); }
+.quick-idea-capture > button { grid-column: 2; border: 0; }
+.mobile-nav-spacer { display: block; }
+
+.lyric-new-page { min-width: 0; padding: clamp(1.5rem, 3.4vw, 3.4rem); overflow-y: auto; }
+.lyric-new-form { width: min(100%, 48rem); display: grid; gap: 1.25rem; margin-top: 2rem; }
+.lyric-new-form > fieldset { display: grid; gap: .8rem; min-width: 0; padding: 1rem; border: 1px solid var(--line); border-radius: .8rem; background: var(--surface); }
+.lyric-new-form > fieldset legend { padding: 0 .4rem; font-size: .78rem; font-weight: 800; }
+.current-parent-song { margin: 0; color: var(--acid); font-size: .7rem; }
+.parent-song-list { max-height: 19rem; display: grid; gap: .35rem; overflow-y: auto; }
+.parent-song-list > label { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: .65rem; padding: .7rem; border: 1px solid var(--line); border-radius: .55rem; cursor: pointer; }
+.parent-song-list > label.selected { border-color: rgb(200 255 61 / 45%); background: rgb(200 255 61 / 7%); }
+.parent-song-list > label span { display: grid; gap: .15rem; }
+.parent-song-list small { color: var(--subtle); font-size: .63rem; }
+.quick-empty { padding: 1rem; border: 1px dashed var(--line); border-radius: .6rem; text-align: center; }
+.quick-empty p { color: var(--muted); font-size: .72rem; }
+.quick-empty a { color: var(--acid); font-size: .72rem; font-weight: 800; }
+.rhyme-selection-dialog .dialog-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .8rem; }
+.rhyme-selection-backdrop { z-index: 45; }
+.rhyme-selection-dialog .dialog-actions button { min-height: 2.5rem; padding: .5rem .8rem; border: 1px solid var(--line); border-radius: .5rem; background: transparent; color: var(--muted); cursor: pointer; }
+.rhyme-selection-dialog .dialog-actions .primary-link { border-color: var(--acid); background: var(--acid); color: var(--acid-ink); }
+
+@media (max-width: 720px) {
+  .top-quick-add { display: none; }
+  .quick-add { position: fixed; z-index: 14; left: 50%; bottom: calc(.55rem + var(--lc-safe-bottom)); translate: -50% 0; width: 3.45rem; min-height: 3.45rem; display: grid; place-content: center; padding: .2rem; border: 1px solid rgb(200 255 61 / 45%); border-radius: 50%; background: #182015; color: var(--acid); box-shadow: 0 10px 35px rgb(0 0 0 / 60%); opacity: 1; cursor: pointer; }
+  .quick-add span { font-size: 1.3rem; line-height: 1; }
+  .quick-add small { color: var(--muted); font-size: .48rem; }
+  .quick-add-notice { right: .7rem; bottom: calc(5rem + var(--lc-safe-bottom)); }
+  .quick-add-dialog { align-self: end; width: 100%; max-height: min(48rem, calc(100svh - max(1rem, var(--lc-safe-top)))); border-radius: 1rem 1rem 0 0; padding-bottom: calc(1rem + var(--lc-safe-bottom)); }
+  .quick-add-types { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quick-idea-capture { grid-template-columns: minmax(0, 1fr); }
+  .quick-idea-capture > button { grid-column: 1; }
+  .lyric-new-page { grid-row: 2; padding: 1.3rem max(1rem, var(--lc-safe-right)) 1.5rem max(1rem, var(--lc-safe-left)); }
+}
 .prompt-song-links > label { display: block; margin-top: .7rem; color: var(--subtle); font-size: .62rem; }
 .prompt-song-links > input { width: 100%; margin-top: .35rem; padding: .55rem; border: 1px solid var(--line); border-radius: .48rem; outline: 0; background: var(--surface); color: var(--ink); font-size: .68rem; }
 .prompt-song-links > input:focus { border-color: var(--acid); }

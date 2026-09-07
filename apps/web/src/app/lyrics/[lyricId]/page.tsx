@@ -24,5 +24,5 @@ export default async function LyricEditorPage({ params, searchParams }: {
   if (!lyrics) notFound();
   const returnTo = safeSongReturnTo(query.returnTo);
   const dashboardHref = `/songs/${lyric.songId}?returnTo=${encodeURIComponent(returnTo)}`;
-  return <WorkspaceShell profile={user} active="songs"><LyricEditor key={lyric.id} ownerId={user.userId} initialLyric={lyric} songTitle={song.title} songLyrics={lyrics} dashboardHref={dashboardHref} returnTo={returnTo} /></WorkspaceShell>;
+  return <WorkspaceShell profile={user} active="songs" currentSongId={song.id}><LyricEditor key={lyric.id} ownerId={user.userId} initialLyric={lyric} songTitle={song.title} songLyrics={lyrics} dashboardHref={dashboardHref} returnTo={returnTo} /></WorkspaceShell>;
 }

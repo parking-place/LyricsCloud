@@ -10,6 +10,7 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
 import { createRhymeMetadataSaver } from "../lib/rhyme-metadata.js";
 import { RhymeHistory } from "./rhyme-history.js";
+import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 
 interface MetadataDraft {
   readonly title: string;
@@ -34,8 +35,6 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
   const pinOrderRef = useRef(initialRhyme.pinOrder);
   const colorRef = useRef(initialRhyme.color);
   const titleComposingRef = useRef(false);
-  const manualCopyRef = useRef<HTMLTextAreaElement>(null);
-  const toastTimerRef = useRef<number | null>(null);
   const [title, setTitle] = useState(initialRhyme.title);
   const [isFavorite, setIsFavorite] = useState(initialRhyme.isFavorite);
   const [isPinned, setIsPinned] = useState(initialRhyme.isPinned);
@@ -57,8 +56,7 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
-  const [toast, setToast] = useState<string | null>(null);
-  const [manualCopy, setManualCopy] = useState<string | null>(null);
+  const copyFeedback = useCopyFeedback();
   const router = useRouter();
 
   function draft(overrides: Partial<MetadataDraft> = {}): MetadataDraft {
@@ -122,11 +120,6 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
     };
   }, [initialRhyme.id, ownerId]);
 
-  useEffect(() => {
-    if (!manualCopy) return;
-    manualCopyRef.current?.focus(); manualCopyRef.current?.select();
-  }, [manualCopy]);
-  useEffect(() => () => { if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current); }, []);
   useEffect(() => {
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
@@ -221,18 +214,8 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
     router.push(`/rhymes?tag=${tag.id}`);
   }
 
-  async function writeCopy(value: string, message: string) {
-    try {
-      if (!navigator.clipboard?.writeText) throw new Error();
-      await navigator.clipboard.writeText(value);
-      if (toastTimerRef.current !== null) window.clearTimeout(toastTimerRef.current);
-      setToast(message);
-      toastTimerRef.current = window.setTimeout(() => setToast(null), 3_000);
-    } catch { setManualCopy(value); }
-  }
-
   function copyBody() {
-    void writeCopy(editorRef.current?.value ?? bodyRef.current, "라임 노트 전체를 복사했습니다");
+    void copyFeedback.copyText(editorRef.current?.value ?? bodyRef.current, "라임 노트", "라임 노트 전체를 복사했습니다");
   }
 
   function copySelection() {
@@ -241,7 +224,7 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
       setNotice("복사할 본문 영역을 먼저 선택해 주세요.");
       return;
     }
-    void writeCopy(editor.value.slice(editor.selection.from, editor.selection.to), "선택한 라임 표현을 복사했습니다");
+    void copyFeedback.copyText(editor.value.slice(editor.selection.from, editor.selection.to), "선택한 라임 표현", "선택한 라임 표현을 복사했습니다");
   }
 
   async function deleteCurrent() {
@@ -320,12 +303,7 @@ export function RhymeEditor({ ownerId, initialRhyme }: { ownerId: string; initia
       <div><button type="button" autoFocus className="secondary-button" disabled={busy} onClick={() => setDeleteOpen(false)}>취소</button>
         <button type="button" className="danger-button" disabled={busy} onClick={() => void deleteCurrent()}>{busy ? "삭제 중…" : "라임 노트 삭제 확인"}</button></div>
     </section></div> : null}
-    {toast ? <div className="copy-toast" role="status" aria-live="polite">{toast}</div> : null}
-    {manualCopy !== null ? <div className="dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) setManualCopy(null); }}>
-      <section className="manual-copy-dialog" role="dialog" aria-modal="true" aria-labelledby="rhyme-copy-title"><h2 id="rhyme-copy-title">직접 복사해 주세요</h2>
-        <p>브라우저가 클립보드 쓰기를 허용하지 않았습니다. 아래에는 같은 내용이 선택되어 있습니다.</p>
-        <textarea ref={manualCopyRef} readOnly aria-label="수동 복사할 라임 노트" value={manualCopy} /><button type="button" onClick={() => setManualCopy(null)}>닫기</button>
-      </section></div> : null}
+    <CopyFeedback state={copyFeedback} dialogTitle={() => "직접 복사해 주세요"} textareaLabel={() => "수동 복사할 라임 노트"} />
   </section>;
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 
 const SORTS = ["favorite_first", "recent_used", "updated_desc", "created_desc", "created_asc", "title_asc"] as const;
 type PromptSort = (typeof SORTS)[number];
@@ -47,13 +48,13 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [manualCopy, setManualCopy] = useState<PromptItem | null>(null);
+  const [manualUsagePrompt, setManualUsagePrompt] = useState<PromptItem | null>(null);
   const [duplicating, setDuplicating] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
   const requestSequence = useRef(0);
   const metadataQueue = useRef(new Map<string, MetadataQueueEntry<unknown>>());
   const duplicateRequests = useRef(new Map<string, string>());
-  const manualText = useRef<HTMLTextAreaElement>(null);
+  const copyFeedback = useCopyFeedback();
 
   useEffect(() => {
     const timer = window.setTimeout(() => setAppliedSearch(search.trim()), 300);
@@ -85,10 +86,6 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
       .finally(() => { if (sequence === requestSequence.current) setLoading(false); });
     return () => controller.abort();
   }, [appliedSearch, song, favorite, recent, sort, retryKey]);
-
-  useEffect(() => {
-    if (manualCopy) window.requestAnimationFrame(() => { manualText.current?.focus(); manualText.current?.select(); });
-  }, [manualCopy]);
 
   useEffect(() => {
     if (!notice) return;
@@ -161,18 +158,17 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   }
 
   async function copy(prompt: PromptItem) {
-    try {
-      if (!navigator.clipboard?.writeText) throw new Error();
-      await navigator.clipboard.writeText(prompt.plainText);
-    } catch { setManualCopy(prompt); return; }
-    try { await recordUse(prompt); setNotice(`${prompt.title} 프롬프트를 복사했습니다.`); }
+    if (await copyFeedback.copyText(prompt.plainText, `${prompt.title} 프롬프트`, `${prompt.title} 프롬프트를 복사했습니다.`) === "manual") {
+      setManualUsagePrompt(prompt); return;
+    }
+    try { await recordUse(prompt); }
     catch { setNotice("프롬프트는 복사했지만 최근 사용 기록을 저장하지 못했습니다."); }
   }
 
   async function completeManualCopy(prompt: PromptItem) {
     try { await recordUse(prompt); setNotice(`${prompt.title} 프롬프트를 복사했습니다.`); }
     catch { setNotice("수동 복사 내용은 유지했지만 최근 사용 기록을 저장하지 못했습니다."); }
-    setManualCopy(null);
+    setManualUsagePrompt(null);
   }
 
   async function duplicate(prompt: PromptItem) {
@@ -214,7 +210,7 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
     {!loading && !error && items.length === 0 ? <div className="empty-state prompt-empty"><span aria-hidden="true">{filtered ? "⌕" : "✦"}</span><h2>{filtered ? "조건에 맞는 프롬프트가 없어요" : "자주 쓰는 스타일 조합을 만들어보세요"}</h2><p>{filtered ? "검색어·즐겨찾기·최근 사용·연결 곡 조건을 바꿔보세요." : "장르, 보컬, 분위기와 악기를 토큰으로 모아 빠르게 재사용할 수 있어요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={clearFilters}>검색 조건 지우기</button> : <a className="primary-link" href="/prompts/new">첫 프롬프트 만들기</a>}</div> : null}
     {!loading && items.length ? <div className="prompt-grid">{items.map((prompt) => <PromptCard key={prompt.id} prompt={prompt} duplicating={duplicating === prompt.id} onToggle={toggle} onCopy={copy} onDuplicate={duplicate} />)}</div> : null}
     {!loading && items.length ? <div className="load-more-wrap"><button className="secondary-button load-more" type="button" disabled={!nextCursor || loadingMore} onClick={() => void loadMore()}>{loadingMore ? "불러오는 중…" : nextCursor ? "더 불러오기" : "모든 프롬프트를 불러왔습니다"}</button></div> : null}
-    {manualCopy ? <div className="rhyme-dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) setManualCopy(null); }}><section className="manual-copy-dialog" role="dialog" aria-modal="true" aria-labelledby="prompt-copy-title"><p className="eyebrow">Clipboard fallback</p><h2 id="prompt-copy-title">{manualCopy.title} 프롬프트를 직접 복사해 주세요</h2><p>브라우저가 클립보드 쓰기를 허용하지 않았습니다. 아래 쉼표 문자열이 선택되어 있습니다.</p><textarea ref={manualText} readOnly value={manualCopy.plainText} /><div className="dialog-actions"><button type="button" onClick={() => setManualCopy(null)}>취소</button><button className="primary-link" type="button" onClick={() => void completeManualCopy(manualCopy)}>복사 완료</button></div></section></div> : null}
+    <CopyFeedback state={copyFeedback} onManualComplete={manualUsagePrompt ? () => completeManualCopy(manualUsagePrompt) : undefined} />
   </section>;
 }
 

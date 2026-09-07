@@ -1,6 +1,6 @@
 import { AuthService, cookieNames, GoogleOidcAdapter, readCookie, sessionCookie } from "@lyricscloud/auth";
 import { readAuthConfig, readRuntimeConfig, type AuthConfig } from "@lyricscloud/config";
-import { PostgresAuthStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresPromptStore } from "@lyricscloud/database";
+import { PostgresAuthStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore } from "@lyricscloud/database";
 
 interface AuthContext {
   readonly config: AuthConfig;
@@ -9,6 +9,7 @@ interface AuthContext {
   readonly songs: PostgresSongStore;
   readonly lyrics: PostgresLyricStore;
   readonly rhymes: PostgresRhymeStore;
+  readonly rhymeInsertions: PostgresRhymeInsertionStore;
   readonly prompts: PostgresPromptStore;
 }
 
@@ -38,6 +39,7 @@ export function getAuthContext(): AuthContext {
     songs: new PostgresSongStore(runtime.databaseUrl),
     lyrics: new PostgresLyricStore(runtime.databaseUrl),
     rhymes: new PostgresRhymeStore(runtime.databaseUrl),
+    rhymeInsertions: new PostgresRhymeInsertionStore(runtime.databaseUrl),
     prompts: new PostgresPromptStore(runtime.databaseUrl)
   };
   cached = { key, context, allowedEmails };

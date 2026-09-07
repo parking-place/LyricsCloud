@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { clearAccountCache, clearOtherAccountCaches, coordinateAccountLogout, downloadRecoveryDrafts } from "../lib/account-cache.js";
 import { Brand } from "./auth-screen.js";
+import { QuickAdd } from "./quick-add.js";
 
 async function clearAccountCacheBeforeNavigation(userId: string): Promise<void> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -25,11 +26,13 @@ export function WorkspaceShell({
   profile,
   loginCompleted = false,
   active = "songs",
+  currentSongId,
   children
 }: {
   profile: ShellProfile;
   loginCompleted?: boolean;
   active?: "home" | "songs" | "rhymes" | "prompts";
+  currentSongId?: string;
   children: ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -161,10 +164,11 @@ export function WorkspaceShell({
     <nav className="mobile-bottom-nav" aria-label="모바일 주 메뉴">
       <a href="/workspace" className={`mobile-nav-item${active === "home" ? " active" : ""}`} aria-current={active === "home" ? "page" : undefined}><span aria-hidden="true">⌂</span><strong>홈</strong></a>
       <a href="/songs" className={`mobile-nav-item${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><strong>곡</strong></a>
-      <a className="quick-add" href={active === "prompts" ? "/prompts/new" : active === "rhymes" ? "/rhymes/new" : "/songs/new"} aria-label={active === "prompts" ? "새 프롬프트 추가" : active === "rhymes" ? "새 라임 노트 추가" : "새 곡 추가"}><span>＋</span><small>{active === "prompts" ? "새 프롬프트" : active === "rhymes" ? "새 라임" : "새 곡"}</small></a>
+      <span className="mobile-nav-spacer" aria-hidden="true" />
       <a href="/rhymes" className={`mobile-nav-item${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><strong>라임</strong></a>
       <a href="/prompts" className={`mobile-nav-item${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><strong>프롬프트</strong></a>
     </nav>
+    <QuickAdd ownerId={profile.userId} currentSongId={currentSongId} />
   </main>;
 }
 

@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
 import { PromptHistory } from "./prompt-history.js";
 import { PromptTokenBuilder } from "./prompt-token-builder.js";
+import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 
 interface SongCandidate { readonly id: string; readonly title: string; readonly isLinked: boolean }
 
@@ -26,7 +27,6 @@ export function PromptEditor({ ownerId, initialPrompt }: { ownerId: string; init
   const [isPinned, setIsPinned] = useState(initialPrompt.isPinned);
   const [metadataBusy, setMetadataBusy] = useState<"favorite" | "pin" | null>(null);
   const [duplicating, setDuplicating] = useState(false);
-  const [manualCopy, setManualCopy] = useState<string | null>(null);
   const [songSearch, setSongSearch] = useState("");
   const [songCandidates, setSongCandidates] = useState<readonly SongCandidate[]>([]);
   const [songLoading, setSongLoading] = useState(true);
@@ -39,7 +39,7 @@ export function PromptEditor({ ownerId, initialPrompt }: { ownerId: string; init
   const syncRef = useRef<BrowserPromptSync | null>(null);
   const composing = useRef(false);
   const duplicateRequest = useRef<string | null>(null);
-  const manualCopyRef = useRef<HTMLTextAreaElement>(null);
+  const copyFeedback = useCopyFeedback();
   const router = useRouter();
 
   useEffect(() => {
@@ -74,10 +74,6 @@ export function PromptEditor({ ownerId, initialPrompt }: { ownerId: string; init
     return () => { window.clearTimeout(timer); controller.abort(); };
   }, [initialPrompt.id, songRetryKey, songSearch]);
 
-  useEffect(() => {
-    if (manualCopy !== null) window.requestAnimationFrame(() => { manualCopyRef.current?.focus(); manualCopyRef.current?.select(); });
-  }, [manualCopy]);
-
   async function flushBeforeLeave() {
     const sync = syncRef.current;
     if (!sync || !await sync.flush()) { setNotice("현재 변경 내용을 먼저 동기화해야 합니다. 연결을 확인해 주세요."); return false; }
@@ -108,20 +104,16 @@ export function PromptEditor({ ownerId, initialPrompt }: { ownerId: string; init
   async function copyPrompt() {
     const value = snapshotRef.current.plainText;
     if (!value) { setNotice("복사할 태그를 먼저 추가해 주세요."); return; }
-    try {
-      if (!navigator.clipboard?.writeText) throw new Error();
-      await navigator.clipboard.writeText(value);
-    } catch { setManualCopy(value); return; }
+    if (await copyFeedback.copyText(value, "프롬프트", "쉼표로 정리한 프롬프트를 복사했습니다.") === "manual") return;
     try {
       const response = await fetch(`/api/prompts/${initialPrompt.id}/use`, { method: "POST" });
       if (!response.ok) throw new Error();
-      setNotice("쉼표로 정리한 프롬프트를 복사했습니다.");
     } catch { setNotice("프롬프트는 복사했지만 최근 사용 기록을 저장하지 못했습니다."); }
   }
 
   async function completeManualCopy() {
     try { await fetch(`/api/prompts/${initialPrompt.id}/use`, { method: "POST" }); } catch { /* selection remains the recovery path */ }
-    setManualCopy(null); setNotice("수동으로 복사할 쉼표 문자열을 확인했습니다.");
+    setNotice("수동으로 복사할 쉼표 문자열을 확인했습니다.");
   }
 
   async function duplicatePrompt() {
@@ -228,12 +220,8 @@ export function PromptEditor({ ownerId, initialPrompt }: { ownerId: string; init
       <div><button type="button" autoFocus disabled={songBusyId !== null} onClick={() => setUnlinkCandidate(null)}>취소</button>
         <button type="button" disabled={songBusyId !== null} onClick={() => void changeSong(unlinkCandidate)}>{songBusyId ? "해제 중…" : "연결 해제 확인"}</button></div>
     </section></div> : null}
-    {manualCopy !== null ? <div className="dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) setManualCopy(null); }}>
-      <section className="manual-copy-dialog" role="dialog" aria-modal="true" aria-labelledby="prompt-editor-copy-title"><p className="eyebrow">Clipboard fallback</p>
-        <h2 id="prompt-editor-copy-title">프롬프트를 직접 복사해 주세요</h2><p>브라우저가 클립보드 쓰기를 허용하지 않았습니다. 미리보기와 같은 쉼표 문자열이 아래에 선택되어 있습니다.</p>
-        <textarea ref={manualCopyRef} readOnly aria-label="수동 복사할 프롬프트" value={manualCopy} />
-        <div className="dialog-actions"><button type="button" onClick={() => setManualCopy(null)}>취소</button><button type="button" className="primary-link" onClick={() => void completeManualCopy()}>복사 완료</button></div>
-      </section></div> : null}
+    <CopyFeedback state={copyFeedback} onManualComplete={completeManualCopy}
+      dialogTitle={() => "프롬프트를 직접 복사해 주세요"} textareaLabel={() => "수동 복사할 프롬프트"} />
   </section>;
 }
 

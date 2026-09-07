@@ -24,7 +24,7 @@ export default async function SongDashboardPage({
   const song = await context.songs.getSongSummary(user.userId, songId).catch(() => null);
   if (!song) notFound();
   const returnTo = safeSongReturnTo(query.returnTo);
-  return <WorkspaceShell profile={user} active="songs"><Suspense fallback={<DashboardLoading />}><DashboardData ownerId={user.userId} song={song} returnTo={returnTo} /></Suspense></WorkspaceShell>;
+  return <WorkspaceShell profile={user} active="songs" currentSongId={song.id}><Suspense fallback={<DashboardLoading />}><DashboardData ownerId={user.userId} song={song} returnTo={returnTo} /></Suspense></WorkspaceShell>;
 }
 
 async function DashboardData({ ownerId, song, returnTo }: { ownerId: string; song: DashboardSong; returnTo: string }) {

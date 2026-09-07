@@ -8,6 +8,7 @@ export * from "./schema.js";
 export * from "./songs.js";
 export * from "./lyrics.js";
 export * from "./rhymes.js";
+export * from "./rhyme-insertions.js";
 export * from "./prompts.js";
 export * from "./pool.js";
 

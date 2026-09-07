@@ -1,13 +1,15 @@
 import { Dexie } from "dexie";
 import * as Y from "yjs";
-import type { CheckpointReason, LyricRevision, RestoreRevisionInput, RevisionHistory } from "@lyricscloud/domain";
+import type { CheckpointReason, CrdtTextSelectionReference, LyricRevision, RestoreRevisionInput, RevisionHistory } from "@lyricscloud/domain";
 import type { EditorDocumentTransaction, EditorTextChange } from "./codemirror.js";
-import { createLyricDocument, lyricBody } from "./crdt.js";
+import { createLyricDocument, encodeTextRelativePosition, lyricBody, resolveTextRelativePosition } from "./crdt.js";
 import { SyncStorage, type QueuedUpdate } from "./sync-storage.js";
 
 export type LocalSyncState = "loading" | "saving-local" | "ready" | "local" | "syncing" | "projection" | "offline" | "error" | "unavailable" | "conflict";
 export interface BrowserLyricSync {
   applyLocalTransaction(transaction: EditorDocumentTransaction): void;
+  captureSelection(selection: { readonly anchor: number; readonly head: number }): CrdtTextSelectionReference | null;
+  resolveSelection(reference: CrdtTextSelectionReference): { readonly anchor: number; readonly head: number; readonly from: number; readonly to: number } | null;
   setComposing(composing: boolean): void;
   flush(): Promise<boolean>;
   checkpoint(reason: Exclude<CheckpointReason, "interval">): Promise<boolean>;
@@ -31,6 +33,13 @@ export interface PromptCreationDraft {
   readonly tokens: readonly string[];
   readonly updatedAt: string;
 }
+export interface QuickCreationDraft {
+  readonly requestId: string;
+  readonly kind: "rhyme_note" | "prompt";
+  readonly title: string;
+  readonly body: string;
+  readonly updatedAt: string;
+}
 export type BrowserEditableSyncOptions = {
   ownerId: string; resourceId: string; initialBody: string;
   onRemoteBody: (body: string, changes?: readonly EditorTextChange[]) => void;
@@ -40,6 +49,10 @@ export type BrowserEditableSyncOptions = {
 };
 const localOrigin = Symbol("lyricscloud-local");
 const remoteOrigin = Symbol("lyricscloud-remote");
+type LocalCommandOrigin = { readonly local: typeof localOrigin; readonly requestId: string };
+function isLocalOrigin(value: unknown): value is typeof localOrigin | LocalCommandOrigin {
+  return value === localOrigin || Boolean(value && typeof value === "object" && (value as LocalCommandOrigin).local === localOrigin);
+}
 
 export async function createBrowserLyricSync(options: BrowserEditableSyncOptions): Promise<BrowserLyricSync> {
   options.onStateChange("loading");
@@ -97,10 +110,10 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
     if (destroyed || halted || pendingWrites || !connected) return;
     emit(queued ? "syncing" : projectionPending ? "projection" : "ready");
   }
-  function persist(update?: Uint8Array) {
+  function persist(update?: Uint8Array, updateId?: string) {
     if (!initialized || destroyed) return;
     const snapshot = Y.encodeStateAsUpdate(document);
-    const queued: QueuedUpdate | undefined = update ? { documentKey, updateId: crypto.randomUUID(), payload: update } : undefined;
+    const queued: QueuedUpdate | undefined = update ? { documentKey, updateId: updateId ?? crypto.randomUUID(), payload: update } : undefined;
     pendingWrites++;
     emit("saving-local");
     writes = writes.then(() => storage.persist({ resourceId: options.resourceId, documentKey, snapshot }, queued))
@@ -109,7 +122,7 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
     void writes.then(() => pump()).catch(() => fail("error"));
   }
   text.observe((event, transaction) => {
-    if (initialized && transaction.origin !== localOrigin) {
+    if (initialized && !isLocalOrigin(transaction.origin)) {
       let offset = 0;
       const changes: EditorTextChange[] = [];
       for (const delta of event.delta) {
@@ -122,8 +135,9 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
   });
   document.on("update", (update: Uint8Array, origin: unknown) => {
     if (!initialized) return;
-    persist(origin === localOrigin ? update : undefined);
-    if (origin === localOrigin) channel?.postMessage(update);
+    const local = isLocalOrigin(origin);
+    persist(local ? update : undefined, typeof origin === "object" && origin ? (origin as LocalCommandOrigin).requestId : undefined);
+    if (local) channel?.postMessage(update);
   });
   function applyRemote(update: Uint8Array) {
     if (composing) remoteQueue.push(update);
@@ -300,7 +314,24 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
           if (change.to > change.from) text.delete(change.from, change.to - change.from);
           if (change.insert) text.insert(change.from, change.insert);
         }
-      }, localOrigin);
+      }, transaction.requestId ? { local: localOrigin, requestId: transaction.requestId } : localOrigin);
+    },
+    captureSelection(selection) {
+      if (!initialized || !documentKey || halted || destroyed) return null;
+      try {
+        return {
+          resourceId: options.resourceId,
+          documentKey,
+          anchorRelativePosition: encodeTextRelativePosition(document, selection.anchor),
+          headRelativePosition: encodeTextRelativePosition(document, selection.head)
+        };
+      } catch { return null; }
+    },
+    resolveSelection(reference) {
+      if (!initialized || halted || destroyed || reference.resourceId !== options.resourceId || reference.documentKey !== documentKey) return null;
+      const anchor = resolveTextRelativePosition(document, reference.anchorRelativePosition);
+      const head = resolveTextRelativePosition(document, reference.headRelativePosition);
+      return anchor === null || head === null ? null : { anchor, head, from: Math.min(anchor, head), to: Math.max(anchor, head) };
     },
     setComposing(value) {
       composing = value;
@@ -390,6 +421,23 @@ export async function clearPromptCreationDraft(ownerId: string): Promise<void> {
   try { await storage.table("drafts").delete("new"); }
   finally { storage.close(); }
 }
+export async function readQuickCreationDraft(ownerId: string): Promise<QuickCreationDraft | null> {
+  const name = await quickCreationName(ownerId);
+  if (!(await Dexie.getDatabaseNames()).includes(name)) return null;
+  const storage = await quickCreationStorage(ownerId);
+  try { return await storage.table<QuickCreationDraft, string>("drafts").get("pending") ?? null; }
+  finally { storage.close(); }
+}
+export async function writeQuickCreationDraft(ownerId: string, draft: QuickCreationDraft): Promise<void> {
+  const storage = await quickCreationStorage(ownerId);
+  try { await storage.table<QuickCreationDraft & { key: string }, string>("drafts").put({ key: "pending", ...draft }); }
+  finally { storage.close(); }
+}
+export async function clearQuickCreationDraft(ownerId: string): Promise<void> {
+  const storage = await quickCreationStorage(ownerId);
+  try { await storage.table("drafts").delete("pending"); }
+  finally { storage.close(); }
+}
 export async function hasOwnerPendingDrafts(ownerId: string): Promise<boolean> {
   const name = `${await ownerPrefix(ownerId)}sync-v2`;
   if ((await Dexie.getDatabaseNames()).includes(name)) {
@@ -399,8 +447,10 @@ export async function hasOwnerPendingDrafts(ownerId: string): Promise<boolean> {
   }
   const creation = await readRhymeCreationDraft(ownerId);
   const promptCreation = await readPromptCreationDraft(ownerId);
+  const quickCreation = await readQuickCreationDraft(ownerId);
   return Boolean((creation && (creation.title || creation.body))
-    || (promptCreation && (promptCreation.title || promptCreation.tokens.length)));
+    || (promptCreation && (promptCreation.title || promptCreation.tokens.length))
+    || (quickCreation && (quickCreation.title || quickCreation.body)));
 }
 export async function readOwnerPendingDrafts(ownerId: string): Promise<Array<{ resourceId: string; body: string }>> {
   const name = `${await ownerPrefix(ownerId)}sync-v2`;
@@ -432,6 +482,10 @@ export async function readOwnerPendingDrafts(ownerId: string): Promise<Array<{ r
   const promptCreation = await readPromptCreationDraft(ownerId);
   if (promptCreation && (promptCreation.title || promptCreation.tokens.length)) {
     drafts.push({ resourceId: promptCreation.requestId, title: promptCreation.title, body: promptCreation.tokens.join(", ") });
+  }
+  const quickCreation = await readQuickCreationDraft(ownerId);
+  if (quickCreation && (quickCreation.title || quickCreation.body)) {
+    drafts.push({ resourceId: quickCreation.requestId, title: quickCreation.title, body: quickCreation.body });
   }
   return drafts;
 }
@@ -465,6 +519,12 @@ async function promptCreationStorage(ownerId: string): Promise<Dexie> {
   return storage;
 }
 async function promptCreationName(ownerId: string) { return `${await ownerPrefix(ownerId)}prompt-create-v1`; }
+async function quickCreationStorage(ownerId: string): Promise<Dexie> {
+  const storage = new Dexie(await quickCreationName(ownerId));
+  storage.version(1).stores({ drafts: "&key,updatedAt" });
+  return storage;
+}
+async function quickCreationName(ownerId: string) { return `${await ownerPrefix(ownerId)}quick-create-v1`; }
 async function digest(value: string) {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
