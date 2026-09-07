@@ -18,6 +18,9 @@ test.describe("0.7.0 navigation release regression", () => {
       await page.getByRole("link", { name: /Phase 5 수직 흐름 가사/ }).click();
       await expect(page).toHaveURL(new RegExp(`/lyrics/${fixture.lyricId}`));
       await expect(page.getByRole("status").filter({ hasText: "검색 결과와 일치하는 첫 위치" })).toBeVisible();
+      const editor = page.locator(".cm-content");
+      await expect(editor).toHaveAttribute("contenteditable", "true", { timeout: 30_000 });
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 30_000 });
 
       if (testInfo.project.name === "mobile") {
         await page.getByRole("group", { name: "가사 편집 도구" }).getByRole("button", { name: /송폼 2/ }).click();
@@ -25,7 +28,6 @@ test.describe("0.7.0 navigation release regression", () => {
       } else {
         await page.getByRole("complementary", { name: "송폼 목차" }).getByRole("button", { name: "Hook 구간으로 이동" }).click();
       }
-      const editor = page.locator(".cm-content");
       await expect(editor).toBeFocused();
       await page.keyboard.press("Control+End");
       await page.keyboard.insertText(" 이어쓰기 완료");
@@ -45,7 +47,10 @@ test.describe("0.7.0 navigation release regression", () => {
       await card.getByRole("link", { name: "계속 편집 →" }).click();
       await expect(page).toHaveURL(new RegExp(`/lyrics/${fixture.lyricId}`));
       await expect(page.getByRole("status").filter({ hasText: /마지막 (Hook 구간|편집 위치)/ })).toBeVisible();
+      await expect(editor).toHaveAttribute("contenteditable", "true", { timeout: 30_000 });
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 30_000 });
       await expect(editor).toContainText("이어쓰기 완료");
+      await expect(editor).toBeFocused();
       await page.keyboard.insertText(" 복귀 위치 확인");
       await expect.poll(async () => {
         const response = await page.request.get(`/api/lyrics/${fixture.lyricId}`);
