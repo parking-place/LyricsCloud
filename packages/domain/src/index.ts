@@ -13,4 +13,5 @@ export * from "./editor-resource-contract.js";
 export * from "./search-contract.js";
 export * from "./recent-work-contract.js";
 export * from "./saved-resource-contract.js";
+export * from "./template-contract.js";
 export * from "./types.js";

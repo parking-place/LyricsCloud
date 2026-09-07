@@ -1,12 +1,12 @@
 "use client";
 
-import { LYRIC_LIMITS, type LyricRecord } from "@lyricscloud/domain";
+import { LYRIC_LIMITS, type LyricRecord, type TemplateRecord } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 interface SongListItem { readonly id: string; readonly title: string; readonly lyricCount: number }
 
-export function LyricNewScreen({ currentSongId, returnTo }: { currentSongId?: string; returnTo: string }) {
+export function LyricNewScreen({ currentSongId, returnTo, templateId }: { currentSongId?: string; returnTo: string; templateId?: string }) {
   const [songs, setSongs] = useState<readonly SongListItem[]>([]);
   const [songId, setSongId] = useState(currentSongId ?? "");
   const [search, setSearch] = useState("");
@@ -15,6 +15,7 @@ export function LyricNewScreen({ currentSongId, returnTo }: { currentSongId?: st
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
   const requestId = useRef(crypto.randomUUID());
+  const [template, setTemplate] = useState<TemplateRecord | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -47,18 +48,31 @@ export function LyricNewScreen({ currentSongId, returnTo }: { currentSongId?: st
     return () => { window.clearTimeout(timer); controller.abort(); };
   }, [currentSongId, search]);
 
+  useEffect(() => {
+    if (!templateId) return;
+    const controller = new AbortController();
+    void fetch(`/api/templates/${templateId}`, { cache: "no-store", signal: controller.signal }).then(async (response) => {
+      const result = await response.json().catch(() => ({})) as { template?: TemplateRecord };
+      if (!response.ok || result.template?.type !== "lyrics") throw new Error();
+      setTemplate(result.template); setTitle((value) => value || `${result.template!.title} 작업`);
+    }).catch((error) => { if (error.name !== "AbortError") setNotice("선택한 가사 템플릿을 사용할 수 없습니다. 빈 문서로 시작하거나 다른 템플릿을 골라 주세요."); });
+    return () => controller.abort();
+  }, [templateId]);
+
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (saving || !songId || !title.trim() || [...title.trim()].length > LYRIC_LIMITS.title) return;
     setSaving(true); setNotice("");
     try {
-      const response = await fetch(`/api/songs/${songId}/lyrics`, {
+      const response = await fetch(template ? `/api/templates/${template.id}/apply` : `/api/songs/${songId}/lyrics`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestId: requestId.current, title, body: "", memo: "", status: "draft" })
+        body: JSON.stringify(template ? { requestId: requestId.current, targetType: "lyrics", title, songId }
+          : { requestId: requestId.current, title, body: "", memo: "", status: "draft" })
       });
-      const result = await response.json().catch(() => ({})) as { lyric?: LyricRecord };
-      if (!response.ok || !result.lyric) throw new Error(response.status === 404 ? "PARENT_UNAVAILABLE" : "CREATE_FAILED");
-      router.replace(`/lyrics/${result.lyric.id}?returnTo=${encodeURIComponent("/songs")}`);
+      const result = await response.json().catch(() => ({})) as { lyric?: LyricRecord; resource?: { id: string } };
+      const id = result.lyric?.id ?? result.resource?.id;
+      if (!response.ok || !id) throw new Error(response.status === 404 ? "PARENT_UNAVAILABLE" : "CREATE_FAILED");
+      router.replace(`/lyrics/${id}?returnTo=${encodeURIComponent("/songs")}`);
       router.refresh();
     } catch (error) {
       setNotice(error instanceof Error && error.message === "PARENT_UNAVAILABLE"
@@ -70,7 +84,8 @@ export function LyricNewScreen({ currentSongId, returnTo }: { currentSongId?: st
 
   const titleTooLong = [...title.trim()].length > LYRIC_LIMITS.title;
   return <section className="lyric-new-page" aria-labelledby="new-lyric-title">
-    <header className="form-heading"><div><a className="back-inline" href={returnTo}>← 이전 화면</a><p className="eyebrow">Quick add · Lyrics</p><h1 id="new-lyric-title">새 가사 시작</h1><p>현재 곡을 그대로 쓰거나 내 곡 중 부모를 선택한 뒤 빈 초안을 엽니다.</p></div></header>
+    <header className="form-heading"><div><a className="back-inline" href={returnTo}>← 이전 화면</a><p className="eyebrow">Quick add · Lyrics</p><h1 id="new-lyric-title">새 가사 시작</h1><p>{template ? `“${template.title}” 구조를 독립된 새 가사에 복사합니다.` : "현재 곡을 그대로 쓰거나 내 곡 중 부모를 선택한 뒤 빈 초안을 엽니다."}</p></div></header>
+    <nav className="creation-source" aria-label="가사 시작 방식"><a aria-current={!templateId ? "page" : undefined} href={`/lyrics/new${currentSongId ? `?songId=${currentSongId}` : ""}`}>빈 가사</a><a aria-current={templateId ? "page" : undefined} href="/templates?type=lyrics">템플릿에서 선택</a></nav>
     {notice ? <div className="form-error-banner" role="status"><span>{notice}</span></div> : null}
     <form className="lyric-new-form" onSubmit={submit}>
       <label className="form-field"><span className="field-label">가사 제목<em>필수</em><span className={titleTooLong ? "over" : ""}>{[...title].length} / {LYRIC_LIMITS.title}</span></span>

@@ -1,4 +1,4 @@
-import type { LyricStatus, ResourceColor, ResourceType, SongStatus } from "@lyricscloud/domain";
+import type { LyricStatus, ResourceColor, ResourceType, SongStatus, TemplateType } from "@lyricscloud/domain";
 import { bigint, boolean, integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const appUsers = pgTable("app_users", {
@@ -181,3 +181,35 @@ export const recentItems = pgTable("recent_items", {
   positionSavedAt: timestamp("position_saved_at", { withTimezone: true }),
   positionBasisUpdatedAt: timestamp("position_basis_updated_at", { withTimezone: true })
 }, (table) => [primaryKey({ columns: [table.ownerId, table.resourceId] })]);
+
+export const templates = pgTable("templates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ownerId: uuid("owner_id"),
+  type: text("type").$type<TemplateType>().notNull(),
+  title: text("title").notNull(),
+  lyricBody: text("lyric_body"),
+  promptTokens: text("prompt_tokens").array(),
+  rowVersion: bigint("row_version", { mode: "number" }).notNull().default(1),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true })
+});
+
+export const templatePreferences = pgTable("template_preferences", {
+  ownerId: uuid("owner_id").notNull(),
+  templateId: uuid("template_id").notNull(),
+  isFavorite: boolean("is_favorite").notNull().default(false),
+  useCount: bigint("use_count", { mode: "number" }).notNull().default(0),
+  lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.templateId] })]);
+
+export const templateRequests = pgTable("template_requests", {
+  ownerId: uuid("owner_id").notNull(),
+  requestId: uuid("request_id").notNull(),
+  operation: text("operation").$type<"create" | "duplicate" | "apply">().notNull(),
+  requestSha256: text("request_sha256").notNull(),
+  resultId: uuid("result_id").notNull(),
+  resultType: text("result_type").$type<"template" | "lyrics" | "prompt">().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.requestId] })]);

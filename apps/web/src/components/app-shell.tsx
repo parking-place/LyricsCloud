@@ -31,7 +31,7 @@ export function WorkspaceShell({
 }: {
   profile: ShellProfile;
   loginCompleted?: boolean;
-  active?: "home" | "songs" | "rhymes" | "prompts" | "search" | "recent" | "favorites";
+  active?: "home" | "songs" | "rhymes" | "prompts" | "search" | "recent" | "favorites" | "templates";
   currentSongId?: string;
   children: ReactNode;
 }) {
@@ -145,6 +145,7 @@ export function WorkspaceShell({
         <a className={`nav-item${active === "search" ? " active" : ""}`} href="/search" aria-current={active === "search" ? "page" : undefined}><span aria-hidden="true">⌕</span><span className="nav-text">통합 검색</span></a>
         <a className={`nav-item${active === "recent" ? " active" : ""}`} href="/recent" aria-current={active === "recent" ? "page" : undefined}><span aria-hidden="true">↺</span><span className="nav-text">최근 작업</span></a>
         <a className={`nav-item${active === "favorites" ? " active" : ""}`} href="/favorites" aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><span className="nav-text">즐겨찾기</span></a>
+        <a className={`nav-item${active === "templates" ? " active" : ""}`} href="/templates" aria-current={active === "templates" ? "page" : undefined}><span aria-hidden="true">▦</span><span className="nav-text">템플릿</span></a>
       </nav>
       <div className="side-spacer" />
       <div className="profile-mini"><Avatar profile={profile} /><span className="nav-text"><strong>{profile.displayName}</strong><small>개인 작업 공간</small></span></div>
@@ -152,7 +153,7 @@ export function WorkspaceShell({
     </aside>
     <div className="main-shell" ref={mainShell}>
       <header className="topbar">
-        <nav className="workspace-tabs" aria-label="창작 영역"><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트 <small>0.4.0</small></a><a href="/prompts" className={`workspace-tab${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}>프롬프트 <small>0.5.0</small></a><a href="/favorites" className={`workspace-tab${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}>★ 즐겨찾기</a><a href="/recent" className={`workspace-tab${active === "recent" ? " active" : ""}`} aria-current={active === "recent" ? "page" : undefined}>↺ 최근</a><a href="/search" className={`workspace-tab${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}>⌕ 검색</a></nav>
+        <nav className="workspace-tabs" aria-label="창작 영역"><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트 <small>0.4.0</small></a><a href="/prompts" className={`workspace-tab${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}>프롬프트 <small>0.5.0</small></a><a href="/templates" className={`workspace-tab${active === "templates" ? " active" : ""}`} aria-current={active === "templates" ? "page" : undefined}>▦ 템플릿</a><a href="/favorites" className={`workspace-tab${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}>★ 즐겨찾기</a><a href="/recent" className={`workspace-tab${active === "recent" ? " active" : ""}`} aria-current={active === "recent" ? "page" : undefined}>↺ 최근</a><a href="/search" className={`workspace-tab${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}>⌕ 검색</a></nav>
         <span className="topbar-spacer" /><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button>
       </header>
       {sessionExpired || logoutError ? <div className="account-messages">
@@ -166,9 +167,10 @@ export function WorkspaceShell({
     <header className="mobile-header"><Brand /><span className="mobile-account"><Avatar profile={profile} /><button className="mobile-logout" type="button" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button></span></header>
     <nav className="mobile-bottom-nav" aria-label="모바일 주 메뉴">
       <a href="/songs" className={`mobile-nav-item${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><strong>곡</strong></a>
-      <span className="mobile-nav-spacer" aria-hidden="true" />
       <a href="/rhymes" className={`mobile-nav-item${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><strong>라임</strong></a>
-      <a href="/prompts" className={`mobile-nav-item${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><strong>프롬프트</strong></a>
+      {active === "templates" ? <a href="/templates" className="mobile-nav-item active" aria-current="page"><span aria-hidden="true">▦</span><strong>템플릿</strong></a>
+        : <a href="/prompts" className={`mobile-nav-item${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><strong>프롬프트</strong></a>}
+      <span className="mobile-nav-spacer" aria-hidden="true" />
       <a href="/search" className={`mobile-nav-item${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}><span aria-hidden="true">⌕</span><strong>검색</strong></a>
       <a href="/recent" className={`mobile-nav-item${active === "recent" ? " active" : ""}`} aria-current={active === "recent" ? "page" : undefined}><span aria-hidden="true">↺</span><strong>최근</strong></a>
       <a href="/favorites" aria-label="즐겨찾기" className={`mobile-nav-item${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><strong aria-hidden="true">저장</strong></a>

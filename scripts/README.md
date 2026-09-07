@@ -33,6 +33,14 @@ DATABASE_URL=postgresql://.../lyricscloud_test pnpm test:performance:0700-releas
 
 두 명령은 `_test`로 끝나는 source DB만 허용하고 매 실행마다 별도 임시 DB를 생성·강제 제거한다. 기존 source DB와 Docker volume은 변경하지 않는다. 성능 출력은 warm run 회귀 기준이며 운영 SLO가 아니다.
 
+## 0.8.0 템플릿 migration 검증
+
+격리 test DB에서 기본 템플릿, 유형별 payload, owner 강제 RLS와 rollback/reapply를 확인한다.
+
+```bash
+DATABASE_URL=postgresql://.../lyricscloud_test pnpm test:migration:0800
+```
+
 ## 허용 메일 파일 이관
 
 이전 설정의 `.env` `AUTH_ALLOWED_EMAILS` 값을 현재 환경의 `.test_users`로 값 노출 없이 이관한다.

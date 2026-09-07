@@ -8,4 +8,5 @@
 | [PROD-0005](./PROD-0005-quick-add.md) | 빠른 아이디어 자료 유형과 새 가사의 부모 곡 선택 | Accepted |
 | [PROD-0006](./PROD-0006-rhyme-lyric-insertion.md) | 라임 선택과 열린 가사 삽입 대상 | Accepted |
 | [PROD-0007](./PROD-0007-recent-work.md) | 최근 수정·열람과 마지막 가사 위치 복원 | Accepted |
+| [PROD-0008](./PROD-0008-template-application.md) | 템플릿 적용·취소와 기존 내용 보호 | Accepted |
 | [PROD-0010](./PROD-0010-soft-delete-restore.md) | soft delete, cascade와 복원 관계 | Accepted |

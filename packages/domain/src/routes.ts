@@ -19,6 +19,6 @@ export const productRoutes = [
   { screen: "11-recent", path: "/recent", access: "authenticated", availability: "planned" },
   { screen: "12-favorites", path: "/favorites", access: "authenticated", availability: "available" },
   { screen: "13-trash", path: "/trash", access: "authenticated", availability: "planned" },
-  { screen: "14-templates", path: "/templates", access: "authenticated", availability: "planned" },
+  { screen: "14-templates", path: "/templates", access: "authenticated", availability: "available" },
   { screen: "15-settings", path: "/settings", access: "authenticated", availability: "planned" }
 ] as const satisfies readonly ProductRoute[];

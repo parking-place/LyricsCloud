@@ -3,13 +3,13 @@
 import {
   clearPromptCreationDraft, readPromptCreationDraft, writePromptCreationDraft
 } from "@lyricscloud/editor";
-import { findPromptDuplicates, normalizePromptToken, PROMPT_LIMITS, type PromptRecord } from "@lyricscloud/domain";
+import { findPromptDuplicates, normalizePromptToken, PROMPT_LIMITS, type PromptRecord, type TemplateRecord } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
 import { PromptTokenBuilder, type PromptBuilderItem } from "./prompt-token-builder.js";
 
-export function PromptNewScreen({ ownerId }: { ownerId: string }) {
+export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; templateId?: string }) {
   const [title, setTitle] = useState("");
   const [items, setItems] = useState<readonly PromptBuilderItem[]>([]);
   const [ready, setReady] = useState(false);
@@ -23,6 +23,7 @@ export function PromptNewScreen({ ownerId }: { ownerId: string }) {
   const titleRef = useRef("");
   const itemsRef = useRef<readonly PromptBuilderItem[]>([]);
   const dirtySince = useRef<number | null>(null);
+  const selectedTemplate = useRef<string | null>(templateId ?? null);
   const router = useRouter();
   const duplicates = useMemo(() => findPromptDuplicates(items.map(({ displayValue }) => normalizePromptToken(displayValue))), [items]);
 
@@ -41,16 +42,18 @@ export function PromptNewScreen({ ownerId }: { ownerId: string }) {
       setState("creating");
       try {
         await writes.current.catch(() => undefined);
-        const response = await fetch("/api/prompts", {
+        const response = await fetch(selectedTemplate.current ? `/api/templates/${selectedTemplate.current}/apply` : "/api/prompts", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ requestId: requestId.current, title: titleRef.current,
-            tokens: itemsRef.current.map(({ displayValue }) => displayValue), isFavorite: false, isPinned: false, pinOrder: null, color: null })
+          body: JSON.stringify(selectedTemplate.current ? { requestId: requestId.current, targetType: "prompt", title: titleRef.current }
+            : { requestId: requestId.current, title: titleRef.current,
+              tokens: itemsRef.current.map(({ displayValue }) => displayValue), isFavorite: false, isPinned: false, pinOrder: null, color: null })
         });
-        const result = await response.json() as { prompt?: PromptRecord };
-        if (!response.ok || !result.prompt) throw new Error();
+        const result = await response.json() as { prompt?: PromptRecord; resource?: { id: string } };
+        const id = result.prompt?.id ?? result.resource?.id;
+        if (!response.ok || !id) throw new Error();
         created.current = true; dirtySince.current = null;
         await clearPromptCreationDraft(ownerId);
-        router.replace(`/prompts/${result.prompt.id}`); router.refresh();
+        router.replace(`/prompts/${id}`); router.refresh();
         return true;
       } catch { setState("error"); return false; }
       finally { creating.current = null; }
@@ -61,14 +64,24 @@ export function PromptNewScreen({ ownerId }: { ownerId: string }) {
 
   useEffect(() => {
     let active = true;
-    void readPromptCreationDraft(ownerId).then((draft) => {
+    void readPromptCreationDraft(ownerId).then(async (draft) => {
       if (!active) return;
       requestId.current = draft?.requestId ?? crypto.randomUUID();
       titleRef.current = draft?.title ?? "";
       itemsRef.current = (draft?.tokens ?? []).map((displayValue) => ({ occurrenceId: crypto.randomUUID(), displayValue }));
+      if (templateId) {
+        const response = await fetch(`/api/templates/${templateId}`, { cache: "no-store" });
+        const result = await response.json().catch(() => ({})) as { template?: TemplateRecord };
+        if (!response.ok || result.template?.type !== "prompt") throw new Error("TEMPLATE_UNAVAILABLE");
+        titleRef.current ||= `${result.template.title} 작업`;
+        itemsRef.current = result.template.tokens.map(({ displayValue }) => ({ occurrenceId: crypto.randomUUID(), displayValue }));
+      }
       if (titleRef.current || itemsRef.current.length) dirtySince.current = Date.now();
       setTitle(titleRef.current); setItems(itemsRef.current); setReady(true);
-    }).catch(() => { if (active) { requestId.current = crypto.randomUUID(); setState("error"); setReady(true); } });
+    }).catch(() => { if (active) {
+      requestId.current = crypto.randomUUID(); selectedTemplate.current = null;
+      setState("error"); setReady(true);
+    } });
     const unregister = registerLogoutSave(createNow, () => ({ resourceId: requestId.current || "new-prompt", title: titleRef.current,
       body: itemsRef.current.map(({ displayValue }) => displayValue).join(", ") }));
     setOnline(navigator.onLine);
@@ -76,7 +89,7 @@ export function PromptNewScreen({ ownerId }: { ownerId: string }) {
     const onOffline = () => setOnline(false);
     window.addEventListener("online", onOnline); window.addEventListener("offline", onOffline);
     return () => { active = false; unregister(); window.removeEventListener("online", onOnline); window.removeEventListener("offline", onOffline); };
-  }, [ownerId]);
+  }, [ownerId, templateId]);
 
   useEffect(() => {
     if (!ready || created.current) return;
@@ -92,7 +105,7 @@ export function PromptNewScreen({ ownerId }: { ownerId: string }) {
   }, [items, ownerId, ready, title]);
 
   function updateTitle(value: string) { dirtySince.current ??= Date.now(); setState("saving"); titleRef.current = value; setTitle(value); }
-  function updateItems(next: readonly PromptBuilderItem[]) { dirtySince.current ??= Date.now(); setState("saving"); itemsRef.current = next; setItems(next); }
+  function updateItems(next: readonly PromptBuilderItem[]) { dirtySince.current ??= Date.now(); selectedTemplate.current = null; setState("saving"); itemsRef.current = next; setItems(next); }
   async function discard() { await clearPromptCreationDraft(ownerId).catch(() => undefined); router.push("/prompts"); }
   function cancel() { if (titleRef.current || itemsRef.current.length) setCancelOpen(true); else void discard(); }
 
@@ -106,10 +119,11 @@ export function PromptNewScreen({ ownerId }: { ownerId: string }) {
     : "이 기기에 임시 저장됨 · 유효한 제목을 입력하면 자동 저장됩니다";
 
   return <section className="prompt-editor-page" aria-labelledby="new-prompt-title">
-    <header className="prompt-editor-header"><div><button type="button" className="back-button" onClick={cancel}>← 프롬프트</button><p className="eyebrow">New prompt</p></div>
+    <header className="prompt-editor-header"><div><button type="button" className="back-button" onClick={cancel}>← 프롬프트</button><p className="eyebrow">{templateId ? "New prompt · Template copy" : "New prompt"}</p></div>
       <button type="button" className="secondary-button" onClick={cancel}>취소</button>
       <p className={`local-draft-state state-${state}`} role="status">{stateLabel}{state === "error" ? <button type="button" onClick={() => void createNow()}>다시 시도</button> : null}</p>
     </header>
+    <nav className="creation-source" aria-label="프롬프트 시작 방식"><a aria-current={!templateId ? "page" : undefined} href="/prompts/new">빈 프롬프트</a><a aria-current={templateId ? "page" : undefined} href="/templates?type=prompt">템플릿에서 선택</a></nav>
     <div className="prompt-editor-title"><label id="new-prompt-title" htmlFor="new-prompt-title-input">프롬프트 제목</label>
       <input id="new-prompt-title-input" autoFocus disabled={!ready || state === "creating"} value={title}
         aria-invalid={Boolean(titleError && titleLength > PROMPT_LIMITS.title)} placeholder="예: Anthemic Hyperpop"
