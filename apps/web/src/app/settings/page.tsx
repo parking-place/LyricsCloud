@@ -11,5 +11,5 @@ export default async function SettingsPage() {
   const user = await resolvePageUser();
   if (!user) redirect("/auth");
   const settings = await getAuthContext().displaySettings.getUserSettings(user.userId);
-  return <WorkspaceShell profile={user} active="settings"><SettingsScreen initialSettings={settings} /></WorkspaceShell>;
+  return <WorkspaceShell profile={user} active="settings"><SettingsScreen initialSettings={settings} ownerId={user.userId} /></WorkspaceShell>;
 }

@@ -47,6 +47,12 @@ check_http "$name-collaboration" http://127.0.0.1:3001/health/ready
 check_http "$name-worker" http://127.0.0.1:3002/health/ready
 check_http "$name-web" http://127.0.0.1:3000/api/health/ready
 check_http "$name-web" http://127.0.0.1:3000/collaboration/health/ready
+worker_purge=false
+for attempt in {1..30}; do
+  if [[ "$(docker exec "$name-db" psql -U lyricscloud_test -d lyricscloud_test -Atc "select count(*) from lifecycle_purge_runs where status='success'" 2>/dev/null)" != "0" ]]; then worker_purge=true; break; fi
+  sleep 1
+done
+[[ "$worker_purge" == true ]]
 docker exec -i --workdir /workspace/apps/collaboration "$name-collaboration" node --input-type=module < scripts/verify-production-revisions.mjs
 docker run -i --name "$name-recovery" --network "$name" -e "DATABASE_URL=$database_url" \
   --entrypoint node --workdir /workspace/apps/collaboration "lyricscloud-collaboration-ci:$revision" \

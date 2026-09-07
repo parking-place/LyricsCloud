@@ -1428,6 +1428,107 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .shortcut-dialog h2 { margin: .25rem 0 0; }
 .shortcut-dialog > header button { min-height: 2.3rem; padding: .4rem .7rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--surface); color: var(--ink); cursor: pointer; }
 
+/* 0.8.0 trash and account lifecycle */
+.trash-page { min-width: 0; padding: clamp(1.5rem, 3.4vw, 3.4rem); overflow-y: auto; }
+.trash-heading { width: min(100%, 78rem); display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
+.trash-heading h1 { margin: .35rem 0 .45rem; font-size: clamp(2rem, 4vw, 3.65rem); letter-spacing: -.06em; }
+.trash-heading p:last-child { margin: 0; color: var(--muted); line-height: 1.6; }
+.trash-heading .secondary-button { flex: 0 0 auto; text-decoration: none; }
+.trash-toolbar { width: min(100%, 78rem); display: flex; align-items: end; gap: .65rem; margin-top: 1.5rem; padding: .75rem; border: 1px solid var(--line); border-radius: .75rem; background: var(--panel); }
+.trash-toolbar label { display: grid; gap: .35rem; color: var(--muted); font-size: .65rem; font-weight: 750; }
+.trash-toolbar select { min-height: 2.45rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--surface); color: var(--ink); }
+.trash-toolbar > span { margin-left: auto; color: var(--subtle); font-size: .7rem; }
+.trash-message { width: min(100%, 78rem); margin: .8rem 0 0; padding: .75rem; border: 1px solid var(--line); border-radius: .55rem; color: var(--muted); background: var(--panel); font-size: .72rem; }
+.trash-message.warning { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); color: var(--danger); background: var(--danger-bg); }
+.trash-table-wrap { width: min(100%, 78rem); margin-top: .8rem; border: 1px solid var(--line); border-radius: .8rem; background: var(--panel); overflow-x: auto; }
+.trash-table { width: 100%; min-width: 62rem; border-collapse: collapse; font-size: .72rem; }
+.trash-table th, .trash-table td { padding: .78rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+.trash-table tr:last-child td { border-bottom: 0; }
+.trash-table th { color: var(--subtle); font-size: .62rem; letter-spacing: .05em; text-transform: uppercase; }
+.trash-table td:nth-child(2), .trash-table td:nth-child(5) { display: table-cell; }
+.trash-table td strong, .trash-table td small { display: block; }
+.trash-table td small { margin-top: .2rem; color: var(--subtle); }
+.trash-table td:last-child > div { display: flex; gap: .4rem; }
+.trash-table td:last-child button, .danger-text-button { min-height: 2.2rem; padding: .35rem .55rem; border: 1px solid var(--line); border-radius: .45rem; background: var(--surface); color: var(--ink); cursor: pointer; }
+.trash-table .danger-text-button, .danger-text-button { border-color: transparent; background: transparent; color: var(--danger); }
+.trash-table input[type="checkbox"], .trash-card input[type="checkbox"] { width: 1rem; height: 1rem; accent-color: var(--acid); }
+.trash-card-list { display: none; }
+.trash-bulk-actions { position: sticky; bottom: 1rem; width: min(100%, 78rem); display: flex; align-items: center; justify-content: end; gap: .55rem; margin-top: .8rem; padding: .8rem; border: 1px solid var(--line); border-radius: .75rem; background: color-mix(in srgb, var(--panel) 94%, transparent); box-shadow: 0 12px 35px rgb(0 0 0 / 22%); backdrop-filter: blur(12px); }
+.trash-bulk-actions p { margin: 0 auto 0 0; color: var(--muted); font-size: .68rem; line-height: 1.45; }
+.trash-bulk-actions button:disabled, .trash-dialog button:disabled, .withdrawal-dialog button:disabled, .withdrawal-card button:disabled { opacity: .45; cursor: not-allowed; }
+.trash-empty { width: min(100%, 78rem); margin-top: .8rem; }
+.trash-dialog-backdrop, .withdrawal-dialog-backdrop { position: fixed; z-index: 90; inset: 0; display: grid; place-items: center; padding: 1rem; background: rgb(0 0 0 / 65%); }
+.trash-dialog, .withdrawal-dialog { width: min(100%, 38rem); max-height: min(88dvh, 48rem); padding: 1.1rem; border: 1px solid var(--line); border-radius: .9rem; background: var(--panel); overflow-y: auto; box-shadow: 0 24px 80px rgb(0 0 0 / 55%); }
+.trash-dialog > header, .withdrawal-dialog > header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
+.trash-dialog h2, .withdrawal-dialog h2 { margin: .3rem 0 0; font-size: 1.25rem; }
+.trash-dialog > header > button, .withdrawal-dialog > header > button { min-height: 2.3rem; padding: .4rem .7rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--surface); color: var(--ink); cursor: pointer; }
+.trash-impact-list { max-height: 12rem; display: grid; gap: .45rem; margin: 1rem 0 0; padding: 0; overflow-y: auto; list-style: none; }
+.trash-impact-list li { display: grid; gap: .2rem; padding: .65rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--surface); }
+.trash-impact-list span { color: var(--subtle); font-size: .66rem; }
+.trash-impact-summary { margin: .75rem 0 0; color: var(--muted); font-size: .72rem; line-height: 1.55; }
+.trash-restore-options { display: grid; gap: .55rem; margin: 1rem 0 0; padding: .8rem; border: 1px solid var(--line); border-radius: .6rem; }
+.trash-restore-options legend { padding: 0 .3rem; font-size: .72rem; font-weight: 800; }
+.trash-restore-options > label { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .55rem; align-items: start; color: var(--muted); font-size: .72rem; }
+.trash-restore-options label > span { display: grid; gap: .18rem; }
+.trash-restore-options small { color: var(--subtle); line-height: 1.45; }
+.trash-restore-options label:last-child { grid-template-columns: minmax(0, 1fr); }
+.trash-restore-options select, .trash-confirmation input, .withdrawal-confirmation input { width: 100%; min-height: 2.7rem; margin-top: .4rem; padding: 0 .7rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--surface); color: var(--ink); }
+.trash-confirmation { margin-top: 1rem; padding: .8rem; border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--line)); border-radius: .6rem; background: var(--danger-bg); }
+.trash-confirmation p, .trash-confirmation label { margin: 0; color: var(--danger); font-size: .72rem; line-height: 1.55; }
+.trash-confirmation label { display: block; margin-top: .7rem; }
+.trash-dialog-actions { display: flex; justify-content: end; gap: .55rem; margin-top: 1rem; }
+.account-export-entry, .account-danger-zone { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; padding: .9rem; border: 1px solid var(--line); border-radius: .65rem; background: var(--surface); }
+.account-export-entry p, .account-danger-zone p { margin: .3rem 0 0; color: var(--muted); font-size: .7rem; line-height: 1.55; }
+.account-danger-zone { align-items: start; border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); background: var(--danger-bg); }
+.account-danger-actions { flex: 0 0 auto; display: flex; gap: .45rem; }
+.account-danger-actions a { text-decoration: none; }
+.withdrawal-warning { margin-top: 1rem; padding: .85rem; border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--line)); border-radius: .6rem; background: var(--danger-bg); color: var(--danger); }
+.withdrawal-warning p { margin: .35rem 0 0; font-size: .72rem; line-height: 1.55; }
+.withdrawal-check { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .55rem; align-items: start; margin-top: 1rem; color: var(--muted); font-size: .74rem; line-height: 1.5; }
+.withdrawal-check input { margin-top: .18rem; accent-color: var(--danger); }
+.withdrawal-confirmation { display: block; margin-top: 1rem; color: var(--muted); font-size: .72rem; line-height: 1.5; }
+.withdrawal-dialog > p { color: var(--subtle); font-size: .68rem; }
+.withdrawal-page { min-height: 100svh; display: grid; place-items: center; padding: 1rem; background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--danger) 12%, transparent), transparent 45%), var(--canvas); }
+.withdrawal-card { width: min(100%, 38rem); padding: clamp(1.2rem, 4vw, 2.4rem); border: 1px solid var(--line); border-radius: 1rem; background: var(--panel); box-shadow: 0 24px 80px rgb(0 0 0 / 35%); }
+.withdrawal-brand { margin-bottom: 2rem; }
+.withdrawal-card h1 { margin: .45rem 0 .7rem; font-size: clamp(1.7rem, 5vw, 2.7rem); letter-spacing: -.045em; }
+.withdrawal-card > p { color: var(--muted); line-height: 1.65; }
+.withdrawal-cancel { width: 100%; justify-content: center; margin-top: 1rem; }
+
+@media (max-width: 720px) {
+  .trash-page { grid-row: 2; padding: 1.1rem max(.85rem, var(--lc-safe-right)) calc(6rem + var(--lc-safe-bottom)) max(.85rem, var(--lc-safe-left)); }
+  .trash-heading { align-items: start; flex-direction: column; }
+  .trash-heading .eyebrow { display: none; }
+  .trash-heading h1 { font-size: 1.75rem; }
+  .trash-heading p:last-child { font-size: .72rem; }
+  .trash-heading .secondary-button { display: none; }
+  .trash-toolbar { align-items: stretch; flex-wrap: wrap; }
+  .trash-toolbar label { flex: 1 1 10rem; }
+  .trash-toolbar > button { flex: 1 1 10rem; }
+  .trash-toolbar > span { width: 100%; margin-left: 0; }
+  .trash-table-wrap { display: none; }
+  .trash-card-list { display: grid; gap: .65rem; margin-top: .75rem; }
+  .trash-card { padding: .85rem; border: 1px solid var(--line); border-radius: .72rem; background: var(--panel); }
+  .trash-card header, .trash-card footer { display: flex; align-items: center; justify-content: space-between; gap: .55rem; }
+  .trash-card header label { display: flex; align-items: center; gap: .45rem; color: var(--subtle); font-size: .65rem; }
+  .trash-card header > strong { color: var(--acid); font-size: .7rem; }
+  .trash-card h2 { margin: .75rem 0; font-size: 1rem; overflow-wrap: anywhere; }
+  .trash-card dl { display: grid; gap: .4rem; margin: 0; }
+  .trash-card dl > div { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: .55rem; font-size: .68rem; }
+  .trash-card dt { color: var(--subtle); }
+  .trash-card dd { margin: 0; color: var(--muted); }
+  .trash-card > p { color: var(--subtle); font-size: .64rem; line-height: 1.5; }
+  .trash-card footer button { flex: 1; }
+  .trash-bulk-actions { position: static; align-items: stretch; flex-wrap: wrap; }
+  .trash-bulk-actions p { width: 100%; }
+  .trash-bulk-actions button { flex: 1; }
+  .trash-dialog-backdrop, .withdrawal-dialog-backdrop { place-items: end stretch; padding: 1rem 0 0; }
+  .trash-dialog, .withdrawal-dialog { width: 100%; max-height: 88dvh; padding: 1rem max(1rem, var(--lc-safe-right)) calc(1rem + var(--lc-safe-bottom)) max(1rem, var(--lc-safe-left)); border-width: 1px 0 0; border-radius: 1rem 1rem 0 0; }
+  .account-export-entry, .account-danger-zone { align-items: stretch; flex-direction: column; }
+  .account-export-entry button, .account-danger-actions > * { width: 100%; justify-content: center; }
+  .account-danger-actions { flex-direction: column; }
+}
+
 @media (max-width: 720px) {
   .settings-page { grid-row: 2; padding: 1.1rem max(.85rem, var(--lc-safe-right)) calc(5.8rem + var(--lc-safe-bottom)) max(.85rem, var(--lc-safe-left)); }
   .settings-heading .eyebrow { display: none; }

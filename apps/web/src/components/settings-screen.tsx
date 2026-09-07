@@ -2,23 +2,38 @@
 
 import { DEFAULT_USER_SETTINGS, type ThemePreference, type UserSettingsRecord, type WritingFont } from "@lyricscloud/domain";
 import { useEffect, useRef, useState } from "react";
+import { clearAccountPrivateData, downloadRecoveryDrafts } from "../lib/account-cache.js";
 import { trapDialogTab } from "../lib/dialog-focus.js";
 import { ShortcutGuide } from "./shortcut-help.js";
 
 type ThemeWindow = Window & { __lcApplyTheme?: (theme: ThemePreference) => void };
 
-export function SettingsScreen({ initialSettings }: { initialSettings: UserSettingsRecord }) {
+export function SettingsScreen({ initialSettings, ownerId }: { initialSettings: UserSettingsRecord; ownerId: string }) {
   const [saved, setSaved] = useState(initialSettings);
   const [draft, setDraft] = useState(initialSettings);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [conflicted, setConflicted] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [withdrawalOpen, setWithdrawalOpen] = useState(false);
+  const [withdrawalConfirmation, setWithdrawalConfirmation] = useState("");
+  const [exportAcknowledged, setExportAcknowledged] = useState(false);
+  const [withdrawalBusy, setWithdrawalBusy] = useState(false);
+  const [withdrawalMessage, setWithdrawalMessage] = useState("");
   const sheetButton = useRef<HTMLButtonElement>(null);
+  const withdrawalPriorFocus = useRef<HTMLElement | null>(null);
+  const withdrawalBusyRef = useRef(false);
   const savedRef = useRef(initialSettings);
 
   useEffect(() => { savedRef.current = saved; }, [saved]);
   useEffect(() => () => applyTheme(savedRef.current.theme), []);
+  useEffect(() => { withdrawalBusyRef.current = withdrawalBusy; }, [withdrawalBusy]);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("withdrawal") === "confirm") {
+      setWithdrawalOpen(true);
+      document.querySelector("#account")?.scrollIntoView({ block: "start" });
+    }
+  }, []);
   useEffect(() => {
     if (!sheetOpen) return;
     const prior = document.activeElement instanceof HTMLElement ? document.activeElement : sheetButton.current;
@@ -27,6 +42,17 @@ export function SettingsScreen({ initialSettings }: { initialSettings: UserSetti
     document.addEventListener("keydown", keyboard);
     return () => { document.removeEventListener("keydown", keyboard); prior?.focus(); };
   }, [sheetOpen]);
+  useEffect(() => {
+    if (!withdrawalOpen) return;
+    withdrawalPriorFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const frame = requestAnimationFrame(() => document.querySelector<HTMLInputElement>("[data-withdrawal-dialog] input[type=checkbox]")?.focus());
+    function keyboard(event: KeyboardEvent) {
+      if (event.key === "Escape" && !withdrawalBusyRef.current) { event.preventDefault(); setWithdrawalOpen(false); }
+      else trapDialogTab(event, "[data-withdrawal-dialog]");
+    }
+    document.addEventListener("keydown", keyboard);
+    return () => { cancelAnimationFrame(frame); document.removeEventListener("keydown", keyboard); requestAnimationFrame(() => withdrawalPriorFocus.current?.focus()); };
+  }, [withdrawalOpen]);
 
   const dirty = fieldsChanged(saved, draft);
   function patch<K extends keyof UserSettingsRecord>(key: K, value: UserSettingsRecord[K]) {
@@ -73,6 +99,39 @@ export function SettingsScreen({ initialSettings }: { initialSettings: UserSetti
     } finally { setBusy(false); }
   }
 
+  async function downloadDrafts() {
+    try { await downloadRecoveryDrafts(ownerId); setWithdrawalMessage("이 기기의 미전송 초안을 내려받았습니다."); }
+    catch { setWithdrawalMessage("미전송 초안을 내려받지 못했습니다. 열린 편집기의 내용을 직접 복사해 주세요."); }
+  }
+
+  async function requestWithdrawal() {
+    if (withdrawalBusy || withdrawalConfirmation !== "탈퇴" || !exportAcknowledged) return;
+    setWithdrawalBusy(true); setWithdrawalMessage("");
+    let completed = false;
+    try {
+      const response = await fetch("/api/account/withdrawal", {
+        method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmation: withdrawalConfirmation, exportAcknowledged })
+      });
+      if (response.status === 401) {
+        setWithdrawalMessage("최근 Google 재인증이 필요합니다. 아래 재인증 버튼으로 다시 확인해 주세요.");
+        return;
+      }
+      if (!response.ok) throw new Error("WITHDRAWAL_FAILED");
+      completed = true;
+    } catch {
+      const session = await fetch("/api/auth/session", { cache: "no-store" }).catch(() => null);
+      completed = session?.status === 401;
+      if (!completed) setWithdrawalMessage("탈퇴 요청을 완료하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.");
+    }
+    if (completed) {
+      await Promise.race([clearAccountPrivateData(ownerId).catch(() => undefined), new Promise<void>((resolve) => setTimeout(resolve, 2_000))]);
+      window.location.replace("/auth?withdrawal=pending");
+      return;
+    }
+    setWithdrawalBusy(false);
+  }
+
   return <section className="settings-page" aria-labelledby="settings-title">
     <header className="settings-heading"><div><p className="eyebrow">Preferences · 0.8.0</p><h1 id="settings-title">설정</h1><p>창작 화면의 테마와 기본 표시 방식을 계정에 저장합니다.</p></div></header>
     <div className="settings-layout">
@@ -88,13 +147,27 @@ export function SettingsScreen({ initialSettings }: { initialSettings: UserSetti
           <div className="settings-actions"><button className="secondary-button" type="button" disabled={!dirty || busy} onClick={cancel}>취소</button><button className="primary-link" type="button" disabled={!dirty || busy} onClick={() => void save()}>{busy ? "저장 중" : "저장"}</button></div>
           {message ? <p className={message.startsWith("설정을 서버") || message.startsWith("저장된") ? "settings-message" : "settings-message warning"} role={conflicted || message.includes("못했습니다") ? "alert" : "status"}>{message}{conflicted ? <button type="button" onClick={() => void save(true)} disabled={busy}>최신 서버 버전에 다시 저장</button> : null}</p> : null}
         </section>
-        <section id="account" className="settings-card compact"><h2>계정</h2><p>프로필과 계정 수명주기 기능은 이후 Phase에서 확장됩니다.</p></section>
+        <section id="account" className="settings-card account-settings"><h2>계정과 자료</h2><p>탈퇴 전에 서버의 전체 자료를 내보내고, 이 기기의 미전송 초안도 따로 보관하세요.</p>
+          <div id="account-export" className="account-export-entry"><div><strong>전체 내보내기</strong><p>곡·가사·라임 노트·프롬프트·템플릿·관계·설정을 TXT/Markdown과 JSON으로 받을 수 있는 기능은 다음 단계에서 이 위치에 연결됩니다.</p></div><button type="button" className="secondary-button" onClick={() => void downloadDrafts()}>미전송 초안 내려받기</button></div>
+          <div className="account-danger-zone"><div><strong>회원 탈퇴</strong><p>요청 즉시 모든 기기의 세션과 자료 접근이 차단됩니다. 7일 안에는 Google 재인증 후 명시적으로 철회할 수 있고, 정확히 7일이 지나면 계정과 자료가 완전히 삭제됩니다.</p><p>인프라 백업에는 운영 보존 기간 동안 암호화된 사본이 남을 수 있으며 일반 사용자 화면에서는 복원할 수 없습니다.</p></div><div className="account-danger-actions"><a className="secondary-button" href="/api/auth/login?returnTo=%2Fsettings%3Fwithdrawal%3Dconfirm%23account">Google로 재인증</a><button type="button" className="danger-button" onClick={() => setWithdrawalOpen(true)}>회원 탈퇴 검토</button></div></div>
+          {withdrawalMessage ? <p className="settings-message warning" role="alert">{withdrawalMessage}</p> : null}
+        </section>
         <section id="keyboard" className="settings-card"><h2>키보드</h2><p>명령과 키를 검색할 수 있습니다. 같은 기능은 화면 버튼과 메뉴에서도 사용할 수 있습니다.</p><ShortcutGuide /></section>
       </div>
     </div>
     {sheetOpen ? <div className="settings-sheet-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) closeSheet(); }}>
       <section className="settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-sheet-title" data-settings-sheet>
         <header><h2 id="settings-sheet-title">작성 표시 세부 설정</h2><button type="button" onClick={closeSheet}>닫기</button></header><DisplayControls groupName="mobile-theme" settings={draft} onChange={patch} /><WritingPreview settings={draft} />
+      </section>
+    </div> : null}
+    {withdrawalOpen ? <div className="settings-sheet-backdrop withdrawal-dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget && !withdrawalBusy) setWithdrawalOpen(false); }}>
+      <section className="withdrawal-dialog" role="dialog" aria-modal="true" aria-labelledby="withdrawal-title" data-withdrawal-dialog>
+        <header><div><p className="eyebrow">Account lifecycle</p><h2 id="withdrawal-title">회원 탈퇴 확인</h2></div><button type="button" onClick={() => setWithdrawalOpen(false)} disabled={withdrawalBusy}>닫기</button></header>
+        <div className="withdrawal-warning"><strong>요청 직후 이 화면을 포함한 모든 기기에서 로그아웃됩니다.</strong><p>7일의 철회 기간이 끝나면 계정과 창작 자료를 자동 삭제하며 되돌릴 수 없습니다. 연결과 수정 기록도 함께 제거됩니다.</p></div>
+        <label className="withdrawal-check"><input type="checkbox" checked={exportAcknowledged} onChange={(event) => setExportAcknowledged(event.target.checked)} /><span>전체 내보내기를 완료했거나, 내보내기 없이 탈퇴하는 결과를 이해했습니다.</span></label>
+        <label className="withdrawal-confirmation">계속하려면 <strong>탈퇴</strong>를 입력하세요<input value={withdrawalConfirmation} onChange={(event) => setWithdrawalConfirmation(event.target.value)} autoComplete="off" /></label>
+        <p>보안을 위해 최근 10분 안의 Google 재인증 세션에서만 요청할 수 있습니다.</p>
+        <div className="trash-dialog-actions"><button type="button" className="secondary-button" onClick={() => setWithdrawalOpen(false)} disabled={withdrawalBusy}>취소</button><button type="button" className="danger-button" onClick={() => void requestWithdrawal()} disabled={withdrawalBusy || !exportAcknowledged || withdrawalConfirmation !== "탈퇴"}>{withdrawalBusy ? "요청 중" : "탈퇴 요청"}</button></div>
       </section>
     </div> : null}
   </section>;

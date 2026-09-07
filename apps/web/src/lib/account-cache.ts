@@ -138,6 +138,15 @@ export async function clearAccountCache(userId: string): Promise<void> {
   await clearOwnerLocalDrafts(userId);
 }
 
+export async function clearAccountPrivateData(userId: string): Promise<void> {
+  await clearAccountCache(userId);
+  if (!("caches" in window)) return;
+  const names = await window.caches.keys();
+  await Promise.all(names
+    .filter((name) => name.startsWith("lc:") || name.startsWith("lyricscloud-private"))
+    .map((name) => window.caches.delete(name)));
+}
+
 function clearMatchingKeys(storage: Storage, prefix: string): void {
   const keys = Array.from({ length: storage.length }, (_, index) => storage.key(index))
     .filter((key): key is string => Boolean(key?.startsWith(prefix)));

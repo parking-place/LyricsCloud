@@ -1,6 +1,6 @@
-import { AuthService, cookieNames, GoogleOidcAdapter, readCookie, sessionCookie } from "@lyricscloud/auth";
+import { AuthService, cookieNames, GoogleOidcAdapter, readCookie, sessionCookie, tokenHash } from "@lyricscloud/auth";
 import { readAuthConfig, readRuntimeConfig, type AuthConfig } from "@lyricscloud/config";
-import { PostgresAuthStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore } from "@lyricscloud/database";
+import { PostgresAuthStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLifecycleStore, type PendingWithdrawalSession } from "@lyricscloud/database";
 
 interface AuthContext {
   readonly config: AuthConfig;
@@ -16,6 +16,7 @@ interface AuthContext {
   readonly savedResources: PostgresSavedResourceStore;
   readonly templates: PostgresTemplateStore;
   readonly displaySettings: PostgresDisplaySettingsStore;
+  readonly lifecycle: PostgresLifecycleStore;
 }
 
 export class RequestAuthError extends Error {
@@ -50,10 +51,21 @@ export function getAuthContext(): AuthContext {
     recentWork: new PostgresRecentWorkStore(runtime.databaseUrl),
     savedResources: new PostgresSavedResourceStore(runtime.databaseUrl),
     templates: new PostgresTemplateStore(runtime.databaseUrl),
-    displaySettings: new PostgresDisplaySettingsStore(runtime.databaseUrl)
+    displaySettings: new PostgresDisplaySettingsStore(runtime.databaseUrl),
+    lifecycle: new PostgresLifecycleStore(runtime.databaseUrl)
   };
   cached = { key, context, allowedEmails };
   return context;
+}
+
+export async function resolvePendingWithdrawalAuth(request: Request): Promise<{ session: PendingWithdrawalSession; tokenHash: string }> {
+  const context = getAuthContext();
+  const token = readCookie(request.headers.get("cookie"), cookieNames(context.config).session);
+  if (!token) throw new RequestAuthError();
+  const hashed = tokenHash(token);
+  const session = await context.lifecycle.resolvePendingWithdrawalSession(hashed);
+  if (!session) throw new RequestAuthError();
+  return { session, tokenHash: hashed };
 }
 
 export async function resolveRequestAuth(request: Request): Promise<{ userId: string; renewalCookie?: string }> {

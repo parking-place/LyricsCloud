@@ -35,7 +35,7 @@ export function WorkspaceShell({
 }: {
   profile: ShellProfile;
   loginCompleted?: boolean;
-  active?: "home" | "songs" | "rhymes" | "prompts" | "search" | "recent" | "favorites" | "templates" | "settings";
+  active?: "home" | "songs" | "rhymes" | "prompts" | "search" | "recent" | "favorites" | "templates" | "trash" | "settings";
   currentSongId?: string;
   children: ReactNode;
 }) {
@@ -188,6 +188,7 @@ export function WorkspaceShell({
         <a className={`nav-item${active === "recent" ? " active" : ""}`} href="/recent" aria-current={active === "recent" ? "page" : undefined}><span aria-hidden="true">↺</span><span className="nav-text">최근 작업</span></a>
         <a className={`nav-item${active === "favorites" ? " active" : ""}`} href="/favorites" aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><span className="nav-text">즐겨찾기</span></a>
         <a className={`nav-item${active === "templates" ? " active" : ""}`} href="/templates" aria-current={active === "templates" ? "page" : undefined}><span aria-hidden="true">▦</span><span className="nav-text">템플릿</span></a>
+        <a className={`nav-item${active === "trash" ? " active" : ""}`} href="/trash" aria-current={active === "trash" ? "page" : undefined}><span aria-hidden="true">♲</span><span className="nav-text">휴지통</span></a>
         <a className={`nav-item${active === "settings" ? " active" : ""}`} href="/settings" aria-current={active === "settings" ? "page" : undefined}><span aria-hidden="true">⚙</span><span className="nav-text">설정</span></a>
       </nav>
       <div className="side-spacer" />
@@ -212,6 +213,7 @@ export function WorkspaceShell({
       <a href="/songs" className={`mobile-nav-item${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><strong>곡</strong></a>
       <a href="/rhymes" className={`mobile-nav-item${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><strong>라임</strong></a>
       {active === "templates" ? <a href="/templates" className="mobile-nav-item active" aria-current="page"><span aria-hidden="true">▦</span><strong>템플릿</strong></a>
+        : active === "trash" ? <a href="/trash" className="mobile-nav-item active" aria-current="page"><span aria-hidden="true">♲</span><strong>휴지통</strong></a>
         : <a href="/prompts" className={`mobile-nav-item${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><strong>프롬프트</strong></a>}
       <span className="mobile-nav-spacer" aria-hidden="true" />
       <a href="/search" className={`mobile-nav-item${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}><span aria-hidden="true">⌕</span><strong>검색</strong></a>

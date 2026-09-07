@@ -29,3 +29,5 @@ readiness는 인증 실패, 시간 초과, 연결 불가, schema 미적용, 기�
 0800은 읽기 전용 기본 템플릿과 owner 전용 가사·프롬프트 템플릿, 원문과 분리된 사용자별 즐겨찾기·최근 사용, 생성·복제·적용 멱등 요청을 추가합니다. 적용은 템플릿 유형과 활성 부모 곡을 확인한 같은 transaction에서 독립된 새 resource로 원문을 복사합니다. `pnpm test:migration:0800`은 기본 원문 불변, payload shape, 강제 RLS와 rollback/reapply를 검사합니다.
 
 0801은 사용자별 테마·작성 표시 기본값과 선택적인 가사별 표시 오버라이드를 추가합니다. 오버라이드 행을 삭제하면 현재 계정 기본값이 즉시 다시 적용되며, 두 테이블 모두 강제 RLS와 범위/allowlist 제약을 사용합니다. `pnpm test:migration:0801`은 owner 격리, DB 제약, rollback/reapply를 검사합니다.
+
+0802는 자료와 owner 템플릿에 정확한 30일 purge deadline, 계정에 7일 탈퇴 유예 상태, 내용 없는 purge 실행 기록을 추가합니다. 사용자 영구 삭제는 owner 문맥을 재확인하는 함수로만 허용하며 worker purge는 작은 배치로 멱등 실행합니다. `pnpm test:migration:0802`는 시간 제약, rollback/reapply를 검사합니다.

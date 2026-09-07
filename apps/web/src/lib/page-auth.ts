@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
+import { cookieNames, tokenHash } from "@lyricscloud/auth";
 import type { ThemePreference } from "@lyricscloud/domain";
+import type { PendingWithdrawalSession } from "@lyricscloud/database";
 import { getAuthContext } from "./auth-context.js";
 
 export async function resolvePageUser(): Promise<{ userId: string; displayName: string; avatarUrl: string | null } | null> {
@@ -20,4 +22,14 @@ export async function resolvePageThemePreference(): Promise<ThemePreference> {
   if (!user) return "system";
   try { return (await getAuthContext().displaySettings.getUserSettings(user.userId)).theme; }
   catch { return "system"; }
+}
+
+export async function resolvePendingWithdrawalPageSession(): Promise<PendingWithdrawalSession | null> {
+  const jar = await cookies();
+  const context = getAuthContext();
+  const names = cookieNames(context.config);
+  const token = jar.get(names.session)?.value;
+  if (!token) return null;
+  try { return await context.lifecycle.resolvePendingWithdrawalSession(tokenHash(token)); }
+  catch { return null; }
 }

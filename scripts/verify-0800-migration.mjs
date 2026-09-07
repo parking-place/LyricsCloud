@@ -10,6 +10,7 @@ const databaseName = `lyricscloud_0800_${randomUUID().replaceAll("-", "")}`;
 const url = new URL(source); url.pathname = `/${databaseName}`;
 const admin = new Pool({ connectionString: source.href, max: 1 });
 const rollback = await readFile("packages/database/rollback/0800_templates.sql", "utf8");
+const lifecycleRollback = await readFile("packages/database/rollback/0802_lifecycle.sql", "utf8");
 
 try {
   await admin.query(`create database "${databaseName}"`);
@@ -27,6 +28,7 @@ try {
     const defaultId = "08000000-0000-4000-8000-000000000001";
     assert.equal((await asUser(target, alice, (client) => client.query("select id from templates where id=$1", [defaultId]))).rowCount, 1);
     assert.equal((await asUser(target, alice, (client) => client.query("update templates set title='forged' where id=$1 returning id", [defaultId]))).rowCount, 0);
+    await target.query(lifecycleRollback);
     await target.query(rollback);
     assert.equal((await target.query("select to_regclass('public.templates')::text value")).rows[0].value, null);
     migrate(); migrate();
