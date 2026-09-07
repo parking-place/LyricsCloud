@@ -120,10 +120,10 @@ test.describe("0.7.0 navigation release regression", () => {
     try {
       await page.goto("/recent");
       await expect(page.getByRole("heading", { name: "표시할 최근 작업이 없습니다." })).toBeVisible();
-      await expect(page).toHaveScreenshot(`0.7.0-phase5-recent-empty-${testInfo.project.name}.png`, { fullPage: true });
+      await expect(page).toHaveScreenshot(`0.7.0-phase5-recent-empty-${testInfo.project.name}.png`);
       await page.goto("/favorites");
       await expect(page.getByRole("heading", { name: "표시할 자료가 없습니다." })).toBeVisible();
-      await expect(page).toHaveScreenshot(`0.7.0-phase5-favorites-empty-${testInfo.project.name}.png`, { fullPage: true });
+      await expect(page).toHaveScreenshot(`0.7.0-phase5-favorites-empty-${testInfo.project.name}.png`);
 
       await page.route("**/api/search?*", async (route) => {
         const query = new URL(route.request().url()).searchParams.get("q");
@@ -140,14 +140,14 @@ test.describe("0.7.0 navigation release regression", () => {
       const input = page.getByRole("searchbox", { name: "통합 검색어" });
       await input.fill("visual loading");
       await expect(page.locator(".search-results")).toHaveAttribute("aria-busy", "true");
-      await expect(page).toHaveScreenshot(`0.7.0-phase5-search-loading-${testInfo.project.name}.png`, { fullPage: true });
+      await expect(page).toHaveScreenshot(`0.7.0-phase5-search-loading-${testInfo.project.name}.png`);
       releaseLoading();
       await expect(page.getByRole("heading", { name: "검색 결과가 없습니다" })).toBeVisible();
-      await expect(page).toHaveScreenshot(`0.7.0-phase5-search-empty-${testInfo.project.name}.png`, { fullPage: true });
+      await expect(page).toHaveScreenshot(`0.7.0-phase5-search-empty-${testInfo.project.name}.png`);
 
       await input.fill("visual error");
       await expect(page.locator(".search-error")).toBeVisible();
-      await expect(page).toHaveScreenshot(`0.7.0-phase5-search-error-${testInfo.project.name}.png`, { fullPage: true });
+      await expect(page).toHaveScreenshot(`0.7.0-phase5-search-error-${testInfo.project.name}.png`);
       await page.getByRole("button", { name: "다시 시도" }).click();
       await expect(page.getByRole("heading", { name: "재시도 복구 결과" })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
