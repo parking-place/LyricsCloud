@@ -78,6 +78,7 @@ test.describe("complete lyric flow", () => {
       await expect(page.locator(".cm-content")).toContainText(marker);
 
       await page.getByRole("link", { name: `← 가사 전체 흐름 곡` }).click();
+      await expect(page).toHaveURL(new RegExp(`/songs/${songId}`));
       const firstCard = page.locator(".lyric-card", { hasText: "한글 1차 가사" });
       await expect(firstCard).toContainText("수정 중");
       await expect(firstCard.getByRole("button", { name: "한글 1차 가사 즐겨찾기 해제" })).toHaveAttribute("aria-pressed", "true");

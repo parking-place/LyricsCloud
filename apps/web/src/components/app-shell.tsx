@@ -6,6 +6,7 @@ import { clearAccountCache, clearOtherAccountCaches, coordinateAccountLogout, do
 import { trapDialogTab } from "../lib/dialog-focus.js";
 import { commandForKeyboardEvent, isEditableShortcutTarget, requestShortcutNavigation } from "../lib/shortcut-runtime.js";
 import { Brand } from "./auth-screen.js";
+import { PwaManager } from "./pwa-manager.js";
 import { QuickAdd } from "./quick-add.js";
 import { ShortcutHelpDialog } from "./shortcut-help.js";
 
@@ -220,6 +221,7 @@ export function WorkspaceShell({
         <nav className="workspace-tabs" aria-label="창작 영역"><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트 <small>0.4.0</small></a><a href="/prompts" className={`workspace-tab${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}>프롬프트 <small>0.5.0</small></a><a href="/templates" className={`workspace-tab${active === "templates" ? " active" : ""}`} aria-current={active === "templates" ? "page" : undefined}>▦ 템플릿</a><a href="/favorites" className={`workspace-tab${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}>★ 즐겨찾기</a><a href="/recent" className={`workspace-tab${active === "recent" ? " active" : ""}`} aria-current={active === "recent" ? "page" : undefined}>↺ 최근</a><a href="/search" className={`workspace-tab${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}>⌕ 검색</a></nav>
         <span className="topbar-spacer" /><button className="top-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`top-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button>
       </header>
+      <PwaManager ownerId={profile.userId} />
       {sessionExpired || logoutError ? <div className="account-messages">
       {sessionExpired ? <div className="account-error" role="alert"><p>로그인이 만료되었습니다. 미전송 초안과 현재 입력을 보존했습니다. <a href="/auth" target="_blank" rel="noopener noreferrer">다시 로그인</a>한 뒤 동기화를 다시 시도해 주세요.</p><button className="secondary-button" type="button" onClick={() => void downloadDrafts()}>초안 내려받기</button></div> : null}
       {logoutError ? <div className="account-error" role="alert"><p>{logoutError}</p>{logoutBlocked ? <><p>문서가 삭제되어 저장할 수 없다면 초안을 보관한 뒤 로그아웃할 수 있습니다.</p><div className="account-actions"><button className="secondary-button" type="button" onClick={() => void downloadDrafts()}>초안 내려받기</button><button className="danger-button" type="button" onClick={() => {

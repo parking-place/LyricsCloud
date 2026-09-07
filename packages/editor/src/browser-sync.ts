@@ -452,6 +452,15 @@ export async function hasOwnerPendingDrafts(ownerId: string): Promise<boolean> {
     || (promptCreation && (promptCreation.title || promptCreation.tokens.length))
     || (quickCreation && (quickCreation.title || quickCreation.body)));
 }
+export async function migrateOwnerLocalDrafts(ownerId: string): Promise<void> {
+  const name = `${await ownerPrefix(ownerId)}sync-v2`;
+  if (!(await Dexie.getDatabaseNames()).includes(name)) return;
+  const storage = new SyncStorage(name);
+  try {
+    await storage.open();
+    await storage.markCurrentSchema();
+  } finally { storage.close(); }
+}
 export async function readOwnerPendingDrafts(ownerId: string): Promise<Array<{ resourceId: string; body: string }>> {
   const name = `${await ownerPrefix(ownerId)}sync-v2`;
   const drafts: Array<{ resourceId: string; title?: string; body: string }> = [];

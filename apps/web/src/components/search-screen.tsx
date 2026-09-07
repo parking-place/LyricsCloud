@@ -33,6 +33,11 @@ export function SearchScreen({ ownerId, initialQuery, initialType }: { ownerId: 
   const restoredScrollKey = useRef("");
 
   useEffect(() => {
+    const frame = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => setQuery(input.trim()), 300);
     return () => window.clearTimeout(timer);
   }, [input]);

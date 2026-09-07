@@ -18,9 +18,14 @@ const config: NextConfig = {
       { key: "Referrer-Policy", value: "no-referrer" },
       { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" }
     ];
+    const privateRoutes = [
+      "/", "/auth", "/account/:path*", "/api/:path*", "/workspace",
+      "/songs/:path*", "/lyrics/:path*", "/rhymes/:path*", "/prompts/:path*",
+      "/search", "/recent", "/favorites", "/templates", "/trash", "/settings"
+    ];
     return [
       { source: "/:path*", headers: security },
-      ...["/", "/auth", "/workspace", "/songs/:path*", "/settings"].map((source) => ({ source, headers: noStore }))
+      ...privateRoutes.map((source) => ({ source, headers: noStore }))
     ];
   }
 };

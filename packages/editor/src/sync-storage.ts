@@ -13,13 +13,24 @@ export interface QueuedUpdate {
   payload: Uint8Array;
 }
 
+interface SyncMetadata {
+  key: string;
+  value: number;
+}
+
 export class SyncStorage extends Dexie {
   documents!: Table<LocalDocument, string>;
   updates!: Table<QueuedUpdate, number>;
+  metadata!: Table<SyncMetadata, string>;
 
   constructor(name: string) {
     super(name);
     this.version(1).stores({ documents: "&resourceId,&documentKey", updates: "++sequence,&updateId,documentKey" });
+    this.version(2).stores({ documents: "&resourceId,&documentKey", updates: "++sequence,&updateId,documentKey", metadata: "&key" });
+  }
+
+  async markCurrentSchema(): Promise<void> {
+    await this.metadata.put({ key: "schema", value: 2 });
   }
 
   // A tab must never replace another tab's newer snapshot or persist a draft

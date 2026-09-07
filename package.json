@@ -28,6 +28,7 @@
     "test:migration:0801": "node scripts/verify-0801-migration.mjs",
     "test:migration:0802": "node scripts/verify-0802-migration.mjs",
     "test:audit:0901": "node scripts/validate-0901-ui-audit.mjs",
+    "test:pwa:0903": "node scripts/verify-0903-pwa.mjs",
     "test:performance:0700": "node scripts/measure-0700-search.mjs",
     "test:migration:0700-release": "node scripts/verify-0700-release-migration.mjs",
     "test:performance:0700-release": "pnpm --filter @lyricscloud/database exec tsx ../../scripts/measure-0700-navigation.ts",
