@@ -95,12 +95,21 @@ for _attempt in $(seq 1 30); do
       printf 'Development web response contains Next.js development assets.\n' >&2
       exit 9
     fi
-    css_path=$(printf '%s' "$auth_html" | grep -oE '/_next/static/[^" ]+\.css' | head -n 1 || true)
-    if [ -z "$css_path" ]; then
+    mapfile -t css_paths < <(printf '%s' "$auth_html" | grep -oE '/_next/static/[^" ]+\.css' | sort -u || true)
+    if [ "${#css_paths[@]}" -eq 0 ]; then
       printf 'Development web response does not reference a CSS asset.\n' >&2
       exit 10
     fi
-    if ! docker exec "$web_container" node -e "fetch('http://127.0.0.1:3000$css_path').then(async response => { if (!response.ok) process.exit(1); const css = await response.text(); if (!css.includes('.songs-page') || !css.includes('.dashboard-page')) process.exit(2) })"; then
+    if ! docker exec "$web_container" node -e '
+      Promise.all(process.argv.slice(1).map(async path => {
+        const response = await fetch("http://127.0.0.1:3000" + path);
+        if (!response.ok) throw new Error("CSS asset request failed");
+        return response.text();
+      })).then(parts => {
+        const css = parts.join("\n");
+        if (!css.includes(".songs-page") || !css.includes(".dashboard-page")) process.exit(2);
+      }).catch(() => process.exit(1));
+    ' "${css_paths[@]}"; then
       printf 'Development web CSS asset does not match the song UI build.\n' >&2
       exit 11
     fi
