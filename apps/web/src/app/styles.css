@@ -477,7 +477,7 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .lyric-editor-title input { min-width: 0; padding: .4rem 0; border: 0; border-bottom: 1px solid transparent; outline: 0; background: transparent; color: var(--ink); font-size: clamp(1.15rem, 2vw, 1.6rem); font-weight: 800; }
 .lyric-editor-title input:focus { border-bottom-color: var(--acid); }
 .lyric-editor-title > span { color: var(--danger); font-size: .65rem; }
-.lyric-editor-workspace { width: min(100%, 86rem); min-height: 0; display: grid; grid-template-columns: minmax(10rem, 12rem) minmax(28rem, 54rem) minmax(14rem, 18rem); gap: 1rem; justify-self: center; }
+.lyric-editor-workspace { width: min(100%, 92rem); min-height: 0; display: grid; grid-template-columns: minmax(10rem, 12rem) minmax(28rem, 54rem) auto; gap: 1rem; justify-self: center; }
 .lyric-editor-document { min-width: 0; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
 .songform-outline { min-width: 0; padding: .85rem; border: 1px solid var(--line); border-radius: .85rem; background: var(--panel); overflow-y: auto; }
 .songform-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .25rem .35rem .75rem; border-bottom: 1px solid var(--line); }
@@ -518,10 +518,48 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .other-lyrics-list button.active { border-color: rgb(200 255 61 / 25%); background: rgb(200 255 61 / 7%); color: var(--acid); cursor: default; }
 .other-lyrics-list button span { overflow: hidden; font-size: .68rem; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
 .other-lyrics-list button small { color: var(--subtle); font-size: .56rem; }
+.editor-resource-shell { min-width: 0; min-height: 0; display: none; }
+.editor-resource-shell.is-desktop-open { display: block; }
+.editor-resource-panel { width: var(--resource-panel-width, 296px); height: 100%; min-height: 0; display: grid; grid-template-rows: auto auto auto auto minmax(0, 1fr) auto; gap: .65rem; padding: .85rem; border: 1px solid var(--line); border-radius: .85rem; background: var(--panel); overflow: hidden; }
+.editor-resource-panel > .sheet-handle { display: none; }
+.editor-resource-heading { display: flex; align-items: start; gap: .6rem; padding-bottom: .65rem; border-bottom: 1px solid var(--line); }
+.editor-resource-heading h2 { margin: .25rem 0 0; font-size: .92rem; }
+.editor-resource-heading > button { min-height: 2.15rem; margin-left: auto; padding: .35rem .5rem; border: 1px solid var(--line); border-radius: .45rem; background: transparent; color: var(--muted); font-size: .6rem; cursor: pointer; }
+.editor-current-settings { min-width: 0; }
+.editor-current-settings > summary { padding: .45rem .55rem; border-radius: .45rem; background: var(--surface); color: var(--muted); font-size: .65rem; font-weight: 800; cursor: pointer; }
+.editor-current-settings .lyric-metadata { margin-top: .5rem; padding: .65rem; }
+.editor-resource-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3rem; }
+.editor-resource-tabs button, .editor-resource-scope button { min-width: 0; min-height: 2.15rem; padding: .35rem; border: 1px solid var(--line); border-radius: .45rem; background: transparent; color: var(--muted); font-size: .61rem; font-weight: 800; cursor: pointer; }
+.editor-resource-tabs button[aria-selected="true"], .editor-resource-scope button[aria-pressed="true"] { border-color: rgb(200 255 61 / 35%); background: rgb(200 255 61 / 8%); color: var(--acid); }
+.editor-resource-tabs button:focus-visible, .editor-resource-scope button:focus-visible { outline: 2px solid var(--acid); outline-offset: 1px; }
+.editor-resource-scope { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3rem; }
+.editor-resource-search { min-width: 0; min-height: 2.35rem; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .4rem; padding: 0 .55rem; border: 1px solid var(--line); border-radius: .48rem; background: var(--surface); color: var(--subtle); }
+.editor-resource-search:focus-within { border-color: var(--acid); }
+.editor-resource-search input { min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: .68rem; }
+.editor-resource-search button { width: 1.75rem; height: 1.75rem; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }
+.editor-resource-results { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.editor-resource-results ul { display: grid; gap: .45rem; margin: 0; padding: 0; list-style: none; }
+.editor-resource-results li { min-width: 0; padding: .65rem; border: 1px solid var(--line); border-radius: .58rem; background: var(--surface); }
+.editor-resource-results li.is-current { border-color: rgb(200 255 61 / 30%); background: rgb(200 255 61 / 6%); }
+.editor-resource-results li.is-deleted { border-style: dashed; opacity: .72; }
+.editor-resource-card-heading { display: flex; align-items: start; gap: .4rem; }
+.editor-resource-card-heading strong { min-width: 0; overflow-wrap: anywhere; font-size: .7rem; line-height: 1.4; }
+.editor-resource-card-heading span { flex-shrink: 0; margin-left: auto; padding: .16rem .32rem; border-radius: 999px; background: rgb(200 255 61 / 9%); color: var(--acid); font-size: .52rem; }
+.editor-resource-results li > p { display: -webkit-box; margin: .42rem 0; overflow: hidden; color: var(--muted); font-size: .62rem; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.editor-resource-results li > small { color: var(--subtle); font-size: .55rem; }
+.editor-resource-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem; margin-top: .55rem; }
+.editor-resource-actions button, .editor-resource-actions a, .editor-resource-message button { min-height: 2rem; display: grid; place-items: center; padding: .3rem; border: 1px solid var(--line); border-radius: .4rem; background: transparent; color: var(--muted); font-size: .56rem; font-weight: 750; text-align: center; text-decoration: none; cursor: pointer; }
+.editor-resource-actions button:disabled { opacity: .45; cursor: default; }
+.editor-resource-message { display: grid; justify-items: start; gap: .45rem; padding: 1rem .65rem; border: 1px dashed var(--line); border-radius: .6rem; }
+.editor-resource-message strong { font-size: .7rem; }
+.editor-resource-message p { margin: 0; color: var(--subtle); font-size: .62rem; line-height: 1.55; }
+.editor-resource-width { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .45rem; color: var(--subtle); font-size: .56rem; }
+.editor-resource-width input { min-width: 0; accent-color: var(--acid); }
+.mobile-lyric-commands { display: none; }
 .mobile-editor-dock, .editor-sheet-backdrop { display: none; }
 .lyric-editor-page.is-focus-mode .lyric-editor-workspace { width: min(100%, 54rem); grid-template-columns: minmax(0, 54rem); }
 .lyric-editor-page.is-focus-mode .songform-outline { display: none; }
-.lyric-editor-page.is-focus-mode .other-lyrics-panel { display: none; }
+.lyric-editor-page.is-focus-mode .other-lyrics-panel, .lyric-editor-page.is-focus-mode .editor-resource-shell { display: none; }
 .copy-toast { position: fixed; z-index: 35; left: 50%; bottom: 1.5rem; translate: -50% 0; padding: .7rem 1rem; border: 1px solid rgb(200 255 61 / 30%); border-radius: 999px; background: #1a2117; color: var(--acid); font-size: .75rem; font-weight: 800; box-shadow: 0 14px 40px rgb(0 0 0 / 50%); }
 .manual-copy-dialog { width: min(100%, 38rem); padding: 1.35rem; border: 1px solid rgb(200 255 61 / 25%); border-radius: .9rem; background: var(--surface-raised); box-shadow: 0 30px 90px rgb(0 0 0 / 55%); }
 .manual-copy-dialog h2 { margin: .45rem 0 .55rem; font-size: 1.25rem; }
@@ -617,6 +655,7 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .song-toolbar { grid-template-columns: minmax(12rem, 1fr) 9.5rem 9.5rem; }
   .lyric-editor-workspace { width: min(100%, 67rem); grid-template-columns: 12rem minmax(0, 54rem); }
   .other-lyrics-panel { display: none; }
+  .editor-resource-shell.is-desktop-open { display: none; }
   .rhyme-editor-workspace { grid-template-columns: minmax(0, 1fr); }
   .rhyme-editor-side { display: none; }
 }
@@ -742,7 +781,7 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .lyric-editor-surface { height: max(24rem, calc(100dvh - 15.5rem)); border-radius: .65rem; }
   .lyric-editor-surface .cm-content { padding-bottom: calc(7rem + var(--lc-safe-bottom)); }
   .lyric-editor-footer { padding-inline: .35rem; }
-  .mobile-editor-dock { position: fixed; z-index: 12; left: max(.75rem, var(--lc-safe-left)); right: max(.75rem, var(--lc-safe-right)); bottom: calc(4.72rem + var(--lc-safe-bottom)); min-height: 3.1rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: .28rem; border: 1px solid rgb(200 255 61 / 25%); border-radius: .75rem; background: rgb(26 33 23 / 96%); box-shadow: 0 10px 30px rgb(0 0 0 / 42%); }
+  .mobile-editor-dock { position: fixed; z-index: 12; left: max(.75rem, var(--lc-safe-left)); right: max(.75rem, var(--lc-safe-right)); bottom: calc(4.72rem + var(--lc-safe-bottom)); min-height: 3.1rem; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: .28rem; border: 1px solid rgb(200 255 61 / 25%); border-radius: .75rem; background: rgb(26 33 23 / 96%); box-shadow: 0 10px 30px rgb(0 0 0 / 42%); }
   .mobile-editor-dock button { min-width: 0; min-height: 2.55rem; display: inline-flex; align-items: center; justify-content: center; gap: .3rem; padding: .4rem; border: 0; border-radius: .5rem; background: transparent; color: var(--muted); font-size: .64rem; font-weight: 800; cursor: pointer; }
   .mobile-editor-dock button[aria-expanded="true"], .mobile-editor-dock button[aria-pressed="true"] { background: rgb(200 255 61 / 9%); color: var(--acid); }
   .editor-sheet-backdrop { position: fixed; z-index: 30; inset: 0 0 calc(4.3rem + var(--lc-safe-bottom)); display: grid; align-items: end; background: rgb(0 0 0 / 58%); }
@@ -756,8 +795,19 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .songform-sheet .songform-copy-actions { position: sticky; bottom: 0; padding: .7rem 0 .15rem; background: var(--surface-raised); }
   .other-lyrics-sheet { max-height: min(82dvh, 42rem); }
   .other-lyrics-sheet .lyric-metadata, .other-lyrics-sheet .other-lyrics-list { margin-top: .75rem; }
-  .mobile-lyric-commands { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .75rem; }
+  .mobile-lyric-commands { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin: .5rem 0; }
   .mobile-lyric-commands button { min-height: 2.4rem; border: 1px solid var(--line); border-radius: .5rem; background: transparent; color: var(--muted); font-size: .65rem; cursor: pointer; }
+  .editor-resource-shell.is-mobile-open { position: fixed; z-index: 31; inset: 0 0 calc(4.3rem + var(--lc-safe-bottom)); display: grid; align-items: end; background: rgb(0 0 0 / 58%); }
+  .editor-resource-panel { width: 100%; height: min(82dvh, 42rem); max-height: calc(100dvh - 1rem); display: block; padding: .55rem max(1rem, var(--lc-safe-right)) max(1rem, var(--lc-safe-bottom)) max(1rem, var(--lc-safe-left)); border-width: 1px 0 0; border-radius: 1rem 1rem 0 0; background: var(--surface-raised); overflow-y: auto; overscroll-behavior: contain; box-shadow: 0 -18px 45px rgb(0 0 0 / 45%); -webkit-overflow-scrolling: touch; }
+  .editor-resource-panel > .sheet-handle { display: block; margin-bottom: 0; }
+  .editor-resource-panel > :not(.sheet-handle) + * { margin-top: .65rem; }
+  .editor-resource-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .editor-resource-tabs button { min-height: 2.45rem; font-size: .58rem; }
+  .editor-resource-results { overflow: visible; }
+  .editor-resource-results li { padding: .75rem; }
+  .editor-resource-actions button, .editor-resource-actions a { min-height: 2.35rem; }
+  .editor-resource-width { display: none; }
+  .editor-current-settings .lyric-metadata { background: var(--surface); }
   .lyric-editor-page.is-focus-mode .lyric-editor-context, .lyric-editor-page.is-focus-mode .lyric-editor-title, .lyric-editor-page.is-focus-mode .lyric-editor-footer { display: none; }
   .lyric-editor-page.is-focus-mode { grid-template-rows: auto minmax(0, 1fr) auto; padding-top: .55rem; }
   .lyric-editor-page.is-focus-mode .lyric-editor-surface { height: max(28rem, calc(100dvh - 12.9rem)); }
