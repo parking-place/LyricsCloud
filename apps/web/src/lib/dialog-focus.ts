@@ -51,7 +51,11 @@ export function DialogFocusBoundary({ selector, onClose, blocked = false, initia
     return () => {
       cancelAnimationFrame(frame);
       document.removeEventListener("keydown", keyboard);
-      requestAnimationFrame(() => { if (prior?.isConnected) prior.focus(); });
+      requestAnimationFrame(() => {
+        const current = document.activeElement;
+        const focusLeftWithDialog = !current || current === document.body || (current instanceof Node && root.contains(current));
+        if (focusLeftWithDialog && prior?.isConnected) prior.focus();
+      });
     };
   }, [initialFocus, selector]);
 

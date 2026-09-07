@@ -52,9 +52,11 @@ test.describe("cursor insertion and global quick add", () => {
       await expect(editor).toContainText("REMOTE AA rhyme ZZ");
       await editor.press("Control+z");
       await expect(editor).toContainText("REMOTE AA TARGET ZZ");
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
       await remote.close();
 
       await editor.focus(); await page.keyboard.press("Control+End");
+      await expect.poll(() => editor.evaluate((element) => document.getSelection()?.anchorOffset ?? -1)).toBe("REMOTE AA TARGET ZZ".length);
       panel = await openRhymePanel(page, testInfo.project.name === "mobile");
       card = panel.locator("li", { hasText: "삽입 라임" });
       await card.getByRole("button", { name: "전체 삽입" }).click();
