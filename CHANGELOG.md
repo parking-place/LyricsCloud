@@ -6,6 +6,8 @@
 
 ### Added
 
+- owner 전용 repeatable-read snapshot에서 50행씩 스트리밍하는 전체 ZIP 내보내기, UTF-8 자료별 TXT/Markdown과 관계 검증 가능한 `lyricscloud.export.v1` JSON
+- 특수문자·Windows 예약 이름·동일 제목을 안전한 고유 파일명으로 바꾸고 취소·실패에도 임시 산출물을 남기지 않는 다운로드와 설정·탈퇴 전 진입점
 - 곡·가사·라임 노트·프롬프트·owner 템플릿의 정확한 30일 휴지통, 남은 기간·원래 위치·영향 요약과 원자적 개별/다중 복원·이름 확인 완전 삭제
 - 같은 삭제 묶음의 곡·가사 복원, 삭제된 부모 가사의 부모 동시 복원 또는 활성 곡 이동, owner 전용 hard-delete 권한 경계
 - 최근 Google 재인증을 요구하는 회원 탈퇴, 즉시 전체 세션·자료 접근·로컬 개인 캐시 차단, 7일 명시적 철회와 멱등 worker purge·내용 없는 실행 기록
@@ -87,7 +89,7 @@
 
 ### Not yet implemented
 
-- PWA, 전체 내보내기와 출시 준비 기능
+- PWA와 출시 준비 기능
 
 ### Fixed
 

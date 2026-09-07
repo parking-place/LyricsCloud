@@ -24,14 +24,15 @@ describe.runIf(enabled)("immutable body revisions", () => {
   it("snapshots changed bodies once per five-minute window and deduplicates important checkpoints", async () => {
     const f = await fixture();
     const start = new Date();
+    await pool!.query("update sync_documents set revision_checked_at=$2 where document_key=$1", [f.key, start]);
     expect((await store!.listRevisions(f.owner, f.key))!.items).toEqual([]);
     await edit(f, "첫 번째 수정");
-    expect(await store!.checkpoint(f.owner, f.key, "interval", start)).toBeNull();
-    const first = await store!.checkpoint(f.owner, f.key, "interval", new Date(start.getTime() + 300_001));
+    expect(await store!.checkpoint(f.owner, f.key, "interval", new Date(start.getTime() + 299_999))).toBeNull();
+    const first = await store!.checkpoint(f.owner, f.key, "interval", new Date(start.getTime() + 300_000));
     expect(first).toMatchObject({ reason: "interval" });
     await edit(f, "두 번째 수정");
     expect(await store!.checkpoint(f.owner, f.key, "interval", new Date(start.getTime() + 599_999))).toBeNull();
-    expect(await store!.checkpoint(f.owner, f.key, "interval", new Date(start.getTime() + 600_002))).not.toBeNull();
+    expect(await store!.checkpoint(f.owner, f.key, "interval", new Date(start.getTime() + 600_000))).not.toBeNull();
     expect((await store!.listRevisions(f.owner, f.key))!.items).toHaveLength(2);
     const at = new Date(start.getTime() + 600_003);
     await store!.checkpoint(f.owner, f.key, "leave", at);
@@ -130,6 +131,22 @@ describe.runIf(enabled)("immutable body revisions", () => {
     expect((await store!.getRevision(f.owner, f.key, after[0]!.id))!.body).toBe("[Verse]\n원래 표현");
     expect((await lyrics!.getLyric(f.owner, f.id))!.body).toBe("合成-200");
     expect((await store!.getRevision(f.owner, f.key, history[199]!.id))!.body).toBe("合成-200");
+  });
+
+  it("keeps the exact 180-day boundary and removes only timestamps before it", async () => {
+    const f = await fixture();
+    const now = new Date("2030-01-01T00:00:00.000Z");
+    const cutoff = now.getTime() - 180 * 86_400_000;
+    const inserted = [];
+    for (const [body, createdAt] of [["older", new Date(cutoff - 1)], ["exact", new Date(cutoff)], ["newer", new Date(cutoff + 1)]] as const) {
+      inserted.push((await pool!.query<{ id: string }>(`insert into lyric_revisions(document_key,owner_id,body,body_sha256,reason,created_at)
+        values($1,$2,$3,$4,'interval',$5) returning id`, [f.key, f.owner, body, hash(body), createdAt])).rows[0]!.id);
+    }
+    await pool!.query("update sync_documents set revision_checked_at=$2 where document_key=$1", [f.key, now]);
+    await store!.maintainRevisions(20, now);
+    expect(await store!.getRevision(f.owner, f.key, inserted[0]!)).toBeNull();
+    expect((await store!.getRevision(f.owner, f.key, inserted[1]!))?.body).toBe("exact");
+    expect((await store!.getRevision(f.owner, f.key, inserted[2]!))?.body).toBe("newer");
   });
 });
 

@@ -1481,7 +1481,7 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .account-export-entry p, .account-danger-zone p { margin: .3rem 0 0; color: var(--muted); font-size: .7rem; line-height: 1.55; }
 .account-danger-zone { align-items: start; border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); background: var(--danger-bg); }
 .account-danger-actions { flex: 0 0 auto; display: flex; gap: .45rem; }
-.account-danger-actions a { text-decoration: none; }
+.account-danger-actions a, .withdrawal-dialog a { text-decoration: none; }
 .withdrawal-warning { margin-top: 1rem; padding: .85rem; border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--line)); border-radius: .6rem; background: var(--danger-bg); color: var(--danger); }
 .withdrawal-warning p { margin: .35rem 0 0; font-size: .72rem; line-height: 1.55; }
 .withdrawal-check { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .55rem; align-items: start; margin-top: 1rem; color: var(--muted); font-size: .74rem; line-height: 1.5; }
@@ -1525,7 +1525,7 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .trash-dialog-backdrop, .withdrawal-dialog-backdrop { place-items: end stretch; padding: 1rem 0 0; }
   .trash-dialog, .withdrawal-dialog { width: 100%; max-height: 88dvh; padding: 1rem max(1rem, var(--lc-safe-right)) calc(1rem + var(--lc-safe-bottom)) max(1rem, var(--lc-safe-left)); border-width: 1px 0 0; border-radius: 1rem 1rem 0 0; }
   .account-export-entry, .account-danger-zone { align-items: stretch; flex-direction: column; }
-  .account-export-entry button, .account-danger-actions > * { width: 100%; justify-content: center; }
+  .account-export-entry .account-danger-actions > *, .account-danger-actions > * { width: 100%; justify-content: center; }
   .account-danger-actions { flex-direction: column; }
 }
 

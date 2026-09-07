@@ -183,8 +183,7 @@ export class CollaborationStore {
     });
   }
 
-  async maintainRevisions(limit = 20) {
-    const now = new Date();
+  async maintainRevisions(limit = 20, now = new Date()) {
     const due = await this.#pool.query<{ owner_id: string; document_key: string }>(`select d.owner_id,d.document_key from sync_documents d
       join resources r on r.id=d.resource_id where r.deleted_at is null and d.revision_checked_at <= $1
       order by d.revision_checked_at limit $2`, [new Date(now.getTime() - REVISION_POLICY.intervalMs), limit]);

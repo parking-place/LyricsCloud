@@ -1,6 +1,6 @@
 import { AuthService, cookieNames, GoogleOidcAdapter, readCookie, sessionCookie, tokenHash } from "@lyricscloud/auth";
 import { readAuthConfig, readRuntimeConfig, type AuthConfig } from "@lyricscloud/config";
-import { PostgresAuthStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLifecycleStore, type PendingWithdrawalSession } from "@lyricscloud/database";
+import { PostgresAuthStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLifecycleStore, PostgresExportStore, type PendingWithdrawalSession } from "@lyricscloud/database";
 
 interface AuthContext {
   readonly config: AuthConfig;
@@ -17,6 +17,7 @@ interface AuthContext {
   readonly templates: PostgresTemplateStore;
   readonly displaySettings: PostgresDisplaySettingsStore;
   readonly lifecycle: PostgresLifecycleStore;
+  readonly exports: PostgresExportStore;
 }
 
 export class RequestAuthError extends Error {
@@ -52,7 +53,8 @@ export function getAuthContext(): AuthContext {
     savedResources: new PostgresSavedResourceStore(runtime.databaseUrl),
     templates: new PostgresTemplateStore(runtime.databaseUrl),
     displaySettings: new PostgresDisplaySettingsStore(runtime.databaseUrl),
-    lifecycle: new PostgresLifecycleStore(runtime.databaseUrl)
+    lifecycle: new PostgresLifecycleStore(runtime.databaseUrl),
+    exports: new PostgresExportStore(runtime.databaseUrl)
   };
   cached = { key, context, allowedEmails };
   return context;

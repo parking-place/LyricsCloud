@@ -17,4 +17,5 @@ export * from "./template-contract.js";
 export * from "./display-settings-contract.js";
 export * from "./shortcut-contract.js";
 export * from "./lifecycle-contract.js";
+export * from "./export-contract.js";
 export * from "./types.js";
