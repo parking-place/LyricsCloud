@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.7.0"
-current_phase: "2phase.md"
-state: "complete"
+current_phase: "3phase.md"
+state: "in_progress"
 owner: "Codex"
-started_at: "2026-09-07 12:43 KST"
+started_at: "2026-09-07 13:50 KST"
 updated_at: "2026-09-07"
-next_action: "0.7.0 Phase 3 계획을 읽고 최근 작업·마지막 편집 위치 복원 브랜치를 시작"
+next_action: "0.7.0 Phase 3 최근 작업 query/UI와 owner별 마지막 커서·송폼·스크롤 위치의 지연 저장·복원을 구현"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -41,7 +41,7 @@ next_action: "0.7.0 Phase 3 계획을 읽고 최근 작업·마지막 편집 위
 | 0.4.0 | complete | Phase 1~5 완료 | 0.3.1 완료 |
 | 0.5.0 | complete | Phase 1~5 완료 | 0.4.0 완료 |
 | 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
-| 0.7.0 | in_progress | Phase 2 완료 | 0.6.0 완료 |
+| 0.7.0 | in_progress | Phase 3 진행 중 | 0.6.0 완료 |
 | 0.8.0 | planned | 없음 | 0.7.0 완료 |
 | 0.9.0 | planned | 없음 | 0.8.0 완료 |
 | 0.9.1 | planned | 없음 | 0.9.0 완료 |
@@ -53,6 +53,7 @@ next_action: "0.7.0 Phase 3 계획을 읽고 최근 작업·마지막 편집 위
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 0.7.0 / Phase 3 | LC-070-P3-01~09 | 최근 작업 query/API/UI·마지막 편집 위치·브라우저 테스트·Phase 문서 | Phase 2 완료 | 2026-09-07 13:50 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
