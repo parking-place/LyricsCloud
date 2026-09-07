@@ -341,7 +341,7 @@ function RhymeSettings(props: {
     </section>
     <section className="rhyme-insertion-unavailable"><div className="other-panel-heading"><strong>가사에 삽입</strong></div>
       <button type="button" disabled aria-describedby={`${props.idPrefix}-rhyme-insertion-help`}>열린 가사에 삽입</button>
-      <p id={`${props.idPrefix}-rhyme-insertion-help`}>현재 화면에는 열린 가사 편집 대상이 없습니다. 선택 복사로 표현을 보존하거나, 0.6.0 통합 작업 화면에서 가사를 연 뒤 삽입할 수 있습니다.</p>
+      <p id={`${props.idPrefix}-rhyme-insertion-help`}>현재 화면에는 열린 가사 편집 대상이 없습니다. 선택 복사로 표현을 보존하거나, 가사를 연 뒤 삽입할 수 있습니다.</p>
     </section>
   </div>;
 }
