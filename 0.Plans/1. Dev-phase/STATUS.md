@@ -3,13 +3,13 @@
 이 파일은 현재 버전·Phase·담당 작업의 단일 상태 원본입니다. 계획 문서는 범위를 정의하고 이 파일은 실제 진행 상황을 기록합니다.
 
 ```yaml
-current_version: "0.8.0"
-current_phase: "5phase.md"
-state: "complete"
+current_version: "0.9.0"
+current_phase: "1phase.md"
+state: "in_progress"
 owner: "Codex"
-started_at: "2026-09-07 22:44 KST"
-updated_at: "2026-09-07 23:34 KST"
-next_action: "0.9.0 Phase 1을 시작해 15개 구현 화면과 PC·모바일 목업의 차이, 상태, 토큰, 접근성 우선순위를 감사"
+started_at: "2026-09-07 23:51 KST"
+updated_at: "2026-09-07 23:51 KST"
+next_action: "15개 화면을 route·component·기획·목업과 연결하고 네 viewport·상태·토큰·공통 shell·접근성 차이를 우선순위로 감사"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -43,7 +43,7 @@ next_action: "0.9.0 Phase 1을 시작해 15개 구현 화면과 PC·모바일 �
 | 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
 | 0.7.0 | complete | Phase 1~5 완료 | 0.6.0 완료 |
 | 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
-| 0.9.0 | planned | 없음 | 0.8.0 완료 |
+| 0.9.0 | in_progress | Phase 1 진행 중 | 0.8.0 완료 |
 | 0.9.1 | planned | 없음 | 0.9.0 완료 |
 | 1.0.0 | planned | 없음 | 0.9.1 release gate 통과 |
 
@@ -53,6 +53,7 @@ next_action: "0.9.0 Phase 1을 시작해 15개 구현 화면과 PC·모바일 �
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 0.9.0 / Phase 1 | LC-090-P1-01~08 | 15개 화면·추가 제안 추적표, 네 viewport 합성 캡처, UI token·shell·상태·접근성 차이 감사, Phase 문서 | 0.8.0 완료 | 2026-09-07 23:51 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 

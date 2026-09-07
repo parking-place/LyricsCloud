@@ -44,7 +44,7 @@ jobs:
       NODE_ENV: test
       DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
       AUTH_DATABASE_INTEGRATION: "true"
-      APP_VERSION: 0.8.0
+      APP_VERSION: 0.9.0
       BUILD_ID: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v7
@@ -98,9 +98,9 @@ jobs:
         run: |
           bash -n scripts/*.sh
           ./scripts/cleanup-docker.sh --dry-run --build-cache
-          test "$(./scripts/docker-image-tag.sh branch phase/0.8.0-p1-templates 0123456789abcdef0123456789abcdef01234567 web dev)" = "0.8.0"
-          test "$(./scripts/docker-image-tag.sh tag v0.8.0 0123456789abcdef0123456789abcdef01234567 web release)" = "0.8.0"
-          if ./scripts/docker-image-tag.sh tag v0.8.0 0123456789abcdef0123456789abcdef01234567 web dev; then exit 1; fi
+          test "$(./scripts/docker-image-tag.sh branch phase/0.9.0-p1-ui-audit 0123456789abcdef0123456789abcdef01234567 web dev)" = "0.9.0"
+          test "$(./scripts/docker-image-tag.sh tag v0.9.0 0123456789abcdef0123456789abcdef01234567 web release)" = "0.9.0"
+          if ./scripts/docker-image-tag.sh tag v0.9.0 0123456789abcdef0123456789abcdef01234567 web dev; then exit 1; fi
           if ./scripts/docker-image-tag.sh branch main 0123456789abcdef0123456789abcdef01234567 web release; then exit 1; fi
       - name: Unit tests
         run: pnpm test
