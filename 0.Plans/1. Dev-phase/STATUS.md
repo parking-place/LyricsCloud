@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.8.0"
-current_phase: "3phase.md"
-state: "complete"
+current_phase: "4phase.md"
+state: "in_progress"
 owner: "Codex"
-started_at: "2026-09-07 19:51 KST"
-updated_at: "2026-09-07 21:01 KST"
-next_action: "다음 commit에서 0.8.0 Phase 4로 전환하고 휴지통 30일·탈퇴 7일 수명주기와 purge 작업을 시작"
+started_at: "2026-09-07 21:16 KST"
+updated_at: "2026-09-07 21:16 KST"
+next_action: "자료·계정 수명주기 계약과 0802 migration을 정의하고 휴지통·탈퇴·멱등 purge·권한 및 시간 경계 검증을 구현"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -42,7 +42,7 @@ next_action: "다음 commit에서 0.8.0 Phase 4로 전환하고 휴지통 30일�
 | 0.5.0 | complete | Phase 1~5 완료 | 0.4.0 완료 |
 | 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
 | 0.7.0 | complete | Phase 1~5 완료 | 0.6.0 완료 |
-| 0.8.0 | in_progress | Phase 3 완료 | 0.7.0 완료 |
+| 0.8.0 | in_progress | Phase 4 진행 중 | 0.7.0 완료 |
 | 0.9.0 | planned | 없음 | 0.8.0 완료 |
 | 0.9.1 | planned | 없음 | 0.9.0 완료 |
 | 1.0.0 | planned | 없음 | 0.9.1 release gate 통과 |
@@ -53,6 +53,7 @@ next_action: "다음 commit에서 0.8.0 Phase 4로 전환하고 휴지통 30일�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 0.8.0 / Phase 4 | LC-080-P4-01~10 | lifecycle 계약·0802 migration/database/API·휴지통/탈퇴 UI·worker purge·단위/DB/E2E·Phase 문서 | Phase 3 완료 | 2026-09-07 21:16 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -101,7 +102,7 @@ next_action: "다음 commit에서 0.8.0 Phase 4로 전환하고 휴지통 30일�
 
 ## 다음 작업
 
-0.8.0 Phase 3은 완료됐다. 다음 commit에서 Phase 4로 전환하고 자료별 휴지통 30일, 계정 탈퇴 7일 철회와 멱등 purge 경계를 구현한다. 개발 서버는 Phase 3 기능 SHA `eb6b793`와 schema `0801_display_settings.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.8.0 Phase 4를 진행한다. 자료별 휴지통 30일, 계정 탈퇴 7일 철회와 멱등 purge 경계를 구현하고 설정의 계정 관리·로컬 개인 데이터 제거를 연결한다. 개발 서버는 Phase 3 최종 SHA `9a55f8e`와 schema `0801_display_settings.sql`을 사용하며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
