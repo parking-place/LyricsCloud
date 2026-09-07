@@ -233,7 +233,15 @@ function PromptCard({ prompt, duplicating, onToggle, onCopy, onDuplicate }: {
     if (Math.hypot(event.clientX - start.current.x, event.clientY - start.current.y) > 10) cancel();
   }
   return <article className="prompt-card" onPointerDown={down} onPointerMove={move} onPointerUp={cancel} onPointerCancel={cancel}
-    onClickCapture={(event) => { if (longPressed.current) { event.preventDefault(); event.stopPropagation(); longPressed.current = false; } }}>
+    onClickCapture={(event) => {
+      if (!longPressed.current) return;
+      longPressed.current = false;
+      // Suppress only the card-opening click synthesized by the long press.
+      // Some touch engines omit that click, so the next explicit card action
+      // must remain usable instead of being consumed by stale gesture state.
+      if ((event.target as Element).closest("button")) return;
+      event.preventDefault(); event.stopPropagation();
+    }}>
     <a className="prompt-card-hit" href={`/prompts/${prompt.id}`} aria-label={`${prompt.title} 프롬프트 열기`}><span className="sr-only">{prompt.title}</span></a>
     <div className="prompt-card-top"><h2>{prompt.title}</h2><span className="prompt-card-actions"><button type="button" className={prompt.isPinned ? "is-on" : ""} aria-label={`${prompt.title} ${prompt.isPinned ? "고정 해제" : "고정"}`} aria-pressed={prompt.isPinned} onClick={() => void onToggle(prompt, "isPinned")}>⌁</button><button type="button" className={prompt.isFavorite ? "is-on" : ""} aria-label={`${prompt.title} ${prompt.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"}`} aria-pressed={prompt.isFavorite} onClick={() => void onToggle(prompt, "isFavorite")}>★</button></span></div>
     <TokenPreview prompt={prompt} />
