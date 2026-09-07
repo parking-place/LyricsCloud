@@ -76,6 +76,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const titleComposingRef = useRef(false);
   const memoComposingRef = useRef(false);
   const rhymeSelectionRef = useRef<HTMLTextAreaElement>(null);
+  const rhymeSelectionRangeRef = useRef({ anchor: 0, head: 0 });
   const mobileSongFormButtonRef = useRef<HTMLButtonElement>(null);
   const mobileSongFormDialogRef = useRef<HTMLElement>(null);
   const restoreSongFormFocusRef = useRef(false);
@@ -291,6 +292,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
 
   useEffect(() => {
     if (!rhymeSelection) return;
+    rhymeSelectionRangeRef.current = { anchor: 0, head: rhymeSelection.source.body.length };
     requestAnimationFrame(() => {
       rhymeSelectionRef.current?.focus();
       rhymeSelectionRef.current?.setSelectionRange(0, rhymeSelection.source.body.length);
@@ -761,12 +763,14 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       <p className="eyebrow">Rhyme selection</p>
       <h2 id="rhyme-selection-title">‘{rhymeSelection.item.title}’에서 표현 선택</h2>
       <p id="rhyme-selection-description">아래 원문에서 삽입할 부분을 드래그해 선택하세요. 현재 가사의 커서·선택 위치는 CRDT 기준으로 보존됩니다.</p>
-      <textarea ref={rhymeSelectionRef} readOnly aria-label="삽입할 라임 표현 선택" value={rhymeSelection.source.body} />
+      <textarea ref={rhymeSelectionRef} readOnly aria-label="삽입할 라임 표현 선택" value={rhymeSelection.source.body}
+        onSelect={(event) => { rhymeSelectionRangeRef.current = { anchor: event.currentTarget.selectionStart, head: event.currentTarget.selectionEnd }; }} />
       <div className="dialog-actions"><button type="button" onClick={() => setRhymeSelection(null)}>취소</button><button type="button" className="primary-link" onClick={() => {
         const area = rhymeSelectionRef.current;
         if (area && !commandBusy) {
           setCommandBusy(true);
-          void commitRhymeInsertion(rhymeSelection.source, rhymeSelection.target, area.selectionStart, area.selectionEnd, rhymeSelection.requestId)
+          const range = rhymeSelectionRangeRef.current;
+          void commitRhymeInsertion(rhymeSelection.source, rhymeSelection.target, range.anchor, range.head, rhymeSelection.requestId)
             .finally(() => setCommandBusy(false));
         }
       }} disabled={commandBusy}>{commandBusy ? "확인 중…" : "선택 영역 삽입"}</button></div>
