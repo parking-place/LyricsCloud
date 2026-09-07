@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.6.0"
 current_phase: "5phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-07 11:04 KST"
 updated_at: "2026-09-07"
-next_action: "0.6.0 Phase 1~4 고유 ID를 증적에 연결하고 곡 생성부터 라임 삽입·프롬프트 복사까지 전체 수직 흐름을 검증"
+next_action: "다음 commit에서 VERSION·package·상태표를 함께 0.7.0 Phase 1로 전환하고 통합 검색 데이터 경계를 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -40,7 +40,7 @@ next_action: "0.6.0 Phase 1~4 고유 ID를 증적에 연결하고 곡 생성부�
 | 0.3.1 | complete | Phase 1~5 완료, 자동 장애 회귀·실제 기기·원격 CI·image·동일 SHA 개발 배포 검증 | 0.3.0 완료 |
 | 0.4.0 | complete | Phase 1~5 완료 | 0.3.1 완료 |
 | 0.5.0 | complete | Phase 1~5 완료 | 0.4.0 완료 |
-| 0.6.0 | in_progress | Phase 1~4 완료, Phase 5 진행 중 | 0.5.0 완료 |
+| 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
 | 0.7.0 | planned | 없음 | 0.6.0 완료 |
 | 0.8.0 | planned | 없음 | 0.7.0 완료 |
 | 0.9.0 | planned | 없음 | 0.8.0 완료 |
@@ -53,7 +53,6 @@ next_action: "0.6.0 Phase 1~4 고유 ID를 증적에 연결하고 곡 생성부�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.6.0 / Phase 5 | LC-060-P5-01~08 | Phase 1~4 추적·신규 곡부터 라임 삽입/프롬프트 복사 수직 흐름·부분 실패·동일 owner 동기화·다른 owner 격리 | Phase 4 완료 | 2026-09-07 11:04 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,12 +101,13 @@ next_action: "0.6.0 Phase 1~4 고유 ID를 증적에 연결하고 곡 생성부�
 
 ## 다음 작업
 
-0.6.0 Phase 4는 라임의 CRDT 상대 cursor 삽입, 공통 복사 대안, 전역 네 유형 빠른 추가와 계정별 오프라인 멱등 초안을 완료했다. 다음은 Phase 5에서 Phase 1~4를 실제 곡 제작 수직 흐름으로 통합 검증하는 일이다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.6.0은 곡 대시보드·자료 연결·가사 편집 패널·CRDT cursor 삽입·전역 빠른 추가를 실제 곡 제작 수직 흐름으로 통합 검증해 완료했다. 다음 commit에서 VERSION과 상태표를 함께 0.7.0으로 전환해 통합 검색 데이터 경계를 시작한다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-07 | 0.6.0 / Phase 5 | Codex | Phase 1~4의 32개 작업 ID를 증적에 연결하고 빈 곡 목록부터 곡·가사 생성, 송폼 복사, 연결 라임 cursor 삽입과 preview보다 긴 프롬프트의 정확한 panel 복사까지 PC·모바일 수직 흐름으로 자동화했으며, 모바일 sheet 위 clipboard 수동 복사 dialog가 가려지는 결함을 수정 | 40 files/151 tests, 0200~0501 migration 복구, production build·fresh DB image 복구, PC/mobile E2E 173 통과·5 skip, CI `34076493043`, 네 image tag/digest, `49f0658` 동일 SHA 개발 배포와 공개 연결 panel·exact detail·owner smoke; [검증 기록](../../docs/runbooks/0.6.0-phase5-validation.md) | 다음 commit에서 0.7.0으로 전환하고 [창작 흐름 인계](../../docs/architecture/0.6.0-CREATIVE-FLOW-HANDOFF.md)의 owner 평문·deep link·위치 계약으로 통합 검색을 시작 |
 | 2026-09-07 | 0.6.0 / Phase 4 | Codex | 라임 전체·선택 표현을 현재 가사의 CRDT 상대 cursor에 한 번의 undo transaction으로 삽입하고, 원격 변경·삭제·권한·IME 실패의 원문 보존 대안, 공통 복사 상태, 전역 네 유형 빠른 추가와 부모 곡 선택, 계정별 오프라인 멱등 빠른 아이디어를 구현 | 40 files/151 tests, 0200~0501 migration 복구, production build, PC/mobile E2E 171 통과·5 skip, CI `34074089627`, 네 image tag/digest, `d9977ec` 동일 SHA 개발 배포와 공개 삽입 경계·전역 진입점 smoke; [검증 기록](../../docs/runbooks/0.6.0-phase4-validation.md) | Phase 5가 Phase 1~4를 신규 곡부터 라임 삽입·프롬프트 복사까지 하나의 수직 흐름으로 회귀 검증 |
 | 2026-09-07 | 0.6.0 / Phase 3 | Codex | 가사 편집기에서 다른 곡·다른 가사·라임·프롬프트를 같은 owner 계약으로 탐색하고, 연결 우선/전체 검색, 안전한 전환·새 창, PC 접기/너비·focus mode 상태 복원, 모바일 내부 스크롤·가상 키보드와 삭제·오류 상태를 구현 | 36 files/145 tests, 0200~0501 migration 복구, production build·4 image 복구, PC/mobile E2E 162 통과·2 skip, CI `34070500341`, 네 image tag/digest, `fe92561` 동일 SHA 개발 배포와 공개 네 탭 smoke; [검증 기록](../../docs/runbooks/0.6.0-phase3-validation.md) | Phase 4가 panel의 라임을 CRDT 상대 cursor에 삽입하고 공통 복사·전역 빠른 추가를 연결 |
 | 2026-09-07 | 0.6.0 / Phase 2 | Codex | 곡 대시보드의 라임·프롬프트 유형 탭과 연결 목록, owner 제목·본문/토큰 검색, 연결됨·미연결 필터, 다중 선택·멱등 연결, 이름 확인 해제와 원본 보존, PC modal·모바일 sheet 및 실패 후 선택 유지·focus 복원을 구현 | 35 files/143 tests, 0200~0501 migration 복구, production build·4 image 복구, PC/mobile E2E 156 통과·2 skip, CI `34064718164`, 네 image tag/digest, `cc85917` 동일 SHA 개발 배포와 공개 연결 smoke; [검증 기록](../../docs/runbooks/0.6.0-phase2-validation.md) | Phase 3이 owner 연결 query를 가사 편집기의 다른 곡·다른 가사·라임·프롬프트 네 탭에서 소비 |
