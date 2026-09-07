@@ -25,6 +25,8 @@
     "test:migration:0701": "node scripts/verify-0701-migration.mjs",
     "test:migration:0702": "node scripts/verify-0702-migration.mjs",
     "test:performance:0700": "node scripts/measure-0700-search.mjs",
+    "test:migration:0700-release": "node scripts/verify-0700-release-migration.mjs",
+    "test:performance:0700-release": "pnpm --filter @lyricscloud/database exec tsx ../../scripts/measure-0700-navigation.ts",
     "test:migration:0201": "node scripts/verify-0201-migration.mjs",
     "test:e2e": "playwright test",
     "test:watch": "vitest",

@@ -22,6 +22,17 @@ powershell -NoProfile -File scripts/validate-plans.ps1
 
 이 검사는 문서 문장의 의미, 요구사항과 구현의 실제 동작 일치, 외부 URL·Markdown 앵커 유효성까지 증명하지는 않습니다.
 
+## 0.7.0 탐색 release 검증
+
+격리 test DB에서 신규 설치와 0.6.0(`0501_prompt_usage.sql`) 업그레이드를 재현하고, 통합 검색·최근·saved 목록의 합성 대량 기준을 측정한다.
+
+```bash
+DATABASE_URL=postgresql://.../lyricscloud_test pnpm test:migration:0700-release
+DATABASE_URL=postgresql://.../lyricscloud_test pnpm test:performance:0700-release
+```
+
+두 명령은 `_test`로 끝나는 source DB만 허용하고 매 실행마다 별도 임시 DB를 생성·강제 제거한다. 기존 source DB와 Docker volume은 변경하지 않는다. 성능 출력은 warm run 회귀 기준이며 운영 SLO가 아니다.
+
 ## 허용 메일 파일 이관
 
 이전 설정의 `.env` `AUTH_ALLOWED_EMAILS` 값을 현재 환경의 `.test_users`로 값 노출 없이 이관한다.
