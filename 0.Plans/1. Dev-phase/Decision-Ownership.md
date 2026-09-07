@@ -48,7 +48,7 @@
 | [`PROD-0006`](../../docs/product/PROD-0006-rhyme-lyric-insertion.md) | 라임 삽입 대상, 선택 영역, target 없음과 복사 대안 | [0.4.0 Phase 4](./0.4.0/4phase.md) | [0.6.0 Phase 4](./0.6.0/4phase.md) | `Accepted` |
 | [`PROD-0007`](../../docs/product/PROD-0007-recent-work.md) | 최근 작업의 의미, 정렬 기준, 마지막 cursor·송폼 복원 | [0.7.0 Phase 3](./0.7.0/3phase.md) | [0.7.0 Phase 5](./0.7.0/5phase.md) | `Accepted` |
 | [`PROD-0008`](../../docs/product/PROD-0008-template-application.md) | 템플릿 적용 시 덮어쓰기·추가·취소와 기존 내용 보호 | [0.8.0 Phase 1](./0.8.0/1phase.md) | 0.8.0 Phase 5, 0.9.0 | `Accepted` |
-| `PROD-0009` | 단축키 조합, 실행 문맥, 운영체제별 키 표기 | [0.8.0 Phase 3](./0.8.0/3phase.md) | 0.8.0 Phase 5, 0.9.0 | `Proposed` |
+| [`PROD-0009`](../../docs/product/PROD-0009-keyboard-shortcuts.md) | 단축키 조합, 실행 문맥, 운영체제별 키 표기 | [0.8.0 Phase 3](./0.8.0/3phase.md) | 0.8.0 Phase 5, 0.9.0 | `Accepted` |
 | [`PROD-0010`](../../docs/product/PROD-0010-soft-delete-restore.md) | soft delete, cascade, 연결 자료와 복원 후 관계의 의미 | [0.2.0 Phase 1](./0.2.0/1phase.md) | [0.8.0 Phase 4](./0.8.0/4phase.md) | `Accepted` |
 | [`PROD-0011`](../../docs/product/PROD-0011-favorites-pins.md) | 즐겨찾기·핀의 독립 의미, owner별 전역 핀 순서와 삭제·복원 처리 | [0.7.0 Phase 4](./0.7.0/4phase.md) | [0.7.0 Phase 5](./0.7.0/5phase.md) | `Accepted` |
 

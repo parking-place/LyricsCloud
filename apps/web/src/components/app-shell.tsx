@@ -1,10 +1,12 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { clearAccountCache, clearOtherAccountCaches, coordinateAccountLogout, downloadRecoveryDrafts } from "../lib/account-cache.js";
+import { commandForKeyboardEvent, isEditableShortcutTarget, requestShortcutNavigation } from "../lib/shortcut-runtime.js";
 import { Brand } from "./auth-screen.js";
 import { QuickAdd } from "./quick-add.js";
+import { ShortcutHelpDialog } from "./shortcut-help.js";
 
 async function clearAccountCacheBeforeNavigation(userId: string): Promise<void> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -43,10 +45,38 @@ export function WorkspaceShell({
   const [logoutBlocked, setLogoutBlocked] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
   const [accountPaused, setAccountPaused] = useState(false);
+  const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
   const logoutPending = useRef(false);
   const mainShell = useRef<HTMLDivElement>(null);
   const pausedFocus = useRef<HTMLElement | null>(null);
   const guard = useRef<ReturnType<typeof coordinateAccountLogout> | null>(null);
+  const closeShortcutHelp = useCallback(() => setShortcutHelpOpen(false), []);
+
+  useEffect(() => {
+    let composing = false;
+    const compositionStart = () => { composing = true; };
+    const compositionEnd = () => { composing = false; };
+    function keyboard(event: KeyboardEvent) {
+      if (composing || event.isComposing || isEditableShortcutTarget(event.target) || document.querySelector('[aria-modal="true"]')) return;
+      const command = commandForKeyboardEvent(event, "global");
+      if (!command) return;
+      event.preventDefault();
+      if (command === "shortcut_help") setShortcutHelpOpen(true);
+      else if (command === "search") requestShortcutNavigation({ commandId: command, href: "/search" });
+      else if (command === "new_lyric") {
+        const returnTo = `${window.location.pathname}${window.location.search}`;
+        requestShortcutNavigation({ commandId: command, href: `/lyrics/new?returnTo=${encodeURIComponent(returnTo)}` });
+      }
+    }
+    document.addEventListener("compositionstart", compositionStart, true);
+    document.addEventListener("compositionend", compositionEnd, true);
+    window.addEventListener("keydown", keyboard);
+    return () => {
+      document.removeEventListener("compositionstart", compositionStart, true);
+      document.removeEventListener("compositionend", compositionEnd, true);
+      window.removeEventListener("keydown", keyboard);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -167,7 +197,7 @@ export function WorkspaceShell({
     <div className="main-shell" ref={mainShell}>
       <header className="topbar">
         <nav className="workspace-tabs" aria-label="창작 영역"><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트 <small>0.4.0</small></a><a href="/prompts" className={`workspace-tab${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}>프롬프트 <small>0.5.0</small></a><a href="/templates" className={`workspace-tab${active === "templates" ? " active" : ""}`} aria-current={active === "templates" ? "page" : undefined}>▦ 템플릿</a><a href="/favorites" className={`workspace-tab${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}>★ 즐겨찾기</a><a href="/recent" className={`workspace-tab${active === "recent" ? " active" : ""}`} aria-current={active === "recent" ? "page" : undefined}>↺ 최근</a><a href="/search" className={`workspace-tab${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}>⌕ 검색</a></nav>
-        <span className="topbar-spacer" /><a className={`top-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button>
+        <span className="topbar-spacer" /><button className="top-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`top-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button>
       </header>
       {sessionExpired || logoutError ? <div className="account-messages">
       {sessionExpired ? <div className="account-error" role="alert"><p>로그인이 만료되었습니다. 미전송 초안과 현재 입력을 보존했습니다. <a href="/auth" target="_blank" rel="noopener noreferrer">다시 로그인</a>한 뒤 동기화를 다시 시도해 주세요.</p><button className="secondary-button" type="button" onClick={() => void downloadDrafts()}>초안 내려받기</button></div> : null}
@@ -177,7 +207,7 @@ export function WorkspaceShell({
       </div> : null}
       {children}
     </div>
-    <header className="mobile-header"><Brand /><span className="mobile-account"><a className={`mobile-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><Avatar profile={profile} /><button className="mobile-logout" type="button" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button></span></header>
+    <header className="mobile-header"><Brand /><span className="mobile-account"><button className="mobile-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`mobile-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><Avatar profile={profile} /><button className="mobile-logout" type="button" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button></span></header>
     <nav className="mobile-bottom-nav" aria-label="모바일 주 메뉴">
       <a href="/songs" className={`mobile-nav-item${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><strong>곡</strong></a>
       <a href="/rhymes" className={`mobile-nav-item${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><strong>라임</strong></a>
@@ -189,6 +219,7 @@ export function WorkspaceShell({
       <a href="/favorites" aria-label="즐겨찾기" className={`mobile-nav-item${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><strong aria-hidden="true">저장</strong></a>
     </nav>
     <QuickAdd ownerId={profile.userId} currentSongId={currentSongId} />
+    <ShortcutHelpDialog open={shortcutHelpOpen} onClose={closeShortcutHelp} />
   </main>;
 }
 

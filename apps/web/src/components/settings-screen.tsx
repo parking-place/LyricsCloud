@@ -3,6 +3,7 @@
 import { DEFAULT_USER_SETTINGS, type ThemePreference, type UserSettingsRecord, type WritingFont } from "@lyricscloud/domain";
 import { useEffect, useRef, useState } from "react";
 import { trapDialogTab } from "../lib/dialog-focus.js";
+import { ShortcutGuide } from "./shortcut-help.js";
 
 type ThemeWindow = Window & { __lcApplyTheme?: (theme: ThemePreference) => void };
 
@@ -88,7 +89,7 @@ export function SettingsScreen({ initialSettings }: { initialSettings: UserSetti
           {message ? <p className={message.startsWith("설정을 서버") || message.startsWith("저장된") ? "settings-message" : "settings-message warning"} role={conflicted || message.includes("못했습니다") ? "alert" : "status"}>{message}{conflicted ? <button type="button" onClick={() => void save(true)} disabled={busy}>최신 서버 버전에 다시 저장</button> : null}</p> : null}
         </section>
         <section id="account" className="settings-card compact"><h2>계정</h2><p>프로필과 계정 수명주기 기능은 이후 Phase에서 확장됩니다.</p></section>
-        <section id="keyboard" className="settings-card compact"><h2>키보드</h2><p>단축키 편집은 0.8.0 Phase 3에서 제공됩니다.</p></section>
+        <section id="keyboard" className="settings-card"><h2>키보드</h2><p>명령과 키를 검색할 수 있습니다. 같은 기능은 화면 버튼과 메뉴에서도 사용할 수 있습니다.</p><ShortcutGuide /></section>
       </div>
     </div>
     {sheetOpen ? <div className="settings-sheet-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) closeSheet(); }}>

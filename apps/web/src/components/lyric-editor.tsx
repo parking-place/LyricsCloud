@@ -35,6 +35,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createLyricMetadataSaver } from "../lib/lyric-metadata.js";
 import { registerLogoutSave } from "../lib/account-cache.js";
 import { trapDialogTab } from "../lib/dialog-focus.js";
+import { BEFORE_SHORTCUT_NAVIGATION_EVENT, commandForKeyboardEvent, isEditableShortcutTarget, type ShortcutNavigationDetail } from "../lib/shortcut-runtime.js";
 import { LyricHistory } from "./lyric-history.js";
 import { LyricResourcePanel } from "./lyric-resource-panel.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
@@ -105,6 +106,9 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const copyFeedback = useCopyFeedback();
   const router = useRouter();
   const lyricReturnSuffix = `?returnTo=${encodeURIComponent(returnTo)}`;
+  const currentLyricIndex = songLyrics.findIndex((lyric) => lyric.id === initialLyric.id);
+  const previousLyric = currentLyricIndex > 0 ? songLyrics[currentLyricIndex - 1] ?? null : null;
+  const nextLyric = currentLyricIndex >= 0 ? songLyrics[currentLyricIndex + 1] ?? null : null;
 
   useEffect(() => {
     if (!displaySettingsOpen) return;
@@ -560,16 +564,61 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     requestAnimationFrame(() => editorRef.current?.focus());
   }
 
+  function toggleResourcePanel() {
+    if (window.matchMedia("(max-width: 720px)").matches) setMobileResourcesOpen((current) => !current);
+    else setDesktopResourcesOpen((current) => !current);
+    requestAnimationFrame(() => editorRef.current?.focus());
+  }
+
+  async function navigateToLyric(target: LyricRecord | null, boundary: "이전" | "다음") {
+    if (!target) {
+      setCommandNotice(`현재 곡에 ${boundary} 가사가 없습니다.`);
+      requestAnimationFrame(() => editorRef.current?.focus());
+      return;
+    }
+    if (commandBusy) return;
+    setCommandBusy(true);
+    setCommandNotice("");
+    if (!await flushBeforeCommand("leave")) {
+      setCommandBusy(false);
+      return;
+    }
+    router.push(`/lyrics/${target.id}${lyricReturnSuffix}`);
+    router.refresh();
+  }
+
+  useEffect(() => {
+    function beforeShortcutNavigation(event: Event) {
+      const shortcutEvent = event as CustomEvent<ShortcutNavigationDetail>;
+      event.preventDefault();
+      if (commandBusy) return;
+      setCommandBusy(true);
+      setCommandNotice("");
+      void flushBeforeCommand("leave").then((saved) => {
+        if (!saved) { setCommandBusy(false); return; }
+        router.push(shortcutEvent.detail.href);
+        router.refresh();
+      });
+    }
+    window.addEventListener(BEFORE_SHORTCUT_NAVIGATION_EVENT, beforeShortcutNavigation);
+    return () => window.removeEventListener(BEFORE_SHORTCUT_NAVIGATION_EVENT, beforeShortcutNavigation);
+  });
+
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.isComposing || event.defaultPrevented || !event.altKey || !event.shiftKey) return;
-      if (event.key.toLowerCase() === "c") {
-        event.preventDefault();
-        copyWhole();
-      } else if (event.key.toLowerCase() === "f") {
-        event.preventDefault();
-        toggleFocusMode();
-      }
+      if (editorRef.current?.composing || titleComposingRef.current || memoComposingRef.current) return;
+      const editable = isEditableShortcutTarget(event.target);
+      if (editable && !(event.target instanceof Element && event.target.closest(".cm-editor"))) return;
+      const command = commandForKeyboardEvent(event, "lyric_editor");
+      if (!command) return;
+      const modal = document.querySelector<HTMLElement>('[aria-modal="true"]');
+      if (modal && !(command === "toggle_resource_panel" && modal.classList.contains("editor-resource-panel"))) return;
+      event.preventDefault();
+      if (command === "copy_whole_lyric") copyWhole();
+      else if (command === "toggle_focus_mode") toggleFocusMode();
+      else if (command === "toggle_resource_panel") toggleResourcePanel();
+      else if (command === "previous_lyric") void navigateToLyric(previousLyric, "이전");
+      else if (command === "next_lyric") void navigateToLyric(nextLyric, "다음");
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -591,10 +640,14 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
           void flushBeforeCommand("leave").then((saved) => { if (saved) router.push(dashboardHref); });
         }}>← {songTitle}</a>
         <p className="eyebrow">Lyrics editor</p>
+        <nav className="lyric-sequence-nav" aria-label="현재 곡의 가사 이동">
+          <button type="button" disabled={!previousLyric || commandBusy} aria-keyshortcuts="Alt+Shift+[" onClick={() => void navigateToLyric(previousLyric, "이전")}>← 이전 가사</button>
+          <button type="button" disabled={!nextLyric || commandBusy} aria-keyshortcuts="Alt+Shift+]" onClick={() => void navigateToLyric(nextLyric, "다음")}>다음 가사 →</button>
+        </nav>
       </div>
       <div className="editor-header-actions">
-        <button type="button" aria-expanded={desktopResourcesOpen} aria-controls="editor-resource-results"
-          onClick={() => { if (desktopResourcesOpen) closeResourcePanel(); else setDesktopResourcesOpen(true); }}>{desktopResourcesOpen ? "자료 패널 접기" : "자료 패널 펼치기"}</button>
+        <button type="button" aria-expanded={desktopResourcesOpen} aria-controls="editor-resource-results" title="Alt+Shift+P" aria-keyshortcuts="Alt+Shift+P"
+          onClick={toggleResourcePanel}>{desktopResourcesOpen ? "자료 패널 접기" : "자료 패널 펼치기"}</button>
         <button type="button" onClick={() => setHistoryOpen(true)}>버전 비교</button>
         <button type="button" aria-haspopup="dialog" aria-expanded={displaySettingsOpen} onClick={() => setDisplaySettingsOpen(true)}>표시 설정</button>
         <button type="button" onClick={copyWhole} title="Alt+Shift+C" aria-keyshortcuts="Alt+Shift+C">전체 복사</button>

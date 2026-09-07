@@ -34,7 +34,10 @@ test.describe("cursor insertion and global quick add", () => {
       card = panel.locator("li", { hasText: "삽입 라임" });
       await card.getByRole("button", { name: "선택 삽입" }).click();
       const selector = page.getByRole("textbox", { name: "삽입할 라임 표현 선택" });
-      await selector.evaluate((element: HTMLTextAreaElement) => element.setSelectionRange(7, 12));
+      await selector.evaluate((element: HTMLTextAreaElement) => {
+        element.setSelectionRange(7, 12);
+        element.dispatchEvent(new Event("select", { bubbles: true }));
+      });
 
       const remote = await context.newPage();
       await remote.goto(`/lyrics/${lyricId}`);

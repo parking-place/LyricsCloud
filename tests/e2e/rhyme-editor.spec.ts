@@ -53,8 +53,8 @@ test.describe("rhyme note creation and editor", () => {
       await expect(settings.getByRole("button", { name: "연결 해제", exact: true })).toBeVisible();
       await expect.poll(async () => (await (await page.request.get(`/api/rhymes?song=${songId}`)).json()).items.length).toBe(1);
       await settings.getByRole("button", { name: "연결 해제", exact: true }).click();
-      await expect(settings.getByRole("button", { name: "연결", exact: true })).toBeVisible();
       await expect.poll(async () => (await (await page.request.get(`/api/rhymes?song=${songId}`)).json()).items.length).toBe(0);
+      await expect(settings.getByRole("button", { name: "연결", exact: true })).toBeVisible();
       await settings.getByRole("button", { name: "연결", exact: true }).click();
       const insertion = settings.getByRole("button", { name: "열린 가사에 삽입" });
       await expect(insertion).toBeDisabled();
