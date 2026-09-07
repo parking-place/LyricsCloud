@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.7.0"
-current_phase: "3phase.md"
+current_phase: "4phase.md"
 state: "in_progress"
 owner: "Codex"
-started_at: "2026-09-07 13:50 KST"
+started_at: "2026-09-07 14:51 KST"
 updated_at: "2026-09-07"
-next_action: "0.7.0 Phase 3 최근 작업 query/UI와 owner별 마지막 커서·송폼·스크롤 위치의 지연 저장·복원을 구현"
+next_action: "0.7.0 Phase 4 네 자료 유형의 통합 즐겨찾기·핀, owner별 수동 순서와 URL 필터를 구현"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -41,7 +41,7 @@ next_action: "0.7.0 Phase 3 최근 작업 query/UI와 owner별 마지막 커서�
 | 0.4.0 | complete | Phase 1~5 완료 | 0.3.1 완료 |
 | 0.5.0 | complete | Phase 1~5 완료 | 0.4.0 완료 |
 | 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
-| 0.7.0 | in_progress | Phase 3 진행 중 | 0.6.0 완료 |
+| 0.7.0 | in_progress | Phase 3 완료, Phase 4 진행 중 | 0.6.0 완료 |
 | 0.8.0 | planned | 없음 | 0.7.0 완료 |
 | 0.9.0 | planned | 없음 | 0.8.0 완료 |
 | 0.9.1 | planned | 없음 | 0.9.0 완료 |
@@ -53,7 +53,7 @@ next_action: "0.7.0 Phase 3 최근 작업 query/UI와 owner별 마지막 커서�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.7.0 / Phase 3 | LC-070-P3-01~09 | 최근 작업 query/API/UI·마지막 편집 위치·브라우저 테스트·Phase 문서 | Phase 2 완료 | 2026-09-07 13:50 KST | 진행 중 |
+| Codex | 0.7.0 / Phase 4 | LC-070-P4-01~09 | 통합 즐겨찾기·핀 query/API/UI·수동 순서·URL 필터·브라우저 테스트·Phase 문서 | Phase 3 완료 | 2026-09-07 14:51 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,12 +102,13 @@ next_action: "0.7.0 Phase 3 최근 작업 query/UI와 owner별 마지막 커서�
 
 ## 다음 작업
 
-0.7.0 Phase 3은 Phase 2의 안전한 `returnTo`·가사 본문 딥링크를 재사용해 최근 작업과 마지막 편집 위치 복원을 구현한다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.7.0 Phase 4는 Phase 3의 통합 자료 카드·owner 경계를 재사용해 네 자료 유형의 즐겨찾기·핀, 수동 핀 순서와 URL 필터를 구현한다. 개인 앱은 `http://localhost:8080`의 `lyricscloud` Compose project이며 OAuth·DB volume을 보존한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-07 | 0.7.0 / Phase 3 | Codex | 수정과 열람 시각을 분리한 네 자료 통합 최근 작업, content-free 문맥 카드, 2초/15초 병합 위치 저장, 같은 viewport cursor·scroll과 다른 viewport 송폼 우선 복원, 삭제·owner 경계를 구현 | 46 files/175 tests, 0200~0702 migration 복구, production build·4 image 및 fresh-volume 복구, PC/mobile E2E 180 통과·8 skip, CI `34087267900`, 네 image tag/digest, `21cb464` 동일 SHA 개발 배포와 공개 health·owner/API/UI smoke; [검증 기록](../../docs/runbooks/0.7.0-phase3-validation.md) | Phase 4가 통합 자료 표현과 owner 경계를 즐겨찾기·핀, 수동 순서와 URL 필터에 재사용 |
 | 2026-09-07 | 0.7.0 / Phase 2 | Codex | PC·모바일 통합 검색, URL 유형 필터, 안전한 강조, 자료·가사 본문 deep link, 키보드 탐색, 일반화된 비노출 오류와 owner별 최근 검색어를 구현 | 43 files/165 tests, 0200~0701 migration 복구, production build·4 image 복구, PC/mobile E2E 177 통과·7 skip, CI `34082482383`, 네 image tag/digest, `5ae8ee2` 동일 SHA 개발 배포와 공개 검색 기반·인증 API/UI smoke; [검증 기록](../../docs/runbooks/0.7.0-phase2-validation.md) | Phase 3이 공통 `returnTo`·가사 본문 위치 계약을 최근 작업과 마지막 편집 위치 복원에 재사용 |
 | 2026-09-07 | 0.7.0 / Phase 1 | Codex | 곡·가사·라임·프롬프트의 owner 전용 통합 검색 계약, 원문과 분리된 NFKC projection, 문자 그대로 부분 검색, `pg_trgm` GIN index, 제목·태그·본문 점수와 안정 keyset을 구현 | 42 files/158 tests, 0200~0700 migration 복구, production build·4 image 복구, PC/mobile E2E 173 통과·5 skip, CI `34079253245`, 네 image tag/digest, `9ed1011` 동일 SHA 개발 배포와 공개 health·projection·index smoke; [검증 기록](../../docs/runbooks/0.7.0-phase1-validation.md) | Phase 2가 공통 결과와 점수·cursor만 소비해 통합 검색 UI·유형 filter·deep link를 구현 |
 | 2026-09-07 | 0.6.0 / Phase 5 | Codex | Phase 1~4의 32개 작업 ID를 증적에 연결하고 빈 곡 목록부터 곡·가사 생성, 송폼 복사, 연결 라임 cursor 삽입과 preview보다 긴 프롬프트의 정확한 panel 복사까지 PC·모바일 수직 흐름으로 자동화했으며, 모바일 sheet 위 clipboard 수동 복사 dialog가 가려지는 결함을 수정 | 40 files/151 tests, 0200~0501 migration 복구, production build·fresh DB image 복구, PC/mobile E2E 173 통과·5 skip, CI `34076493043`, 네 image tag/digest, `49f0658` 동일 SHA 개발 배포와 공개 연결 panel·exact detail·owner smoke; [검증 기록](../../docs/runbooks/0.6.0-phase5-validation.md) | 다음 commit에서 0.7.0으로 전환하고 [창작 흐름 인계](../../docs/architecture/0.6.0-CREATIVE-FLOW-HANDOFF.md)의 owner 평문·deep link·위치 계약으로 통합 검색을 시작 |
