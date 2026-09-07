@@ -2,6 +2,7 @@
 
 import { LYRIC_STATUS_LABELS, SONG_STATUS_LABELS, type SavedResourceItem, type SavedResourceQuery, type SavedResourceMutation } from "@lyricscloud/domain";
 import { useRef, useState } from "react";
+import { StatePanel } from "./state-panel.js";
 
 const TYPE_LABELS = { song: "곡", lyrics: "가사", rhyme_note: "라임 노트", prompt: "프롬프트" } as const;
 const TYPE_FILTERS = [["all", "전체"], ["song", "곡"], ["lyrics", "가사"], ["rhyme_note", "라임"], ["prompt", "프롬프트"]] as const;
@@ -77,8 +78,8 @@ export function FavoritesScreen({ initialItems, songs, query }: { initialItems: 
       <label>소속 곡<select value={query.songId ?? ""} onChange={(event) => location.assign(queryString({ song: event.target.value }))}><option value="">모든 곡</option>{songs.map((song) => <option key={song.id} value={song.id}>{song.title}</option>)}</select></label>
       <label>작업 상태<select value={query.status} onChange={(event) => location.assign(queryString({ status: event.target.value }))}>{STATUS_FILTERS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></div>
     <p className="sr-only" role="status" aria-live="polite">{notice}</p>{error ? <p className="saved-error" role="alert">{error} <a href={queryString({})}>다시 불러오기</a></p> : null}
-    {items === null ? <div className="recent-empty" role="alert"><span>!</span><h2>즐겨찾기를 불러오지 못했습니다.</h2><a className="primary-link" href={queryString({})}>다시 시도</a></div>
-      : items.length === 0 ? <div className="recent-empty"><span>★</span><h2>표시할 자료가 없습니다.</h2><p>자주 쓰는 자료의 즐겨찾기 또는 핀 버튼을 눌러 이곳에 모아 보세요.</p><a className="primary-link" href="/songs">자료 둘러보기</a></div>
+    {items === null ? <StatePanel className="recent-empty" kind="error" title="즐겨찾기를 불러오지 못했습니다." detail="온라인 연결과 로그인 상태를 확인해 주세요. 저장된 자료는 변경되지 않았습니다." action={<a className="primary-link" href={queryString({})}>다시 시도</a>} />
+      : items.length === 0 ? <StatePanel className="recent-empty" kind="empty" title="표시할 자료가 없습니다." detail="자주 쓰는 자료의 즐겨찾기 또는 핀 버튼을 눌러 이곳에 모아 보세요." action={<a className="primary-link" href="/songs">자료 둘러보기</a>} />
         : <><section className="pinned-section" aria-labelledby="pinned-title"><header><h2 id="pinned-title">◆ 지금 집중 중</h2><span>핀 {pinned.length}개 · 순서 변경</span></header>
           {pinned.length ? <div className="pinned-grid">{pinned.sort(pinSort).map((item, index) => <SavedCard key={item.id} item={item} pinned index={index} count={pinned.length} onToggle={toggle} onMove={move} onDrag={(id) => { dragId.current = id; }} onDrop={drop} />)}</div> : <p className="saved-inline-empty">현재 고정한 자료가 없습니다.</p>}</section>
           <section className="favorite-section" aria-labelledby="favorite-title"><header><h2 id="favorite-title">★ 즐겨찾기</h2><span>최근 사용순</span></header>

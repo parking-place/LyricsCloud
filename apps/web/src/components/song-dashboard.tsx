@@ -3,6 +3,7 @@
 import { LYRIC_STATUS_LABELS, type LyricRecord } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type MouseEvent } from "react";
+import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 import { SongLinkManager, type SongLinkKind } from "./song-link-manager.js";
 
 type SongStatus = "idea" | "writing_lyrics" | "revising" | "suno_generating" | "mixing" | "completed" | "on_hold";
@@ -279,7 +280,7 @@ export function SongDashboard({ initialSong, initialCounts, initialLyrics, initi
     </header>
 
     <div className="dashboard-layout">
-      <main className="dashboard-main">
+      <section className="dashboard-main" aria-label="곡 작업 영역">
         <div className="dashboard-refresh-row"><button type="button" disabled={Boolean(retrying)} onClick={retryCounts}>{retrying === "counts" ? "자료 수 확인 중…" : "자료 수 새로 고침"}</button></div>
         <section className="count-grid" aria-label="곡 자료 요약">
           {counts ? <><Count label="가사 버전" value={counts.lyrics.value} /><Count label="연결 프롬프트" value={counts.prompts.value} /><Count label="라임 노트" value={counts.rhymes.value} /></>
@@ -291,7 +292,7 @@ export function SongDashboard({ initialSong, initialCounts, initialLyrics, initi
             : lyrics.length === 0 ? <div className="lyrics-empty-copy"><span className="empty-icon" aria-hidden="true">≋</span><h3>첫 가사를 시작해보세요</h3><p>새 가사를 만들면 이 곡에 연결된 편집기로 바로 이동합니다.</p><button className="secondary-button" type="button" disabled={creating} onClick={createLyric}>첫 가사 작성</button></div>
               : <div className="lyric-card-list">{lyrics.map((lyric, index) => <LyricCard key={lyric.id} lyric={lyric} href={`/lyrics/${lyric.id}${lyricReturnSuffix}`} current={index === 0} busy={busyLyricId === lyric.id} onFavorite={toggleLyricFavorite} onDuplicate={duplicateLyric} onMemo={(value) => editNote({ kind: "lyric", lyric, title: lyric.title, value })} onDelete={setLyricDeleteTarget} />)}</div>}
         </section>
-      </main>
+      </section>
       <aside className="dashboard-side">
         <section className="dashboard-panel notes-panel"><div className="panel-title-row"><div><p className="eyebrow">Work notes</p><h2>작업 메모</h2></div><button type="button" onClick={() => editNote({ kind: "song", title: song.title, value: song.workNotes })}>{song.workNotes ? "곡 메모 편집" : "＋ 곡 메모"}</button></div>
           {!song.workNotes && !lyrics.some((lyric) => lyric.memo) ? <p className="muted-copy">아직 작업 메모가 없습니다. 곡이나 가사에 다음 할 일을 남겨보세요.</p> : <div className="work-note-list">
@@ -300,13 +301,13 @@ export function SongDashboard({ initialSong, initialCounts, initialLyrics, initi
           </div>}
         </section>
         <LinkedResources songId={song.id} songTitle={song.title} rhymes={rhymes} prompts={prompts} retrying={retrying} onRetry={retryLinked} onChanged={linksChanged} />
-        <section className="danger-zone"><h2>곡 관리</h2><p>삭제한 곡은 목록에서 숨겨집니다.</p><button type="button" onClick={() => setDeleteOpen(true)}>곡 삭제</button></section>
+        <section className="danger-zone"><h2>곡 관리</h2><p>삭제한 곡은 목록에서 숨겨집니다.</p><button type="button" aria-haspopup="dialog" aria-expanded={deleteOpen} aria-controls="song-delete-dialog" onClick={() => setDeleteOpen(true)}>곡 삭제</button></section>
       </aside>
     </div>
 
-    {lyricDeleteTarget ? <div className="dialog-backdrop" role="presentation"><div className="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="lyric-delete-title" aria-describedby="lyric-delete-description"><p className="eyebrow">Soft delete</p><h2 id="lyric-delete-title">‘{lyricDeleteTarget.title}’ 가사를 삭제할까요?</h2><p id="lyric-delete-description">이 가사를 목록과 검색에서 숨깁니다. 같은 곡의 다른 가사는 유지됩니다.</p><div><button autoFocus className="secondary-button" type="button" disabled={Boolean(busyLyricId)} onClick={() => setLyricDeleteTarget(null)}>취소</button><button className="danger-button" type="button" disabled={Boolean(busyLyricId)} onClick={deleteLyric}>{busyLyricId ? "삭제 중…" : "가사 삭제 확인"}</button></div></div></div> : null}
-    {noteTarget ? <div className="dialog-backdrop" role="presentation"><div className="note-dialog" role="dialog" aria-modal="true" aria-labelledby="note-title"><p className="eyebrow">본문과 분리해 저장</p><h2 id="note-title">{noteTarget.title} 작업 메모</h2><label><span>메모 내용</span><textarea autoFocus maxLength={10_000} value={noteValue} onChange={(event) => setNoteValue(event.target.value)} placeholder="다음 수정 방향이나 확인할 일을 기록하세요." /></label><small>{noteValue.length.toLocaleString("ko-KR")} / 10,000자</small><div><button className="secondary-button" type="button" disabled={noteSaving} onClick={() => setNoteTarget(null)}>취소</button><button className="primary-button" type="button" disabled={noteSaving} onClick={() => void writeNote(noteTarget, noteValue)}>{noteSaving ? "저장 중…" : "메모 저장"}</button></div></div></div> : null}
-    {deleteOpen ? <div className="dialog-backdrop" role="presentation"><div className="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description"><p className="eyebrow">Soft delete</p><h2 id="delete-title">‘{song.title}’ 곡을 삭제할까요?</h2><p id="delete-description">목록에서 이 곡을 숨기며 현재 활성 가사도 함께 숨겨집니다. 연결된 독립 자료는 삭제되지 않습니다.</p><div><button autoFocus className="secondary-button" type="button" disabled={deleting} onClick={() => setDeleteOpen(false)}>취소</button><button className="danger-button" type="button" disabled={deleting} onClick={deleteSong}>{deleting ? "삭제 중…" : "곡 삭제 확인"}</button></div></div></div> : null}
+    {lyricDeleteTarget ? <div className="dialog-backdrop" role="presentation"><div className="delete-dialog lyric-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="lyric-delete-title" aria-describedby="lyric-delete-description"><DialogFocusBoundary selector=".lyric-delete-dialog" onClose={() => setLyricDeleteTarget(null)} blocked={Boolean(busyLyricId)} /><p className="eyebrow">Soft delete</p><h2 id="lyric-delete-title">‘{lyricDeleteTarget.title}’ 가사를 삭제할까요?</h2><p id="lyric-delete-description">이 가사를 목록과 검색에서 숨깁니다. 같은 곡의 다른 가사는 유지됩니다.</p><div><button className="secondary-button" type="button" disabled={Boolean(busyLyricId)} onClick={() => setLyricDeleteTarget(null)}>취소</button><button className="danger-button" type="button" disabled={Boolean(busyLyricId)} onClick={deleteLyric}>{busyLyricId ? "삭제 중…" : "가사 삭제 확인"}</button></div></div></div> : null}
+    {noteTarget ? <div className="dialog-backdrop" role="presentation"><div className="note-dialog" role="dialog" aria-modal="true" aria-labelledby="note-title"><DialogFocusBoundary selector=".note-dialog" onClose={() => setNoteTarget(null)} blocked={noteSaving} initialFocus="textarea" /><p className="eyebrow">본문과 분리해 저장</p><h2 id="note-title">{noteTarget.title} 작업 메모</h2><label><span>메모 내용</span><textarea maxLength={10_000} value={noteValue} onChange={(event) => setNoteValue(event.target.value)} placeholder="다음 수정 방향이나 확인할 일을 기록하세요." /></label><small>{noteValue.length.toLocaleString("ko-KR")} / 10,000자</small><div><button className="secondary-button" type="button" disabled={noteSaving} onClick={() => setNoteTarget(null)}>취소</button><button className="primary-button" type="button" disabled={noteSaving} onClick={() => void writeNote(noteTarget, noteValue)}>{noteSaving ? "저장 중…" : "메모 저장"}</button></div></div></div> : null}
+    {deleteOpen ? <div className="dialog-backdrop" role="presentation"><div id="song-delete-dialog" className="delete-dialog song-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description"><DialogFocusBoundary selector=".song-delete-dialog" onClose={() => setDeleteOpen(false)} blocked={deleting} /><p className="eyebrow">Soft delete</p><h2 id="delete-title">‘{song.title}’ 곡을 삭제할까요?</h2><p id="delete-description">목록에서 이 곡을 숨기며 현재 활성 가사도 함께 숨겨집니다. 연결된 독립 자료는 삭제되지 않습니다.</p><div><button className="secondary-button" type="button" disabled={deleting} onClick={() => setDeleteOpen(false)}>취소</button><button className="danger-button" type="button" disabled={deleting} onClick={deleteSong}>{deleting ? "삭제 중…" : "곡 삭제 확인"}</button></div></div></div> : null}
   </section>;
 }
 

@@ -2,6 +2,7 @@
 
 import { REVISION_REASON_LABELS, type LyricRevision, type RestoreRevisionInput, type RevisionHistory } from "@lyricscloud/domain";
 import { useEffect, useState } from "react";
+import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 
 interface PromptRevisionValue { readonly title: string; readonly tokens: readonly { readonly displayValue: string }[] }
 
@@ -46,6 +47,7 @@ export function PromptHistory(props: {
   const current = history ? parsePromptRevision(history.current.body) : null;
   return <div className="dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget && !busy) props.onClose(); }}>
     <section className="prompt-history-dialog" role="dialog" aria-modal="true" aria-labelledby="prompt-history-title">
+      <DialogFocusBoundary selector=".prompt-history-dialog" onClose={props.onClose} blocked={busy} />
       <header><div><p className="eyebrow">Revision history</p><h2 id="prompt-history-title">프롬프트 수정 기록</h2></div><button type="button" disabled={busy} onClick={props.onClose}>닫기</button></header>
       <p>5분 간격과 중요 작업 전에 남긴 기록입니다. 중복 정리 전 상태도 복원할 수 있습니다.</p>
       {error ? <p role="alert">{error}</p> : null}{notice ? <p role="status">{notice}</p> : null}{loading ? <p role="status">기록을 불러오는 중…</p> : null}

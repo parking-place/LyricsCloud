@@ -147,7 +147,7 @@ export function LyricResourcePanel({ lyricId, desktopOpen, mobileOpen, width, se
         <input value={search} maxLength={200} placeholder={`${TAB_LABELS[tab]} 검색`} onChange={(event) => setSearches((current) => ({ ...current, [tab]: event.target.value }))} />
         {search ? <button type="button" aria-label={`${TAB_LABELS[tab]} 검색어 지우기`} onClick={() => setSearches((current) => ({ ...current, [tab]: "" }))}>×</button> : null}
       </label>
-      <div className="editor-resource-results" id="editor-resource-results" role="tabpanel" aria-labelledby={`resource-tab-${tab}`} aria-busy={loading}>
+      <div className="editor-resource-results" id="editor-resource-results" role="tabpanel" tabIndex={0} aria-labelledby={`resource-tab-${tab}`} aria-busy={loading}>
         {loading ? <PanelMessage title="자료를 불러오는 중…" detail={`${TAB_LABELS[tab]} 목록을 확인하고 있습니다.`} />
           : error ? <PanelMessage title="자료를 불러오지 못했습니다" detail="현재 가사와 입력은 그대로 유지됩니다." action={<button type="button" onClick={() => setRetry((value) => value + 1)}>다시 시도</button>} />
           : visible && result && result.items.length ? <ul aria-label={tab === "lyrics" ? "다른 가사 목록" : `${TAB_LABELS[tab]} 목록`}>{result.items.map((item) => <ResourceItem key={`${item.kind}-${item.id}`} item={item} onOpen={(candidate) => { void openItem(candidate); }} onCopy={(candidate) => { void copyItem(candidate); }} onInsertRhyme={onInsertRhyme} />)}</ul>

@@ -7,6 +7,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Fragment, type KeyboardEvent as ReactKeyboardEvent, useEffect, useRef, useState } from "react";
 import { buildSearchResultHref, buildSearchUrl } from "../lib/search-navigation.js";
+import { StatePanel } from "./state-panel.js";
 
 const TYPES: readonly SearchTypeFilter[] = ["all", ...SEARCH_RESOURCE_TYPES];
 const TYPE_LABELS: Record<SearchTypeFilter, string> = { all: "전체", song: "곡", lyrics: "가사", rhyme_note: "라임 노트", prompt: "프롬프트" };
@@ -161,7 +162,7 @@ export function SearchScreen({ ownerId, initialQuery, initialType }: { ownerId: 
       <div className="search-summary" aria-live="polite"><strong>{loading ? "검색하는 중…" : `${items.length}개 결과${nextCursor ? " 이상" : ""}`}</strong><span>‘{query}’ · {TYPE_LABELS[type]}</span></div>
       {error ? <div className="search-error" role="alert"><p>{error}</p><button type="button" onClick={() => setRetryKey((value) => value + 1)}>다시 시도</button></div> : null}
       {loading ? <div className="search-loading" aria-label="검색 결과 불러오는 중">{Array.from({ length: 4 }, (_, index) => <span key={index} />)}</div> : null}
-      {!loading && !error && !items.length ? <div className="search-empty"><span aria-hidden="true">⌕</span><h2>검색 결과가 없습니다</h2><p>철자나 표현을 바꾸거나 다른 자료 유형을 선택해 보세요.</p></div> : null}
+      {!loading && !error && !items.length ? <StatePanel className="search-empty" kind="empty" title="검색 결과가 없습니다" detail="철자나 표현을 바꾸거나 다른 자료 유형을 선택해 보세요." action={<button type="button" onClick={() => { setInput(""); setQuery(""); inputRef.current?.focus(); }}>검색 조건 다시 고르기</button>} /> : null}
       {!loading ? grouped.map((group) => <section className="search-result-group" key={group.type} aria-labelledby={`search-group-${group.type}`}>
         <h2 id={`search-group-${group.type}`}><span aria-hidden="true">{TYPE_ICONS[group.type]}</span>{TYPE_LABELS[group.type]} <small>{group.items.length}</small></h2>
         <div className="search-result-list">{group.items.map((item) => {

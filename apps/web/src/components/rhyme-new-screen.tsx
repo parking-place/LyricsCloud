@@ -5,6 +5,7 @@ import { RHYME_LIMITS, type RhymeNoteRecord } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
+import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 
 export function RhymeNewScreen({ ownerId }: { ownerId: string }) {
   const titleRef = useRef("");
@@ -125,9 +126,10 @@ export function RhymeNewScreen({ ownerId }: { ownerId: string }) {
       <footer><span>빈 본문 허용 · 줄바꿈 그대로 보존</span><span className={bodyError ? "over" : ""}>{bodyLength.toLocaleString()} / {RHYME_LIMITS.body.toLocaleString()}</span></footer>
       {bodyError ? <small role="alert">{bodyError}</small> : null}
     </div>
-    {cancelOpen ? <div className="dialog-backdrop"><section className="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="new-rhyme-cancel-title">
+    {cancelOpen ? <div className="dialog-backdrop"><section className="delete-dialog new-rhyme-cancel-dialog" role="dialog" aria-modal="true" aria-labelledby="new-rhyme-cancel-title">
+      <DialogFocusBoundary selector=".new-rhyme-cancel-dialog" onClose={() => setCancelOpen(false)} />
       <h2 id="new-rhyme-cancel-title">새 라임 노트 작성을 취소할까요?</h2><p>이 기기에 저장된 제목과 본문 초안도 함께 지워집니다.</p><div>
-        <button type="button" autoFocus className="secondary-button" onClick={() => setCancelOpen(false)}>계속 작성</button>
+        <button type="button" className="secondary-button" onClick={() => setCancelOpen(false)}>계속 작성</button>
         <button type="button" className="danger-button" onClick={() => void discard()}>초안 삭제 후 나가기</button>
       </div></section></div> : null}
   </section>;

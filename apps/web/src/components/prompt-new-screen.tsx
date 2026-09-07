@@ -7,6 +7,7 @@ import { findPromptDuplicates, normalizePromptToken, PROMPT_LIMITS, type PromptR
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
+import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 import { PromptTokenBuilder, type PromptBuilderItem } from "./prompt-token-builder.js";
 
 export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; templateId?: string }) {
@@ -148,9 +149,10 @@ export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; temp
         <h2>태그 순서</h2><p>현재 보이는 순서가 최종 쉼표 문자열의 순서입니다. 손잡이를 끌거나 선택한 태그의 앞으로·뒤로 버튼과 방향키로 이동할 수 있습니다.</p>
       </aside>
     </div>
-    {cancelOpen ? <div className="dialog-backdrop"><section className="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="new-prompt-cancel-title">
+    {cancelOpen ? <div className="dialog-backdrop"><section className="delete-dialog new-prompt-cancel-dialog" role="dialog" aria-modal="true" aria-labelledby="new-prompt-cancel-title">
+      <DialogFocusBoundary selector=".new-prompt-cancel-dialog" onClose={() => setCancelOpen(false)} />
       <h2 id="new-prompt-cancel-title">새 프롬프트 작성을 취소할까요?</h2><p>이 기기에 저장된 제목과 태그 초안도 함께 지워집니다.</p><div>
-        <button type="button" autoFocus className="secondary-button" onClick={() => setCancelOpen(false)}>계속 작성</button>
+        <button type="button" className="secondary-button" onClick={() => setCancelOpen(false)}>계속 작성</button>
         <button type="button" className="danger-button" onClick={() => void discard()}>초안 삭제 후 나가기</button>
       </div></section></div> : null}
   </section>;

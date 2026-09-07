@@ -7,7 +7,7 @@ import { PROMPT_LIMITS, type PromptRecord, type TemplateRecord } from "@lyricscl
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
-import { trapDialogTab } from "../lib/dialog-focus.js";
+import { DialogFocusBoundary, trapDialogTab } from "../lib/dialog-focus.js";
 import { PromptHistory } from "./prompt-history.js";
 import { PromptTokenBuilder } from "./prompt-token-builder.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
@@ -252,7 +252,8 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
   const titleLength = [...snapshot.title.trim()].length;
   const titleError = !snapshot.title.trim() ? "제목을 입력해야 검색용 읽기 모델에 반영됩니다."
     : titleLength > PROMPT_LIMITS.title ? `제목은 ${PROMPT_LIMITS.title}자 이하로 입력해 주세요.` : "";
-  return <section className="prompt-editor-page" aria-labelledby="prompt-title-label">
+  return <section className="prompt-editor-page" aria-labelledby="prompt-editor-heading">
+    <h1 className="sr-only" id="prompt-editor-heading">프롬프트 편집: {snapshot.title || "제목 없음"}</h1>
     <header className="prompt-editor-header"><div><button type="button" className="back-button" onClick={() => void back()}>← 프롬프트</button><p className="eyebrow">Prompt editor</p></div>
       <div className="prompt-editor-actions"><button type="button" aria-pressed={isFavorite} disabled={!editable || metadataBusy !== null} onClick={() => void toggleMetadata("favorite")}>★ {isFavorite ? "즐겨찾기됨" : "즐겨찾기"}</button>
         <button type="button" aria-pressed={isPinned} disabled={!editable || metadataBusy !== null} onClick={() => void toggleMetadata("pin")}>⌁ {isPinned ? "고정됨" : "고정"}</button>
@@ -294,9 +295,10 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
       readHistory={async () => { const sync = syncRef.current; if (!sync || !await sync.flush()) throw new Error(); return sync.listRevisions(); }}
       readRevision={async (id) => { if (!syncRef.current) throw new Error(); return syncRef.current.getRevision(id); }}
       restore={async (id, input) => { if (!syncRef.current) throw new Error(); await syncRef.current.restoreRevision(id, input); }} /> : null}
-    {unlinkCandidate ? <div className="dialog-backdrop"><section className="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="prompt-unlink-title">
+    {unlinkCandidate ? <div className="dialog-backdrop"><section className="delete-dialog prompt-unlink-dialog" role="dialog" aria-modal="true" aria-labelledby="prompt-unlink-title">
+      <DialogFocusBoundary selector=".prompt-unlink-dialog" onClose={() => setUnlinkCandidate(null)} blocked={songBusyId !== null} />
       <p className="eyebrow">연결만 해제</p><h2 id="prompt-unlink-title">‘{unlinkCandidate.title}’ 곡 연결을 해제할까요?</h2><p>프롬프트와 곡 원본은 삭제되지 않으며 다른 곡 연결도 그대로 유지됩니다.</p>
-      <div><button type="button" autoFocus disabled={songBusyId !== null} onClick={() => setUnlinkCandidate(null)}>취소</button>
+      <div><button type="button" disabled={songBusyId !== null} onClick={() => setUnlinkCandidate(null)}>취소</button>
         <button type="button" disabled={songBusyId !== null} onClick={() => void changeSong(unlinkCandidate)}>{songBusyId ? "해제 중…" : "연결 해제 확인"}</button></div>
     </section></div> : null}
     {templateOpen ? <div className="dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) setTemplateOpen(false); }}><section ref={templateDialogRef} className="prompt-template-dialog" role="dialog" aria-modal="true" aria-labelledby="prompt-template-title">

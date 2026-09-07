@@ -34,7 +34,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createLyricMetadataSaver } from "../lib/lyric-metadata.js";
 import { registerLogoutSave } from "../lib/account-cache.js";
-import { trapDialogTab } from "../lib/dialog-focus.js";
+import { DialogFocusBoundary, trapDialogTab } from "../lib/dialog-focus.js";
 import { BEFORE_SHORTCUT_NAVIGATION_EVENT, commandForKeyboardEvent, isEditableShortcutTarget, type ShortcutNavigationDetail } from "../lib/shortcut-runtime.js";
 import { LyricHistory } from "./lyric-history.js";
 import { LyricResourcePanel } from "./lyric-resource-panel.js";
@@ -656,7 +656,8 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     "--lyric-letter-spacing": `${displaySettings.effective.letterSpacing}em`
   } as CSSProperties;
 
-  return <section className={`lyric-editor-page${focusMode ? " is-focus-mode" : ""}`} aria-labelledby="lyric-title-label" style={writingVariables}>
+  return <section className={`lyric-editor-page${focusMode ? " is-focus-mode" : ""}`} aria-labelledby="lyric-editor-heading" style={writingVariables}>
+    <h1 className="sr-only" id="lyric-editor-heading">가사 편집: {title || "제목 없음"}</h1>
     <header className="lyric-editor-header">
       <div className="lyric-editor-context">
         <a href={dashboardHref} className="back-inline" onClick={(event) => {
@@ -761,6 +762,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     {rhymeSelection ? <div className="dialog-backdrop rhyme-selection-backdrop" role="presentation" onPointerDown={(event) => {
       if (event.target === event.currentTarget) setRhymeSelection(null);
     }}><section className="manual-copy-dialog rhyme-selection-dialog" role="dialog" aria-modal="true" aria-labelledby="rhyme-selection-title" aria-describedby="rhyme-selection-description">
+      <DialogFocusBoundary selector=".rhyme-selection-dialog" onClose={() => setRhymeSelection(null)} blocked={commandBusy} initialFocus="textarea" />
       <p className="eyebrow">Rhyme selection</p>
       <h2 id="rhyme-selection-title">‘{rhymeSelection.item.title}’에서 표현 선택</h2>
       <p id="rhyme-selection-description">아래 원문에서 삽입할 부분을 드래그해 선택하세요. 현재 가사의 커서·선택 위치는 CRDT 기준으로 보존됩니다.</p>
@@ -780,7 +782,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         }
       }} disabled={commandBusy}>{commandBusy ? "확인 중…" : "선택 영역 삽입"}</button></div>
     </section></div> : null}
-    {deleteOpen ? <div className="dialog-backdrop" role="presentation"><section className="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="editor-delete-title" aria-describedby="editor-delete-description"><p className="eyebrow">Soft delete</p><h2 id="editor-delete-title">‘{title}’ 가사를 삭제할까요?</h2><p id="editor-delete-description">현재 가사를 숨긴 뒤 최근 다른 가사 또는 곡 대시보드로 이동합니다.</p><div><button autoFocus className="secondary-button" type="button" disabled={commandBusy} onClick={() => setDeleteOpen(false)}>취소</button><button className="danger-button" type="button" disabled={commandBusy} onClick={deleteCurrent}>{commandBusy ? "삭제 중…" : "가사 삭제 확인"}</button></div></section></div> : null}
+    {deleteOpen ? <div className="dialog-backdrop" role="presentation"><section className="delete-dialog lyric-editor-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="editor-delete-title" aria-describedby="editor-delete-description"><DialogFocusBoundary selector=".lyric-editor-delete-dialog" onClose={() => setDeleteOpen(false)} blocked={commandBusy} /><p className="eyebrow">Soft delete</p><h2 id="editor-delete-title">‘{title}’ 가사를 삭제할까요?</h2><p id="editor-delete-description">현재 가사를 숨긴 뒤 최근 다른 가사 또는 곡 대시보드로 이동합니다.</p><div><button className="secondary-button" type="button" disabled={commandBusy} onClick={() => setDeleteOpen(false)}>취소</button><button className="danger-button" type="button" disabled={commandBusy} onClick={deleteCurrent}>{commandBusy ? "삭제 중…" : "가사 삭제 확인"}</button></div></section></div> : null}
   </section>;
 }
 

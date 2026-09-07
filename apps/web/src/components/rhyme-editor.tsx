@@ -8,7 +8,7 @@ import { RESOURCE_COLORS, RHYME_LIMITS, type ResourceColor, type RhymeNoteRecord
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
-import { trapDialogTab } from "../lib/dialog-focus.js";
+import { DialogFocusBoundary, trapDialogTab } from "../lib/dialog-focus.js";
 import { createRhymeMetadataSaver } from "../lib/rhyme-metadata.js";
 import { RhymeHistory } from "./rhyme-history.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
@@ -259,7 +259,8 @@ export function RhymeEditor({ ownerId, initialRhyme, returnTo = "/rhymes" }: { o
   const titleLength = [...title.trim()].length;
   const titleError = !title.trim() ? "제목을 입력해야 저장할 수 있습니다." : titleLength > RHYME_LIMITS.title ? `제목은 ${RHYME_LIMITS.title}자 이하로 입력해 주세요.` : "";
 
-  return <section className="rhyme-editor-page" aria-labelledby="rhyme-title-label">
+  return <section className="rhyme-editor-page" aria-labelledby="rhyme-editor-heading">
+    <h1 className="sr-only" id="rhyme-editor-heading">라임 노트 편집: {title || "제목 없음"}</h1>
     <header className="rhyme-editor-header">
       <div><button type="button" className="back-button" onClick={() => void goBack()}>← 라임 노트</button><p className="eyebrow">Rhyme editor</p></div>
       <div className="rhyme-editor-actions">
@@ -316,9 +317,10 @@ export function RhymeEditor({ ownerId, initialRhyme, returnTo = "/rhymes" }: { o
       readHistory={async () => { const sync = syncRef.current; if (!sync || !await sync.flush()) throw new Error("REVISION_UNAVAILABLE"); return sync.listRevisions(); }}
       readRevision={async (id) => { if (!syncRef.current) throw new Error("REVISION_UNAVAILABLE"); return syncRef.current.getRevision(id); }}
       restore={async (id, input) => { if (!await flushBeforeCommand() || !syncRef.current) throw new Error("REVISION_UNAVAILABLE"); await syncRef.current.restoreRevision(id, input); }} /> : null}
-    {deleteOpen ? <div className="dialog-backdrop"><section className="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="rhyme-delete-title">
+    {deleteOpen ? <div className="dialog-backdrop"><section className="delete-dialog rhyme-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="rhyme-delete-title">
+      <DialogFocusBoundary selector=".rhyme-delete-dialog" onClose={() => setDeleteOpen(false)} blocked={busy} />
       <p className="eyebrow">휴지통으로 이동</p><h2 id="rhyme-delete-title">‘{title}’ 라임 노트를 삭제할까요?</h2><p>노트는 휴지통으로 이동하며 태그와 곡 연결 원본은 보존됩니다.</p>
-      <div><button type="button" autoFocus className="secondary-button" disabled={busy} onClick={() => setDeleteOpen(false)}>취소</button>
+      <div><button type="button" className="secondary-button" disabled={busy} onClick={() => setDeleteOpen(false)}>취소</button>
         <button type="button" className="danger-button" disabled={busy} onClick={() => void deleteCurrent()}>{busy ? "삭제 중…" : "라임 노트 삭제 확인"}</button></div>
     </section></div> : null}
     <CopyFeedback state={copyFeedback} dialogTitle={() => "직접 복사해 주세요"} textareaLabel={() => "수동 복사할 라임 노트"} />

@@ -4,6 +4,7 @@ import {
   type RecentWorkItem,
   type RecentWorkTypeFilter
 } from "@lyricscloud/domain";
+import { StatePanel } from "./state-panel.js";
 
 const FILTERS: ReadonlyArray<{ type: RecentWorkTypeFilter; label: string }> = [
   { type: "all", label: "전체" },
@@ -27,8 +28,8 @@ export function RecentWorkScreen({ items, type }: { items: readonly RecentWorkIt
       {FILTERS.map((filter) => <a key={filter.type} href={filter.type === "all" ? "/recent" : `/recent?type=${filter.type}`}
         className={filter.type === type ? "active" : ""} aria-current={filter.type === type ? "page" : undefined}>{filter.label}</a>)}
     </nav>
-    {items === null ? <div className="recent-empty" role="alert"><span aria-hidden="true">!</span><h2>최근 작업을 불러오지 못했습니다.</h2><p>현재 자료는 변경되지 않았습니다. 연결을 확인한 뒤 다시 시도해 주세요.</p><a className="primary-link" href={returnTo}>다시 시도</a></div>
-      : items.length === 0 ? <div className="recent-empty"><span aria-hidden="true">↺</span><h2>표시할 최근 작업이 없습니다.</h2><p>자료를 열거나 수정하면 수정 시각과 열람 시각을 구분해 이곳에 표시합니다.</p><a className="primary-link" href="/songs">첫 작업 열기</a></div>
+    {items === null ? <StatePanel className="recent-empty" kind="error" title="최근 작업을 불러오지 못했습니다." detail="현재 자료는 변경되지 않았습니다. 온라인 연결과 로그인 상태를 확인한 뒤 다시 시도해 주세요." action={<a className="primary-link" href={returnTo}>다시 시도</a>} />
+      : items.length === 0 ? <StatePanel className="recent-empty" kind="empty" title="표시할 최근 작업이 없습니다." detail="자료를 열거나 수정하면 수정 시각과 열람 시각을 구분해 이곳에 표시합니다." action={<a className="primary-link" href="/songs">첫 작업 열기</a>} />
         : <div className="recent-layout">
           <div className="recent-timeline">
             {groups.map((group) => <section className="recent-group" key={group.key} aria-labelledby={`recent-group-${group.key}`}>

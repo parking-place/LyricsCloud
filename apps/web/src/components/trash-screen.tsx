@@ -3,6 +3,7 @@
 import { remainingTrashDays, trashTypes, type LyricRestoreStrategy, type TrashItem, type TrashReference, type TrashTypeFilter } from "@lyricscloud/domain";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { trapDialogTab } from "../lib/dialog-focus.js";
+import { StatePanel } from "./state-panel.js";
 
 const TYPE_LABELS: Record<Exclude<TrashTypeFilter, "all">, string> = {
   song: "곡", lyrics: "가사", rhyme_note: "라임 노트", prompt: "프롬프트", template: "템플릿"
@@ -104,7 +105,7 @@ export function TrashScreen({ initialItems, songs }: { initialItems: readonly Tr
       </tbody></table></div>
       <div className="trash-card-list">{visible.map((item) => <TrashCard key={keyOf(item)} item={item} checked={selected.has(keyOf(item))} onToggle={() => toggle(item)} onRestore={() => openAction("restore", item)} onDelete={() => openAction("permanent", item)} />)}</div>
       <div className="trash-bulk-actions"><p>{selected.size ? impactText(targets) : "여러 자료를 선택하면 한 번에, 부분 성공 없이 처리합니다."}</p><button type="button" className="secondary-button" disabled={!selected.size} onClick={() => openAction("restore")}>선택 복원</button><button type="button" className="danger-button" disabled={!selected.size} onClick={() => openAction("permanent")}>선택 완전 삭제</button></div>
-    </> : <div className="empty-state trash-empty"><span aria-hidden="true">♲</span><h2>휴지통이 비어 있습니다</h2><p>삭제한 자료가 생기면 원래 위치와 자동 삭제 예정일을 여기에서 확인할 수 있습니다.</p></div>}
+    </> : <StatePanel className="empty-state trash-empty" kind="empty" title="휴지통이 비어 있습니다" detail="삭제한 자료가 생기면 원래 위치와 자동 삭제 예정일을 여기에서 확인할 수 있습니다." action={<a className="secondary-button" href="/songs">자료 둘러보기</a>} />}
     {action ? <div className="trash-dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget && !busy) closeAction(); }}>
       <section className="trash-dialog" role="dialog" aria-modal="true" aria-labelledby="trash-dialog-title" data-trash-dialog>
         <header><div><p className="eyebrow">{action === "restore" ? "Restore" : "Permanent delete"}</p><h2 id="trash-dialog-title">{action === "restore" ? `${targets.length}개 자료 복원` : `${targets.length}개 자료 완전 삭제`}</h2></div><button type="button" onClick={closeAction} disabled={busy}>닫기</button></header>

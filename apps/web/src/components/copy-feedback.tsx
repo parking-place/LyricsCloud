@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 
 export interface CopyFeedbackState {
   readonly toast: string | null;
@@ -51,14 +52,13 @@ export function CopyFeedback({ state, onManualComplete, dialogTitle, textareaLab
   useEffect(() => {
     if (!state.manual) return;
     const frame = requestAnimationFrame(() => { area.current?.focus(); area.current?.select(); });
-    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") state.closeManual(); };
-    window.addEventListener("keydown", escape);
-    return () => { cancelAnimationFrame(frame); window.removeEventListener("keydown", escape); };
+    return () => { cancelAnimationFrame(frame); };
   }, [state.manual]);
   return <>
     {state.toast ? <div className="copy-toast" role="status" aria-live="polite">{state.toast}</div> : null}
     {state.manual ? <div className="dialog-backdrop copy-dialog-backdrop" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) state.closeManual(); }}>
       <section className="manual-copy-dialog" role="dialog" aria-modal="true" aria-labelledby="shared-copy-title" aria-describedby="shared-copy-description">
+        <DialogFocusBoundary selector=".copy-dialog-backdrop .manual-copy-dialog" onClose={state.closeManual} initialFocus="textarea" />
         <p className="eyebrow">Clipboard fallback</p><h2 id="shared-copy-title">{dialogTitle?.(state.manual.target) ?? `직접 복사: ${state.manual.target}`}</h2>
         <p id="shared-copy-description">브라우저가 클립보드 쓰기를 허용하지 않았습니다. 아래 원문 전체가 선택되어 있으며 내용은 변경되지 않습니다.</p>
         <textarea ref={area} readOnly aria-label={textareaLabel?.(state.manual.target) ?? `수동 복사할 ${state.manual.target}`} value={state.manual.text} />

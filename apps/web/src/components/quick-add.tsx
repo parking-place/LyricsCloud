@@ -3,6 +3,7 @@
 import { readQuickCreationDraft, type QuickCreationDraft } from "@lyricscloud/editor";
 import { useEffect, useRef, useState } from "react";
 import { buildQuickCreationDraft, persistAndCreateQuickIdea } from "../lib/quick-create.js";
+import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 
 export function QuickAdd({ ownerId, currentSongId }: { ownerId: string; currentSongId?: string }) {
   const [open, setOpen] = useState(false);
@@ -60,9 +61,7 @@ export function QuickAdd({ ownerId, currentSongId }: { ownerId: string; currentS
   useEffect(() => {
     if (!open) return;
     const frame = requestAnimationFrame(() => inputRef.current?.focus());
-    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
-    window.addEventListener("keydown", escape);
-    return () => { cancelAnimationFrame(frame); window.removeEventListener("keydown", escape); };
+    return () => { cancelAnimationFrame(frame); };
   }, [open]);
 
   function show() {
@@ -89,6 +88,7 @@ export function QuickAdd({ ownerId, currentSongId }: { ownerId: string; currentS
     {notice ? <p className="quick-add-notice" role="status">{notice}{recoveredHref ? <> <a href={recoveredHref}>열기</a></> : null}</p> : null}
     {open ? <div className="dialog-backdrop quick-add-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget && !busy) setOpen(false); }}>
       <section className="quick-add-dialog" role="dialog" aria-modal="true" aria-labelledby="quick-add-title">
+        <DialogFocusBoundary selector=".quick-add-dialog" onClose={() => setOpen(false)} blocked={busy} initialFocus="textarea" />
         <header><div><p className="eyebrow">Global capture</p><h2 id="quick-add-title">빠른 추가</h2></div><button type="button" disabled={busy} onClick={() => setOpen(false)}>닫기</button></header>
         <nav className="quick-add-types" aria-label="새 자료 유형">
           <a href={`/songs/new?returnTo=${encodeURIComponent(returnTo)}`}><span>♪</span><strong>새 곡</strong><small>곡 정보 입력</small></a>

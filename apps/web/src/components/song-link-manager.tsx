@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 
 export type SongLinkKind = "rhyme_note" | "prompt";
 type LinkState = "all" | "linked" | "unlinked";
@@ -76,18 +77,6 @@ export function SongLinkManager({ songId, songTitle, kind, onKindChange, onClose
     return () => controller.abort();
   }, [kind, label, reloadKey, search, songId, state]);
 
-  useEffect(() => {
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || saving) return;
-      if (confirming) {
-        setConfirming(false);
-        window.setTimeout(() => applyRef.current?.focus());
-      } else onClose();
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [confirming, onClose, saving]);
-
   async function loadMore() {
     if (!nextCursor || loadingMore) return;
     setLoadingMore(true);
@@ -153,6 +142,7 @@ export function SongLinkManager({ songId, songTitle, kind, onKindChange, onClose
 
   return <div className="song-link-backdrop" role="presentation">
     <section className="song-link-dialog" role="dialog" aria-modal="true" aria-labelledby="song-link-title">
+      <DialogFocusBoundary selector=".song-link-dialog" onClose={onClose} blocked={saving} initialFocus="input" />
       <div className="sheet-handle" aria-hidden="true" />
       <header><div><p className="eyebrow">Linked resources</p><h2 id="song-link-title">{songTitle} 연결 자료 관리</h2><p>자료를 여러 개 선택한 뒤 한 번에 적용할 수 있습니다.</p></div><button type="button" disabled={saving} onClick={onClose} aria-label="연결 관리 닫기">닫기</button></header>
       <div className="song-link-tabs" role="tablist" aria-label="자료 유형">
@@ -160,7 +150,7 @@ export function SongLinkManager({ songId, songTitle, kind, onKindChange, onClose
         <button type="button" role="tab" aria-selected={kind === "prompt"} onClick={() => selectKind("prompt")}>프롬프트</button>
       </div>
       <div className="song-link-toolbar">
-        <label><span>{label} 검색</span><input ref={searchRef} autoFocus value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder={kind === "rhyme_note" ? "제목 또는 본문 검색" : "제목 또는 토큰 검색"} /></label>
+        <label><span>{label} 검색</span><input ref={searchRef} value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder={kind === "rhyme_note" ? "제목 또는 본문 검색" : "제목 또는 토큰 검색"} /></label>
         <div role="group" aria-label="연결 상태 필터">{(["all", "linked", "unlinked"] as const).map((value) => <button key={value} type="button" aria-pressed={state === value} onClick={() => setState(value)}>{value === "all" ? "전체" : value === "linked" ? "연결됨" : "미연결"}</button>)}</div>
       </div>
       <div className="song-link-summary"><span>결과 {totalCount.toLocaleString("ko-KR")}개</span><strong>{pending.length ? `변경 ${pending.length}개` : "변경 없음"}</strong></div>
@@ -180,9 +170,10 @@ export function SongLinkManager({ songId, songTitle, kind, onKindChange, onClose
       </div>
       <footer><button className="secondary-button" type="button" disabled={saving} onClick={onClose}>취소</button><button ref={applyRef} className="primary-button" type="button" disabled={!pending.length || saving} onClick={() => void applyChanges()}>{saving ? "적용 중…" : `변경 ${pending.length}개 적용`}</button></footer>
       {confirming ? <div className="song-unlink-confirm" role="alertdialog" aria-modal="true" aria-labelledby="song-unlink-title" aria-describedby="song-unlink-description">
+        <DialogFocusBoundary selector=".song-unlink-confirm" onClose={() => { setConfirming(false); window.setTimeout(() => applyRef.current?.focus()); }} blocked={saving} />
         <p className="eyebrow">연결만 해제</p><h3 id="song-unlink-title">{songTitle}에서 {unlinkChanges.length}개 자료의 연결을 해제할까요?</h3>
         <p id="song-unlink-description">{unlinkChanges.slice(0, 3).map(({ item }) => item.title).join(" · ")}{unlinkChanges.length > 3 ? ` 외 ${unlinkChanges.length - 3}개` : ""}. 자료 자체는 삭제되지 않고 원래 라이브러리에 그대로 남습니다.</p>
-        <div><button autoFocus className="secondary-button" type="button" disabled={saving} onClick={() => { setConfirming(false); window.setTimeout(() => applyRef.current?.focus()); }}>돌아가기</button><button className="danger-button" type="button" disabled={saving} onClick={() => void applyChanges(true)}>{saving ? "적용 중…" : "연결 해제 포함 적용"}</button></div>
+        <div><button className="secondary-button" type="button" disabled={saving} onClick={() => { setConfirming(false); window.setTimeout(() => applyRef.current?.focus()); }}>돌아가기</button><button className="danger-button" type="button" disabled={saving} onClick={() => void applyChanges(true)}>{saving ? "적용 중…" : "연결 해제 포함 적용"}</button></div>
       </div> : null}
     </section>
   </div>;

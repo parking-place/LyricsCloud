@@ -53,11 +53,11 @@ async function DashboardData({ ownerId, song, returnTo }: { ownerId: string; son
 }
 
 function DashboardLoading() {
-  return <main className="dashboard-page dashboard-loading" aria-label="곡 대시보드 불러오는 중" aria-busy="true">
+  return <div className="dashboard-page dashboard-loading" role="status" aria-label="곡 대시보드 불러오는 중" aria-busy="true">
     <header className="dashboard-heading skeleton-block"><div><span /><h1>곡 대시보드를 불러오는 중입니다.</h1><p /></div></header>
     <div className="dashboard-layout">
       <section className="dashboard-main"><div className="count-grid">{Array.from({ length: 3 }, (_, index) => <article className="skeleton-block" key={index} />)}</div><div className="dashboard-panel skeleton-block" /></section>
       <aside className="dashboard-side"><div className="dashboard-panel skeleton-block" /><div className="dashboard-panel skeleton-block" /></aside>
     </div>
-  </main>;
+  </div>;
 }
