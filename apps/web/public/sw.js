@@ -1,6 +1,6 @@
 /* LyricsCloud caches only immutable, content-addressed framework assets. */
 const CACHE_PREFIX = "lyricscloud-shell-";
-const CACHE_NAME = `${CACHE_PREFIX}0.9.0-p3-1`;
+const CACHE_NAME = `${CACHE_PREFIX}0.9.0-p5-1`;
 const STATIC_PATH = "/_next/static/";
 
 function contentAddressed(pathname) {
