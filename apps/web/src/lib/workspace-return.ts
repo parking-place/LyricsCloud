@@ -5,7 +5,7 @@ export function safeWorkspaceReturnTo(value: string | undefined, fallback: Works
   try {
     const parsed = new URL(value, "https://lyricscloud.local");
     if (parsed.origin !== "https://lyricscloud.local") return fallback;
-    return ["/workspace", "/songs", "/rhymes", "/prompts", "/lyrics", "/search"].some((prefix) => parsed.pathname === prefix || parsed.pathname.startsWith(`${prefix}/`))
+    return ["/workspace", "/songs", "/rhymes", "/prompts", "/lyrics", "/search", "/recent"].some((prefix) => parsed.pathname === prefix || parsed.pathname.startsWith(`${prefix}/`))
       ? `${parsed.pathname}${parsed.search}` : fallback;
   } catch { return fallback; }
 }

@@ -23,8 +23,12 @@ export default async function LyricEditorPage({ params, searchParams }: {
   if (!song) notFound();
   const lyrics = await getAuthContext().lyrics.listSongLyrics(user.userId, lyric.songId).catch(() => null);
   if (!lyrics) notFound();
+  const [initialPosition] = await Promise.all([
+    getAuthContext().recentWork.getLyricPosition(user.userId, lyric.id).catch(() => null),
+    getAuthContext().recentWork.recordOpen(user.userId, lyric.id).catch(() => false)
+  ]);
   const returnTo = safeWorkspaceReturnTo(query.returnTo);
   const initialFind = normalizeSearchText((query.find ?? "").slice(0, 200));
   const dashboardHref = `/songs/${lyric.songId}?returnTo=${encodeURIComponent(returnTo)}`;
-  return <WorkspaceShell profile={user} active="songs" currentSongId={song.id}><LyricEditor key={lyric.id} ownerId={user.userId} initialLyric={lyric} songTitle={song.title} songLyrics={lyrics} dashboardHref={dashboardHref} returnTo={returnTo} initialFind={initialFind} /></WorkspaceShell>;
+  return <WorkspaceShell profile={user} active="songs" currentSongId={song.id}><LyricEditor key={lyric.id} ownerId={user.userId} initialLyric={lyric} songTitle={song.title} songLyrics={lyrics} dashboardHref={dashboardHref} returnTo={returnTo} initialFind={initialFind} initialPosition={initialPosition} /></WorkspaceShell>;
 }

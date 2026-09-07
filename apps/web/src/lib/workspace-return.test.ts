@@ -12,4 +12,5 @@ it("keeps a caller-specific list fallback without weakening path validation", ()
   expect(safeWorkspaceReturnTo(undefined, "/rhymes")).toBe("/rhymes");
   expect(safeWorkspaceReturnTo("https://evil.example/search", "/prompts")).toBe("/prompts");
   expect(safeWorkspaceReturnTo("/search?q=hook", "/prompts")).toBe("/search?q=hook");
+  expect(safeWorkspaceReturnTo("/recent?type=lyrics", "/prompts")).toBe("/recent?type=lyrics");
 });

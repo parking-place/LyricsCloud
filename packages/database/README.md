@@ -23,3 +23,5 @@ readiness는 인증 실패, 시간 초과, 연결 불가, schema 미적용, 기�
 0700은 원문과 분리된 NFKC·영문 소문자·공백 축약 검색 생성 열과 GIN trigram 인덱스를 곡·가사·라임·프롬프트·태그에 추가합니다. `PostgresSearchStore`는 RLS와 명시적 owner/soft-delete 조건을 함께 적용하고 제목 완전 일치→시작→포함→태그→본문 점수와 마이크로초 정밀도 keyset cursor를 제공합니다. `%`, `_`, 역슬래시는 `LIKE ... ESCAPE`에서 문자 그대로 처리합니다. `rollback/0700_search_foundation.sql`은 원문 자료와 baseline 소유 `pg_trgm` 확장을 보존한 채 파생 열·인덱스만 제거합니다.
 
 0701은 성공한 통합 검색의 정규화 검색어·유형·최근 실행 시각을 owner별로 최대 8개 보존합니다. 같은 owner·정규화 검색어·유형은 새 행 대신 시각과 표시 검색어를 갱신하며, 강제 RLS와 API의 owner 조건을 함께 적용합니다. 개별 삭제는 다른 owner나 없는 ID에도 같은 결과를 내 존재를 숨기고, 전체 삭제는 현재 owner 범위만 지웁니다. `pnpm test:migration:0701`은 NFKC 중복, 강제 RLS, 교차 owner 차단과 rollback/reapply를 검사합니다.
+
+0702는 owner·resource당 하나의 content-free 최근 상태를 추가합니다. 열람 시각은 resource 수정 시각과 분리하고, 가사에만 cursor offset·송폼 label/순번·scroll·viewport를 저장합니다. 복합 owner/type FK와 위치 shape check, 강제 RLS가 교차 owner와 비가사 위치를 차단합니다. 최근 목록은 active resource의 수정 시각과 열람 시각을 함께 사용하므로 migration 전 자료도 최근 수정 항목으로 보이며 soft delete 자료와 삭제된 부모 곡의 가사는 제외합니다. `pnpm test:migration:0702`는 무결성·RLS·rollback/reapply를 검사합니다.

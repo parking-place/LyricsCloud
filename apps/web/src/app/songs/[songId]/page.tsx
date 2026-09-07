@@ -23,6 +23,7 @@ export default async function SongDashboardPage({
   const context = getAuthContext();
   const song = await context.songs.getSongSummary(user.userId, songId).catch(() => null);
   if (!song) notFound();
+  await context.recentWork.recordOpen(user.userId, song.id).catch(() => false);
   const returnTo = safeWorkspaceReturnTo(query.returnTo);
   return <WorkspaceShell profile={user} active="songs" currentSongId={song.id}><Suspense fallback={<DashboardLoading />}><DashboardData ownerId={user.userId} song={song} returnTo={returnTo} /></Suspense></WorkspaceShell>;
 }

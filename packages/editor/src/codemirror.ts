@@ -2,7 +2,7 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { Annotation, ChangeSet, Compartment, EditorSelection, EditorState, Transaction } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView, keymap, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { findSongFormSection, SongFormIndex, type SongFormSection } from "./songform.js";
-import { findSearchLiteralRange, REVISION_POLICY } from "@lyricscloud/domain";
+import { findSearchLiteralRange, REVISION_POLICY, type LyricResumePosition } from "@lyricscloud/domain";
 
 export interface SongFormNavigationState {
   readonly sections: readonly SongFormSection[];
@@ -40,12 +40,14 @@ export interface CodeMirrorTextEditor {
   readonly value: string;
   readonly visibleRange: { readonly from: number; readonly to: number };
   readonly selection: { readonly anchor: number; readonly head: number; readonly from: number; readonly to: number };
+  readonly scrollTop: number;
   readonly composing: boolean;
   readonly songForm: SongFormNavigationState;
   replace(from: number, to: number, value: string, requestId?: string): void;
   applyTransaction(transaction: Omit<EditorDocumentTransaction, "origin" | "composing">): void;
   goToSongFormSection(sectionId: string): boolean;
   goToTextMatch(query: string): boolean;
+  restoreResumePosition(position: LyricResumePosition, preferSongform: boolean): { readonly offset: number; readonly usedSongform: boolean };
   focus(): void;
   setEditable(editable: boolean): void;
   destroy(): void;
@@ -192,6 +194,7 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       return { anchor: selection.anchor, head: selection.head, from: selection.from, to: selection.to };
     },
     get composing() { return compositionChanges !== null || view.compositionStarted; },
+    get scrollTop() { return view.scrollDOM.scrollTop; },
     get songForm() {
       const sections = view.plugin(songFormPlugin)?.sections ?? [];
       return navigationState(sections, view.state.selection.main.head);
@@ -231,6 +234,26 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       });
       view.focus();
       return true;
+    },
+    restoreResumePosition(position, preferSongform) {
+      const sections = view.plugin(songFormPlugin)?.sections ?? [];
+      const matchedSection = position.songformLabel && position.songformOccurrence
+        ? sections.find((section) => section.label.trim() === position.songformLabel
+          && section.occurrence === position.songformOccurrence)
+        : undefined;
+      const usedSongform = Boolean(preferSongform && matchedSection);
+      const offset = usedSongform
+        ? matchedSection!.tagFrom
+        : Math.max(0, Math.min(position.cursorOffset, view.state.doc.length));
+      view.dispatch({
+        selection: EditorSelection.cursor(offset),
+        effects: EditorView.scrollIntoView(offset, { y: usedSongform ? "start" : "center", yMargin: 72 })
+      });
+      if (!usedSongform) requestAnimationFrame(() => {
+        if (!disposed) view.scrollDOM.scrollTop = Math.max(0, Math.min(position.scrollTop, view.scrollDOM.scrollHeight));
+      });
+      view.focus();
+      return { offset, usedSongform };
     },
     focus() { view.focus(); },
     setEditable(value) {

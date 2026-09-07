@@ -167,3 +167,17 @@ export const recentSearches = pgTable("recent_searches", {
   normalizedQuery: text("normalized_query"),
   searchedAt: timestamp("searched_at", { withTimezone: true }).notNull().defaultNow()
 });
+
+export const recentItems = pgTable("recent_items", {
+  ownerId: uuid("owner_id").notNull(),
+  resourceId: uuid("resource_id").notNull(),
+  resourceType: text("resource_type").$type<"song" | "lyrics" | "rhyme_note" | "prompt">().notNull(),
+  lastOpenedAt: timestamp("last_opened_at", { withTimezone: true }).notNull().defaultNow(),
+  cursorOffset: integer("cursor_offset"),
+  songformLabel: text("songform_label"),
+  songformOccurrence: integer("songform_occurrence"),
+  scrollTop: integer("scroll_top"),
+  viewport: text("viewport").$type<"desktop" | "mobile">(),
+  positionSavedAt: timestamp("position_saved_at", { withTimezone: true }),
+  positionBasisUpdatedAt: timestamp("position_basis_updated_at", { withTimezone: true })
+}, (table) => [primaryKey({ columns: [table.ownerId, table.resourceId] })]);

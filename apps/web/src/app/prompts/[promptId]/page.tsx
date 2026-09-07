@@ -15,5 +15,6 @@ export default async function PromptEditorPage({ params, searchParams }: { param
   const query = await searchParams;
   const prompt = await getAuthContext().prompts.getPrompt(user.userId, promptId).catch(() => null);
   if (!prompt) notFound();
+  await getAuthContext().recentWork.recordOpen(user.userId, prompt.id).catch(() => false);
   return <WorkspaceShell profile={user} active="prompts"><PromptEditor key={prompt.id} ownerId={user.userId} initialPrompt={prompt} returnTo={safeWorkspaceReturnTo(query.returnTo, "/prompts")} /></WorkspaceShell>;
 }

@@ -5,6 +5,7 @@ import {
   capturePortableTextSelection,
   createBrowserLyricSync,
   copyWholeLyric,
+  BufferedPositionSaver,
   createCodeMirrorTextEditor,
   parseSongForm,
   SerializedSaveController,
@@ -24,6 +25,8 @@ import {
   type CrdtTextSelectionReference,
   type EditorResourcePanelItem,
   type LyricRecord,
+  type LyricResumePosition,
+  type SaveLyricPositionInput,
   type LyricStatus
 } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
@@ -43,7 +46,7 @@ interface LyricEditorDraft {
   readonly pinOrder: number | null;
 }
 
-export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dashboardHref, returnTo, initialFind }: {
+export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dashboardHref, returnTo, initialFind, initialPosition }: {
   ownerId: string;
   initialLyric: LyricRecord;
   songTitle: string;
@@ -51,11 +54,13 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   dashboardHref: string;
   returnTo: string;
   initialFind: string;
+  initialPosition: LyricResumePosition | null;
 }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<CodeMirrorTextEditor | null>(null);
   const controllerRef = useRef<SerializedSaveController<LyricEditorDraft> | null>(null);
   const localSyncRef = useRef<BrowserLyricSync | null>(null);
+  const positionSaverRef = useRef<BufferedPositionSaver<SaveLyricPositionInput> | null>(null);
   const titleRef = useRef(initialLyric.title);
   const bodyRef = useRef(initialLyric.body);
   const memoRef = useRef(initialLyric.memo);
@@ -107,7 +112,8 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     const parent = mountRef.current;
     if (!parent) return;
     let active = true;
-    let deepLinkFocusPending = Boolean(initialFind);
+    let initialNavigationPending = Boolean(initialFind || initialPosition);
+    let positionCaptureEnabled = !initialNavigationPending;
     const controller = new SerializedSaveController<LyricEditorDraft>({
       initialDraft: {
         title: initialLyric.title, memo: initialLyric.memo, status: initialLyric.status,
@@ -118,6 +124,30 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       onStateChange(state) { if (active) setSaveState(state); }
     });
     controllerRef.current = controller;
+    const positionSaver = new BufferedPositionSaver<SaveLyricPositionInput>({
+      save: async (position) => {
+        const response = await fetch(`/api/recent/${initialLyric.id}/position`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(position),
+          keepalive: true
+        });
+        if (!response.ok) throw new Error("POSITION_SAVE_FAILED");
+      }
+    });
+    positionSaverRef.current = positionSaver;
+    const queuePosition = (navigation: SongFormNavigationState) => {
+      const editor = editorRef.current;
+      if (!active || !positionCaptureEnabled || !editor) return;
+      const activeSection = navigation.sections.find((section) => section.id === navigation.activeSectionId);
+      positionSaver.change({
+        cursorOffset: editor.selection.head,
+        songformLabel: activeSection?.label.trim() || null,
+        songformOccurrence: activeSection?.occurrence ?? null,
+        scrollTop: editor.scrollTop,
+        viewport: window.matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop"
+      });
+    };
     const editor = createCodeMirrorTextEditor({
       parent,
       initialValue: initialLyric.body,
@@ -133,7 +163,10 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         if (active) setCommandNotice(saved ? "" : "붙여넣기 전 수정 기록을 저장하지 못했습니다. 연결을 확인한 뒤 다시 붙여넣어 주세요.");
         return saved;
       },
-      onSongFormNavigationChange: setSongForm,
+      onSongFormNavigationChange(navigation) {
+        setSongForm(navigation);
+        queuePosition(navigation);
+      },
       onTransaction(transaction) { localSyncRef.current?.applyLocalTransaction(transaction); }
     });
     editorRef.current = editor;
@@ -146,10 +179,13 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       }, onEditableChange(editable) {
         if (!active) return;
         editor.setEditable(editable);
-        if (editable && deepLinkFocusPending) {
-          deepLinkFocusPending = false;
+        if (editable && initialNavigationPending) {
+          initialNavigationPending = false;
           requestAnimationFrame(() => {
-            if (active && editor.goToTextMatch(initialFind)) setCommandNotice("검색 결과와 일치하는 첫 위치로 이동했습니다.");
+            if (!active) return;
+            applyInitialNavigation(editor);
+            positionCaptureEnabled = true;
+            queuePosition(editor.songForm);
           });
         }
       },
@@ -157,7 +193,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       onStateChange(state) { if (active) setLocalSyncState(state); }
     }).then((sync) => { if (active) localSyncRef.current = sync; else void sync.destroy(); })
       .catch(() => { if (active) setLocalSyncState("error"); });
-    const flush = () => { void controller.flush(); localSyncRef.current?.leave(); };
+    const flush = () => { void controller.flush(); void positionSaver.flush().catch(() => undefined); localSyncRef.current?.leave(); };
     const unregisterLogout = registerLogoutSave(async () => {
       if (titleComposingRef.current || memoComposingRef.current) return false;
       await controller.flush();
@@ -166,8 +202,11 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     }, () => ({ resourceId: initialLyric.id, title: titleRef.current, body: bodyRef.current, memo: memoRef.current }));
     window.addEventListener("pagehide", flush);
     const focusFrame = requestAnimationFrame(() => {
-      if (initialFind && editor.goToTextMatch(initialFind)) setCommandNotice("검색 결과와 일치하는 첫 위치로 이동했습니다.");
-      else editor.focus();
+      applyInitialNavigation(editor);
+      if (!initialNavigationPending) {
+        positionCaptureEnabled = true;
+        queuePosition(editor.songForm);
+      }
     });
     return () => {
       active = false;
@@ -178,11 +217,29 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       localSyncRef.current?.leave();
       void localSyncRef.current?.destroy();
       localSyncRef.current = null;
+      positionSaver.destroy();
+      if (positionSaverRef.current === positionSaver) positionSaverRef.current = null;
       if (editorRef.current === editor) editorRef.current = null;
       void controller.dispose();
       controllerRef.current = null;
     };
-  }, [initialFind, initialLyric.body, initialLyric.id, initialLyric.isFavorite, initialLyric.isPinned, initialLyric.memo, initialLyric.pinOrder, initialLyric.rowVersion, initialLyric.status, initialLyric.title, ownerId]);
+    function applyInitialNavigation(target: CodeMirrorTextEditor) {
+      if (initialFind && target.goToTextMatch(initialFind)) {
+        setCommandNotice("검색 결과와 일치하는 첫 위치로 이동했습니다.");
+        return;
+      }
+      if (initialPosition) {
+        const viewport = window.matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop";
+        const preferSongform = initialPosition.viewport !== viewport || initialPosition.basisUpdatedAt !== initialLyric.updatedAt;
+        const restored = target.restoreResumePosition(initialPosition, preferSongform);
+        setCommandNotice(restored.usedSongform
+          ? `마지막 ${initialPosition.songformLabel ?? "송폼"} 구간으로 이동했습니다.`
+          : "마지막 편집 위치로 이동했습니다.");
+        return;
+      }
+      target.focus();
+    }
+  }, [initialFind, initialLyric.body, initialLyric.id, initialLyric.isFavorite, initialLyric.isPinned, initialLyric.memo, initialLyric.pinOrder, initialLyric.rowVersion, initialLyric.status, initialLyric.title, initialLyric.updatedAt, initialPosition, ownerId]);
 
   useEffect(() => {
     const currentIds = new Set(songForm.sections.map((section) => section.id));
@@ -243,6 +300,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       setCommandNotice("작업 전 수정 기록을 저장하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.");
       return false;
     }
+    await positionSaverRef.current?.flush().catch(() => undefined);
     return true;
   }
 

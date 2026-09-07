@@ -46,7 +46,7 @@
 | [`PROD-0004`](../../docs/product/PROD-0004-lyric-versions.md) | 이름 있는 가사 resource와 복구용 revision의 구분 | [0.3.0 Phase 1](./0.3.0/1phase.md) | [0.3.1 Phase 4](./0.3.1/4phase.md) | `Accepted` |
 | [`PROD-0005`](../../docs/product/PROD-0005-quick-add.md) | 빠른 아이디어의 자료 유형과 새 가사의 부모 곡 선택 방식 | [0.6.0 Phase 4](./0.6.0/4phase.md) | [0.0.0 Phase 1](./0.0.0/1phase.md)에 쟁점 등록, [0.6.0 Phase 5](./0.6.0/5phase.md)에서 검증 | `Accepted` |
 | [`PROD-0006`](../../docs/product/PROD-0006-rhyme-lyric-insertion.md) | 라임 삽입 대상, 선택 영역, target 없음과 복사 대안 | [0.4.0 Phase 4](./0.4.0/4phase.md) | [0.6.0 Phase 4](./0.6.0/4phase.md) | `Accepted` |
-| `PROD-0007` | 최근 작업의 의미, 정렬 기준, 마지막 cursor·송폼 복원 | [0.7.0 Phase 3](./0.7.0/3phase.md) | [0.7.0 Phase 5](./0.7.0/5phase.md) | `Proposed` |
+| [`PROD-0007`](../../docs/product/PROD-0007-recent-work.md) | 최근 작업의 의미, 정렬 기준, 마지막 cursor·송폼 복원 | [0.7.0 Phase 3](./0.7.0/3phase.md) | [0.7.0 Phase 5](./0.7.0/5phase.md) | `Accepted` |
 | `PROD-0008` | 템플릿 적용 시 덮어쓰기·추가·취소와 기존 내용 보호 | [0.8.0 Phase 1](./0.8.0/1phase.md) | 0.8.0 Phase 5, 0.9.0 | `Proposed` |
 | `PROD-0009` | 단축키 조합, 실행 문맥, 운영체제별 키 표기 | [0.8.0 Phase 3](./0.8.0/3phase.md) | 0.8.0 Phase 5, 0.9.0 | `Proposed` |
 | [`PROD-0010`](../../docs/product/PROD-0010-soft-delete-restore.md) | soft delete, cascade, 연결 자료와 복원 후 관계의 의미 | [0.2.0 Phase 1](./0.2.0/1phase.md) | [0.8.0 Phase 4](./0.8.0/4phase.md) | `Accepted` |

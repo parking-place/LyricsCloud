@@ -23,3 +23,4 @@
 - [`0.6.0 곡 중심 창작 흐름 증적과 0.7.0 인계`](./0.6.0-CREATIVE-FLOW-HANDOFF.md)
 - [`0.7.0 통합 검색 계약`](./0.7.0-SEARCH-CONTRACT.md)
 - [`0.7.0 통합 검색 화면·딥링크 계약`](./0.7.0-SEARCH-UI-CONTRACT.md)
+- [`0.7.0 최근 작업·가사 위치 계약`](./0.7.0-RECENT-WORK-CONTRACT.md)
