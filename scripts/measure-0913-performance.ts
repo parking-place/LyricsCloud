@@ -86,8 +86,10 @@ async function main() {
 
     // Prime ZIP metadata, UTF-8 buffers, and the PostgreSQL cursor before the
     // measured pass, matching the warm-up policy used by the sampled metrics.
-    const exportWarmup = await exporter.openSnapshot(ownerId);
-    for await (const _ of createExportArchive(exportWarmup)) { /* consume without retaining content */ }
+    for (let exportWarmupPass = 0; exportWarmupPass < 3; exportWarmupPass += 1) {
+      const exportWarmup = await exporter.openSnapshot(ownerId);
+      for await (const _ of createExportArchive(exportWarmup)) { /* consume without retaining content */ }
+    }
     await new Promise<void>((resolve) => setImmediate(resolve));
     const rssBeforeExport = process.memoryUsage().rss;
     const exportStarted = performance.now();
@@ -118,13 +120,13 @@ async function main() {
       budgets: budgets.budgets,
       verdicts: verdicts(metrics, { exportTotalMs, exportRssGrowthMiB, purgeTotalMs, soakRssGrowthMiB: editorInput.rssGrowthMiB })
     };
+    const serialized = JSON.stringify(report, null, 2) + "\n";
+    if (outputArgument) await writeFile(outputArgument.slice("--output=".length), serialized);
+    console.log(serialized.trim());
     assert.equal(purge.resourceCount, budgets.fixture.rhymeNotes);
     assert.equal(purge.templateCount, 100);
     assert.equal(lockWaits, 0);
     assert(Object.values(report.verdicts).every(Boolean), `performance budget failed: ${Object.entries(report.verdicts).filter(([, pass]) => !pass).map(([name]) => name).join(", ")}`);
-    const serialized = JSON.stringify(report, null, 2) + "\n";
-    if (outputArgument) await writeFile(outputArgument.slice("--output=".length), serialized);
-    console.log(serialized.trim());
   } finally {
     await Promise.all([songs.close(), search.close(), lyrics.close(), lifecycle.close(), exporter.close()]);
     await target.end();

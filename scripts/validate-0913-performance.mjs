@@ -25,7 +25,8 @@ for (const marker of ["pnpm check", "pnpm test", "pnpm build", "pnpm test:perfor
 const ci = await read(".github/workflows/ci.yml");
 for (const marker of ["pnpm test:release:0913", "pnpm test:performance:0913", "pnpm test:e2e", "pnpm test:e2e:release:0905"]) assert(ci.includes(marker), `CI RC marker is missing: ${marker}`);
 const measurement = await read("scripts/measure-0913-performance.ts");
-assert(measurement.includes("const exportWarmup") && measurement.indexOf("const exportWarmup") < measurement.indexOf("const rssBeforeExport"), "export memory measurement must warm allocator and cursor state before its RSS baseline");
+assert(measurement.includes("exportWarmupPass < 3") && measurement.indexOf("const exportWarmup") < measurement.indexOf("const rssBeforeExport"), "export memory measurement must warm allocator and cursor state three times before its RSS baseline");
+assert(measurement.indexOf("console.log(serialized.trim())") < measurement.indexOf("performance budget failed"), "performance report must be emitted before budget assertions");
 
 console.log("0.9.1 Phase 3 performance contract: 2500 synthetic resources, 3-round budgets, set-based purge, RC pipeline verified");
 
