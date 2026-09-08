@@ -75,4 +75,4 @@ Phase 2는 이 단계의 공통 결과 스키마와 점수 규칙만 사용해 �
 - 1,500개·각 약 8,000자 합성 가사에서 1글자 2.396ms, 2글자 36.779ms, 선택적 일반 검색어 10.020ms를 기록했다. 작은 단일-owner corpus에서 선택성이 낮은 검색은 planner가 sequential scan을 선택했으며 이는 운영 SLO가 아니다.
 - 기능 SHA `9ed101142c6d5475149027e7bad4a42f4236fb98`의 GitHub Actions `34079253245`와 네 서비스 이미지 게시가 통과했다.
 - 같은 기능 SHA를 개발 서버에 배포해 `0.7.0`·`0700_search_foundation.sql`과 네 컨테이너 health를 확인했고, 공개 HTTPS에서 health·NFKC projection·6개 GIN index smoke를 통과한 뒤 합성 자료를 제거했다.
-- 상세 결과는 [Phase 1 검증 기록](../../../../docs/runbooks/0.7.0-phase1-validation.md)에 남겼다.
+- 상세 결과는 [Phase 1 검증 기록](../../../docs/runbooks/0.7.0-phase1-validation.md)에 남겼다.

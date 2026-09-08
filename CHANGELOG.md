@@ -2,10 +2,12 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
-## Unreleased
+## [1.0.0] - 2026-09-09
 
 ### Added
 
+- 최종 사용자 안내, production-mode 셀프호스트 Compose, OAuth·secret 교체, 지원·보안 보고, 경보·사고 기록과 backup/restore/upgrade/rollback 운영 문서
+- 승인 digest의 신규 빈 production 배포, 공개 health·OAuth 시작·합성 핵심 흐름·owner 격리·PWA·실패 주입·안정 구간 검증
 - 1.0.0 버전 봉인, 서비스별 환경 schema, 17개 migration checksum·호환 범위, production dependency license inventory와 digest-only release manifest 생성 계약
 - 네 production image의 독립 재빌드 비교, nonroot/read-only/health/signal/persistent 경계와 기존 keyless 서명·SLSA provenance·SBOM·취약점/secret scan 통합 gate
 - 0.9.1 보안 하드닝: 60개 API·32개 DB 테이블의 owner 격리 행렬, 53개 상태 변경 Origin gate, 요청별 nonce CSP, 1 MiB API body 상한과 인증·검색·내보내기 token bucket 제한
@@ -98,9 +100,12 @@
 - 로컬·개발·릴리스 Docker 작업 뒤 LyricsCloud의 미사용 객체와 초과 build cache를 정리하되 volume과 실행 중 자산은 보존하도록 표준화
 - CI 검증을 통과한 web·collaboration·worker·migrate image를 각 Docker Hub repository에 version·SHA·Dev 다중 tag로 발행하고, 승인된 릴리스만 Release·latest를 추가하도록 자동화
 
-### Not yet implemented
+### Known limitations
 
-- 0.9.1 성능·관측·복원 강화와 1.0.0 릴리스 준비
+- production build의 Yjs duplicate import 경고는 기능·원문 불일치 없이 P2로 추적하며 1.0.1에서 단일 import 경로를 조사
+- 단일 web replica 메모리 rate limiter 때문에 scale-out 전 공용 limiter 필요
+- 실제 iOS/Android 인수는 PASS했지만 기기·OS·브라우저 상세 버전 미제공
+- 공식 릴리스 서버의 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인으로 1.0.1+까지 유예
 
 ### Fixed
 

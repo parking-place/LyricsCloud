@@ -2,12 +2,14 @@
 
 기준은 Accepted [`ADR-0008`](../adr/ADR-0008-backup-restore.md)과 [`OPS-0002`](../operations/OPS-0002-artifact-verification.md)다. 모든 명령은 대상 environment와 SHA를 먼저 확인하고 실행한다. 실제 제목·본문·검색어·사용자 식별자를 출력하지 않는다.
 
+> **현재 공식 릴리스 서버 상태:** 아래 도구와 절차는 CI와 격리 환경에서 검증됐지만, 외부 backup 저장소·일일 timer·실제 archive·월간 restore 훈련은 사용자의 명시적 지시로 1.0.1+까지 구축하지 않았다. 따라서 현재 운영 서버는 24시간 RPO를 보장하지 않는다. 이 예외는 backup 성공으로 간주하지 않으며, 구축 전 장애에서는 DB 호스트 상실을 복구할 지점이 없다.
+
 ## 1. 설치와 경계
 
 1. checkout·PostgreSQL volume과 다른 호스트 또는 별도 마운트에 `/mnt/lyricscloud-backup`을 준비한다. DB host 상실과 같은 사건으로 사라지는 로컬 Docker volume은 허용하지 않는다.
 2. 저장소 root에 mode `0600`인 `.lyricscloud-backup-storage-id`를 만들고 `/etc/lyricscloud/backup.env`의 `BACKUP_STORAGE_ID`와 같은 안전한 식별자를 기록한다. `docker compose -f compose.yaml -f compose.backup.yaml --profile backup run --rm --entrypoint id backup`으로 확인한 container uid/gid에만 저장소 쓰기 권한을 부여한다.
 3. `/etc/lyricscloud/secrets/postgres_backup_password`와 public age recipient를 mode `0400`으로 둔다. age private identity는 이 호스트, backup 저장소, Git, image에 두지 않고 복구 담당자의 별도 시스템에 mode `0600` 이하로 보관한다.
-4. `.env.example`의 backup 변수를 운영 환경 파일에 옮긴다. `BACKUP_REPOSITORY_PATH`는 외부 저장소 절대 경로, 보존은 30일, RPO는 24시간으로 유지한다.
+4. `.env.example`의 backup 변수를 운영 환경 파일에 옮긴다. `BACKUP_REPOSITORY_PATH`는 외부 저장소 절대 경로, `BACKUP_RETENTION_DAYS=30`, `BACKUP_MAX_AGE_HOURS=24`로 유지한다.
 5. `infra/backup/systemd/`의 unit·timer를 `/etc/systemd/system/`에 설치하고 `systemctl daemon-reload && systemctl enable --now lyricscloud-backup.timer`를 실행한다. `systemctl list-timers lyricscloud-backup.timer`에서 다음 일 1회 실행을 확인한다.
 
 중단 조건은 경로 marker 불일치, 저장소 쓰기 불가, secret 누락·권한 과다, 사용 가능 공간 하한 미달, DB readiness 실패다. 이 경우 backup은 부분 파일을 제거하고 기존 정상 archive를 보존한다.
@@ -55,7 +57,7 @@ cosign verify \
 docker buildx imagetools inspect "parkingplace/lyricscloud-<service>@sha256:<approved-digest>" --format '{{json .Provenance.SLSA.buildDefinition.externalParameters}}'
 ```
 
-현재 SHA·version·schema와 정상 backup/RPO를 확인한다. 기존 app container를 중지하되 DB volume은 유지하고, 승인한 `migrate@sha256`를 한 번 실행한다. 성공한 뒤 web·collaboration·worker를 모두 승인 digest로 시작한다. container health, 공개 live/ready, 인증 session, 목록·검색·편집·동기화 합성 smoke를 통과한 뒤 이전 app image를 정리한다.
+현재 SHA·version·schema와 정상 backup/RPO를 확인한다. 공식 릴리스 서버의 승인 예외 기간에는 backup/RPO 미충족, 위험 인수자와 후속 목표 `1.0.1+`를 배포 기록에 다시 적고 진행한다. 기존 app container를 중지하되 DB volume은 유지하고, 승인한 `migrate@sha256`를 한 번 실행한다. 성공한 뒤 web·collaboration·worker를 모두 승인 digest로 시작한다. container health, 공개 live/ready, 인증 session, 목록·검색·편집·동기화 합성 smoke를 통과한 뒤 이전 app image를 정리한다.
 
 migration은 transaction과 advisory lock을 사용한다. 중간 실패 시 새 app을 시작하지 않고 실패 transaction이 rollback되었는지 schema migration 행과 합성 canary로 확인한다. destructive down migration은 실행하지 않는다.
 

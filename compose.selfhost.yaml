@@ -1,0 +1,68 @@
+# Production-mode source build for a single-host LyricsCloud installation.
+# Pin the checkout to an approved commit before building this override.
+services:
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.service
+      target: migrate
+    command: ["/app/migrate.mjs"]
+    environment:
+      NODE_ENV: production
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    volumes: !reset []
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.web
+    command: ["/app/apps/web/server.js"]
+    environment:
+      NODE_ENV: production
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes: !reset []
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+
+  collaboration:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.service
+      target: collaboration
+    command: ["/app/collaboration.mjs"]
+    environment:
+      NODE_ENV: production
+      APP_VERSION: ${APP_VERSION:-1.0.0}
+      BUILD_ID: ${BUILD_ID:?BUILD_ID must be the deployed 40-character Git SHA}
+      APP_ORIGIN: ${APP_ORIGIN:?APP_ORIGIN must be the public HTTPS origin}
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes: !reset []
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3001/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.service
+      target: worker
+    command: ["/app/worker.mjs"]
+    environment:
+      NODE_ENV: production
+      APP_VERSION: ${APP_VERSION:-1.0.0}
+      BUILD_ID: ${BUILD_ID:?BUILD_ID must be the deployed 40-character Git SHA}
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes: !reset []
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3002/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+
+secrets:
+  auth_allowed_emails:
+    file: ./.private/runtime/auth_allowed_emails

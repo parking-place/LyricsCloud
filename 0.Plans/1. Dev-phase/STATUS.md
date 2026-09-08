@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "1.0.0"
-current_phase: "1.0.0/3phase.md"
+current_phase: "1.0.0/4phase.md"
 state: "review"
 owner: "Codex"
-started_at: "2026-09-08 22:33 KST"
-updated_at: "2026-09-09 00:02 KST"
-next_action: "Phase 3 완료 문서 commit의 필수 CI·네 image 발행과 같은 SHA 개발 서버 배포·공개 smoke를 반복한 뒤 Phase 4 문서 인계를 시작한다"
+started_at: "2026-09-09 00:35 KST"
+updated_at: "2026-09-09 00:52 KST"
+next_action: "Phase 4 후보 commit의 필수 CI·네 image 발행과 같은 SHA 개발 서버 배포·공개 smoke 뒤 완료 문서를 봉인한다"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -45,7 +45,7 @@ next_action: "Phase 3 완료 문서 commit의 필수 CI·네 image 발행과 같
 | 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
 | 0.9.0 | complete | Phase 1~5 완료 | 0.8.0 완료 |
 | 0.9.1 | complete | Phase 1~5 완료, 기능 동결·보안·성능·관측·복구 RC 검증 | 0.9.0 완료 |
-| 1.0.0 | in_progress | Phase 1~3 완료, Phase 3 최종 문서 SHA 인수 | 0.9.1 release gate 통과 |
+| 1.0.0 | in_progress | Phase 1~3 완료, Phase 4 문서·운영 인계 진행 | 0.9.1 release gate 통과 |
 
 ## 활성 작업
 
@@ -53,7 +53,7 @@ next_action: "Phase 3 완료 문서 commit의 필수 CI·네 image 발행과 같
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.0 / Phase 3 | `LC-100-P3-01`~`09` | 1.0.0/3phase.md, STATUS.md, docs/runbooks, .private release evidence | Phase 2 final manifest, `OPS-0004`, 명시적 운영 승인 | 2026-09-08 22:33 KST | review; 완료 문서 SHA의 원격 CI·개발 인수 대기 |
+| Codex | 1.0.0 / Phase 4 | `LC-100-P4-01`~`09` | README.md, CHANGELOG.md, docs, scripts, CI, compose.selfhost.yaml, 1.0.0/4phase.md, STATUS.md | Phase 3 final SHA `6a9a5d0`, 실제 production 인수·승인 예외 | 2026-09-09 00:35 KST | review; 후보 SHA 원격 CI·개발 인수 대기 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,7 +102,7 @@ next_action: "Phase 3 완료 문서 commit의 필수 CI·네 image 발행과 같
 
 ## 다음 작업
 
-1.0.0 Phase 3 완료 문서 SHA의 원격 CI와 동일 SHA 개발 인수를 반복한 뒤 Phase 4 문서 인계로 이동한다. 사용자는 릴리스 배포 유예를 해제하고 Phase 5까지 진행하도록 승인했으며, 개발과 동일한 Google OAuth·DB 자격 증명 사용 및 backup 구축·복원 검증의 1.0.0 이후 유예를 명시했다. 정식 `main`·`v1.0.0`·Docker Hub `Release`/`latest`·GitHub Release는 Phase 5에서 실행한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+1.0.0 Phase 4 후보 commit의 필수 CI·네 image 발행과 동일 SHA 개발 서버 공개 smoke를 수행한 뒤 완료 기록을 봉인한다. 사용자는 릴리스 배포 유예를 해제하고 Phase 5까지 진행하도록 승인했으며, 개발과 동일한 Google OAuth·DB 자격 증명 사용 및 backup 구축·복원 검증의 1.0.0 이후 유예를 명시했다. 정식 `main`·`v1.0.0`·Docker Hub `Release`/`latest`·GitHub Release는 Phase 5에서 실행한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 

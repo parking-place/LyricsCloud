@@ -82,4 +82,4 @@ Phase 3은 동일한 딥링크 규약을 최근 작업과 마지막 편집 위�
 - 로컬에서 43 files/165 tests, migration `0200`~`0701` 복구, production build·네 image 복구와 PC·모바일 E2E 177 통과·7 의도적 skip을 확인했다.
 - 기능 SHA `5ae8ee246743860e9c6c20e191989482cdf28106`의 GitHub Actions `34082482383`과 네 서비스 개발 이미지 게시가 통과했다.
 - 같은 기능 SHA를 개발 서버에 배포해 `0.7.0`·`0701_recent_searches.sql`과 네 컨테이너 health를 확인했고, 공개 HTTPS에서 검색 기반 및 인증 검색·최근 검색 CRUD·Origin 보호 smoke를 통과한 뒤 합성 자료를 제거했다.
-- 상세 결과는 [Phase 2 검증 기록](../../../../docs/runbooks/0.7.0-phase2-validation.md)에 남겼다.
+- 상세 결과는 [Phase 2 검증 기록](../../../docs/runbooks/0.7.0-phase2-validation.md)에 남겼다.

@@ -15,6 +15,9 @@
 ## 서버 공통 운영
 
 - [`개발·릴리스 서버 기본 환경 구성`](./server-bootstrap.md)
+- [`1.0 셀프호스팅 설치·설정`](../self-hosting.md)
+- [`1.0 사용자 안내`](../user-guide.md)
+- [`1.0 지원 정책과 알려진 제한`](../support.md)
 
 ## 완료된 기준선 검증
 
@@ -52,3 +55,7 @@
 ## 릴리스 서버 운영
 
 - [`릴리스 서버 Cloudflare Tunnel과 HTTPS`](./release-cloudflare-tunnel-setup.md)
+- [`1.0.0 Phase 3 production 배포 기록`](./1.0.0-phase3-deployment.md)
+- [`관측 경보 대응`](./observability-alerts.md)
+- [`사고 기록 양식`](./incident-record-template.md)
+- [`암호화 backup·격리 restore·upgrade·rollback`](./backup-restore-upgrade.md)

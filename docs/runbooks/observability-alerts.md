@@ -33,9 +33,10 @@
 ## backup-failure
 
 - 사용자 영향: 현재 서비스는 계속 동작하지만 복구 지점 목표를 만족하지 못할 수 있다.
+- 현재 공식 릴리스 상태: backup job이 아직 설치되지 않아 이 경보도 활성화되지 않았다. 이는 정상 backup 상태가 아니라 사용자가 1.0.1+까지 유예한 알려진 운영 위험이다.
 - 확인: backup job 상태·exit code·마지막 성공 시각·암호화 산출물 크기만 확인한다. dump 내용을 열거나 로그로 출력하지 않는다.
 - 완화: [`backup·restore runbook`](./backup-restore-upgrade.md)의 멱등 재시도와 별도 복원 검증을 수행한다.
-- escalation: 15분 창에 1건 또는 RPO 초과 시 신규 릴리스 작업을 중단하고 운영 책임자에게 알린다.
+- escalation: 구축된 환경에서는 15분 창에 1건 또는 RPO 초과 시 신규 릴리스 작업을 중단하고 운영 책임자에게 알린다. 공식 릴리스 예외 기간에는 모든 배포 판정에 `backup 미구축·24시간 RPO 미보장`을 표시하고 DB 손실 징후가 있으면 쓰기를 중단한다.
 
 ## service-unavailable
 
@@ -47,3 +48,14 @@
 ## 관측 backend 장애
 
 exporter/transport 실패는 제품 요청을 실패시키면 안 된다. endpoint를 비활성화해 console 집계만 유지하고 편집·저장·로그인 합성 smoke를 실행한다. transport 복구 전에도 원문 payload를 임시 파일이나 ad-hoc 로그로 남기지 않는다.
+
+## 역할과 사고 기록
+
+| 역할 | 책임 |
+|---|---|
+| 최초 대응자 | 경보 확인, live/ready·SHA·schema 대조, 합성 probe 실행 |
+| 운영 책임자 | 영향·중단·rollback 판단과 연락 조정 |
+| 보안·데이터 검토자 | 인증 우회·교차 owner·무음 손실·secret 노출의 P0/P1 판정 |
+| 복구 담당자 | 격리 restore 또는 호환 application rollback과 증거 기록 |
+
+incident를 열면 [사고 기록 양식](./incident-record-template.md)에 익명 운영 정보만 남긴다. 복구 뒤 같은 합성 probe, owner 격리, volume 보존과 창작물 canary 로그 0건을 확인하고 운영 책임자가 종료한다. 취약점은 [비공개 보안 보고 절차](../../SECURITY.md)를 사용한다.

@@ -1,6 +1,6 @@
 # Google OAuth 개발 설정
 
-실제 자격 증명은 저장소나 채팅에 남기지 않고 로컬 `.env`에만 둔다. 로그인 허용 메일은 환경마다 별도의 `.test_users`에 둔다. 두 파일 모두 Git과 Docker 이미지에서 제외된다.
+실제 자격 증명은 저장소나 채팅에 남기지 않고 대상 호스트의 비공개 환경 파일에만 둔다. 원칙적으로 환경별 OAuth client·DB·세션 secret과 `.test_users`를 분리한다. 현재 공식 릴리스 서버는 사용자의 명시적 승인 예외로 개발 서버의 Google OAuth client·DB 자격 증명·허용 목록을 재사용하지만, 값 자체는 계속 Git과 Docker image에서 제외한다. 릴리스 session secret은 별도로 유지한다.
 
 1. Google Cloud Console에서 프로젝트를 선택하고 OAuth 동의 화면을 구성한다. 현재 요청 범위인 `openid email profile`만 사용하면 Testing 상태에서도 Google 테스트 사용자 등록은 필수가 아니다. 다른 scope를 추가하면 아래 Audience 정책을 다시 확인한다.
 2. OAuth client 유형을 `Web application`으로 만들고 개발용 승인 redirect URI를 `http://localhost:8080/api/auth/callback`으로 등록한다.
@@ -54,7 +54,7 @@ Google의 현재 정책에서 Testing 상태는 일반적으로 등록한 테스
 
 ### 2. LyricsCloud `.test_users`에 같은 메일 추가
 
-저장소 루트의 `.test_users`를 열고 같은 주소를 한 줄에 하나씩 추가한다. 이 파일은 현재 서버 환경만을 위한 목록이다. 개발 서버 파일을 릴리스 서버로 복사하거나 두 환경의 사용자를 한 파일에 합치지 않는다.
+저장소 루트의 `.test_users`를 열고 같은 주소를 한 줄에 하나씩 추가한다. 일반 셀프호스트 환경에서는 이 파일을 대상 서버 전용으로 유지한다. 현재 공식 릴리스 서버는 사용자 승인 예외로 개발 허용 목록과 같은 값을 사용한다.
 
 ```text
 writer@example.com
@@ -163,7 +163,7 @@ JavaScript origin에는 경로와 끝 슬래시를 넣지 않는다. redirect UR
 
 릴리스 서버의 실제 hostname과 OAuth 값은 Git에서 제외된 `.private/server-inventory.local.md`의 `릴리스 서버` → `Google OAuth` 항목을 단일 원본으로 사용한다. 공개 문서나 `.env.example`에 실제 릴리스 주소와 자격 증명을 복사하지 않는다.
 
-릴리스용 Google OAuth Web application client는 로컬·개발용 client와 분리하고 다음 관계를 적용한다.
+일반 운영 권고는 릴리스용 Google OAuth Web application client를 로컬·개발용 client와 분리하는 것이다. 현재 공식 릴리스 서버는 사용자 승인으로 개발 client를 재사용한다. 같은 client를 쓰더라도 Google Console에 릴리스 origin·redirect를 별도 등록하고 다음 관계를 정확히 유지한다.
 
 ```text
 APP_ORIGIN=https://<RELEASE-HOSTNAME>
@@ -173,6 +173,8 @@ Authorized domain=parkingp.kr
 ```
 
 Google Console에서 값을 변경한 뒤 릴리스 서버의 `.env`와 `.test_users`를 반영하고 앱을 재배포해야 한다. 실제 로그인, callback, 보호 route와 로그아웃이 검증되기 전에는 릴리스 인증 구성이 완료된 것으로 기록하지 않는다. Tunnel 검증은 [`릴리스 서버 Cloudflare Tunnel과 HTTPS`](./release-cloudflare-tunnel-setup.md)를 따른다.
+
+client secret 교체는 Google Console의 새 secret과 대상 호스트 환경 파일을 같은 작업 창에서 반영하고 web만 재생성한다. `SESSION_SECRET` 교체는 기존 세션을 모두 무효화하므로 재로그인 안내와 smoke를 포함한다. redirect host 변경은 새 HTTPS·origin·callback을 추가하고 새 host 로그인 PASS 뒤 이전 redirect를 제거한다. 실제 값은 어떤 명령 출력에도 남기지 않는다.
 
 ## 참고
 
