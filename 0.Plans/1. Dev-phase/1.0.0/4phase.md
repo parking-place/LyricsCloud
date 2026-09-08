@@ -1,6 +1,6 @@
 # 1.0.0 Phase 4 — 사용자·셀프호스트·운영 문서 인계
 
-- 상태: **검토**
+- 상태: **완료**
 - 단계 목적: 개발자 없이도 설치·사용·백업·복구·업그레이드·장애 대응이 가능하게 한다.
 
 ## 목표
@@ -78,4 +78,4 @@ Phase 5에 검증된 문서 집합, 운영 인수 확인, 프로덕션 digest/sc
 
 ## 실행 기록
 
-2026-09-09 production-mode `compose.selfhost.yaml`과 사용자·셀프호스트·지원·보안·OAuth/secret·경보/사고 문서를 완성했다. 별도 합성 project와 빈 DB volume에서 최초 기동 시 발견한 collaboration/worker production version 환경 누락을 고친 뒤 네 runtime health, schema, 공개 health와 인증 차단을 재현하고 disposable 자산만 제거했다. Markdown 255개 이상 내부 link, 15개 화면명, 환경 변수·정책 기간·명령과 secret canary를 자동 검사했다. 공식 릴리스 backup 미구축·24시간 RPO 미보장은 사용자 승인 예외 `OPS-100-001`로 1.0.1+에 넘기며 PASS로 표현하지 않는다. 상세 증거는 [Phase 4 검증 기록](../../../docs/runbooks/1.0.0-phase4-validation.md)에 있다.
+2026-09-09 production-mode `compose.selfhost.yaml`과 사용자·셀프호스트·지원·보안·OAuth/secret·경보/사고 문서를 완성했다. 별도 합성 project와 빈 DB volume에서 최초 기동 시 발견한 collaboration/worker production version 환경 누락을 고친 뒤 네 runtime health, schema, 공개 health와 인증 차단을 재현하고 disposable 자산만 제거했다. Markdown 255개 이상 내부 link, 15개 화면명, 환경 변수·정책 기간·명령과 secret canary를 자동 검사했다. 공식 릴리스 backup 미구축·24시간 RPO 미보장은 사용자 승인 예외 `OPS-100-001`로 1.0.1+에 넘기며 PASS로 표현하지 않는다. 후보 `f746d803b7888dc3183e640831dfc8dab19df604`는 CI `34248044744`, 네 signed image 발행과 같은 SHA 개발 배포·공개 smoke를 통과했다. 상세 증거는 [Phase 4 검증 기록](../../../docs/runbooks/1.0.0-phase4-validation.md)에 있다.
