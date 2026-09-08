@@ -1,6 +1,6 @@
 # 0.9.1 Phase 5 — 자체 운영 백업·복원·업그레이드 RC
 
-- 상태: **진행 중**
+- 상태: **완료**
 - 단계 목적: DEC-10-C와 DEC-12-A를 실제 복구·롤백 가능한 운영 절차로 검증한다.
 
 ## 목표
@@ -39,16 +39,16 @@ Docker 기반 자체 운영 환경에서 매일 한 번 암호화된 PostgreSQL 
 
 ## 작업 체크리스트
 
-- [ ] `LC-091-P5-01` backup 대상에 사용자 DB schema, auth/session 관련 필요 데이터와 CRDT 원본이 빠짐없이 포함되는지 정의한다.
-- [ ] `LC-091-P5-02` 하루 1회 일관된 논리 dump를 생성하고 승인된 방식으로 암호화한 뒤 DB와 분리해 전송한다.
-- [ ] `LC-091-P5-03` 암호화 키를 backup 파일·repository·container image·로그와 분리한다.
-- [ ] `LC-091-P5-04` backup 성공 여부, 크기, 생성 시각, 검증 checksum과 24시간 초과를 안전한 지표로 기록한다.
-- [ ] `LC-091-P5-05` 승인된 보존 기간에 맞춰 오래된 backup을 멱등 정리하고 삭제 기록을 남긴다.
-- [ ] `LC-091-P5-06` 최신 backup을 빈 격리 환경에 복호화·복원하고 schema·행 수·관계·검색을 검증한다.
-- [ ] `LC-091-P5-07` 이전 RC에서 현재 RC로 application image와 DB migration을 순서대로 업그레이드한다.
-- [ ] `LC-091-P5-08` health/smoke 실패 시 application rollback과 호환 가능한 DB 복구 절차를 실행한다.
-- [ ] `LC-091-P5-09` 신규 홈랩 운영자가 문서만으로 설치·backup·restore·upgrade·rollback을 재현하게 한다.
-- [ ] `LC-091-P5-10` `OPS-0002`에 image registry, 서명·검증 방식, provenance 필드, digest 승인자와 비밀 값 보관 경계를 기록한다.
+- [x] `LC-091-P5-01` backup 대상에 사용자 DB schema, auth/session 관련 필요 데이터와 CRDT 원본이 빠짐없이 포함되는지 정의한다.
+- [x] `LC-091-P5-02` 하루 1회 일관된 논리 dump를 생성하고 승인된 방식으로 암호화한 뒤 DB와 분리해 전송한다.
+- [x] `LC-091-P5-03` 암호화 키를 backup 파일·repository·container image·로그와 분리한다.
+- [x] `LC-091-P5-04` backup 성공 여부, 크기, 생성 시각, 검증 checksum과 24시간 초과를 안전한 지표로 기록한다.
+- [x] `LC-091-P5-05` 승인된 보존 기간에 맞춰 오래된 backup을 멱등 정리하고 삭제 기록을 남긴다.
+- [x] `LC-091-P5-06` 최신 backup을 빈 격리 환경에 복호화·복원하고 schema·행 수·관계·검색을 검증한다.
+- [x] `LC-091-P5-07` 이전 RC에서 현재 RC로 application image와 DB migration을 순서대로 업그레이드한다.
+- [x] `LC-091-P5-08` health/smoke 실패 시 application rollback과 호환 가능한 DB 복구 절차를 실행한다.
+- [x] `LC-091-P5-09` 신규 홈랩 운영자가 문서만으로 설치·backup·restore·upgrade·rollback을 재현하게 한다.
+- [x] `LC-091-P5-10` `OPS-0002`에 image registry, 서명·검증 방식, provenance 필드, digest 승인자와 비밀 값 보관 경계를 기록한다.
 
 ## 구체적 검증
 
@@ -61,12 +61,12 @@ Docker 기반 자체 운영 환경에서 매일 한 번 암호화된 PostgreSQL 
 
 ## 완료 조건
 
-- [ ] DEC-12-A의 일 1회 암호화 논리 backup과 24시간 RPO 감시가 동작한다.
-- [ ] 최신 backup을 별도 환경에 실제 복원하고 제품 smoke가 통과한다.
-- [ ] Docker upgrade와 rollback이 문서만으로 재현된다.
-- [ ] `OPS-0002`가 Accepted 상태이며 1.0.0이 재사용할 artifact 검증 계약이 고정되었다.
-- [ ] 외부 저장소·지역·관측·proxy는 승인 ADR과 일치하며 임의 선택이 없다.
-- [ ] 미해결 운영 P0/P1 결함 없이 1.0.0 승인을 시작할 수 있다.
+- [x] DEC-12-A의 일 1회 암호화 논리 backup과 24시간 RPO 감시가 동작한다.
+- [x] 최신 backup을 별도 환경에 실제 복원하고 제품 smoke가 통과한다.
+- [x] Docker upgrade와 rollback이 문서만으로 재현된다.
+- [x] `OPS-0002`가 Accepted 상태이며 1.0.0이 재사용할 artifact 검증 계약이 고정되었다.
+- [x] 외부 저장소·지역·관측·proxy는 승인 ADR과 일치하며 임의 선택이 없다.
+- [x] 미해결 운영 P0/P1 결함 없이 1.0.0 승인을 시작할 수 있다.
 
 ## 산출물
 
