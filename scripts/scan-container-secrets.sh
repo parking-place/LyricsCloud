@@ -7,7 +7,7 @@ scan_root=$(mktemp -d)
 cleanup() { rm -rf -- "$scan_root"; }
 trap cleanup EXIT
 
-for service in web collaboration worker migrate; do
+for service in web collaboration worker migrate backup; do
   image="lyricscloud-$service-ci:$revision"
   service_root="$scan_root/$service"
   mkdir -p "$service_root/archive" "$service_root/layers"

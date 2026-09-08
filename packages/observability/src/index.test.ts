@@ -77,4 +77,13 @@ describe("privacy-first observability", () => {
       runbook: "docs/runbooks/observability-alerts.md#service-unavailable"
     }])).toEqual([]);
   });
+
+  it("allows only aggregate backup and recovery measurements", () => {
+    expect(sanitizeTelemetry({ service: "backup", environment: "production", version: "0.9.1", buildId: "abc",
+      signal: "metric", event: "rpo_checked", operation: "backup", outcome: "success",
+      metric: "backup_age_seconds", value: 120, unit: "seconds", sha256: "private-digest",
+      encryptedFile: "private-filename" })).toEqual({ service: "backup", environment: "production",
+      version: "0.9.1", buildId: "abc", signal: "metric", event: "rpo_checked", operation: "backup",
+      outcome: "success", metric: "backup_age_seconds", value: 120, unit: "seconds" });
+  });
 });

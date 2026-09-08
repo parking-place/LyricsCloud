@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.9.1"
 current_phase: "5phase.md"
-state: "ready"
+state: "in_progress"
 owner: "Codex"
-started_at: ""
-updated_at: "2026-09-08 16:10 KST"
-next_action: "Phase 4 완료 문서 commit을 동일 CI·image·개발 배포로 재검증한 뒤 0.9.1 Phase 5 범위를 읽고 시작"
+started_at: "2026-09-08 16:37 KST"
+updated_at: "2026-09-08 16:37 KST"
+next_action: "Phase 5 암호화 backup·독립 restore·upgrade/rollback 자동화와 OPS-0002 artifact 검증 계약을 구현"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -53,6 +53,7 @@ next_action: "Phase 4 완료 문서 commit을 동일 CI·image·개발 배포로
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 0.9.1 / Phase 5 | `LC-091-P5-01`~`LC-091-P5-10` | `infra/backup/**`, `scripts/**`, `config/**`, `docs/operations/**`, `docs/runbooks/**`, `.github/workflows/**`, `0.Plans/1. Dev-phase/**` | 0.9.1 Phase 4 최종 SHA `33d0d3c`, Accepted `ADR-0008`, `ADR-0009`, `OPS-0001`, `OPS-0003` | 2026-09-08 16:37 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -101,7 +102,7 @@ next_action: "Phase 4 완료 문서 commit을 동일 CI·image·개발 배포로
 
 ## 다음 작업
 
-0.9.1 Phase 4 완료 문서를 동일 CI·image·개발 서버 절차로 재검증한 뒤 Phase 5 release readiness 범위만 시작한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.9.1 Phase 5 자체 운영 backup·restore·upgrade·rollback과 `OPS-0002` 범위만 수행한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 

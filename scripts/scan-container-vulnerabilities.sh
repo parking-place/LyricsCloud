@@ -8,7 +8,7 @@ mkdir -p "$cache_path"
 cache_path=$(cd "$cache_path" && pwd)
 scanner='aquasec/trivy:0.68.2@sha256:05d0126976bdedcd0782a0336f77832dbea1c81b9cc5e4b3a5ea5d2ec863aca7'
 
-for service in web collaboration worker migrate; do
+for service in web collaboration worker migrate backup; do
   scan_json=$(docker run --rm \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v "$cache_path:/root/.cache/" \

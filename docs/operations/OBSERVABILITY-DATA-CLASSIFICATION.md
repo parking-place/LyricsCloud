@@ -31,6 +31,7 @@ transport로 전달할 수 있는 필드는 `packages/observability/src/index.ts
 - 접근은 개발/릴리스 서버 운영자와 명시된 incident 담당자에게만 최소 권한으로 부여한다. 애플리케이션 사용자와 일반 인증 계정에는 관측 endpoint·dashboard 권한을 주지 않는다.
 - 기간 만료는 backend TTL과 Docker log rotation으로 자동 삭제한다. incident export는 만들지 않으며, 임시 조사 자료는 종료 즉시 삭제한다.
 - backend·저장 지역은 이 Phase에서 고정하지 않는다. OTLP endpoint가 없으면 제품 기능은 console transport만 사용하며 exporter 장애는 항상 fail-open이다.
+- backup·restore·rollback도 생성 시각, ciphertext 크기, checksum 통과 여부, duration, 보존 삭제 건수만 기록한다. archive 이름·DB 이름·storage 경로·key 식별자·복원된 행 내용은 기록하지 않는다.
 
 ## 대시보드 제한
 

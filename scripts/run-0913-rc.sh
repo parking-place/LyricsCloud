@@ -13,6 +13,7 @@ pnpm test:release:0913
 pnpm test:performance:0913
 pnpm test:release:0914
 pnpm test:observability:0914
+pnpm test:release:0915
 
 if [[ "${LC_RC_BROWSER:-0}" == "1" ]]; then
   pnpm test:e2e

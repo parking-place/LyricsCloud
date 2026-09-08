@@ -40,6 +40,7 @@
     "test:release:0913": "node scripts/validate-0913-performance.mjs",
     "test:observability:0914": "pnpm --filter @lyricscloud/database exec tsx ../../scripts/probe-0914-observability.ts",
     "test:release:0914": "node scripts/validate-0914-observability.mjs",
+    "test:release:0915": "node scripts/validate-0915-release-operations.mjs",
     "test:rc:0913": "bash scripts/run-0913-rc.sh",
     "test:e2e:release:0905": "playwright test --config=playwright.release.config.ts tests/e2e/release-candidate.spec.ts",
     "test:performance:0700": "node scripts/measure-0700-search.mjs",

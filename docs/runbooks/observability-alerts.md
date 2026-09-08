@@ -34,7 +34,7 @@
 
 - 사용자 영향: 현재 서비스는 계속 동작하지만 복구 지점 목표를 만족하지 못할 수 있다.
 - 확인: backup job 상태·exit code·마지막 성공 시각·암호화 산출물 크기만 확인한다. dump 내용을 열거나 로그로 출력하지 않는다.
-- 완화: Phase 5 backup runbook의 멱등 재시도와 별도 복원 검증을 수행한다.
+- 완화: [`backup·restore runbook`](./backup-restore-upgrade.md)의 멱등 재시도와 별도 복원 검증을 수행한다.
 - escalation: 15분 창에 1건 또는 RPO 초과 시 신규 릴리스 작업을 중단하고 운영 책임자에게 알린다.
 
 ## service-unavailable

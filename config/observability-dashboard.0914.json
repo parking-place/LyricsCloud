@@ -8,7 +8,9 @@
     { "metric": "sync_conflict_count", "display": "Explicit sync conflicts" },
     { "metric": "search_p95_ms", "display": "Search p95" },
     { "metric": "purge_failure_count", "display": "Purge failures" },
-    { "metric": "backup_failure_count", "display": "Backup failures" }
+    { "metric": "backup_failure_count", "display": "Backup failures" },
+    { "metric": "backup_age_seconds", "display": "Latest valid backup age" },
+    { "metric": "backup_size_bytes", "display": "Latest encrypted backup size" }
   ],
   "forbiddenDimensions": ["user", "account", "email", "resourceId", "documentId", "requestId", "routeUrl", "searchQuery"]
 }

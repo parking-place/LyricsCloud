@@ -51,22 +51,24 @@ const safeRunbook = /^docs\/runbooks\/[A-Za-z0-9._/-]+(?:#[A-Za-z0-9._-]+)?$/u;
 const methods = new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]);
 const statusClasses = new Set(["1xx", "2xx", "3xx", "4xx", "5xx"]);
 const resourceTypes = new Set(["song", "lyric", "rhyme", "prompt", "template", "account", "session", "database", "service"]);
-const outcomes = new Set(["success", "failure", "conflict", "unavailable", "recovered"]);
-const units = new Set(["ms", "count", "percent", "bytes", "mib"]);
+const outcomes = new Set(["success", "failure", "conflict", "unavailable", "recovered", "rolled_back"]);
+const units = new Set(["ms", "seconds", "count", "percent", "bytes", "mib"]);
 const severities = new Set(["warning", "critical"]);
 const events = new Set([
   "request_failed", "save_operation", "search_operation", "search_measured", "synthetic_failure",
   "operational_alert_triggered", "service_started", "service_unavailable", "database_connection_lost",
   "sync_projection_retry", "sync_update_rejected", "revision_maintenance", "revision_maintenance_failed",
   "lifecycle_purge_completed", "lifecycle_purge_failed", "migration_completed", "migration_failed",
-  "backup_completed", "backup_failed", "restore_completed", "restore_failed"
+  "backup_completed", "backup_failed", "backup_pruned", "rpo_checked",
+  "restore_completed", "restore_failed", "upgrade_completed", "upgrade_failed", "rollback_completed"
 ]);
 const metrics = new Set([
   "autosave_failure_rate_percent", "search_p95_ms", "purge_failure_count", "purge_resource_count",
   "backup_failure_count", "service_unavailable_count", "sync_conflict_count",
-  "sync_projection_retry_count", "revision_failure_count"
+  "sync_projection_retry_count", "revision_failure_count", "backup_age_seconds", "backup_size_bytes",
+  "backup_checksum_verified", "restore_duration_ms", "rollback_duration_ms"
 ]);
-const operations = new Set(["save", "search", "purge", "backup", "restore", "migration", "revision_maintenance"]);
+const operations = new Set(["save", "search", "purge", "backup", "restore", "upgrade", "rollback", "migration", "revision_maintenance"]);
 const routeSegments = new Set([
   "", "api", "account", "withdrawal", "cancel", "auth", "callback", "login", "logout", "session",
   "export", "health", "live", "ready", "lyrics", "display-settings", "duplicate", "resources",

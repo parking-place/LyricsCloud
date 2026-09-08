@@ -43,6 +43,7 @@
 ## 개발 서버 운영
 
 - [`검증된 Phase commit 배포`](./development-deploy.md)
+- [`암호화 backup·격리 restore·upgrade·rollback`](./backup-restore-upgrade.md)
 - [`Docker 저장소 정리`](./docker-cleanup.md)
 - [`Docker Hub versioned image 발행`](./dockerhub-publish.md)
 - [`Cloudflare Tunnel과 HTTPS`](./cloudflare-tunnel-setup.md)
