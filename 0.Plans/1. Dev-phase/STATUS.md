@@ -8,8 +8,8 @@ current_phase: "1.0.0/3phase.md"
 state: "review"
 owner: "Codex"
 started_at: "2026-09-08 22:33 KST"
-updated_at: "2026-09-08 22:38 KST"
-next_action: "사용자가 빈 신규 운영 환경 또는 기존 개발 DB 이관 중 하나를 선택하고 릴리스 서버 초기화·배포를 명시적으로 승인하면 Phase 3 backup·canary·점진 배포를 실행한다"
+updated_at: "2026-09-08 22:51 KST"
+next_action: "Phase 5 완료 전까지 릴리스 서버를 변경하지 않는다. Phase 3은 열린 상태로 유지하며, Phase 순서 재조정 또는 배포 유예 해제에 대한 사용자 지시를 기다린다"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -53,7 +53,7 @@ next_action: "사용자가 빈 신규 운영 환경 또는 기존 개발 DB 이�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.0 / Phase 3 | `LC-100-P3-01`~`09` | 1.0.0/3phase.md, STATUS.md, docs/runbooks, .private release evidence | Phase 2 final manifest, `OPS-0004`, 명시적 운영 승인 | 2026-09-08 22:33 KST | review; read-only preflight 완료, 릴리스 초기화·data source 승인 대기 |
+| Codex | 1.0.0 / Phase 3 | `LC-100-P3-01`~`09` | 1.0.0/3phase.md, STATUS.md, docs/runbooks, .private release evidence | Phase 2 final manifest, `OPS-0004`, 명시적 운영 승인 | 2026-09-08 22:33 KST | review; read-only preflight 완료, Phase 5 완료 전까지 릴리스 변경 유예 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,7 +102,7 @@ next_action: "사용자가 빈 신규 운영 환경 또는 기존 개발 DB 이�
 
 ## 다음 작업
 
-1.0.0 Phase 3 production preflight와 승인 입력 확인만 수행한다. release server·`main`·정식 tag·`Release`/`latest`·GitHub Release 변경은 현재 요청의 명시적 승인 전까지 실행하지 않는다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+1.0.0 Phase 3은 read-only preflight까지만 수행한 열린 상태로 유지한다. 2026-09-08 사용자 지시에 따라 Phase 5가 모두 끝날 때까지 release server의 checkout·환경·backup·OAuth·컨테이너·DB·DNS·Tunnel을 생성하거나 변경하지 않는다. 또한 `main`·정식 tag·`Release`/`latest`·GitHub Release도 별도 명시적 승인 전까지 변경하지 않는다. 현재 계획에서 Phase 3 production 배포는 Phase 4 진입 전 완료 조건이므로, 순서 재조정 지시 없이는 Phase 4·5를 임의로 시작하거나 완료 처리하지 않는다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
