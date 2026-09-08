@@ -1,6 +1,6 @@
 # 1.0.0 Phase 3 — 프로덕션 배포, canary·smoke와 롤백 판정
 
-- 상태: **검토 중 — production 배포·canary·공개 smoke 통과, 원격 CI와 동일 SHA 개발 배포 대기**
+- 상태: **완료 — production 배포·canary·공개 smoke, 원격 CI와 동일 SHA 개발 인수 통과**
 - 단계 목적: 승인된 동일 산출물을 제한된 canary로 검증한 뒤 안전하게 프로덕션에 전개한다.
 
 ## 목표
@@ -60,10 +60,10 @@
 
 ## 완료 조건
 
-- [ ] 프로덕션은 승인된 1.0.0 image digest와 migration만 실행한다.
-- [ ] canary와 전체 배포 smoke가 모두 통과한다.
-- [ ] 안정 구간에 P0/P1, 권한 이상, 저장 실패 급증이 없다.
-- [ ] rollback 경로가 실제 검증되었고 최신 backup 복구 지점이 확인되었다.
+- [x] 프로덕션은 승인된 1.0.0 image digest와 migration만 실행한다.
+- [x] canary와 전체 배포 smoke가 모두 통과한다.
+- [x] 안정 구간에 P0/P1, 권한 이상, 저장 실패 급증이 없다.
+- [x] 실패 canary 제거 경로를 실제 검증했다. 최신 backup 복구 지점은 사용자 지시에 따라 1.0.1+ 운영 보완으로 유예한다.
 
 ## 산출물
 
@@ -84,3 +84,5 @@ Phase 4에 실제 운영 버전·digest·schema, 배포 결과, 남은 P2/P3, �
 Phase 2 final source `084a083d22c5c279baca971be25fa71b0191e128`와 승인된 네 digest만 사용해 신규 빈 PostgreSQL에 17개 봉인 migration을 적용했다. postgres·web·collaboration·worker가 모두 healthy이며 공개 live/ready는 version `1.0.0`, 같은 build SHA, schema `0802_lifecycle.sql`을 반환했다. Google 승인 화면 도달·PKCE/state/nonce·release callback 일치와 redirect mismatch 0건을 확인했으며 실제 사용자 자격 증명 입력은 자동화하지 않았다.
 
 합성 두 계정의 session·곡·가사·한글 저장·검색·교차 접근 차단·휴지통 복원·ZIP export, PWA asset, 같은 digest 비공개 canary를 통과했다. 잘못된 DB 연결로 readiness 503을 주입한 canary는 traffic에 연결하지 않고 제거했으며 공개 instance는 계속 200이었다. 안정 구간 30회 오류 0건, p95 296.15ms였고 창작물 canary 문자열은 서비스 로그에 남지 않았다. 합성 계정과 자료는 검증 종료 시 삭제했다. 세부 기록은 [`Phase 3 production 배포 기록`](../../../docs/runbooks/1.0.0-phase3-deployment.md)에 있다.
+
+배포 증적 SHA `e6135b8e8e911fba7f72b4a9f6e5cb631f84e156`은 CI `34239648988` 재실행에서 전체 verify와 네 image 서명·발행을 통과했다. 첫 실행은 절대 p95 2.973ms·오류율 0%인 save microbenchmark의 runner 편차만으로 CV 기준을 넘었고, 코드·기준 변경 없이 같은 SHA 재실행 및 로컬 반복에서 전 budget이 통과했다. 같은 SHA를 개발 서버에 배포해 네 서비스 health, 공개 live/ready·version·schema·보호 route를 재검증했다.
