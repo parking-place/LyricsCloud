@@ -167,7 +167,9 @@ corrupt="lyricscloud-20990101T000000Z-ffffffffffffffffffffffffffffffff.dump.age"
 cp "$repository/$archive" "$repository/$corrupt"
 cp "${repository}/${archive%.dump.age}.manifest.json" "${repository}/${corrupt%.dump.age}.manifest.json"
 sed -i "s/$archive/$corrupt/" "${repository}/${corrupt%.dump.age}.manifest.json"
+chmod u+w "$repository/$corrupt"
 printf x >> "$repository/$corrupt"
+chmod 0400 "$repository/$corrupt"
 if [[ "$host_uid" == 0 ]]; then
   chown "$container_uid:$container_gid" "$repository/$corrupt" "${repository}/${corrupt%.dump.age}.manifest.json"
 fi
