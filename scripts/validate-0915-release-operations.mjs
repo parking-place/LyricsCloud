@@ -91,3 +91,5 @@ for (const path of ["infra/backup/backup.sh", "infra/backup/restore.sh", "infra/
 }
 
 console.log("0.9.1 Phase 5 contract: encrypted daily backup, isolated restore, failure injection, digest rollback and keyless artifact verification verified");
+
+await import("./validate-1001-final-gate.mjs");
