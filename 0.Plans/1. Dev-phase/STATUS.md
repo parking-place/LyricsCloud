@@ -5,11 +5,11 @@
 ```yaml
 current_version: "1.0.0"
 current_phase: "1.0.0/5phase.md"
-state: "review"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-09 01:35 KST"
-updated_at: "2026-09-09 01:42 KST"
-next_action: "Phase 5 후보 commit의 전체 CI·네 signed image·동일 SHA 개발 smoke를 통과한 뒤 완료 commit과 v1.0.0 정식 릴리스를 봉인한다"
+updated_at: "2026-09-09 02:18 KST"
+next_action: "v1.0.0 운영 안정성을 감시하고 1.0.1+ 최우선 OPS-100-001 backup 구축을 별도 Phase에서 시작한다"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -45,7 +45,7 @@ next_action: "Phase 5 후보 commit의 전체 CI·네 signed image·동일 SHA �
 | 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
 | 0.9.0 | complete | Phase 1~5 완료 | 0.8.0 완료 |
 | 0.9.1 | complete | Phase 1~5 완료, 기능 동결·보안·성능·관측·복구 RC 검증 | 0.9.0 완료 |
-| 1.0.0 | in_progress | Phase 1~4 완료, Phase 5 진입 준비 | 0.9.1 release gate 통과 |
+| 1.0.0 | complete | Phase 1~5 완료, 정식 release·운영 인수 | 0.9.1 release gate 통과 |
 
 ## 활성 작업
 
@@ -53,7 +53,7 @@ next_action: "Phase 5 후보 commit의 전체 CI·네 signed image·동일 SHA �
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.0 / Phase 5 | `LC-100-P5-01`~`09` | 1.0.0/5phase.md, STATUS.md, docs/releases, docs/operations, docs/runbooks, scripts, package.json | Phase 4 final `95fbabbd`, production Phase 2 digest 재검증·합성 smoke PASS | 2026-09-09 01:35 KST | review; 후보 원격 봉인 대기 |
+| 없음 | - | - | - | - | - | - |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,12 +102,13 @@ next_action: "Phase 5 후보 commit의 전체 CI·네 signed image·동일 SHA �
 
 ## 다음 작업
 
-1.0.0 Phase 5에서 최종 추적·P0/P1·production manifest/smoke·운영 인수·release notes·1.0.1+ backlog를 대조하고 release 후보를 봉인한다. 사용자는 릴리스 배포 유예를 해제하고 Phase 5까지 진행하도록 승인했으며, 개발과 동일한 Google OAuth·DB 자격 증명 사용 및 backup 구축·복원 검증의 1.0.0 이후 유예를 명시했다. 후보의 CI·네 signed image·동일 SHA 개발 smoke 뒤 정식 `v1.0.0`·Docker Hub `Release`/`latest`·GitHub Release와 production exact-digest 배포를 실행한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+1.0.0 Phase 5와 정식 운영 인수까지 완료했다. 이후에는 운영 안정성을 관찰하고 [1.0.1+ backlog](../../docs/operations/1.0.1-backlog.md)의 `OPS-100-001` backup 구축을 최우선으로 별도 Phase에서 수행한다. 현재 production backup은 미구축이며 24시간 RPO를 보장하지 않는다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-09 | 1.0.0 / Phase 5 | Codex | 71개 요구사항·15개 화면·8개 제안과 P0/P1 0건을 재대조하고 production 합성 핵심 흐름·owner 격리·PWA·OAuth 시작·안정 구간, 운영 연락·rollback·release notes·1.0.1+ backlog를 봉인했으며 사용자가 개발과 동일한 OAuth/DB credential 및 backup 유예를 승인 | 후보 `d208c1a` 로컬 1.0.0 gate·secret scan, CI `34253130389` 재실행 전체 verify와 네 signed image, 동일 SHA 개발 배포·공개 smoke, production 사전 재검증; [최종 인수](../../docs/runbooks/1.0.0-phase5-release.md) | `v1.0.0` 운영 감시, 실제 Google credential callback은 수동 확인, `OPS-100-001` 외부 암호화 backup·timer·복원 훈련을 1.0.1+ 최우선으로 수행 |
 | 2026-09-09 | 1.0.0 / Phase 4 | Codex | README·사용자·셀프호스트·지원·보안·OAuth·backup/restore/upgrade/rollback·관측/사고 문서를 실제 운영 계약에 맞추고 production-mode self-host override를 clean-room 검증했으며, 공식 production backup 미구축은 사용자 승인 예외 `OPS-100-001`로 명시 | 256 Markdown link·15 화면·환경/정책/명령·secret canary 검사, 빈 전용 DB self-host 네 runtime health·schema·auth 차단, CI `34248044744`, 네 signed image, 후보 `f746d80` 동일 SHA 개발 배포·공개 smoke; [검증 기록](../../docs/runbooks/1.0.0-phase4-validation.md) | Phase 5가 최종 추적·P0/P1·production manifest/smoke·승인 예외·잔여 P2/P3를 봉인하고 `v1.0.0`과 공식 release artifacts를 발행 |
 | 2026-09-09 | 1.0.0 / Phase 3 | Codex | Phase 2 승인 digest와 17개 봉인 migration으로 빈 신규 production을 bootstrap하고 공개 전 동일 DB 비공개 canary·실패 제거, 합성 owner 격리 창작 흐름·PWA·OAuth 시작·안정 구간을 통과했으며 사용자 승인 예외로 개발과 동일한 OAuth/DB credential을 사용하고 backup 구축은 1.0.1+로 유예 | 공개 live/ready·auth·metrics, OAuth callback/PKCE, 합성 session·곡·가사·한글 저장·검색·교차 차단·휴지통 복원·ZIP export, canary DB health 503 제거, 30회 p95 296.15ms·로그 본문 0, CI `34239648988`, 네 signed image, `e6135b8` 동일 SHA 개발 배포·공개 smoke; [배포 기록](../../docs/runbooks/1.0.0-phase3-deployment.md) | Phase 4가 실제 production SHA·digest·schema와 승인 예외·남은 backup 위험을 README·셀프호스트·운영·사용자 문서에 명시 |
 | 2026-09-08 | 1.0.0 / Phase 2 | Codex | 앱·11개 package를 1.0.0으로 고정하고 lockfile·17 migration checksum·환경 schema·65개 production license inventory·네 image digest와 SBOM/SLSA/keyless signature를 write-once release manifest에 봉인했으며 nonroot/read-only health와 재현 build·fresh/upgrade/rollback을 검증 | `test:release:1002`, 독립 image build 2회 정규화 content 일치, 60 files/226 tests, PC/mobile E2E 223 pass·27 skip, 5-browser RC 10, CI `34228604151`, 네 signed digest, `976e250` 동일 SHA 개발 배포·공개 health/auth/metrics smoke, 사용자 iOS/Android update PASS; [검증 기록](../../docs/runbooks/1.0.0-phase2-validation.md) | Phase 3이 production authority 없는 승인 manifest의 네 digest·migration 순서·환경 schema·backup/rollback 입력으로 preflight를 수행하고 명시적 운영 승인 뒤에만 release 변경 |
