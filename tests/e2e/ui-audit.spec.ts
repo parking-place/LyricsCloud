@@ -148,8 +148,8 @@ async function seedFixture(request: APIRequestContext, userId: string) {
   expect((await request.delete(`/api/lyrics/${deletedLyric}`, { headers })).status()).toBe(200);
   expect((await request.delete(`/api/rhymes/${deletedRhyme}`, { headers })).status()).toBe(200);
   await withE2eDatabase(async (pool) => {
-    await pool.query("update resources set deleted_at='2026-09-08T00:00:00Z' where id=$1 and owner_id=$2", [deletedPrompt, userId]);
-    await pool.query("update resources set updated_at='2026-09-08T00:00:00Z' where owner_id=$1", [userId]);
+    await pool.query("update resources set deleted_at=created_at where id=$1 and owner_id=$2", [deletedPrompt, userId]);
+    await pool.query("update resources set updated_at=created_at where owner_id=$1", [userId]);
   });
   return { songId, lyricId, rhymeId, promptId, songTitle };
 }
