@@ -3,6 +3,7 @@ set -euo pipefail
 
 revision=${1:?Usage: verify-0915-backup-restore.sh IMAGE_TAG}
 [[ "$revision" =~ ^[A-Za-z0-9._-]+$ ]]
+app_version=$(tr -d '\r\n' < VERSION)
 image="lyricscloud-backup-ci:$revision"
 name="lyricscloud-0915-backup-$$-$RANDOM"
 work=$(mktemp -d)
@@ -48,6 +49,7 @@ for container in "$name-source" "$name-restore"; do
 done
 
 docker run --rm --network "$name" -e DATABASE_URL=postgresql://source_operator:source-secret-only@source-db:5432/lyricscloud_source \
+  -e NODE_ENV=test -e "APP_VERSION=$app_version" -e "BUILD_ID=$revision" \
   "lyricscloud-migrate-ci:$revision" >/dev/null
 session_token=backup-restore-session
 session_hash=$(docker run --rm --entrypoint /nodejs/bin/node "lyricscloud-web-ci:$revision" -e \
@@ -113,7 +115,7 @@ backup() {
     -e PGPASSWORD_FILE=/run/secrets/postgres_password -e AGE_RECIPIENT_FILE=/run/secrets/backup_age_recipient \
     -e BACKUP_REPOSITORY_DIR=/backup/repository -e BACKUP_STORAGE_ID=lyricscloud-0915-test-storage \
     -e BACKUP_RETENTION_DAYS=30 -e BACKUP_MIN_FREE_BYTES=1048576 \
-    -e NODE_ENV=test -e APP_VERSION=0.9.1 -e "BUILD_ID=$revision" "$image"
+    -e NODE_ENV=test -e "APP_VERSION=$app_version" -e "BUILD_ID=$revision" "$image"
 }
 
 backup >/dev/null
@@ -185,7 +187,7 @@ restore_run() {
     -e PGPASSWORD_FILE=/run/secrets/postgres_password -e AGE_IDENTITY_FILE=/run/secrets/backup_age_identity \
     -e BACKUP_REPOSITORY_DIR=/backup/repository -e BACKUP_STORAGE_ID=lyricscloud-0915-test-storage \
     -e BACKUP_ARCHIVE="$selected_archive" -e RESTORE_CONFIRM=empty-disposable \
-    -e NODE_ENV=test -e APP_VERSION=0.9.1 -e "BUILD_ID=$revision" "$image"
+    -e NODE_ENV=test -e "APP_VERSION=$app_version" -e "BUILD_ID=$revision" "$image"
 }
 
 corrupt_failure=$(restore_run "$corrupt" "$secrets/identity" 2>&1) && { echo 'corrupt backup unexpectedly restored' >&2; exit 1; }
@@ -221,13 +223,13 @@ SQL
 docker run -d --name "$name-collaboration" --network "$name" --network-alias collaboration \
   --read-only --tmpfs /tmp:size=64m,mode=1777 \
   -e DATABASE_URL=postgresql://restore_operator:restore-secret-only@restore-db:5432/lyricscloud_restore \
-  -e NODE_ENV=test -e APP_VERSION=0.9.1 -e "BUILD_ID=$revision" \
+  -e NODE_ENV=test -e "APP_VERSION=$app_version" -e "BUILD_ID=$revision" \
   "lyricscloud-collaboration-ci:$revision" >/dev/null
 docker run -d --name "$name-web" --network "$name" --network-alias web \
   --read-only --tmpfs /tmp:size=64m,mode=1777 \
   --mount "type=bind,source=$allowlist_file,target=/run/secrets/auth_allowed_emails,readonly" \
   -e DATABASE_URL=postgresql://restore_operator:restore-secret-only@restore-db:5432/lyricscloud_restore \
-  -e NODE_ENV=test -e APP_VERSION=0.9.1 -e "BUILD_ID=$revision" -e APP_ORIGIN=http://localhost:8080 \
+  -e NODE_ENV=test -e "APP_VERSION=$app_version" -e "BUILD_ID=$revision" -e APP_ORIGIN=http://localhost:8080 \
   -e COLLABORATION_INTERNAL_URL=http://collaboration:3001 -e GOOGLE_ISSUER=http://127.0.0.1:3100 \
   -e OIDC_TEST_FIXTURE=true \
   -e GOOGLE_CLIENT_ID=synthetic-restore-client -e GOOGLE_CLIENT_SECRET=synthetic-restore-secret \
