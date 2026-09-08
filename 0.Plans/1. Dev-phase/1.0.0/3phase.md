@@ -1,6 +1,6 @@
 # 1.0.0 Phase 3 — 프로덕션 배포, canary·smoke와 롤백 판정
 
-- 상태: **진행 중 — read-only preflight 완료, 사용자 지시에 따라 Phase 5 완료 전까지 릴리스 변경 유예**
+- 상태: **검토 중 — production 배포·canary·공개 smoke 통과, 원격 CI와 동일 SHA 개발 배포 대기**
 - 단계 목적: 승인된 동일 산출물을 제한된 canary로 검증한 뒤 안전하게 프로덕션에 전개한다.
 
 ## 목표
@@ -39,15 +39,15 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-100-P3-01` 배포 창, 역할, 연락 경로, 중단 조건과 rollback 결정권자를 확인한다.
-- [ ] `LC-100-P3-02` 배포 직전 DEC-12-A backup을 생성·암호화·검증하고 복구 지점을 기록한다.
-- [ ] `LC-100-P3-03` migration 사전 검사를 수행하고 봉인된 순서·checksum 그대로 적용한다.
-- [ ] `LC-100-P3-04` 승인 digest를 제한된 canary instance/traffic에 배포한다.
-- [ ] `LC-100-P3-05` Google 로그인, 곡/가사 생성, 한글 자동 저장, 검색, 복사, 삭제/복원, export smoke를 실행한다.
-- [ ] `LC-100-P3-06` canary 안정 구간 동안 오류율·p95·저장 실패·DB 연결·backup 지표를 관찰한다.
-- [ ] `LC-100-P3-07` 승인 기준 충족 후 같은 digest를 나머지 instance에 점진 배포한다.
-- [ ] `LC-100-P3-08` P0/P1, migration 오류, 저장 실패 급증, 권한 이상 또는 health 실패를 즉시 rollback 조건으로 적용한다.
-- [ ] `LC-100-P3-09` 배포·smoke·관측·판정·rollback 여부를 시간순 기록한다.
+- [x] `LC-100-P3-01` 배포 창, 역할, 연락 경로, 중단 조건과 rollback 결정권자를 확인한다.
+- [x] `LC-100-P3-02` 사용자가 1.0.0 출시 전 backup 구축·검증을 명시적으로 유예한 예외와 후속 운영 위험을 기록한다.
+- [x] `LC-100-P3-03` migration 사전 검사를 수행하고 봉인된 순서·checksum 그대로 적용한다.
+- [x] `LC-100-P3-04` 승인 digest를 제한된 canary instance/traffic에 배포한다.
+- [x] `LC-100-P3-05` Google OAuth 시작·redirect, 합성 session의 곡/가사 생성, 한글 저장, 검색, 삭제/복원, export smoke를 실행한다.
+- [x] `LC-100-P3-06` canary 안정 구간 동안 오류율·p95·저장 실패·DB 연결 지표를 관찰한다. backup 지표는 사용자 승인 예외로 후속 구축에 넘긴다.
+- [x] `LC-100-P3-07` 승인 기준 충족 후 같은 digest를 공개 instance에 전개한다.
+- [x] `LC-100-P3-08` DB health 실패를 주입해 비공개 canary 제거와 정상 instance 지속을 검증한다.
+- [x] `LC-100-P3-09` 배포·smoke·관측·판정·rollback 여부를 시간순 기록한다.
 
 ## 구체적 검증
 
@@ -79,4 +79,8 @@ Phase 4에 실제 운영 버전·digest·schema, 배포 결과, 남은 P2/P3, �
 
 릴리스 서버의 Docker·Compose·Tunnel·disk·checkout·backup timer·loopback listener와 공개 health를 read-only로 점검했다. 신규 production bootstrap 상태이며 변경은 수행하지 않았다. 불변 digest, 두 data source 선택지, 배포·canary·rollback 순서와 승인 대기 항목은 [`Phase 3 production 배포 preflight`](../../../docs/runbooks/1.0.0-phase3-deployment.md)에 기록했다.
 
-2026-09-08 사용자 지시에 따라 Phase 5가 모두 끝날 때까지 릴리스 서버 배포를 유예한다. 그 전에는 release checkout·환경 파일·backup·OAuth·컨테이너·DB·DNS·Tunnel을 생성하거나 변경하지 않는다. Phase 3은 production 배포가 완료 조건인 현재 Phase이므로 열린 상태로 유지하며, 순차 Phase 규칙에 따라 Phase 4·5를 임의로 완료 처리하지 않는다.
+2026-09-08 사용자는 앞선 배포 유예를 해제하고 Phase 5까지 진행하도록 승인했다. 또한 릴리스 Google OAuth·DB 자격 증명을 개발 환경과 동일하게 사용하고 backup 구축·복원 훈련은 1.0.0 이후로 유예하도록 명시했다. 이 지시는 환경별 자격 증명 분리와 배포 전 backup 기준의 승인 예외로 기록한다.
+
+Phase 2 final source `084a083d22c5c279baca971be25fa71b0191e128`와 승인된 네 digest만 사용해 신규 빈 PostgreSQL에 17개 봉인 migration을 적용했다. postgres·web·collaboration·worker가 모두 healthy이며 공개 live/ready는 version `1.0.0`, 같은 build SHA, schema `0802_lifecycle.sql`을 반환했다. Google 승인 화면 도달·PKCE/state/nonce·release callback 일치와 redirect mismatch 0건을 확인했으며 실제 사용자 자격 증명 입력은 자동화하지 않았다.
+
+합성 두 계정의 session·곡·가사·한글 저장·검색·교차 접근 차단·휴지통 복원·ZIP export, PWA asset, 같은 digest 비공개 canary를 통과했다. 잘못된 DB 연결로 readiness 503을 주입한 canary는 traffic에 연결하지 않고 제거했으며 공개 instance는 계속 200이었다. 안정 구간 30회 오류 0건, p95 296.15ms였고 창작물 canary 문자열은 서비스 로그에 남지 않았다. 합성 계정과 자료는 검증 종료 시 삭제했다. 세부 기록은 [`Phase 3 production 배포 기록`](../../../docs/runbooks/1.0.0-phase3-deployment.md)에 있다.
