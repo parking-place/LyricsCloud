@@ -4,7 +4,7 @@ import { ConfigError, readAuthConfig, readRuntimeConfig } from "./index.js";
 describe("runtime configuration", () => {
   it("accepts a PostgreSQL URL", () => {
     const config = readRuntimeConfig({ NODE_ENV: "test", DATABASE_URL: "postgresql://user:secret@db/app" });
-    expect(config).toMatchObject({ runtime: "test", appVersion: "0.9.1", buildId: "local" });
+    expect(config).toMatchObject({ runtime: "test", appVersion: "1.0.0", buildId: "local" });
   });
   it("reports key names without their values", () => {
     const secret = "never-print-this";
@@ -19,6 +19,13 @@ describe("runtime configuration", () => {
     const unsafe = "build id with spaces and a secret";
     expect(() => readRuntimeConfig({ NODE_ENV: "test", DATABASE_URL: "postgresql://user:test@db/app", BUILD_ID: unsafe }))
       .toThrow("Invalid configuration keys: BUILD_ID");
+  });
+
+  it("requires the sealed version and source SHA in production", () => {
+    const base = { NODE_ENV: "production", DATABASE_URL: "postgresql://user:test@db/app" };
+    expect(() => readRuntimeConfig(base)).toThrow("Invalid configuration keys: APP_VERSION, BUILD_ID");
+    expect(() => readRuntimeConfig({ ...base, APP_VERSION: "0.9.1", BUILD_ID: "a".repeat(40) })).toThrow("APP_VERSION");
+    expect(readRuntimeConfig({ ...base, APP_VERSION: "1.0.0", BUILD_ID: "a".repeat(40) }).buildId).toBe("a".repeat(40));
   });
 });
 

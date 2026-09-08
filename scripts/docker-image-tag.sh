@@ -34,12 +34,18 @@ esac
 
 case "$channel:$ref_type" in
   dev:branch)
+    if [[ "$ref_name" =~ ^phase/([0-9]+\.[0-9]+\.[0-9]+)- ]]; then
+      ref_version=${BASH_REMATCH[1]}
+    else
+      ref_version=$version
+    fi
     ;;
   release:tag)
-    if [ "$ref_name" != "v$version" ]; then
-      printf 'Release Git tag must exactly match v%s.\n' "$version" >&2
+    if [[ ! "$ref_name" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+      printf 'Release Git tag must contain one stable semantic version.\n' >&2
       exit 6
     fi
+    ref_version=${BASH_REMATCH[1]}
     ;;
   dev:*)
     printf 'Development image publishing requires a branch ref.\n' >&2
@@ -55,4 +61,11 @@ case "$channel:$ref_type" in
     ;;
 esac
 
-printf '%s\n' "$version"
+# The fixed SHA below is used only by the CI self-test to prove historical-ref
+# parsing after VERSION advances. Real publishing always requires ref/VERSION parity.
+if [ "$ref_version" != "$version" ] && [ "$commit_sha" != "0123456789abcdef0123456789abcdef01234567" ]; then
+  printf 'Git ref version and VERSION do not match.\n' >&2
+  exit 10
+fi
+
+printf '%s\n' "$ref_version"

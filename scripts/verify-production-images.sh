@@ -4,6 +4,8 @@ set -euo pipefail
 # Only disposable resources created by this invocation are removed.
 revision=${1:?Usage: verify-production-images.sh IMAGE_TAG}
 [[ "$revision" =~ ^[a-zA-Z0-9_.-]+$ ]] || exit 2
+[[ "$revision" =~ ^[0-9a-f]{40}$ ]] || { printf 'Production image verification requires a full Git SHA.\n' >&2; exit 2; }
+app_version=$(tr -d '\r\n' < VERSION)
 name="lyricscloud-image-smoke-$$-$RANDOM"
 allowlist_file=$(mktemp)
 printf 'fixture@example.invalid\n' > "$allowlist_file"
@@ -29,7 +31,7 @@ for attempt in {1..30}; do
 done
 [[ "$ready" == true ]]
 docker run --rm --name "$name-migrate" --network "$name" --read-only --tmpfs /tmp:size=32m,mode=1777 \
-  -e "DATABASE_URL=$database_url" "lyricscloud-migrate-ci:$revision"
+  -e "DATABASE_URL=$database_url" -e "APP_VERSION=$app_version" -e "BUILD_ID=$revision" "lyricscloud-migrate-ci:$revision"
 for service in collaboration worker web; do
   runtime_mounts=()
   if [[ "$service" == web ]]; then
@@ -38,7 +40,7 @@ for service in collaboration worker web; do
   docker run -d --name "$name-$service" --network "$name" --network-alias "$service" \
     --read-only --tmpfs /tmp:size=64m,mode=1777 \
     "${runtime_mounts[@]}" \
-    -e "DATABASE_URL=$database_url" -e APP_ORIGIN=http://localhost:8080 \
+    -e "DATABASE_URL=$database_url" -e "APP_VERSION=$app_version" -e "BUILD_ID=$revision" -e APP_ORIGIN=http://localhost:8080 \
     -e OIDC_TEST_FIXTURE=true -e GOOGLE_ISSUER=http://127.0.0.1:3100 \
     -e GOOGLE_CLIENT_ID=synthetic-image-client -e GOOGLE_CLIENT_SECRET=synthetic-image-secret \
     -e SESSION_SECRET=synthetic-image-session-secret-at-least-32-bytes \

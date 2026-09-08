@@ -3,6 +3,8 @@ set -euo pipefail
 
 revision=${1:?Usage: verify-0915-upgrade-rollback.sh IMAGE_TAG}
 [[ "$revision" =~ ^[A-Za-z0-9._-]+$ ]]
+current_version=$(tr -d '\r\n' < VERSION)
+previous_version=$(node -p 'require("./config/release-operations.0915.json").previousRc.version')
 name="lyricscloud-0915-upgrade-$$-$RANDOM"
 allowlist_file=$(mktemp)
 printf 'fixture@example.invalid\n' > "$allowlist_file"
@@ -74,6 +76,8 @@ check_http() {
 
 start_generation() {
   local generation=$1 source=$2
+  local app_version=$current_version
+  [[ "$source" == previous ]] && app_version=$previous_version
   for service in collaboration worker web; do
     local image
     if [[ "$source" == previous ]]; then image=${previous[$service]}; else image="lyricscloud-$service-ci:$revision"; fi
@@ -83,7 +87,7 @@ start_generation() {
     fi
     docker run -d --name "$name-$generation-$service" --network "$name" --network-alias "$service" \
       --read-only --tmpfs /tmp:size=64m,mode=1777 "${mounts[@]}" \
-      -e "DATABASE_URL=$database_url" -e NODE_ENV=test -e APP_VERSION=0.9.1 -e BUILD_ID="$revision" \
+      -e "DATABASE_URL=$database_url" -e NODE_ENV=test -e "APP_VERSION=$app_version" -e BUILD_ID="$revision" \
       -e APP_ORIGIN=http://localhost:8080 -e COLLABORATION_INTERNAL_URL=http://collaboration:3001 \
       -e GOOGLE_ISSUER=http://127.0.0.1:3100 -e GOOGLE_CLIENT_ID=synthetic-upgrade-client \
       -e GOOGLE_CLIENT_SECRET=synthetic-upgrade-secret -e SESSION_SECRET=synthetic-upgrade-session-secret-at-least-32-bytes \
@@ -127,7 +131,7 @@ stop_generation current
 docker run -d --name "$name-broken-web" --network "$name" --network-alias web \
   --read-only --tmpfs /tmp:size=64m,mode=1777 \
   --mount "type=bind,source=$allowlist_file,target=/run/secrets/auth_allowed_emails,readonly" \
-  -e DATABASE_URL=postgresql://invalid:invalid@db:1/unavailable -e NODE_ENV=test -e APP_VERSION=0.9.1 -e BUILD_ID="$revision" \
+  -e DATABASE_URL=postgresql://invalid:invalid@db:1/unavailable -e NODE_ENV=test -e "APP_VERSION=$current_version" -e BUILD_ID="$revision" \
   -e APP_ORIGIN=http://localhost:8080 -e GOOGLE_ISSUER=http://127.0.0.1:3100 \
   -e GOOGLE_CLIENT_ID=synthetic-upgrade-client -e GOOGLE_CLIENT_SECRET=synthetic-upgrade-secret \
   -e SESSION_SECRET=synthetic-upgrade-session-secret-at-least-32-bytes \

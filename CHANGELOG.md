@@ -6,6 +6,8 @@
 
 ### Added
 
+- 1.0.0 버전 봉인, 서비스별 환경 schema, 17개 migration checksum·호환 범위, production dependency license inventory와 digest-only release manifest 생성 계약
+- 네 production image의 독립 재빌드 비교, nonroot/read-only/health/signal/persistent 경계와 기존 keyless 서명·SLSA provenance·SBOM·취약점/secret scan 통합 gate
 - 0.9.1 보안 하드닝: 60개 API·32개 DB 테이블의 owner 격리 행렬, 53개 상태 변경 Origin gate, 요청별 nonce CSP, 1 MiB API body 상한과 인증·검색·내보내기 token bucket 제한
 - 고정 digest Distroless Node 24 Debian 13 nonroot runtime, read-only rootfs·tmpfs·내장 healthcheck와 CI의 pnpm audit·Gitleaks·Trivy·image layer canary gate
 - 0.9.1 RC 기능 동결: Sketch 49절 71개 요구사항과 15개 화면·8개 목업 제안 source의 구현/검증 추적, P0/P1 0건 한도와 `OPS-0001` 변경·승인·태그 절차

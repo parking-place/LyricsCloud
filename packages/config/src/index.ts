@@ -33,11 +33,13 @@ export function readRuntimeConfig(env: NodeJS.ProcessEnv): RuntimeConfig {
   } catch { invalid.push("DATABASE_URL"); }
   if (env.APP_VERSION !== undefined && !isSafeIdentifier(env.APP_VERSION)) invalid.push("APP_VERSION");
   if (env.BUILD_ID !== undefined && !isSafeIdentifier(env.BUILD_ID)) invalid.push("BUILD_ID");
+  if (runtime === "production" && env.APP_VERSION !== "1.0.0") invalid.push("APP_VERSION");
+  if (runtime === "production" && !/^[0-9a-f]{40}$/.test(env.BUILD_ID ?? "")) invalid.push("BUILD_ID");
   if (invalid.length) throw new ConfigError([...new Set(invalid)]);
   return {
     runtime: runtime as RuntimeName,
     databaseUrl: env.DATABASE_URL!,
-    appVersion: env.APP_VERSION ?? "0.9.1",
+    appVersion: env.APP_VERSION ?? "1.0.0",
     buildId: env.BUILD_ID ?? "local"
   };
 }

@@ -4,8 +4,8 @@ LyricsCloud는 Suno 음악 제작 과정의 곡, 여러 가사 버전, 라임 �
 
 ## 현재 상태
 
-- 완료 기록: `0.0.0`~`0.7.0`
-- 현재 단계: [`0.9.1/1phase.md`](<./0.Plans/1. Dev-phase/0.9.1/1phase.md>) — 1.0 RC 기능 동결과 요구사항 추적 기준 진행 중
+- 완료 기록: `0.0.0`~`0.9.1`, `1.0.0` Phase 1
+- 현재 단계: [`1.0.0/2phase.md`](<./0.Plans/1. Dev-phase/1.0.0/2phase.md>) — 불변 release artifact와 migration 봉인 진행 중
 - 상태 원본: [`STATUS.md`](<./0.Plans/1. Dev-phase/STATUS.md>)
 - 애플리케이션 코드: Google 로그인·소유권, 곡·가사 CRUD, 실제 집계·가사 카드·작업 메모·라임/프롬프트 검색·다중 연결·확인 해제를 갖춘 곡 대시보드, 가사 편집 네 탭 자료 패널과 안전한 전환·PC/모바일 상태 보존, 라임 노트·태그·곡 연결, 프롬프트 목록·토큰 편집·자동완성·중복 정리·접근 가능한 순서 변경·정확한 복사·복제·곡 연결, CodeMirror 편집·복사, 동일 owner CRDT 동기화, 수정 기록·비파괴 복원
 - 개인 OAuth·수정 기록의 로컬 검증: [`Phase 4 기록`](./docs/runbooks/0.3.1-phase4-local-validation.md)

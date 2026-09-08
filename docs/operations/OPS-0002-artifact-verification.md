@@ -32,6 +32,8 @@ Docker Hub token은 GitHub Actions secret, username은 Actions variable에만 �
 
 CI는 build가 돌려준 정확한 digest를 OCI 1.1 referrer로 즉시 서명한 뒤 같은 discovery mode와 certificate identity/issuer로 `cosign verify`를 수행한다. 이어 BuildKit provenance에서 source·revision·Dockerfile·target을 검사한다. 운영자는 [`backup-restore-upgrade.md`](../runbooks/backup-restore-upgrade.md)의 명령으로 네 digest를 다시 검증하고 tag가 아닌 `@sha256`로 배포한다.
 
+1.0.0 Phase 2부터 source에는 [`release-manifest.1.0.0.json`](../../config/release-manifest.1.0.0.json)의 불변 구조만 둔다. 같은 source의 CI가 빌드 뒤 [`generate-1002-release-manifest.mjs`](../../scripts/generate-1002-release-manifest.mjs)로 commit·ref·시각·네 digest를 주입해 write-once 승인 목록을 생성한다. source에 결과 digest를 다시 commit해 새 digest를 만드는 순환은 허용하지 않는다.
+
 서명, transparency log, provenance, SBOM, 네 tag의 digest 일치 또는 전체 CI 중 하나라도 실패하면 artifact는 승인 불가다. 예외 승인은 허용하지 않으며 같은 commit의 CI를 다시 실행한다.
 
 ## 영향과 되돌림

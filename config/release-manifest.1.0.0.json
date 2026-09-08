@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "lyricscloud.release-manifest.v1",
+  "releaseVersion": "1.0.0",
+  "releaseChannel": "candidate",
+  "productionAuthorized": false,
+  "source": {
+    "repository": "https://github.com/parking-place/LyricsCloud",
+    "commit": "$GIT_SHA",
+    "lockfile": "pnpm-lock.yaml",
+    "lockfileSha256": "f0e2d5984457b2a3c89d2f0b711e4bbe1e254360e1b640f85bbcb9dec3b3a963",
+    "builtAt": "$BUILT_AT",
+    "sourceDateEpoch": "$SOURCE_DATE_EPOCH"
+  },
+  "artifactPolicy": {
+    "registry": "Docker Hub",
+    "platform": "linux/amd64",
+    "deployByDigestOnly": true,
+    "signature": "Sigstore keyless GitHub Actions OIDC",
+    "certificateIssuer": "https://token.actions.githubusercontent.com",
+    "certificateIdentity": "https://github.com/parking-place/LyricsCloud/.github/workflows/ci.yml@$GIT_REF",
+    "provenance": "SLSA BuildKit mode=max",
+    "sbom": "BuildKit SPDX attestation",
+    "ciRun": "$CI_RUN"
+  },
+  "images": {
+    "web": {
+      "repository": "parkingplace/lyricscloud-web",
+      "digest": "$WEB_DIGEST",
+      "dockerfile": "infra/docker/Dockerfile.web",
+      "target": "runtime",
+      "user": "65532",
+      "health": "/api/health/ready"
+    },
+    "collaboration": {
+      "repository": "parkingplace/lyricscloud-collaboration",
+      "digest": "$COLLABORATION_DIGEST",
+      "dockerfile": "infra/docker/Dockerfile.service",
+      "target": "collaboration",
+      "user": "65532",
+      "health": "/health/ready"
+    },
+    "worker": {
+      "repository": "parkingplace/lyricscloud-worker",
+      "digest": "$WORKER_DIGEST",
+      "dockerfile": "infra/docker/Dockerfile.service",
+      "target": "worker",
+      "user": "65532",
+      "health": "/health/ready"
+    },
+    "migrate": {
+      "repository": "parkingplace/lyricscloud-migrate",
+      "digest": "$MIGRATE_DIGEST",
+      "dockerfile": "infra/docker/Dockerfile.service",
+      "target": "migrate",
+      "user": "65532",
+      "health": "one-shot exit 0"
+    }
+  },
+  "attestations": {
+    "signatureVerified": true,
+    "provenanceVerified": true,
+    "sbomAttached": true,
+    "dependencyAudit": "no high-or-critical blocker",
+    "containerScan": "no fixable high-or-critical blocker",
+    "secretScan": "no finding"
+  },
+  "database": {
+    "manifest": "config/migrations.1.0.0.json",
+    "manifestSha256": "950ce7ba7d31da59bf210d525c5eea77c9f93ccb94c50d89fad594b151b2795a",
+    "applyOrder": ["migrate", "collaboration", "worker", "web"],
+    "requiredLatestSchema": "0802_lifecycle.sql"
+  },
+  "environment": {
+    "schema": "config/environment-schema.1.0.0.json",
+    "schemaSha256": "ef18f657f59d3666e417063e84bc5c207beb7922a30eb37d12899ed17d158ba7"
+  },
+  "licenses": {
+    "inventory": "config/licenses.1.0.0.json",
+    "inventorySha256": "75feb4ff1cce1fa2ded3913fddb4635abd7144cd689db86a1141693de9a93cd2",
+    "unknownOrBlocked": 0
+  },
+  "persistentBoundaries": {
+    "postgres": "named volume or explicit host mount at /var/lib/postgresql",
+    "backup": "external mount at /backup/repository, distinct from checkout and PostgreSQL",
+    "applicationImages": "stateless read-only root filesystem with tmpfs /tmp"
+  },
+  "approval": {
+    "technicalGate": "passed",
+    "approvedDigests": ["web", "collaboration", "worker", "migrate"],
+    "productionDeployment": "requires separate explicit user authorization under OPS-0004"
+  }
+}
