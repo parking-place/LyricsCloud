@@ -5,11 +5,11 @@
 ```yaml
 current_version: "0.9.1"
 current_phase: "3phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-08 13:34 KST"
-updated_at: "2026-09-08 13:34 KST"
-next_action: "OPS-0003 성능 budget과 합성 fixture를 확정하고 3회 반복 성능·소크·RC 회귀를 실행"
+updated_at: "2026-09-08 14:24 KST"
+next_action: "0.9.1 Phase 4 관측성·운영 runbook 범위를 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -44,7 +44,7 @@ next_action: "OPS-0003 성능 budget과 합성 fixture를 확정하고 3회 반�
 | 0.7.0 | complete | Phase 1~5 완료 | 0.6.0 완료 |
 | 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
 | 0.9.0 | complete | Phase 1~5 완료 | 0.8.0 완료 |
-| 0.9.1 | in_progress | Phase 1~2 완료, Phase 3 진행 중 | 0.9.0 완료 |
+| 0.9.1 | in_progress | Phase 1~3 완료, Phase 4 준비 | 0.9.0 완료 |
 | 1.0.0 | planned | 없음 | 0.9.1 release gate 통과 |
 
 ## 활성 작업
@@ -53,7 +53,6 @@ next_action: "OPS-0003 성능 budget과 합성 fixture를 확정하고 3회 반�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 0.9.1 / Phase 3 | `LC-091-P3-01`~`LC-091-P3-08` | `docs/operations/**`, `docs/runbooks/**`, `scripts/**`, `tests/**`, `.github/workflows/**`, `0.Plans/1. Dev-phase/**` | 0.9.1 Phase 2 완료 SHA `5938089`, 합성 fixture 원칙, 단일 replica rate limiter 제한 | 2026-09-08 13:34 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,13 +101,14 @@ next_action: "OPS-0003 성능 budget과 합성 fixture를 확정하고 3회 반�
 
 ## 다음 작업
 
-0.9.1 Phase 3 성능·장시간 안정성 범위만 시작한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+0.9.1 Phase 4 관측성·운영 runbook 범위만 시작한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
-| 2026-09-08 | 0.9.1 / Phase 2 | Codex | OAuth state·nonce·PKCE, 60 API·32 table owner 경계, 53 mutation Origin gate, 1 MiB body·인증/검색/export rate limit와 nonce CSP를 검증하고 네 runtime을 고정 digest Distroless nonroot/read-only 이미지로 축소했으며 Drizzle advisory와 mode `600` allowlist runtime 접근을 해소 | 58 files/213 tests, migration 전체 복구, PC/mobile E2E 223 pass·27 skip, 5-browser RC 10 pass, 네 image file-allowlist session·fresh DB·재시작·revision 복구, pnpm audit·Gitleaks·Trivy·image canary, CI `34185313089`, `1cf9273` 동일 SHA 개발 배포·공개 인증 14-route·Axe/reflow 모두 PASS; [감사](../../docs/security/0.9.1-security-audit.md), [행렬](../../docs/security/0.9.1-api-ownership-matrix.md), [검증 기록](../../docs/runbooks/0.9.1-phase2-validation.md) | Phase 3이 단일 replica rate limiter 제한과 합성 데이터 원칙을 유지하며 성능·장시간 안정성을 측정 |
+| 2026-09-08 | 0.9.1 / Phase 3 | Codex | 자체 운영 기준 환경·2,500 resource 합성 fixture와 p95/error budget을 확정하고 10,000줄 편집·검색·자동 저장·동시 충돌·export·purge·24시간 가속 소크를 자동화했으며 purge N+1을 set 기반 batch로 제거 | 로컬 3회 전 지표 budget·오류율 0%, 58 files/213 tests, PC/mobile E2E 223 pass·27 skip, 5-browser RC 10 pass, CI `34189013471`, 네 image digest, `12fd263` 동일 SHA 개발 성능·공개 인증 14-route·Axe/reflow, 사용자 iOS/Android update 모두 PASS; [검증 기록](../../docs/runbooks/0.9.1-phase3-validation.md) | Phase 4가 확정된 지표·오류 분류·본문 없는 관측 원칙과 성능 임계값을 운영 runbook에 연결 |
+| 2026-09-08 | 0.9.1 / Phase 2 | Codex | OAuth state·nonce·PKCE, 60 API·32 table owner 경계, 53 mutation Origin gate, 1 MiB body·인증/검색/export rate limit와 nonce CSP를 검증하고 네 runtime을 고정 digest Distroless nonroot/read-only 이미지로 축소했으며 Drizzle advisory와 mode `600` allowlist runtime 접근을 해소 | 58 files/213 tests, migration 전체 복구, PC/mobile E2E 223 pass·27 skip, 5-browser RC 10 pass, 네 image file-allowlist session·fresh DB·재시작·revision 복구, pnpm audit·Gitleaks·Trivy·image canary, CI `34186401585`, `5938089` 동일 SHA 개발 배포·공개 인증 14-route·Axe/reflow 모두 PASS; [감사](../../docs/security/0.9.1-security-audit.md), [행렬](../../docs/security/0.9.1-api-ownership-matrix.md), [검증 기록](../../docs/runbooks/0.9.1-phase2-validation.md) | Phase 3이 단일 replica rate limiter 제한과 합성 데이터 원칙을 유지하며 성능·장시간 안정성을 측정 |
 | 2026-09-08 | 0.9.1 / Phase 1 | Codex | Sketch 49절 71개 요구사항과 15개 numbered README·8개 제안 source를 구현/검증 증적에 연결하고 orphan·미구현·부분 구현·검증 없음 0행, P0/P1 0건으로 동결했으며 OPS-0001을 Accepted로 확정 | `test:freeze:0911`, 0.9 감사·실기기 완료 validator, check, 57 files/208 tests, production build; [추적표](../../docs/architecture/0.9.1-RC-TRACEABILITY.md), [검증 기록](../../docs/runbooks/0.9.1-phase1-validation.md) | Phase 2가 인증·권한·XSS·CSRF·rate/size·container·dependency/secret 경계를 전수 감사 |
 | 2026-09-08 | 0.9.0 / Phase 5 | Codex | 지원 행렬, 15화면×4 viewport 최종 시각 기준선, 5개 브라우저 profile의 장문 한글·회전·Clipboard 회귀와 실제 iOS Safari·Android Chrome의 설치·IME·복사·offline·dirty update·logout 인수를 완료 | 57 files/208 tests, PC/mobile E2E 219 pass·25 skip, 출시 후보 10/10, production build·4 image/fresh DB 복구, CI `34164652951`·`34168682303`, `9ead2aa` 동일 SHA 개발 배포·공개 PWA/Axe/reflow smoke, 사용자 실기기 최종 보고; [검증 기록](../../docs/runbooks/0.9.0-phase5-validation.md) | 0.9.1 Phase 1이 모든 1.0 요구사항·목업 제안·P0/P1 정의와 RC 허용 변경을 동결 |
 | 2026-09-08 | 0.9.0 / Phase 4 | Codex | 15개 화면에 하나의 주 제목·명명된 main, 공통 빈 화면·오류 상태, 양 테마 대비, dialog focus trap·Escape·호출 지점 복원과 저장 재시도 본문·cursor 보존을 구현 | 57 files/208 tests, production build·4 image/fresh DB 복구, PC/mobile E2E 219 pass·21 skip, Axe serious·critical 0, CI `34160175567`, 네 image digest, `2d0ec0a` 동일 SHA 개발 배포와 공개 양 테마·200% reflow smoke; [검증 기록](../../docs/runbooks/0.9.0-phase4-validation.md) | Phase 5가 실제 iOS Safari·Android Chrome의 IME·복사·설치·오프라인 복구와 출시 후보 통합 행렬을 검증 |
