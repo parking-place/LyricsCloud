@@ -14,7 +14,27 @@ artifact="$IMAGE@$IMAGE_DIGEST"
 identity="https://github.com/$GITHUB_WORKFLOW_REF"
 issuer=https://token.actions.githubusercontent.com
 cosign sign --yes "$artifact"
-cosign verify --experimental-oci11 --certificate-identity "$identity" --certificate-oidc-issuer "$issuer" "$artifact" >/dev/null
+
+signature_verified=false
+for attempt in {1..10}; do
+  if cosign verify --experimental-oci11 \
+    --certificate-identity "$identity" \
+    --certificate-oidc-issuer "$issuer" \
+    "$artifact" >/dev/null; then
+    signature_verified=true
+    break
+  fi
+
+  if (( attempt < 10 )); then
+    printf 'Signature discovery pending for %s (attempt %d/10); retrying.\n' "$artifact" "$attempt" >&2
+    sleep 3
+  fi
+done
+
+if [[ "$signature_verified" != true ]]; then
+  printf 'Signature verification failed for %s after 10 attempts.\n' "$artifact" >&2
+  exit 1
+fi
 
 provenance=$(docker buildx imagetools inspect "$artifact" --format '{{json .Provenance.SLSA.buildDefinition.externalParameters}}')
 jq -e \
@@ -23,7 +43,8 @@ jq -e \
   --arg dockerfile "$(basename "$DOCKERFILE")" \
   --arg target "$BUILD_TARGET" \
   '.request.args["label:org.opencontainers.image.revision"] == $revision
-    and .request.root.configSource.request.args["vcs:source"] == $source
+    and .request.root.request.args["vcs:revision"] == $revision
+    and .request.root.request.args["vcs:source"] == $source
     and .request.args.target == $target
     and .configSource.path == $dockerfile' <<< "$provenance" >/dev/null
 
