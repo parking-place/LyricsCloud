@@ -3,9 +3,11 @@ import { readdir, readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readRuntimeConfig } from "@lyricscloud/config";
+import { observabilityFromEnvironment } from "@lyricscloud/observability";
 import { Pool } from "pg";
 
 const config = readRuntimeConfig(process.env);
+const telemetry = observabilityFromEnvironment("migration");
 const migrations = join(dirname(fileURLToPath(import.meta.url)), "../migrations");
 const pool = new Pool({ connectionString: config.databaseUrl, max: 1 });
 const client = await pool.connect();
@@ -35,7 +37,12 @@ try {
       throw error;
     }
   }
-  console.log("Migrations: OK");
+  telemetry.record({ signal: "log", event: "migration_completed", operation: "migration", outcome: "success" });
+} catch {
+  telemetry.record({ signal: "alert", event: "migration_failed", operation: "migration",
+    errorCode: "MIGRATION_FAILED", outcome: "failure", severity: "critical",
+    runbook: "docs/runbooks/observability-alerts.md#service-unavailable" });
+  throw new Error("MIGRATION_FAILED");
 } finally {
   await client.query("select pg_advisory_unlock($1)", [741923]).catch(() => undefined);
   client.release();

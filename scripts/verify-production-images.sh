@@ -63,6 +63,15 @@ check_http "$name-collaboration" http://127.0.0.1:3001/health/ready
 check_http "$name-worker" http://127.0.0.1:3002/health/ready
 check_http "$name-web" http://127.0.0.1:3000/api/health/ready
 check_http "$name-web" http://127.0.0.1:3000/collaboration/health/ready
+docker exec "$name-web" /nodejs/bin/node -e '
+  fetch("http://127.0.0.1:3000/collaboration/metrics", { redirect: "manual" })
+    .then(async response => {
+      const payload = await response.json();
+      if (response.status !== 404 || payload?.error?.code !== "NOT_FOUND"
+        || "connections" in payload || "pendingProjections" in payload) process.exit(1);
+    })
+    .catch(() => process.exit(1));
+'
 session_token=image-smoke-session
 session_hash=$(docker exec "$name-web" /nodejs/bin/node -e "process.stdout.write(require('node:crypto').createHash('sha256').update(process.argv[1]).digest('base64url'))" "$session_token")
 docker exec "$name-db" psql -v ON_ERROR_STOP=1 -U lyricscloud_test -d lyricscloud_test -c \

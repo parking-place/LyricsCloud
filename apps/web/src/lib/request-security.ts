@@ -1,3 +1,4 @@
+import { createRequestId } from "@lyricscloud/observability";
 import { privateResponseHeaders } from "./http-response.js";
 
 export const MAX_API_BODY_BYTES = 1024 * 1024;
@@ -56,9 +57,10 @@ export function requestClientKey(request: Request): string {
 }
 
 export function rateLimitResponse(decision: RateLimitDecision): Response {
+  const requestId = createRequestId();
   return Response.json(
-    { error: { code: "RATE_LIMITED", requestId: crypto.randomUUID() } },
-    { status: 429, headers: { ...privateResponseHeaders, "Retry-After": String(decision.retryAfterSeconds) } }
+    { error: { code: "RATE_LIMITED", requestId } },
+    { status: 429, headers: { ...privateResponseHeaders, "Retry-After": String(decision.retryAfterSeconds), "x-request-id": requestId } }
   );
 }
 

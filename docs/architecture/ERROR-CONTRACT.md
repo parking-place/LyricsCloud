@@ -10,6 +10,8 @@ API 오류 응답은 HTTP 상태와 다음 두 필드만 공개한다.
 
 `code`는 클라이언트가 분기할 안정된 값이고 `requestId`는 서버 진단과 연결하는 불투명 식별자다. stack, SQL, 환경 값, OAuth code·token, 사용자 이메일과 창작물 본문은 응답에 포함하지 않는다. 인증·개인 데이터 API는 이후 Phase에서도 `apps/web/src/lib/http-response.ts`를 사용한다.
 
+`requestId`는 서버 ingress에서 생성한 `req_`와 32자리 난수 hex 형식만 신뢰하고 오류 body와 `x-request-id` 응답 header에 같은 값을 둔다. 사용자·계정·resource ID나 클라이언트가 제출한 command request ID를 관측 상관 ID로 재사용하지 않는다. web·collaboration·worker·database 작업의 운영 오류는 이 ID와 안정된 code만 연결하며 원본 Error message·stack·cause는 연결하지 않는다.
+
 ## Health
 
 - liveness는 HTTP 프로세스가 요청을 받을 수 있는지만 확인한다.

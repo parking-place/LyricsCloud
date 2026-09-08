@@ -1,7 +1,7 @@
-import { randomUUID } from "node:crypto";
 import { AuthError, clearTransactionCookie, sessionCookie } from "@lyricscloud/auth";
 import type { AuthConfig } from "@lyricscloud/config";
 import type { ErrorCode } from "@lyricscloud/domain";
+import { createRequestId } from "@lyricscloud/observability";
 import { cookieNames, readCookie } from "@lyricscloud/auth";
 import { getAuthContext } from "../../../../lib/auth-context.js";
 import { privateResponseHeaders } from "../../../../lib/http-response.js";
@@ -33,14 +33,19 @@ export async function GET(request: Request): Promise<Response> {
       headers
     });
   } catch (error) {
-    if (!config) return Response.json({ error: { code: "AUTH_PROVIDER_UNAVAILABLE", requestId: randomUUID() } }, { status: 503, headers: privateResponseHeaders });
+    if (!config) {
+      const requestId = createRequestId();
+      return Response.json({ error: { code: "AUTH_PROVIDER_UNAVAILABLE", requestId } },
+        { status: 503, headers: { ...privateResponseHeaders, "x-request-id": requestId } });
+    }
     const code: ErrorCode = error instanceof AuthError ? error.code : "AUTH_PROVIDER_UNAVAILABLE";
     const target = new URL("/auth", config.appOrigin);
     target.searchParams.set("error", code);
-    target.searchParams.set("requestId", randomUUID());
+    const requestId = createRequestId();
+    target.searchParams.set("requestId", requestId);
     return new Response(null, {
       status: 303,
-      headers: { ...privateResponseHeaders, Location: target.href, "Set-Cookie": clearTransactionCookie(config) }
+      headers: { ...privateResponseHeaders, Location: target.href, "Set-Cookie": clearTransactionCookie(config), "x-request-id": requestId }
     });
   }
 }

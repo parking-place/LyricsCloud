@@ -1,6 +1,6 @@
 import { Dexie } from "dexie";
 import * as Y from "yjs";
-import type { CheckpointReason, CrdtTextSelectionReference, LyricRevision, RestoreRevisionInput, RevisionHistory } from "@lyricscloud/domain";
+import { parsePublicErrorCode, type CheckpointReason, type CrdtTextSelectionReference, type LyricRevision, type RestoreRevisionInput, type RevisionHistory } from "@lyricscloud/domain";
 import type { EditorDocumentTransaction, EditorTextChange } from "./codemirror.js";
 import { createLyricDocument, encodeTextRelativePosition, lyricBody, resolveTextRelativePosition } from "./crdt.js";
 import { SyncStorage, type QueuedUpdate } from "./sync-storage.js";
@@ -288,8 +288,8 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
       signal: AbortSignal.any([abort.signal, AbortSignal.timeout(10_000)])
     });
     if (!response.ok) {
-      const error = await response.json().catch(() => ({})) as { error?: string };
-      throw new Error(error.error ?? "REVISION_UNAVAILABLE");
+      const error = await response.json().catch(() => ({}));
+      throw new Error(parsePublicErrorCode(error) ?? "REVISION_UNAVAILABLE");
     }
     return response.json() as Promise<T>;
   }

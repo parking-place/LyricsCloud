@@ -1,0 +1,14 @@
+{
+  "version": "0.9.1-phase4",
+  "title": "LyricsCloud operational health",
+  "aggregationOnly": true,
+  "panels": [
+    { "metric": "service_unavailable_count", "display": "Service readiness failures" },
+    { "metric": "autosave_failure_rate_percent", "display": "Autosave failure rate" },
+    { "metric": "sync_conflict_count", "display": "Explicit sync conflicts" },
+    { "metric": "search_p95_ms", "display": "Search p95" },
+    { "metric": "purge_failure_count", "display": "Purge failures" },
+    { "metric": "backup_failure_count", "display": "Backup failures" }
+  ],
+  "forbiddenDimensions": ["user", "account", "email", "resourceId", "documentId", "requestId", "routeUrl", "searchQuery"]
+}

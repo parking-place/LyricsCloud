@@ -31,7 +31,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 4.0.18
-        version: 4.0.18(@types/node@24.10.0)(tsx@4.20.6)
+        version: 4.0.18(@opentelemetry/api@1.9.1)(@types/node@24.10.0)(tsx@4.20.6)
 
   apps/collaboration:
     dependencies:
@@ -44,6 +44,9 @@ importers:
       '@lyricscloud/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@lyricscloud/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       pg:
         specifier: 8.16.3
         version: 8.16.3
@@ -78,12 +81,15 @@ importers:
       '@lyricscloud/editor':
         specifier: workspace:*
         version: link:../../packages/editor
+      '@lyricscloud/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@lyricscloud/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       next:
         specifier: 16.3.4
-        version: 16.3.4(@playwright/test@1.62.1)(@types/node@24.10.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 16.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@24.10.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react:
         specifier: 19.2.4
         version: 19.2.4
@@ -106,6 +112,9 @@ importers:
       '@lyricscloud/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@lyricscloud/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
     devDependencies:
       tsx:
         specifier: 4.20.6
@@ -133,9 +142,12 @@ importers:
       '@lyricscloud/domain':
         specifier: workspace:*
         version: link:../domain
+      '@lyricscloud/observability':
+        specifier: workspace:*
+        version: link:../observability
       drizzle-orm:
         specifier: 0.45.2
-        version: 0.45.2(@types/pg@8.15.5)(pg@8.16.3)
+        version: 0.45.2(@opentelemetry/api@1.9.1)(@types/pg@8.15.5)(pg@8.16.3)
       pg:
         specifier: 8.16.3
         version: 8.16.3
@@ -178,6 +190,12 @@ importers:
       yjs:
         specifier: 13.6.32
         version: 13.6.32
+
+  packages/observability:
+    dependencies:
+      '@opentelemetry/api':
+        specifier: 1.9.1
+        version: 1.9.1
 
   packages/ui: {}
 
@@ -753,6 +771,10 @@ packages:
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
+
+  '@opentelemetry/api@1.9.1':
+    resolution: {integrity: sha512-gLyJlPHPZYdAk1JENA9LeHejZe1Ti77/pTeFm/nMXmQH/HFZlcS/O2XJB+L8fkbrNSqhdtlvjBVjxwUYanNH5Q==}
+    engines: {node: '>=8.0.0'}
 
   '@playwright/test@1.62.1':
     resolution: {integrity: sha512-DTcUc8qii+cpHvtOwggMtBRMjKZHXYWdw8syRYu2vtzuq4Wxphqq4NfCs5Zt44L6mA8rfDfj+PHnxFc/FeK6mQ==}
@@ -1811,6 +1833,8 @@ snapshots:
   '@next/swc-win32-x64-msvc@16.3.4':
     optional: true
 
+  '@opentelemetry/api@1.9.1': {}
+
   '@playwright/test@1.62.1':
     dependencies:
       playwright: 1.62.1
@@ -1989,8 +2013,9 @@ snapshots:
 
   diff@9.0.0: {}
 
-  drizzle-orm@0.45.2(@types/pg@8.15.5)(pg@8.16.3):
+  drizzle-orm@0.45.2(@opentelemetry/api@1.9.1)(@types/pg@8.15.5)(pg@8.16.3):
     optionalDependencies:
+      '@opentelemetry/api': 1.9.1
       '@types/pg': 8.15.5
       pg: 8.16.3
 
@@ -2088,7 +2113,7 @@ snapshots:
 
   nanoid@3.3.18: {}
 
-  next@16.3.4(@playwright/test@1.62.1)(@types/node@24.10.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  next@16.3.4(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@24.10.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       '@next/env': 16.3.4
       '@swc/helpers': 0.5.23
@@ -2107,6 +2132,7 @@ snapshots:
       '@next/swc-linux-x64-musl': 16.3.4
       '@next/swc-win32-arm64-msvc': 16.3.4
       '@next/swc-win32-x64-msvc': 16.3.4
+      '@opentelemetry/api': 1.9.1
       '@playwright/test': 1.62.1
       sharp: 0.35.4(@types/node@24.10.0)
     transitivePeerDependencies:
@@ -2328,7 +2354,7 @@ snapshots:
       fsevents: 2.3.3
       tsx: 4.20.6
 
-  vitest@4.0.18(@types/node@24.10.0)(tsx@4.20.6):
+  vitest@4.0.18(@opentelemetry/api@1.9.1)(@types/node@24.10.0)(tsx@4.20.6):
     dependencies:
       '@vitest/expect': 4.0.18
       '@vitest/mocker': 4.0.18(vite@7.3.6(@types/node@24.10.0)(tsx@4.20.6))
@@ -2351,6 +2377,7 @@ snapshots:
       vite: 7.3.6(@types/node@24.10.0)(tsx@4.20.6)
       why-is-node-running: 2.3.0
     optionalDependencies:
+      '@opentelemetry/api': 1.9.1
       '@types/node': 24.10.0
     transitivePeerDependencies:
       - jiti

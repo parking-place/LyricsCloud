@@ -12,6 +12,7 @@ COPY apps/worker/package.json apps/worker/package.json
 COPY packages/config/package.json packages/config/package.json
 COPY packages/database/package.json packages/database/package.json
 COPY packages/domain/package.json packages/domain/package.json
+COPY packages/observability/package.json packages/observability/package.json
 RUN pnpm install --frozen-lockfile
 
 COPY tsconfig.base.json ./
@@ -20,6 +21,7 @@ COPY apps/worker apps/worker
 COPY packages/config packages/config
 COPY packages/database packages/database
 COPY packages/domain packages/domain
+COPY packages/observability packages/observability
 
 RUN mkdir -p /out \
   && pnpm exec esbuild apps/collaboration/src/server.ts --bundle --platform=node --format=esm --target=node24 \

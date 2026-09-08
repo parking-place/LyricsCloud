@@ -1,0 +1,46 @@
+{
+  "version": "0.9.1-phase4",
+  "aggregationOnly": true,
+  "rules": [
+    {
+      "metric": "autosave_failure_rate_percent",
+      "comparator": "gt",
+      "threshold": 1,
+      "windowSeconds": 300,
+      "severity": "critical",
+      "runbook": "docs/runbooks/observability-alerts.md#autosave-failure"
+    },
+    {
+      "metric": "search_p95_ms",
+      "comparator": "gt",
+      "threshold": 150,
+      "windowSeconds": 300,
+      "severity": "warning",
+      "runbook": "docs/runbooks/observability-alerts.md#search-latency"
+    },
+    {
+      "metric": "purge_failure_count",
+      "comparator": "gte",
+      "threshold": 1,
+      "windowSeconds": 900,
+      "severity": "critical",
+      "runbook": "docs/runbooks/observability-alerts.md#purge-failure"
+    },
+    {
+      "metric": "backup_failure_count",
+      "comparator": "gte",
+      "threshold": 1,
+      "windowSeconds": 900,
+      "severity": "critical",
+      "runbook": "docs/runbooks/observability-alerts.md#backup-failure"
+    },
+    {
+      "metric": "service_unavailable_count",
+      "comparator": "gte",
+      "threshold": 1,
+      "windowSeconds": 60,
+      "severity": "critical",
+      "runbook": "docs/runbooks/observability-alerts.md#service-unavailable"
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { createServer, type IncomingMessage } from "node:http";
 import { readRuntimeConfig } from "@lyricscloud/config";
 import { checkDatabase, DatabaseHealthError, PostgresAuthStore } from "@lyricscloud/database";
 import { isResourceId, parseCheckpointReason, parseRestoreRevisionInput, parseSyncUpdateEnvelope, SYNC_LIMITS } from "@lyricscloud/domain";
+import { createRequestId, observabilityFromEnvironment } from "@lyricscloud/observability";
 import { WebSocket, WebSocketServer } from "ws";
 import * as Y from "yjs";
 import { CollaborationStore } from "./store.js";
@@ -12,11 +13,14 @@ const port = Number(process.env.COLLABORATION_PORT ?? "3001");
 const appOrigin = new URL(process.env.APP_ORIGIN ?? "http://localhost:8080").origin;
 const auth = new PostgresAuthStore(config.databaseUrl);
 const documents = new CollaborationStore(config.databaseUrl);
+const telemetry = observabilityFromEnvironment("collaboration");
 const sockets = new Map<string, Set<WebSocket>>();
 const contexts = new WeakMap<WebSocket, ConnectionContext>();
 const projectionRetry = setInterval(async () => {
   const result = await documents.retryPendingProjections().catch(() => ({ attempted: 0, recovered: 0 }));
-  if (result.attempted) console.log(JSON.stringify({ event: "sync_projection_retry", ...result }));
+  if (result.attempted) telemetry.record({ signal: "metric", event: "sync_projection_retry",
+    metric: "sync_projection_retry_count", value: result.attempted, unit: "count",
+    outcome: result.recovered ? "recovered" : "success", resourceType: "lyric" });
   if (result.recovered) {
     for (const peers of sockets.values()) for (const peer of peers) {
       const context = contexts.get(peer);
@@ -37,15 +41,20 @@ const revisionMaintenance = setInterval(async () => {
   maintainingRevisions = true;
   try {
     const result = await documents.maintainRevisions();
-    if (result.checked || result.prunedDocuments || result.failed) console.log(JSON.stringify({ event: "revision_maintenance", ...result }));
-  } catch { console.log(JSON.stringify({ event: "revision_maintenance_failed" })); }
+    if (result.checked || result.prunedDocuments || result.failed) telemetry.record({ signal: "metric",
+      event: "revision_maintenance", operation: "revision_maintenance", metric: "revision_failure_count",
+      value: result.failed, unit: "count", outcome: result.failed ? "failure" : "success", resourceType: "lyric" });
+  } catch { telemetry.record({ signal: "log", event: "revision_maintenance_failed",
+    operation: "revision_maintenance", errorCode: "REVISION_MAINTENANCE_FAILED", outcome: "failure", resourceType: "lyric" }); }
   finally { maintainingRevisions = false; }
 }, 30_000);
 revisionMaintenance.unref();
 const server = createServer(async (request, response) => {
+  const requestId = createRequestId(typeof request.headers["x-request-id"] === "string" ? request.headers["x-request-id"] : undefined);
   try {
   response.setHeader("content-type", "application/json");
   response.setHeader("cache-control", "no-store");
+  response.setHeader("x-request-id", requestId);
   if (request.url === "/health/live") return response.end(JSON.stringify({ status: "ok", service: "collaboration", check: "liveness", build: { version: config.appVersion, id: config.buildId } }));
   if (request.url === "/health/ready") {
     try {
@@ -54,44 +63,43 @@ const server = createServer(async (request, response) => {
     } catch (error) {
       response.statusCode = 503;
       const reason = error instanceof DatabaseHealthError ? error.code : "CONFIG_INVALID";
+      telemetry.record({ signal: "alert", event: "service_unavailable", metric: "service_unavailable_count",
+        value: 1, unit: "count", errorCode: reason, resourceType: "service", requestId,
+        outcome: "unavailable", severity: "critical", runbook: "docs/runbooks/observability-alerts.md#service-unavailable" });
       return response.end(JSON.stringify({ status: "unavailable", service: "collaboration", check: "readiness", reason }));
     }
   }
-  if (request.url === "/metrics" && request.method === "GET") {
-    const metrics = await documents.operationalMetrics();
-    return response.end(JSON.stringify({ connections: [...sockets.values()].reduce((sum, peers) => sum + peers.size, 0), ...metrics }));
-  }
   const documentRequest = request.method === "POST" && request.url?.match(/^\/documents\/([0-9a-f-]{36})$/i);
   if (documentRequest) {
-    if (request.headers.origin !== appOrigin) return unavailable(response, 403);
+    if (request.headers.origin !== appOrigin) return unavailable(response, 403, requestId);
     const session = await authenticate(request);
-    if (!session) return unavailable(response, 401);
+    if (!session) return unavailable(response, 401, requestId);
     const document = await documents.ensureDocument(session.userId, documentRequest[1]!);
-    if (!document) return unavailable(response, 404);
+    if (!document) return unavailable(response, 404, requestId);
     return response.end(JSON.stringify({ documentKey: document.document_key }));
   }
   const revisionRequest = request.url?.match(/^\/documents\/([0-9a-f-]{36})\/revisions(?:\/([0-9a-f-]{36})(\/restore)?)?$/i);
   if (revisionRequest) {
     const [, key, revisionId, restore] = revisionRequest;
-    if (!isResourceId(key) || (revisionId && !isResourceId(revisionId))) return unavailable(response, 404);
-    if (request.method !== "GET" && request.method !== "POST") return unavailable(response, 405);
-    if (request.method === "POST" && request.headers.origin !== appOrigin) return unavailable(response, 403);
+    if (!isResourceId(key) || (revisionId && !isResourceId(revisionId))) return unavailable(response, 404, requestId);
+    if (request.method !== "GET" && request.method !== "POST") return unavailable(response, 405, requestId);
+    if (request.method === "POST" && request.headers.origin !== appOrigin) return unavailable(response, 403, requestId);
     const session = await authenticate(request);
-    if (!session) return unavailable(response, 401);
+    if (!session) return unavailable(response, 401, requestId);
     if (request.method === "GET" && !restore) {
       const result = revisionId ? await documents.getRevision(session.userId, key, revisionId) : await documents.listRevisions(session.userId, key);
-      if (!result) return unavailable(response, 404);
+      if (!result) return unavailable(response, 404, requestId);
       return response.end(JSON.stringify(result));
     }
     if (request.method === "POST" && !revisionId) {
       const input = await readJson(request);
       const revision = await documents.checkpoint(session.userId, key, parseCheckpointReason(input.reason));
-      if (!revision) return unavailable(response, 404);
+      if (!revision) return unavailable(response, 404, requestId);
       return response.end(JSON.stringify({ revision }));
     }
     if (request.method === "POST" && restore && revisionId) {
       const result = await documents.restoreRevision(session.userId, key, revisionId, parseRestoreRevisionInput(await readJson(request)));
-      if (!result) return unavailable(response, 404);
+      if (!result) return unavailable(response, 404, requestId);
       const payload = Buffer.from(result.snapshot).toString("base64");
       for (const peer of sockets.get(key) ?? []) if (await authorized(peer, true)) {
         peer.send(JSON.stringify({ type: "update", payload }));
@@ -101,13 +109,14 @@ const server = createServer(async (request, response) => {
     }
   }
   response.statusCode = 404;
-  return response.end(JSON.stringify({ error: "NOT_FOUND" }));
+  return response.end(JSON.stringify({ error: { code: "NOT_FOUND", requestId } }));
   } catch (error) {
     if (error instanceof Error && error.message.startsWith("REVISION_")) {
       response.statusCode = error.message === "REVISION_INPUT_INVALID" ? 400 : 409;
-      return response.end(JSON.stringify({ error: error.message }));
+      response.setHeader("x-request-id", requestId);
+      return response.end(JSON.stringify({ error: { code: error.message, requestId } }));
     }
-    return unavailable(response, 503);
+    return unavailable(response, 503, requestId);
   }
 });
 
@@ -145,8 +154,6 @@ websocket.on("connection", (client, request) => {
     if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({ type: "snapshot",
       payload: Buffer.from(merge(loaded.snapshot, loaded.updates)).toString("base64"), projection: loaded.projectionPending ? "pending" : "current" }));
   }).catch(() => client.close(1013, "SYNC_TEMPORARILY_UNAVAILABLE"));
-  log("sync_connected", context.documentKey, { connections: peers.size });
-
   client.on("message", async (raw, binary) => {
     if (binary) return closeProtocol(client, "SYNC_UPDATE_INVALID");
     try {
@@ -163,22 +170,22 @@ websocket.on("connection", (client, request) => {
       if (!result.duplicate) for (const peer of peers) if (peer !== client && await authorized(peer) && peer.readyState === WebSocket.OPEN) {
         peer.send(JSON.stringify({ type: "update", updateId: envelope.updateId, payload: input.payload }));
       }
-      log("sync_update_committed", context.documentKey, { bytes: envelope.payload.byteLength, duplicate: result.duplicate });
     } catch (error) {
       if (error && typeof error === "object" && "code" in error) return client.close(1013, "SYNC_TEMPORARILY_UNAVAILABLE");
       const code = error instanceof Error && /^SYNC_/.test(error.message) ? error.message : "SYNC_UPDATE_INVALID";
-      log("sync_update_rejected", context.documentKey, { code });
+      telemetry.record({ signal: "log", event: "sync_update_rejected", errorCode: code,
+        resourceType: "lyric", outcome: "failure" });
       closeProtocol(client, code);
     }
   });
   client.on("close", () => {
     peers.delete(client);
     if (peers.size === 0) sockets.delete(context.documentKey);
-    log("sync_disconnected", context.documentKey, { connections: peers.size });
   });
 });
 
-server.listen(port, "0.0.0.0", () => console.log(JSON.stringify({ event: "service_started", service: "collaboration", port })));
+server.listen(port, "0.0.0.0", () => telemetry.record({ signal: "log", event: "service_started",
+  resourceType: "service", outcome: "success" }));
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) process.on(signal, () => {
   clearInterval(projectionRetry);
@@ -234,9 +241,10 @@ function readCookie(header: string | undefined, name: string) {
   return null;
 }
 
-function unavailable(response: import("node:http").ServerResponse, status: number) {
+function unavailable(response: import("node:http").ServerResponse, status: number, requestId = createRequestId()) {
   response.statusCode = status;
-  return response.end(JSON.stringify({ error: "SYNC_DOCUMENT_UNAVAILABLE" }));
+  response.setHeader("x-request-id", requestId);
+  return response.end(JSON.stringify({ error: { code: "SYNC_DOCUMENT_UNAVAILABLE", requestId } }));
 }
 
 function closeUnavailable(client: WebSocket) { client.close(4404, "SYNC_DOCUMENT_UNAVAILABLE"); }
@@ -244,9 +252,4 @@ function closeProtocol(client: WebSocket, code: string) { client.close(4400, cod
 
 function merge(snapshot: Uint8Array, updates: readonly Uint8Array[]) {
   return updates.length ? Y.mergeUpdates([snapshot, ...updates]) : snapshot;
-}
-
-function log(event: string, documentKey: string, fields: Record<string, unknown>) {
-  const document = createHash("sha256").update(documentKey).digest("hex").slice(0, 16);
-  console.log(JSON.stringify({ event, document, ...fields }));
 }

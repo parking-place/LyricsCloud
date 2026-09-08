@@ -11,6 +11,7 @@
   "dependencies": {
     "@lyricscloud/config": "workspace:*",
     "@lyricscloud/domain": "workspace:*",
+    "@lyricscloud/observability": "workspace:*",
     "drizzle-orm": "0.45.2",
     "pg": "8.16.3",
     "yjs": "13.6.32"

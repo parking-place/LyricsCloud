@@ -1,4 +1,5 @@
 export * from "./result.js";
+export * from "./error-contract.js";
 export * from "./routes.js";
 export * from "./ownership.js";
 export * from "./resource-contract.js";

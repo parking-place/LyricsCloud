@@ -1,7 +1,7 @@
 import { Dexie } from "dexie";
 import * as Y from "yjs";
 import {
-  normalizePromptToken, PROMPT_LIMITS, type CheckpointReason, type LyricRevision, type PromptDuplicate,
+  normalizePromptToken, parsePublicErrorCode, PROMPT_LIMITS, type CheckpointReason, type LyricRevision, type PromptDuplicate,
   type PromptTokenValue, type RestoreRevisionInput, type RevisionHistory
 } from "@lyricscloud/domain";
 import {
@@ -248,7 +248,10 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
       ...(input ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) } : {}),
       signal: AbortSignal.any([abort.signal, AbortSignal.timeout(10_000)])
     });
-    if (!response.ok) throw new Error("REVISION_UNAVAILABLE");
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(parsePublicErrorCode(error) ?? "REVISION_UNAVAILABLE");
+    }
     return response.json() as Promise<T>;
   }
 

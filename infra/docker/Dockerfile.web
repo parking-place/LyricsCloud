@@ -15,6 +15,7 @@ COPY packages/auth/package.json packages/auth/package.json
 COPY packages/database/package.json packages/database/package.json
 COPY packages/domain/package.json packages/domain/package.json
 COPY packages/editor/package.json packages/editor/package.json
+COPY packages/observability/package.json packages/observability/package.json
 COPY packages/ui/package.json packages/ui/package.json
 RUN pnpm install --frozen-lockfile
 

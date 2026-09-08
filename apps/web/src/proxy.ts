@@ -1,10 +1,12 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { createRequestId } from "@lyricscloud/observability";
 import { apiBodyExceedsLimit } from "./lib/request-security.js";
 
 const BODY_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 export async function proxy(request: NextRequest): Promise<Response> {
+  const requestId = createRequestId();
   const nonce = btoa(crypto.randomUUID());
   const csp = [
     "default-src 'self'",
@@ -23,15 +25,18 @@ export async function proxy(request: NextRequest): Promise<Response> {
   if (request.nextUrl.pathname.startsWith("/api/") && BODY_METHODS.has(request.method)
     && await apiBodyExceedsLimit(request)) {
     return Response.json(
-      { error: { code: "PAYLOAD_TOO_LARGE", requestId: crypto.randomUUID() } },
-      { status: 413, headers: { "Cache-Control": "no-store, max-age=0", Pragma: "no-cache", "Content-Security-Policy": csp } }
+      { error: { code: "PAYLOAD_TOO_LARGE", requestId } },
+      { status: 413, headers: { "Cache-Control": "no-store, max-age=0", Pragma: "no-cache",
+        "Content-Security-Policy": csp, "x-request-id": requestId } }
     );
   }
   const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-request-id", requestId);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);
+  response.headers.set("x-request-id", requestId);
   return response;
 }
 

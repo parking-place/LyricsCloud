@@ -1,5 +1,5 @@
-import { randomUUID } from "node:crypto";
 import type { ErrorCode, ValidationIssue } from "@lyricscloud/domain";
+import { createRequestId } from "@lyricscloud/observability";
 
 export const privateResponseHeaders = {
   "Cache-Control": "no-store, max-age=0",
@@ -9,11 +9,12 @@ export const privateResponseHeaders = {
 export function errorResponse(
   code: ErrorCode,
   status: number,
-  requestId: string = randomUUID(),
+  requestId?: string,
   issues?: readonly ValidationIssue[]
 ): Response {
+  const correlationId = createRequestId(requestId);
   return Response.json(
-    { error: { code, requestId, ...(issues?.length ? { issues } : {}) } },
-    { status, headers: privateResponseHeaders }
+    { error: { code, requestId: correlationId, ...(issues?.length ? { issues } : {}) } },
+    { status, headers: { ...privateResponseHeaders, "x-request-id": correlationId } }
   );
 }

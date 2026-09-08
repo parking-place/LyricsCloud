@@ -14,6 +14,7 @@
     "@lyricscloud/database": "workspace:*",
     "@lyricscloud/domain": "workspace:*",
     "@lyricscloud/editor": "workspace:*",
+    "@lyricscloud/observability": "workspace:*",
     "@lyricscloud/ui": "workspace:*",
     "next": "16.3.4",
     "react": "19.2.4",

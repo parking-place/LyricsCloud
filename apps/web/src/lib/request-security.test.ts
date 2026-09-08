@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { apiBodyExceedsLimit, requestClientKey, TokenBucketRateLimiter } from "./request-security.js";
+import { apiBodyExceedsLimit, rateLimitResponse, requestClientKey, TokenBucketRateLimiter } from "./request-security.js";
 
 describe("API request security limits", () => {
   it("rejects declared and streamed bodies above the byte limit", async () => {
@@ -35,5 +35,13 @@ describe("API request security limits", () => {
     } }))).toBe("203.0.113.9");
     expect(requestClientKey(new Request("http://localhost", { headers: { "x-real-ip": "192.0.2.5" } }))).toBe("192.0.2.5");
     expect(requestClientKey(new Request("http://localhost", { headers: { "x-forwarded-for": "198.51.100.2, 198.51.100.3" } }))).toBe("198.51.100.2");
+  });
+
+  it("returns one opaque correlation ID in rate-limit headers and body", async () => {
+    const response = rateLimitResponse({ allowed: false, remaining: 0, retryAfterSeconds: 5 });
+    const body = await response.json() as { error: { code: string; requestId: string } };
+    expect(body.error.code).toBe("RATE_LIMITED");
+    expect(body.error.requestId).toMatch(/^req_[0-9a-f]{32}$/u);
+    expect(response.headers.get("x-request-id")).toBe(body.error.requestId);
   });
 });
