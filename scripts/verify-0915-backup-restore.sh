@@ -12,10 +12,15 @@ mkdir -m 700 "$repository" "$secrets"
 allowlist_file="$work/auth-allowed-emails"
 printf 'fixture@example.invalid\n' > "$allowlist_file"
 chmod 0444 "$allowlist_file"
-container_uid=$(docker run --rm --entrypoint id "$image" -u)
-container_gid=$(docker run --rm --entrypoint id "$image" -g)
+host_uid=$(id -u)
+container_uid=$host_uid
+container_gid=$(id -g)
+if [[ "$host_uid" == 0 ]]; then
+  container_uid=$(docker run --rm --entrypoint id "$image" -u)
+  container_gid=$(docker run --rm --entrypoint id "$image" -g)
+  chown "$container_uid:$container_gid" "$repository" "$secrets"
+fi
 [[ "$container_uid" != 0 && "$container_gid" =~ ^[0-9]+$ ]]
-chown "$container_uid:$container_gid" "$repository" "$secrets"
 
 cleanup() {
   docker rm -f "$name-web" "$name-collaboration" "$name-source" "$name-restore" >/dev/null 2>&1 || true
@@ -84,7 +89,9 @@ printf '%s\n' restore-secret-only > "$secrets/restore-password"
 printf '%s\n' lyricscloud-0915-test-storage > "$repository/.lyricscloud-backup-storage-id"
 chmod 0400 "$secrets/source-password" "$secrets/restore-password"
 chmod 0600 "$repository/.lyricscloud-backup-storage-id"
-chown "$container_uid:$container_gid" "$secrets/source-password" "$secrets/restore-password" "$repository/.lyricscloud-backup-storage-id"
+if [[ "$host_uid" == 0 ]]; then
+  chown "$container_uid:$container_gid" "$secrets/source-password" "$secrets/restore-password" "$repository/.lyricscloud-backup-storage-id"
+fi
 docker run --rm --user "$container_uid:$container_gid" --mount "type=bind,source=$secrets,target=/secrets" \
   --entrypoint age-keygen "$image" --output /secrets/identity >/dev/null 2>&1
 docker run --rm --user "$container_uid:$container_gid" --mount "type=bind,source=$secrets,target=/secrets" \
@@ -93,7 +100,9 @@ docker run --rm --user "$container_uid:$container_gid" --mount "type=bind,source
   --entrypoint age-keygen "$image" --output /secrets/wrong-identity >/dev/null 2>&1
 chmod 0600 "$secrets/identity" "$secrets/wrong-identity"
 chmod 0400 "$secrets/recipient"
-chown "$container_uid:$container_gid" "$secrets/identity" "$secrets/wrong-identity" "$secrets/recipient"
+if [[ "$host_uid" == 0 ]]; then
+  chown "$container_uid:$container_gid" "$secrets/identity" "$secrets/wrong-identity" "$secrets/recipient"
+fi
 
 backup() {
   docker run --rm --user "$container_uid:$container_gid" --network "$name" \
@@ -159,7 +168,9 @@ cp "$repository/$archive" "$repository/$corrupt"
 cp "${repository}/${archive%.dump.age}.manifest.json" "${repository}/${corrupt%.dump.age}.manifest.json"
 sed -i "s/$archive/$corrupt/" "${repository}/${corrupt%.dump.age}.manifest.json"
 printf x >> "$repository/$corrupt"
-chown "$container_uid:$container_gid" "$repository/$corrupt" "${repository}/${corrupt%.dump.age}.manifest.json"
+if [[ "$host_uid" == 0 ]]; then
+  chown "$container_uid:$container_gid" "$repository/$corrupt" "${repository}/${corrupt%.dump.age}.manifest.json"
+fi
 
 restore_run() {
   local selected_archive=$1 identity=$2
