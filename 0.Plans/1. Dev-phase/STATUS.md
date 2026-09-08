@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.9.1"
-current_phase: "1.0.0/1phase.md"
-state: "in_progress"
+current_phase: "1.0.0/2phase.md"
+state: "ready"
 owner: "Codex"
-started_at: "2026-09-08 20:01 KST"
-updated_at: "2026-09-08 20:01 KST"
-next_action: "1.0.0 Phase 1 최종 요구사항·목업 제안·결함 gate와 OPS-0004 승인 기록을 고정"
+started_at: ""
+updated_at: "2026-09-08 20:28 KST"
+next_action: "Phase 1 완료 문서 commit을 동일 CI·서명 image·개발 배포로 재검증한 뒤 1.0.0 Phase 2 불변 release artifact를 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -45,7 +45,7 @@ next_action: "1.0.0 Phase 1 최종 요구사항·목업 제안·결함 gate와 O
 | 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
 | 0.9.0 | complete | Phase 1~5 완료 | 0.8.0 완료 |
 | 0.9.1 | complete | Phase 1~5 완료, 기능 동결·보안·성능·관측·복구 RC 검증 | 0.9.0 완료 |
-| 1.0.0 | in_progress | Phase 1 진행 중 | 0.9.1 release gate 통과 |
+| 1.0.0 | in_progress | Phase 1 완료, Phase 2 준비 | 0.9.1 release gate 통과 |
 
 ## 활성 작업
 
@@ -53,7 +53,6 @@ next_action: "1.0.0 Phase 1 최종 요구사항·목업 제안·결함 gate와 O
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.0 / Phase 1 | `LC-100-P1-01`~`LC-100-P1-09` | `docs/architecture/**`, `docs/operations/**`, `docs/runbooks/**`, `scripts/**`, `0.Plans/1. Dev-phase/**` | 0.9.1 Phase 5 최종 SHA `4cdecf0`, Accepted `OPS-0001`~`OPS-0003`, 사용자 iOS/Android update PASS | 2026-09-08 20:01 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,12 +101,13 @@ next_action: "1.0.0 Phase 1 최종 요구사항·목업 제안·결함 gate와 O
 
 ## 다음 작업
 
-1.0.0 Phase 1 최종 요구사항·목업 제안·결함 gate와 `OPS-0004` 범위만 수행한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+1.0.0 Phase 2 불변 release artifact·migration 봉인과 `OPS-0002` 재사용 범위만 수행한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-08 | 1.0.0 / Phase 1 | Codex | Sketch 49절 71개 요구사항, 15개 목업·8개 제안 source와 선택 DEC 8개를 최종 증거에 연결하고 GitHub open issue 0, 미해결 P0/P1 각 0건을 확인했으며 P2/P3 세 항목의 상향 조건·후속 목표와 gate/정식 승인/운영 인수 권한을 Accepted `OPS-0004`로 고정 | `test:release:1001`, 60 files/225 tests, PC/mobile E2E 223, 5-browser RC 10, backup/restore·upgrade/rollback, CI `34219266919`, 네 signed digest, `fb8d51a` 동일 SHA 개발 배포와 공개 health/auth/metrics smoke; [최종 추적표](../../docs/architecture/1.0.0-FINAL-TRACEABILITY.md), [검증 기록](../../docs/runbooks/1.0.0-phase1-validation.md) | Phase 2가 승인 RC 입력과 Phase 1 최종 SHA를 versioned image·SBOM·migration·환경 schema release manifest에 봉인 |
 | 2026-09-08 | 0.9.1 / Phase 5 | Codex | age 암호화 일일 PostgreSQL 논리 backup·24시간 RPO·30일 보존, 분리된 키와 저장소, 독립 restore·제품 smoke, 이전 RC upgrade와 migration/application rollback을 자동화하고 Docker Hub keyless 서명·SLSA/SBOM·digest 승인 계약 `OPS-0002`를 Accepted로 확정 | 60 files/225 tests, PC/mobile E2E 223 pass, 5-browser RC 10 pass, backup 2회·4종 failure injection·restore 671ms, 0.9.0 upgrade 1,661ms·rollback 2,815ms, fixable High/Critical 0, CI `34214593249`, 네 signed digest, `266679f` 동일 SHA 개발 배포와 공개 health/auth/metrics smoke; [검증 기록](../../docs/runbooks/0.9.1-phase5-validation.md) | 1.0.0 Phase 1이 RC 식별자·전체 추적표·보안·성능·복원 증적과 미해결 P2/P3를 최종 gate에 고정 |
 | 2026-09-08 | 0.9.1 / Phase 4 | Codex | OpenTelemetry 경계에 strict allowlist·재귀 redaction·길이 제한과 fail-open transport를 두고 구조화 오류/request ID, 저장·검색·purge·backup·서비스 경보와 본문 없는 dashboard/runbook을 연결했으며 공개 metrics와 행동 이벤트를 제거 | 60 files 중 비통합 42 files/149 tests와 통합 18 files/74 tests, PC/mobile E2E 223 pass·27 skip, 5-browser RC 10 pass, CI `34196375529`, 네 image digest, `d400cdd` 동일 SHA 개발 배포, 공개 canary 0·구조화 오류 상관·인증 14-route·Axe/reflow, 사용자 iOS/Android update 모두 PASS; [검증 기록](../../docs/runbooks/0.9.1-phase4-validation.md) | Phase 5가 backup·restore·upgrade·rollback 작업에 같은 허용 지표와 경보/runbook 형식을 적용 |
 | 2026-09-08 | 0.9.1 / Phase 3 | Codex | 자체 운영 기준 환경·2,500 resource 합성 fixture와 p95/error budget을 확정하고 10,000줄 편집·검색·자동 저장·동시 충돌·export·purge·24시간 가속 소크를 자동화했으며 purge N+1을 set 기반 batch로 제거 | 로컬 3회 전 지표 budget·오류율 0%, 58 files/213 tests, PC/mobile E2E 223 pass·27 skip, 5-browser RC 10 pass, CI `34189013471`, 네 image digest, `12fd263` 동일 SHA 개발 성능·공개 인증 14-route·Axe/reflow, 사용자 iOS/Android update 모두 PASS; [검증 기록](../../docs/runbooks/0.9.1-phase3-validation.md) | Phase 4가 확정된 지표·오류 분류·본문 없는 관측 원칙과 성능 임계값을 운영 runbook에 연결 |
