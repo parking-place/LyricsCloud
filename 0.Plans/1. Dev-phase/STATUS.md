@@ -3,9 +3,9 @@
 이 파일은 현재 버전·Phase·담당 작업의 단일 상태 원본입니다. 계획 문서는 범위를 정의하고 이 파일은 실제 진행 상황을 기록합니다.
 
 ```yaml
-current_version: "1.0.0"
-current_phase: "1phase.md"
-state: "ready"
+current_version: "0.9.1"
+current_phase: "5phase.md"
+state: "complete"
 owner: "Codex"
 started_at: ""
 updated_at: "2026-09-08 19:37 KST"
