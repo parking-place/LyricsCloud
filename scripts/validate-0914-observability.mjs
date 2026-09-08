@@ -47,6 +47,7 @@ for (const anchor of ["autosave-failure", "search-latency", "purge-failure", "ba
 }
 assert(compose.includes("max-size: \"10m\"") && compose.includes("max-file: \"5\""), "bounded Docker log rotation missing");
 assert(webProxy.includes("x-request-id") && webError.includes("x-request-id"), "web request correlation missing");
+assert(!webProxy.includes('response.headers.set("x-request-id"'), "middleware must not overwrite downstream error correlation ID");
 assert(worker.includes("observabilityFromEnvironment") && collaboration.includes("observabilityFromEnvironment"), "service integration missing");
 assert(!collaboration.includes("function log(event: string, documentKey"), "stable document hash logging remains");
 for (const behaviorEvent of ["sync_connected", "sync_disconnected", "sync_update_committed", 'request.url === "/metrics"']) {

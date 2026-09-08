@@ -36,7 +36,6 @@ export async function proxy(request: NextRequest): Promise<Response> {
   requestHeaders.set("Content-Security-Policy", csp);
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);
-  response.headers.set("x-request-id", requestId);
   return response;
 }
 

@@ -13,8 +13,16 @@ test.describe("0.9.1 security hardening", () => {
       data: { displayName: "가".repeat(1_048_576) }
     });
     expect(response.status()).toBe(413);
-    expect(await response.json()).toMatchObject({ error: { code: "PAYLOAD_TOO_LARGE" } });
+    const body = await response.json() as { error: { code: string; requestId: string } };
+    expect(body).toMatchObject({ error: { code: "PAYLOAD_TOO_LARGE" } });
+    expect(response.headers()["x-request-id"]).toBe(body.error.requestId);
     expect(response.headers()["cache-control"]).toContain("no-store");
+
+    const unauthenticated = await request.get("/api/songs");
+    const unauthenticatedBody = await unauthenticated.json() as { error: { code: string; requestId: string } };
+    expect(unauthenticated.status()).toBe(401);
+    expect(unauthenticatedBody.error.code).toBe("AUTH_REQUIRED");
+    expect(unauthenticated.headers()["x-request-id"]).toBe(unauthenticatedBody.error.requestId);
   });
 
   test("rate limits login and authenticated search bursts without leaking content", async ({ browser, request }, info) => {
