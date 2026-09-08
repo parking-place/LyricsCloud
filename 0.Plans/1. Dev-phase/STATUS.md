@@ -5,11 +5,11 @@
 ```yaml
 current_version: "1.0.0"
 current_phase: "1.0.0/5phase.md"
-state: "ready"
+state: "review"
 owner: "Codex"
-started_at: "2026-09-09 00:35 KST"
-updated_at: "2026-09-09 01:15 KST"
-next_action: "Phase 4 완료 문서 commit을 CI·네 signed image·동일 SHA 개발 배포로 최종 봉인한 뒤 Phase 5 최종 릴리스 gate를 시작한다"
+started_at: "2026-09-09 01:35 KST"
+updated_at: "2026-09-09 01:42 KST"
+next_action: "Phase 5 후보 commit의 전체 CI·네 signed image·동일 SHA 개발 smoke를 통과한 뒤 완료 commit과 v1.0.0 정식 릴리스를 봉인한다"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -53,7 +53,7 @@ next_action: "Phase 4 완료 문서 commit을 CI·네 signed image·동일 SHA �
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.0 / Phase 4 | 완료 문서 봉인 | 1.0.0/4phase.md, STATUS.md, Phase 4 검증 기록 | 후보 `f746d80` CI `34248044744`·네 signed image·동일 SHA 개발 smoke PASS | 2026-09-09 01:15 KST | final seal |
+| Codex | 1.0.0 / Phase 5 | `LC-100-P5-01`~`09` | 1.0.0/5phase.md, STATUS.md, docs/releases, docs/operations, docs/runbooks, scripts, package.json | Phase 4 final `95fbabbd`, production Phase 2 digest 재검증·합성 smoke PASS | 2026-09-09 01:35 KST | review; 후보 원격 봉인 대기 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 
@@ -102,7 +102,7 @@ next_action: "Phase 4 완료 문서 commit을 CI·네 signed image·동일 SHA �
 
 ## 다음 작업
 
-1.0.0 Phase 4 완료 문서 commit을 필수 CI·네 image 발행과 동일 SHA 개발 서버 공개 smoke로 최종 봉인한 뒤 Phase 5 최종 릴리스 gate를 시작한다. 사용자는 릴리스 배포 유예를 해제하고 Phase 5까지 진행하도록 승인했으며, 개발과 동일한 Google OAuth·DB 자격 증명 사용 및 backup 구축·복원 검증의 1.0.0 이후 유예를 명시했다. 정식 `v1.0.0`·Docker Hub `Release`/`latest`·GitHub Release와 production exact-digest 배포는 Phase 5에서 실행한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+1.0.0 Phase 5에서 최종 추적·P0/P1·production manifest/smoke·운영 인수·release notes·1.0.1+ backlog를 대조하고 release 후보를 봉인한다. 사용자는 릴리스 배포 유예를 해제하고 Phase 5까지 진행하도록 승인했으며, 개발과 동일한 Google OAuth·DB 자격 증명 사용 및 backup 구축·복원 검증의 1.0.0 이후 유예를 명시했다. 후보의 CI·네 signed image·동일 SHA 개발 smoke 뒤 정식 `v1.0.0`·Docker Hub `Release`/`latest`·GitHub Release와 production exact-digest 배포를 실행한다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
 
 ## 완료 기록
 

@@ -44,6 +44,8 @@
     "test:release:1001": "node scripts/validate-1001-final-gate.mjs",
     "test:release:1002": "node scripts/validate-1002-release-artifacts.mjs",
     "test:release:1004": "node scripts/validate-1004-documentation.mjs",
+    "test:release:1005": "node scripts/validate-1005-final-release.mjs",
+    "test:release:1005:tag": "node scripts/validate-1005-final-release.mjs --require-release",
     "test:rc:0913": "bash scripts/run-0913-rc.sh",
     "test:e2e:release:0905": "playwright test --config=playwright.release.config.ts tests/e2e/release-candidate.spec.ts",
     "test:performance:0700": "node scripts/measure-0700-search.mjs",

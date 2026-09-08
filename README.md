@@ -18,7 +18,7 @@ LyricsCloud 1.0은 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트
 ## 상태
 
 - 제품 version: `1.0.0`
-- 현재 작업: [1.0.0 Phase 4 — 문서·운영 인계](<./0.Plans/1. Dev-phase/1.0.0/4phase.md>)
+- 현재 작업: [1.0.0 Phase 5 — 최종 릴리스](<./0.Plans/1. Dev-phase/1.0.0/5phase.md>)
 - 상태 단일 원본: [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>)
 - 프로덕션: 승인된 Phase 2 digest와 schema `0802_lifecycle.sql`로 배포·공개 smoke 완료
 - 예외: 공식 릴리스 서버의 OAuth/DB 자격 증명은 사용자 승인으로 개발 서버와 같은 값을 사용하며, 외부 암호화 backup·24시간 RPO·복원 훈련은 1.0.1+로 유예됨
@@ -56,7 +56,7 @@ production-mode 셀프호스트는 환경 검증, runtime allowlist 권한, HTTP
 | 복구 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md) |
 | 장애 담당자 | [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
 | 보안 보고자 | [Security policy](./SECURITY.md), [보안 감사](./docs/security/0.9.1-security-audit.md) |
-| 검토자 | [최종 요구사항 추적](./docs/architecture/1.0.0-FINAL-TRACEABILITY.md), [1.0 release manifest](./config/release-manifest.1.0.0.json), [CHANGELOG](./CHANGELOG.md) |
+| 검토자 | [1.0.0 release notes](./docs/releases/1.0.0.md), [최종 요구사항 추적](./docs/architecture/1.0.0-FINAL-TRACEABILITY.md), [1.0 release manifest](./config/release-manifest.1.0.0.json), [1.0.1+ backlog](./docs/operations/1.0.1-backlog.md), [CHANGELOG](./CHANGELOG.md) |
 | 기여자 | [Agent 지침](./Agent.md), [개발 로드맵](<./0.Plans/1. Dev-phase/README.md>), [ADR 색인](./docs/adr/README.md) |
 
 ## 데이터와 개인정보 경계

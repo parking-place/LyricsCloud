@@ -56,6 +56,8 @@
 
 - [`릴리스 서버 Cloudflare Tunnel과 HTTPS`](./release-cloudflare-tunnel-setup.md)
 - [`1.0.0 Phase 3 production 배포 기록`](./1.0.0-phase3-deployment.md)
+- [`1.0.0 Phase 4 문서·운영 인계 검증`](./1.0.0-phase4-validation.md)
+- [`1.0.0 Phase 5 최종 릴리스·운영 인수`](./1.0.0-phase5-release.md)
 - [`관측 경보 대응`](./observability-alerts.md)
 - [`사고 기록 양식`](./incident-record-template.md)
 - [`암호화 backup·격리 restore·upgrade·rollback`](./backup-restore-upgrade.md)

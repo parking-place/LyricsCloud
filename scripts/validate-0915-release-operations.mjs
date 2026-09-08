@@ -95,3 +95,4 @@ console.log("0.9.1 Phase 5 contract: encrypted daily backup, isolated restore, f
 await import("./validate-1001-final-gate.mjs");
 await import("./validate-1002-release-artifacts.mjs");
 await import("./validate-1004-documentation.mjs");
+await import("./validate-1005-final-release.mjs");
