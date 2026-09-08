@@ -5,6 +5,7 @@ import type { ErrorCode } from "@lyricscloud/domain";
 import { cookieNames, readCookie } from "@lyricscloud/auth";
 import { getAuthContext } from "../../../../lib/auth-context.js";
 import { privateResponseHeaders } from "../../../../lib/http-response.js";
+import { rateLimitResponse, requestClientKey, requestRateLimiter } from "../../../../lib/request-security.js";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -12,6 +13,8 @@ export const runtime = "nodejs";
 export async function GET(request: Request): Promise<Response> {
   let config: AuthConfig | undefined;
   try {
+    const rate = requestRateLimiter.consume(`auth-callback:${requestClientKey(request)}`, 40, 5 * 60_000);
+    if (!rate.allowed) return rateLimitResponse(rate);
     const context = getAuthContext();
     config = context.config;
     const incoming = new URL(request.url);

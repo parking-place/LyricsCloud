@@ -2,6 +2,7 @@ import { AuthError } from "@lyricscloud/auth";
 import { getAuthContext, RequestAuthError, resolveRequestAuth } from "../../../lib/auth-context.js";
 import { errorResponse, privateResponseHeaders } from "../../../lib/http-response.js";
 import { parseProfileInput, ProfileInputError } from "../../../lib/profile-input.js";
+import { mutationOriginAllowed } from "../../../lib/song-api.js";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -17,6 +18,7 @@ export async function GET(request: Request): Promise<Response> {
 
 export async function PATCH(request: Request): Promise<Response> {
   try {
+    if (!mutationOriginAllowed(request)) return errorResponse("FORBIDDEN", 403);
     const auth = await resolveRequestAuth(request);
     const input = parseProfileInput(await request.json());
     const profile = await getAuthContext().ownedData.saveProfile(auth.userId, input);

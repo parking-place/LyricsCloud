@@ -1,16 +1,31 @@
 # Development server override: run the immutable image content without host source or dependency mounts.
 services:
   migrate:
+    command: ["migrate.mjs"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
     volumes: !reset []
   web:
     build:
       context: .
       dockerfile: infra/docker/Dockerfile.web
-    command: ["node", "apps/web/server.js"]
+    command: ["apps/web/server.js"]
     environment:
       NODE_ENV: production
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
     volumes: !reset []
   collaboration:
+    command: ["collaboration.mjs"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
     volumes: !reset []
   worker:
+    command: ["worker.mjs"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
     volumes: !reset []

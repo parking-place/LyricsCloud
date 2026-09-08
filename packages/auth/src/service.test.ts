@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { calculatePKCECodeChallenge } from "openid-client";
 import type { AuthConfig } from "@lyricscloud/config";
 import type { AuthIdentityInput, AuthStore } from "@lyricscloud/database";
 import { cookieNames, sessionCookie, transactionCookie } from "./cookies.js";
@@ -51,17 +52,26 @@ class MemoryStore implements AuthStore {
 
 class FakeOidc implements OidcAdapter {
   state = "";
+  nonce = "";
+  codeChallenge = "";
+  codeVerifier = "";
   identity: OidcIdentity = {
     issuer: "https://accounts.google.com",
     subject: "google-subject-1",
     email: "Allowed@Example.com",
     emailVerified: true
   };
-  authorizationUrl(input: { state: string }) {
+  authorizationUrl(input: { state: string; nonce: string; codeChallenge: string }) {
     this.state = input.state;
+    this.nonce = input.nonce;
+    this.codeChallenge = input.codeChallenge;
     return Promise.resolve(new URL(`https://accounts.google.com/o/oauth2/v2/auth?state=${input.state}`));
   }
-  exchange() { return Promise.resolve(this.identity); }
+  exchange(input: { codeVerifier: string; expectedNonce: string }) {
+    this.codeVerifier = input.codeVerifier;
+    if (input.expectedNonce !== this.nonce) throw new Error("NONCE_MISMATCH");
+    return Promise.resolve(this.identity);
+  }
 }
 
 const now = new Date("2026-09-04T12:00:00.000Z");
@@ -83,6 +93,14 @@ describe("OIDC login boundary", () => {
     expect(first.returnTo).toBe("/songs?view=recent");
     expect(flow.store.sessions.has(first.sessionToken)).toBe(false);
     expect(flow.store.sessions.has(tokenHash(first.sessionToken))).toBe(true);
+  });
+
+  it("binds the callback exchange to the generated S256 PKCE verifier and nonce", async () => {
+    const flow = await login();
+    await flow.service.completeLogin(flow.callback, flow.started.transaction);
+    expect(flow.oidc.codeVerifier).not.toBe("");
+    expect(await calculatePKCECodeChallenge(flow.oidc.codeVerifier)).toBe(flow.oidc.codeChallenge);
+    expect(flow.oidc.nonce).not.toBe("");
   });
 
   it("distinguishes bad state, callback replay, cancellation, and denied accounts", async () => {

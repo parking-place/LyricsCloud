@@ -23,14 +23,17 @@ ENV NODE_ENV=production
 ENV COLLABORATION_INTERNAL_URL=http://collaboration:3001
 RUN pnpm --filter @lyricscloud/web build
 
-FROM node:24.20.0-bookworm-slim AS runtime
+FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:774b7d020b24214835769e24c3544835526cd0288f0b094eae48e8b2c2429a79 AS runtime
 
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
+ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
 
-COPY --from=build /workspace/apps/web/.next/standalone ./
+COPY --from=build --chown=65532:65532 /workspace/apps/web/.next/standalone ./
 
 EXPOSE 3000
-CMD ["node", "apps/web/server.js"]
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD ["/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+CMD ["apps/web/server.js"]

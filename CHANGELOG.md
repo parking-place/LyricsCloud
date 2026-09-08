@@ -6,6 +6,8 @@
 
 ### Added
 
+- 0.9.1 보안 하드닝: 60개 API·32개 DB 테이블의 owner 격리 행렬, 53개 상태 변경 Origin gate, 요청별 nonce CSP, 1 MiB API body 상한과 인증·검색·내보내기 token bucket 제한
+- 고정 digest Distroless Node 24 Debian 13 nonroot runtime, read-only rootfs·tmpfs·내장 healthcheck와 CI의 pnpm audit·Gitleaks·Trivy·image layer canary gate
 - 0.9.1 RC 기능 동결: Sketch 49절 71개 요구사항과 15개 화면·8개 목업 제안 source의 구현/검증 추적, P0/P1 0건 한도와 `OPS-0001` 변경·승인·태그 절차
 - Chromium·Firefox·WebKit 데스크톱과 Chromium·WebKit 모바일의 15개 화면, 약 10,000줄 한글 가사, 회전·뒤로 가기·수동 복사를 묶은 0.9.0 출시 후보 행렬
 - PC·좁은 PC·태블릿·모바일 15개 화면의 최종 시각 회귀 60장과 실제 iOS Safari·Android Chrome 인수표
@@ -96,10 +98,11 @@
 
 ### Not yet implemented
 
-- 0.9.1 보안·성능·관측·복원 강화와 1.0.0 릴리스 준비
+- 0.9.1 성능·관측·복원 강화와 1.0.0 릴리스 준비
 
 ### Fixed
 
+- `drizzle-orm` 식별자 escape SQL injection advisory를 수정 버전으로 올리고 profile PATCH의 누락된 공통 CSRF/Origin 검사를 보완
 - 설정 화면의 테마 미리보기를 늦게 도착한 앱 셸 서버 설정 응답이 덮어쓸 수 있던 경쟁 조건 수정
 - Next.js가 여러 CSS chunk를 생성할 때 개발 배포 검사가 첫 자산만 보고 정상 production 화면을 실패로 판정하던 문제 수정
 - 검색 딥링크로 가사 일치 위치를 선택한 직후 협업 편집기의 편집 가능 전환이 포커스를 잃게 하던 초기화 순서 수정

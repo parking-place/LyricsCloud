@@ -135,6 +135,7 @@ test.describe("A/B ownership boundary", () => {
     expect((await queryAttack.json()).profile).toMatchObject({ userId: fixtureUsers.bob.id });
 
     const bodyAttack = await page.request.patch(`/api/profile?userId=${fixtureUsers.alice.id}`, {
+      headers: { Origin: baseURL },
       data: { displayName: `B 격리 확인 ${testInfo.project.name}`, avatarUrl: null, ownerId: fixtureUsers.alice.id }
     });
     expect(bodyAttack.status()).toBe(200);
@@ -142,6 +143,9 @@ test.describe("A/B ownership boundary", () => {
       userId: fixtureUsers.bob.id,
       displayName: `B 격리 확인 ${testInfo.project.name}`
     });
+
+    const csrf = await page.request.patch("/api/profile", { data: { displayName: "교차 출처" } });
+    expect(csrf.status()).toBe(403);
 
     const pathAttack = await page.request.get(`/api/profile/${fixtureUsers.alice.id}`);
     expect(pathAttack.status()).toBe(404);

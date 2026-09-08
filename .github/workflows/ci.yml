@@ -58,6 +58,13 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level high
+      - name: Scan Git history for secrets
+        run: >-
+          docker run --rm -v "${{ github.workspace }}:/repo:ro" -w /repo
+          zricethezav/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854
+          --redact --no-banner git .
       - name: Apply migrations twice
         run: pnpm migrate && pnpm migrate
       - name: Verify 0.2.0 Phase 1 migration recovery
@@ -100,7 +107,7 @@ jobs:
         run: |
           bash -n scripts/*.sh
           ./scripts/cleanup-docker.sh --dry-run --build-cache
-          test "$(./scripts/docker-image-tag.sh branch phase/0.9.1-p1-feature-freeze 0123456789abcdef0123456789abcdef01234567 web dev)" = "0.9.1"
+          test "$(./scripts/docker-image-tag.sh branch phase/0.9.1-p2-security-hardening 0123456789abcdef0123456789abcdef01234567 web dev)" = "0.9.1"
           test "$(./scripts/docker-image-tag.sh tag v0.9.1 0123456789abcdef0123456789abcdef01234567 web release)" = "0.9.1"
           if ./scripts/docker-image-tag.sh tag v0.9.1 0123456789abcdef0123456789abcdef01234567 web dev; then exit 1; fi
           if ./scripts/docker-image-tag.sh branch main 0123456789abcdef0123456789abcdef01234567 web release; then exit 1; fi
@@ -114,6 +121,8 @@ jobs:
         run: pnpm test:pwa:0903
       - name: Verify 0.9.1 RC feature freeze
         run: pnpm test:freeze:0911
+      - name: Verify 0.9.1 security hardening
+        run: pnpm test:security:0912
       - name: Build development server production image
         run: docker build --file infra/docker/Dockerfile.web --tag lyricscloud-web-ci:${{ github.sha }} .
       - name: Build production service images
@@ -123,6 +132,16 @@ jobs:
           done
       - name: Run production images with a fresh database
         run: bash scripts/verify-production-images.sh "${{ github.sha }}"
+      - name: Scan production images for fixable high or critical vulnerabilities
+        env:
+          TRIVY_CACHE_PATH: /tmp/lyricscloud-trivy-cache
+        run: bash scripts/scan-container-vulnerabilities.sh "${{ github.sha }}"
+      - name: Scan production image layers for secret canaries
+        env:
+          GOOGLE_CLIENT_SECRET: synthetic-e2e-client-secret
+          SESSION_SECRET: synthetic-e2e-session-secret-at-least-32-bytes
+          E2E_PROVIDER_TOKEN: synthetic-provider-token-never-persisted
+        run: bash scripts/scan-container-secrets.sh "${{ github.sha }}"
       - name: Install Playwright Chromium, Firefox and WebKit
         run: pnpm exec playwright install --with-deps chromium firefox webkit
       - name: Auth and ownership E2E

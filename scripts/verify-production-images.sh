@@ -24,9 +24,11 @@ for attempt in {1..30}; do
   sleep 1
 done
 [[ "$ready" == true ]]
-docker run --rm --name "$name-migrate" --network "$name" -e "DATABASE_URL=$database_url" "lyricscloud-migrate-ci:$revision"
+docker run --rm --name "$name-migrate" --network "$name" --read-only --tmpfs /tmp:size=32m,mode=1777 \
+  -e "DATABASE_URL=$database_url" "lyricscloud-migrate-ci:$revision"
 for service in collaboration worker web; do
   docker run -d --name "$name-$service" --network "$name" --network-alias "$service" \
+    --read-only --tmpfs /tmp:size=64m,mode=1777 \
     -e "DATABASE_URL=$database_url" -e APP_ORIGIN=http://localhost:8080 \
     -e OIDC_TEST_FIXTURE=true -e GOOGLE_ISSUER=http://127.0.0.1:3100 \
     -e GOOGLE_CLIENT_ID=synthetic-image-client -e GOOGLE_CLIENT_SECRET=synthetic-image-secret \
@@ -34,10 +36,15 @@ for service in collaboration worker web; do
     -e AUTH_ALLOWED_EMAILS=fixture@example.invalid -e AUTH_ALLOWED_EMAILS_FILE= \
     "lyricscloud-$service-ci:$revision" >/dev/null
 done
+for service in collaboration worker web; do
+  image_user=$(docker inspect --format '{{.Config.User}}' "$name-$service")
+  [[ -n "$image_user" && "$image_user" != "0" && "$image_user" != "root" ]]
+  [[ "$(docker inspect --format '{{.HostConfig.ReadonlyRootfs}}' "$name-$service")" == true ]]
+done
 check_http() {
   local container=$1 url=$2
   for attempt in {1..30}; do
-    if docker exec "$container" node -e 'fetch(process.argv[1]).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))' "$url" >/dev/null 2>&1; then return; fi
+    if docker exec "$container" /nodejs/bin/node -e 'fetch(process.argv[1]).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))' "$url" >/dev/null 2>&1; then return; fi
     sleep 1
   done
   printf 'Production image readiness failed: %s\n' "$container" >&2
@@ -53,14 +60,14 @@ for attempt in {1..30}; do
   sleep 1
 done
 [[ "$worker_purge" == true ]]
-docker exec -i --workdir /workspace/apps/collaboration "$name-collaboration" node --input-type=module < scripts/verify-production-revisions.mjs
+docker exec -i --workdir /app "$name-collaboration" /nodejs/bin/node --input-type=module < scripts/verify-production-revisions.mjs
 docker run -i --name "$name-recovery" --network "$name" -e "DATABASE_URL=$database_url" \
-  --entrypoint node --workdir /workspace/apps/collaboration "lyricscloud-collaboration-ci:$revision" \
+  --read-only --tmpfs /tmp:size=64m,mode=1777 --entrypoint /nodejs/bin/node --workdir /app "lyricscloud-collaboration-ci:$revision" \
   --input-type=module < scripts/verify-production-recovery.mjs &
 recovery_pid=$!
 recovery_ready=false
 for attempt in {1..30}; do
-  if docker exec "$name-recovery" test -f /tmp/p5-recovery-ready >/dev/null 2>&1; then recovery_ready=true; break; fi
+  if docker exec "$name-recovery" /nodejs/bin/node -e "require('node:fs').accessSync('/tmp/p5-recovery-ready')" >/dev/null 2>&1; then recovery_ready=true; break; fi
   kill -0 "$recovery_pid" 2>/dev/null || { wait "$recovery_pid"; exit 1; }
   sleep 1
 done
@@ -74,6 +81,6 @@ check_http "$name-collaboration" http://127.0.0.1:3001/health/ready
 check_http "$name-web" http://127.0.0.1:3000/api/health/ready
 docker restart "$name-collaboration" >/dev/null
 check_http "$name-collaboration" http://127.0.0.1:3001/health/ready
-docker exec "$name-recovery" touch /tmp/p5-recovery-restarted
+docker exec "$name-recovery" /nodejs/bin/node -e "require('node:fs').writeFileSync('/tmp/p5-recovery-restarted','ready')"
 wait "$recovery_pid"
 printf 'Production images: migration completed; web, collaboration, worker and same-origin proxy ready.\n'

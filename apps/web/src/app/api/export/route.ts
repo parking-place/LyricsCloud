@@ -2,6 +2,7 @@ import { exportArchiveFilename } from "@lyricscloud/domain";
 import { getAuthContext, resolveRequestAuth } from "../../../lib/auth-context.js";
 import { createExportArchive } from "../../../lib/export-archive.js";
 import { lifecycleApiError, lifecycleResponseHeaders } from "../../../lib/lifecycle-api.js";
+import { rateLimitResponse, requestRateLimiter } from "../../../lib/request-security.js";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -9,6 +10,8 @@ export const runtime = "nodejs";
 export async function GET(request: Request): Promise<Response> {
   try {
     const auth = await resolveRequestAuth(request);
+    const rate = requestRateLimiter.consume(`export:${auth.userId}`, 6, 60_000);
+    if (!rate.allowed) return rateLimitResponse(rate);
     const snapshot = await getAuthContext().exports.openSnapshot(auth.userId);
     const iterator = createExportArchive(snapshot);
     const body = new ReadableStream<Uint8Array>({
