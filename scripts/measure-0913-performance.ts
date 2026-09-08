@@ -84,6 +84,11 @@ async function main() {
       return result.rowCount ?? 0;
     });
 
+    // Prime ZIP metadata, UTF-8 buffers, and the PostgreSQL cursor before the
+    // measured pass, matching the warm-up policy used by the sampled metrics.
+    const exportWarmup = await exporter.openSnapshot(ownerId);
+    for await (const _ of createExportArchive(exportWarmup)) { /* consume without retaining content */ }
+    await new Promise<void>((resolve) => setImmediate(resolve));
     const rssBeforeExport = process.memoryUsage().rss;
     const exportStarted = performance.now();
     const snapshot = await exporter.openSnapshot(ownerId);
