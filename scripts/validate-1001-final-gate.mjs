@@ -82,6 +82,10 @@ for (const marker of ["71 requirements", "15 README", "8 suggestion sources", "o
   assertIncludes(validation, marker, `validation marker ${marker}`);
 }
 
+const workflow = await read(".github/workflows/ci.yml");
+assertIncludes(workflow, "Verify 1.0.0 final requirements and defect gate", "CI final gate step");
+assertIncludes(workflow, "pnpm test:release:1001", "CI final gate command");
+
 console.log("1.0.0 Phase 1 gate: 71 requirements, 15 README files, 8 suggestion sources, selected DEC evidence, P0/P1 zero and OPS-0004 accepted");
 
 function ids(group, count) {
