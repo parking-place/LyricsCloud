@@ -9,7 +9,7 @@
 3. 그 SHA의 필수 GitHub Actions가 모두 통과했는지 확인한다.
 4. 개발 서버 checkout에 tracked 변경이 없는지 확인한다.
 5. 원격 branch와 전달받은 전체 SHA가 일치할 때만 해당 SHA로 전환한다.
-6. 환경 파일의 secret을 유지하고 `BUILD_ID`를 목표 SHA, `APP_VERSION`을 그 commit의 `VERSION`으로 갱신한 뒤 서버 전용 Compose override로 production web image build, forward migration, Compose 갱신을 실행한다.
+6. 환경 파일의 secret을 유지하고 `BUILD_ID`를 목표 SHA, `APP_VERSION`을 그 commit의 `VERSION`으로 갱신한 뒤 서버 전용 Compose override로 네 production image build, forward migration, Compose 갱신을 실행한다.
 7. web이 `NODE_ENV=production`이고 HTML에 개발 HMR client가 없으며 같은 image의 CSS에 현재 곡 화면 selector가 포함되는지 확인한다.
 8. 네 컨테이너 health를 확인한 뒤 LyricsCloud의 중지 컨테이너·미사용 image·network와 현재 builder의 미사용 cache를 정리한다. volume은 정리하지 않는다.
 9. 공개 HTTPS live·ready와 변경 기능 smoke test를 확인한다.
@@ -21,7 +21,7 @@
 - Git remote는 read-only 접근으로 충분하다. 서버에서 commit하거나 merge하지 않는다.
 - `.env`와 `.test_users`는 mode `600`으로 만들고 Git·Docker build context에 넣지 않는다.
 - [`compose.development-server.yaml`](../../compose.development-server.yaml)은 host source·dependency mount를 제거한다. 실행 컨테이너는 checkout을 직접 수정하거나 checkout 전환 중인 코드를 미리 읽지 않고, build된 정확한 commit 내용만 사용한다.
-- 공개 개발 web은 `infra/docker/Dockerfile.web`의 Next.js production standalone image로 실행한다. `next dev`는 배포마다 같은 정적 asset URL을 재사용할 수 있어 Cloudflare·브라우저 cache와 최신 HTML이 불일치하므로 서버 배포에 사용하지 않는다.
+- 공개 개발 web은 `infra/docker/Dockerfile.web`의 Next.js production standalone image로 실행하고 collaboration·worker·migrate는 `infra/docker/Dockerfile.service`의 각 production target으로 실행한다. 네 runtime은 Distroless의 절대 entry path와 내장 Node 경로를 사용한다. `next dev`는 배포마다 같은 정적 asset URL을 재사용할 수 있어 Cloudflare·브라우저 cache와 최신 HTML이 불일치하므로 서버 배포에 사용하지 않는다.
 - 개발 OAuth client의 JavaScript origin과 callback은 개발 공개 주소와 정확히 일치해야 한다.
 - `POSTGRES_PASSWORD`, `SESSION_SECRET`, OAuth secret과 허용 메일 값은 터미널 출력이나 명령행 인수로 전달하지 않는다.
 

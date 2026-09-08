@@ -93,8 +93,16 @@ for (const marker of ["collaboration.mjs", "worker.mjs", "migrate.mjs"]) assertI
 const compose = await read("compose.development-server.yaml");
 assertCount(compose, /^\s+read_only: true$/gm, 4, "read-only production services");
 assertCount(compose, /^\s+tmpfs:$/gm, 4, "production tmpfs declarations");
+for (const target of ["collaboration", "worker", "migrate"]) assertIncludes(compose, `target: ${target}`, `production Compose target ${target}`);
+for (const command of ["/app/apps/web/server.js", "/app/collaboration.mjs", "/app/worker.mjs", "/app/migrate.mjs"]) {
+  assertIncludes(compose, command, `production Compose command ${command}`);
+}
+assertCount(compose, /\/nodejs\/bin\/node/g, 3, "Distroless Compose healthchecks");
 const imageVerification = await read("scripts/verify-production-images.sh");
 for (const marker of ["--read-only", ".Config.User", ".HostConfig.ReadonlyRootfs"]) assertIncludes(imageVerification, marker, `image verification ${marker}`);
+const deployment = await read("scripts/deploy-development.sh");
+assertIncludes(deployment, "docker inspect --format", "Distroless deployment environment inspection");
+assertCount(deployment, /\/nodejs\/bin\/node/g, 2, "Distroless deployment probes");
 
 for (const packageFile of ["apps/collaboration/package.json", "apps/worker/package.json", "packages/database/package.json"]) {
   const manifest = JSON.parse(await read(packageFile));

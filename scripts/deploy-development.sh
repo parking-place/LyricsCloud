@@ -86,11 +86,11 @@ for _attempt in $(seq 1 30); do
   done
   if [ "$healthy" = true ]; then
     web_container=$("${compose[@]}" ps -q web)
-    if [ "$(docker exec "$web_container" printenv NODE_ENV)" != "production" ]; then
+    if [ "$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$web_container" | awk -F= '$1 == "NODE_ENV" { print $2 }')" != "production" ]; then
       printf 'Development web container is not running the production build.\n' >&2
       exit 8
     fi
-    auth_html=$(docker exec "$web_container" node -e "fetch('http://127.0.0.1:3000/auth').then(async response => { if (!response.ok) process.exit(1); process.stdout.write(await response.text()) })")
+    auth_html=$(docker exec "$web_container" /nodejs/bin/node -e "fetch('http://127.0.0.1:3000/auth').then(async response => { if (!response.ok) process.exit(1); process.stdout.write(await response.text()) })")
     if printf '%s' "$auth_html" | grep -q 'browser_dev_hmr-client'; then
       printf 'Development web response contains Next.js development assets.\n' >&2
       exit 9
@@ -100,7 +100,7 @@ for _attempt in $(seq 1 30); do
       printf 'Development web response does not reference a CSS asset.\n' >&2
       exit 10
     fi
-    if ! docker exec "$web_container" node -e '
+    if ! docker exec "$web_container" /nodejs/bin/node -e '
       Promise.all(process.argv.slice(1).map(async path => {
         const response = await fetch("http://127.0.0.1:3000" + path);
         if (!response.ok) throw new Error("CSS asset request failed");

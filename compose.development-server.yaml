@@ -1,7 +1,11 @@
 # Development server override: run the immutable image content without host source or dependency mounts.
 services:
   migrate:
-    command: ["migrate.mjs"]
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.service
+      target: migrate
+    command: ["/app/migrate.mjs"]
     read_only: true
     tmpfs:
       - /tmp:size=32m,mode=1777
@@ -10,22 +14,36 @@ services:
     build:
       context: .
       dockerfile: infra/docker/Dockerfile.web
-    command: ["apps/web/server.js"]
+    command: ["/app/apps/web/server.js"]
     environment:
       NODE_ENV: production
     read_only: true
     tmpfs:
       - /tmp:size=64m,mode=1777
     volumes: !reset []
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
   collaboration:
-    command: ["collaboration.mjs"]
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.service
+      target: collaboration
+    command: ["/app/collaboration.mjs"]
     read_only: true
     tmpfs:
       - /tmp:size=64m,mode=1777
     volumes: !reset []
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3001/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
   worker:
-    command: ["worker.mjs"]
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.service
+      target: worker
+    command: ["/app/worker.mjs"]
     read_only: true
     tmpfs:
       - /tmp:size=64m,mode=1777
     volumes: !reset []
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3002/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
