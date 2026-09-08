@@ -20,6 +20,7 @@
 - 배포 전용 checkout은 다른 저장소와 섞이지 않는 개발 서버 경로에 둔다.
 - Git remote는 read-only 접근으로 충분하다. 서버에서 commit하거나 merge하지 않는다.
 - `.env`와 `.test_users`는 mode `600`으로 만들고 Git·Docker build context에 넣지 않는다.
+- Docker Compose의 local file secret은 host permission을 그대로 bind하므로, 배포 script가 `.test_users`를 `.private/runtime/auth_allowed_emails`에 UID `65532`·mode `400`으로 원자 복사한다. 원본 mode `600`은 바꾸지 않으며 runtime copy도 Git·Docker build context에서 제외한다.
 - [`compose.development-server.yaml`](../../compose.development-server.yaml)은 host source·dependency mount를 제거한다. 실행 컨테이너는 checkout을 직접 수정하거나 checkout 전환 중인 코드를 미리 읽지 않고, build된 정확한 commit 내용만 사용한다.
 - 공개 개발 web은 `infra/docker/Dockerfile.web`의 Next.js production standalone image로 실행하고 collaboration·worker·migrate는 `infra/docker/Dockerfile.service`의 각 production target으로 실행한다. 네 runtime은 Distroless의 절대 entry path와 내장 Node 경로를 사용한다. `next dev`는 배포마다 같은 정적 asset URL을 재사용할 수 있어 Cloudflare·브라우저 cache와 최신 HTML이 불일치하므로 서버 배포에 사용하지 않는다.
 - 개발 OAuth client의 JavaScript origin과 callback은 개발 공개 주소와 정확히 일치해야 한다.
@@ -38,6 +39,7 @@
 - tracked server checkout이 dirty인 경우
 - 원격 branch SHA와 요청 SHA가 다른 경우
 - `.env` 또는 `.test_users`가 비어 있는 경우
+- Distroless UID `65532` 전용 allowlist runtime copy의 소유권·mode를 만들거나 검증하지 못한 경우
 - Compose 설정 검증이 실패한 경우
 
 서비스 health와 정적 asset 검증 뒤 실행되는 Docker 정리가 실패하면 exit 12로 종료한다. 이 경우 새 앱은 이미 실행 중일 수 있으므로 배포 자체를 되돌리지 않고 디스크 여유와 Docker daemon 상태를 확인한 뒤 정리만 재시도한다.

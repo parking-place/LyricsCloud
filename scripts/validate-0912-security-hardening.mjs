@@ -98,11 +98,18 @@ for (const command of ["/app/apps/web/server.js", "/app/collaboration.mjs", "/ap
   assertIncludes(compose, command, `production Compose command ${command}`);
 }
 assertCount(compose, /\/nodejs\/bin\/node/g, 3, "Distroless Compose healthchecks");
+assertIncludes(compose, "file: ./.private/runtime/auth_allowed_emails", "Distroless-readable runtime allowlist");
 const imageVerification = await read("scripts/verify-production-images.sh");
 for (const marker of ["--read-only", ".Config.User", ".HostConfig.ReadonlyRootfs"]) assertIncludes(imageVerification, marker, `image verification ${marker}`);
+for (const marker of ["/run/secrets/auth_allowed_emails", "/api/auth/session", "image-smoke-session"]) {
+  assertIncludes(imageVerification, marker, `production auth image verification ${marker}`);
+}
 const deployment = await read("scripts/deploy-development.sh");
 assertIncludes(deployment, "docker inspect --format", "Distroless deployment environment inspection");
 assertCount(deployment, /\/nodejs\/bin\/node/g, 2, "Distroless deployment probes");
+for (const marker of ["install -o 65532 -g 65532 -m 400", "65532:65532:400", "{{.Config.User}}", '!= "65532"']) {
+  assertIncludes(deployment, marker, `Distroless runtime secret marker ${marker}`);
+}
 
 for (const packageFile of ["apps/collaboration/package.json", "apps/worker/package.json", "packages/database/package.json"]) {
   const manifest = JSON.parse(await read(packageFile));
@@ -119,7 +126,7 @@ for (const marker of [
 ]) assertIncludes(ci, marker, `CI security gate ${marker}`);
 
 const audit = await read("docs/security/0.9.1-security-audit.md");
-for (let index = 1; index <= 5; index += 1) assertIncludes(audit, `SEC-091-${String(index).padStart(3, "0")}`, `finding ${index}`);
+for (let index = 1; index <= 6; index += 1) assertIncludes(audit, `SEC-091-${String(index).padStart(3, "0")}`, `finding ${index}`);
 for (const marker of ["미해결 P0 0건, P1 0건", "Gitleaks", "Trivy", "--ignore-unfixed", "rate limiter는 단일 Node instance"]) {
   assertIncludes(audit, marker, `audit marker ${marker}`);
 }

@@ -48,6 +48,8 @@ DB 비밀번호 오류나 DB 중단 시 app liveness는 200, readiness는 503이
 
 로컬 `compose.yaml`은 빠른 개발을 위해 bind mount와 개발용 command를 사용한다. Cloudflare Tunnel에 연결된 개발 서버는 `compose.development-server.yaml`을 함께 적용해 web은 [`Dockerfile.web`](./Dockerfile.web)의 production standalone image를, collaboration·worker·migrate는 [`Dockerfile.service`](./Dockerfile.service)의 각 production target을 사용한다. 네 runtime은 Distroless의 절대 entry path와 내장 Node 경로로 실행하며 host source·dependency mount를 사용하지 않는다.
 
+개발 서버의 allowlist 원본 `.test_users`는 root mode `600`을 유지한다. local Compose file secret은 host permission을 보존하므로 배포 script가 Git·build context에서 제외된 `.private/runtime`에 UID `65532`·mode `400`의 runtime copy를 만들고 web 컨테이너에만 mount한다.
+
 `next dev`의 정적 asset URL은 재배포 사이에 같을 수 있으므로 Cloudflare·브라우저 cache가 최신 HTML과 이전 CSS를 조합할 수 있다. 서버 배포 script는 production mode, 개발 HMR 부재, image 내부 CSS의 현재 화면 selector를 검사한 뒤에만 완료한다.
 
 ## Docker Hub 발행 image

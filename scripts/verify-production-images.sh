@@ -5,10 +5,14 @@ set -euo pipefail
 revision=${1:?Usage: verify-production-images.sh IMAGE_TAG}
 [[ "$revision" =~ ^[a-zA-Z0-9_.-]+$ ]] || exit 2
 name="lyricscloud-image-smoke-$$-$RANDOM"
+allowlist_file=$(mktemp)
+printf 'fixture@example.invalid\n' > "$allowlist_file"
+chmod 444 "$allowlist_file"
 cleanup() {
   docker rm -f "$name-recovery" "$name-web" "$name-collaboration" "$name-worker" "$name-migrate" "$name-db" >/dev/null 2>&1 || true
   docker network rm "$name" >/dev/null 2>&1 || true
   docker volume rm "$name-data" >/dev/null 2>&1 || true
+  unlink "$allowlist_file" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 docker network create "$name" >/dev/null
@@ -27,13 +31,18 @@ done
 docker run --rm --name "$name-migrate" --network "$name" --read-only --tmpfs /tmp:size=32m,mode=1777 \
   -e "DATABASE_URL=$database_url" "lyricscloud-migrate-ci:$revision"
 for service in collaboration worker web; do
+  runtime_mounts=()
+  if [[ "$service" == web ]]; then
+    runtime_mounts+=(--mount "type=bind,source=$allowlist_file,target=/run/secrets/auth_allowed_emails,readonly")
+  fi
   docker run -d --name "$name-$service" --network "$name" --network-alias "$service" \
     --read-only --tmpfs /tmp:size=64m,mode=1777 \
+    "${runtime_mounts[@]}" \
     -e "DATABASE_URL=$database_url" -e APP_ORIGIN=http://localhost:8080 \
     -e OIDC_TEST_FIXTURE=true -e GOOGLE_ISSUER=http://127.0.0.1:3100 \
     -e GOOGLE_CLIENT_ID=synthetic-image-client -e GOOGLE_CLIENT_SECRET=synthetic-image-secret \
     -e SESSION_SECRET=synthetic-image-session-secret-at-least-32-bytes \
-    -e AUTH_ALLOWED_EMAILS=fixture@example.invalid -e AUTH_ALLOWED_EMAILS_FILE= \
+    -e AUTH_ALLOWED_EMAILS= -e AUTH_ALLOWED_EMAILS_FILE=/run/secrets/auth_allowed_emails \
     "lyricscloud-$service-ci:$revision" >/dev/null
 done
 for service in collaboration worker web; do
@@ -54,6 +63,15 @@ check_http "$name-collaboration" http://127.0.0.1:3001/health/ready
 check_http "$name-worker" http://127.0.0.1:3002/health/ready
 check_http "$name-web" http://127.0.0.1:3000/api/health/ready
 check_http "$name-web" http://127.0.0.1:3000/collaboration/health/ready
+session_token=image-smoke-session
+session_hash=$(docker exec "$name-web" /nodejs/bin/node -e "process.stdout.write(require('node:crypto').createHash('sha256').update(process.argv[1]).digest('base64url'))" "$session_token")
+docker exec "$name-db" psql -v ON_ERROR_STOP=1 -U lyricscloud_test -d lyricscloud_test -c \
+  "insert into app_users(id,status) values('00000000-0000-4000-8000-000000000091','active'); insert into user_profiles(owner_id,display_name) values('00000000-0000-4000-8000-000000000091','Image Smoke'); insert into auth_sessions(token_hash,user_id,expires_at,absolute_expires_at) values('$session_hash','00000000-0000-4000-8000-000000000091',now()+interval '1 day',now()+interval '2 days');" >/dev/null
+docker exec "$name-web" /nodejs/bin/node -e '
+  fetch("http://127.0.0.1:3000/api/auth/session", { headers: { cookie: `lc_session=${process.argv[1]}` } })
+    .then(async response => { if (!response.ok || !(await response.json()).authenticated) process.exit(1); })
+    .catch(() => process.exit(1));
+' "$session_token"
 worker_purge=false
 for attempt in {1..30}; do
   if [[ "$(docker exec "$name-db" psql -U lyricscloud_test -d lyricscloud_test -Atc "select count(*) from lifecycle_purge_runs where status='success'" 2>/dev/null)" != "0" ]]; then worker_purge=true; break; fi

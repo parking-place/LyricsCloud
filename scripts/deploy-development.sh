@@ -41,6 +41,22 @@ if [ ! -s .env ] || [ ! -s .test_users ]; then
 fi
 chmod 600 .env .test_users
 
+# Compose implements local file secrets as bind mounts. Keep the source list at
+# mode 600 while staging a nonroot-only runtime copy for the Distroless web UID.
+runtime_secret_directory=.private/runtime
+runtime_secret_file=$runtime_secret_directory/auth_allowed_emails
+install -d -m 700 "$runtime_secret_directory"
+runtime_secret_temporary=$(mktemp "$runtime_secret_directory/auth_allowed_emails.XXXXXX")
+trap 'unlink "$runtime_secret_temporary" 2>/dev/null || true' EXIT
+install -o 65532 -g 65532 -m 400 .test_users "$runtime_secret_temporary"
+mv "$runtime_secret_temporary" "$runtime_secret_file"
+runtime_secret_temporary=
+trap - EXIT
+if [ "$(stat -c '%u:%g:%a' "$runtime_secret_file")" != "65532:65532:400" ]; then
+  printf 'Development runtime allowlist ownership verification failed.\n' >&2
+  exit 6
+fi
+
 environment_file=$(mktemp)
 trap 'unlink "$environment_file" 2>/dev/null || true' EXIT
 app_version=$(tr -d '\r\n' < VERSION)
@@ -89,6 +105,10 @@ for _attempt in $(seq 1 30); do
     if [ "$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$web_container" | awk -F= '$1 == "NODE_ENV" { print $2 }')" != "production" ]; then
       printf 'Development web container is not running the production build.\n' >&2
       exit 8
+    fi
+    if [ "$(docker inspect --format '{{.Config.User}}' "$web_container")" != "65532" ]; then
+      printf 'Development web container is not running as the Distroless nonroot user.\n' >&2
+      exit 13
     fi
     auth_html=$(docker exec "$web_container" /nodejs/bin/node -e "fetch('http://127.0.0.1:3000/auth').then(async response => { if (!response.ok) process.exit(1); process.stdout.write(await response.text()) })")
     if printf '%s' "$auth_html" | grep -q 'browser_dev_hmr-client'; then

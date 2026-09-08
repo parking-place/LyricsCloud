@@ -47,3 +47,7 @@ services:
     volumes: !reset []
     healthcheck:
       test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3002/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+
+secrets:
+  auth_allowed_emails:
+    file: ./.private/runtime/auth_allowed_emails
