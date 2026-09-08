@@ -48,6 +48,7 @@ docker compose --env-file .env -f compose.yaml -f compose.backup.yaml --profile 
 
 ```bash
 cosign verify \
+  --experimental-oci11 \
   --certificate-identity "https://github.com/parking-place/LyricsCloud/.github/workflows/ci.yml@refs/heads/<approved-branch>" \
   --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
   "parkingplace/lyricscloud-<service>@sha256:<approved-digest>"

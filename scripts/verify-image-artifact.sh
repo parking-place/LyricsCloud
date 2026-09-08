@@ -13,8 +13,8 @@ set -euo pipefail
 artifact="$IMAGE@$IMAGE_DIGEST"
 identity="https://github.com/$GITHUB_WORKFLOW_REF"
 issuer=https://token.actions.githubusercontent.com
-cosign sign --yes "$artifact"
-cosign verify --certificate-identity "$identity" --certificate-oidc-issuer "$issuer" "$artifact" >/dev/null
+cosign sign --yes --registry-referrers-mode=oci-1-1 "$artifact"
+cosign verify --experimental-oci11 --certificate-identity "$identity" --certificate-oidc-issuer "$issuer" "$artifact" >/dev/null
 
 provenance=$(docker buildx imagetools inspect "$artifact" --format '{{json .Provenance.SLSA.buildDefinition.externalParameters}}')
 grep -Fq "\"label:org.opencontainers.image.revision\":\"$GITHUB_SHA\"" <<< "$provenance"
