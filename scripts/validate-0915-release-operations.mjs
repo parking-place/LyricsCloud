@@ -77,7 +77,7 @@ for (const marker of ["scheduledBackups\":2", "BACKUP_STORAGE_UNAVAILABLE", "BAC
 for (const marker of ["previousRc", "synthetic_failed_migration", "health_failed", "applicationRollbackDurationMs", "dataCanary\":\"PRESERVED", "rollForward\":\"PASS"]) {
   assert(upgradeTest.includes(marker), `upgrade/rollback acceptance marker missing: ${marker}`);
 }
-for (const marker of ["cosign sign", "cosign verify", "registry-referrers-mode=oci-1-1", "experimental-oci11", "certificate-identity", "certificate-oidc-issuer", "Provenance.SLSA", "GITHUB_SHA"]) {
+for (const marker of ["cosign sign", "cosign verify", "registry-referrers-mode=oci-1-1", "experimental-oci11", "certificate-identity", "certificate-oidc-issuer", "Provenance.SLSA", "vcs:source", "configSource.path", "GITHUB_SHA"]) {
   assert(artifactTest.includes(marker), `artifact verifier marker missing: ${marker}`);
 }
 const dashboardConfig = JSON.parse(dashboard);

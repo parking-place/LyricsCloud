@@ -17,9 +17,14 @@ cosign sign --yes --registry-referrers-mode=oci-1-1 "$artifact"
 cosign verify --experimental-oci11 --certificate-identity "$identity" --certificate-oidc-issuer "$issuer" "$artifact" >/dev/null
 
 provenance=$(docker buildx imagetools inspect "$artifact" --format '{{json .Provenance.SLSA.buildDefinition.externalParameters}}')
-grep -Fq "\"label:org.opencontainers.image.revision\":\"$GITHUB_SHA\"" <<< "$provenance"
-grep -Fq '"vcs:source":"https://github.com/parking-place/LyricsCloud"' <<< "$provenance"
-grep -Fq "\"target\":\"$BUILD_TARGET\"" <<< "$provenance"
-grep -Fq "\"path\":\"$(basename "$DOCKERFILE")\"" <<< "$provenance"
+jq -e \
+  --arg revision "$GITHUB_SHA" \
+  --arg source "https://github.com/parking-place/LyricsCloud" \
+  --arg dockerfile "$(basename "$DOCKERFILE")" \
+  --arg target "$BUILD_TARGET" \
+  '.request.args["label:org.opencontainers.image.revision"] == $revision
+    and .request.root.configSource.request.args["vcs:source"] == $source
+    and .request.args.target == $target
+    and .configSource.path == $dockerfile' <<< "$provenance" >/dev/null
 
 printf 'Artifact signature and provenance: PASS %s@%s\n' "$IMAGE" "$IMAGE_DIGEST"
