@@ -5,11 +5,11 @@
 ```yaml
 current_version: "1.0.0"
 current_phase: "1.0.0/3phase.md"
-state: "ready"
+state: "review"
 owner: "Codex"
-started_at: ""
-updated_at: "2026-09-08 22:12 KST"
-next_action: "Phase 2 완료 문서 commit을 동일 CI·서명 image·개발 배포로 재검증한 뒤 Phase 3 production preflight를 수행하고 release server 변경 전 현재 요청의 명시적 승인을 받는다"
+started_at: "2026-09-08 22:33 KST"
+updated_at: "2026-09-08 22:38 KST"
+next_action: "사용자가 빈 신규 운영 환경 또는 기존 개발 DB 이관 중 하나를 선택하고 릴리스 서버 초기화·배포를 명시적으로 승인하면 Phase 3 backup·canary·점진 배포를 실행한다"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -53,6 +53,7 @@ next_action: "Phase 2 완료 문서 commit을 동일 CI·서명 image·개발 �
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.0 / Phase 3 | `LC-100-P3-01`~`09` | 1.0.0/3phase.md, STATUS.md, docs/runbooks, .private release evidence | Phase 2 final manifest, `OPS-0004`, 명시적 운영 승인 | 2026-09-08 22:33 KST | review; read-only preflight 완료, 릴리스 초기화·data source 승인 대기 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 

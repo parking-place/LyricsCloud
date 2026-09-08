@@ -1,6 +1,6 @@
 # 1.0.0 Phase 3 — 프로덕션 배포, canary·smoke와 롤백 판정
 
-- 상태: **대기**
+- 상태: **진행 중 — read-only preflight 완료, 릴리스 초기화·data source 승인 대기**
 - 단계 목적: 승인된 동일 산출물을 제한된 canary로 검증한 뒤 안전하게 프로덕션에 전개한다.
 
 ## 목표
@@ -74,3 +74,7 @@
 ## 다음 Phase 인계
 
 Phase 4에 실제 운영 버전·digest·schema, 배포 결과, 남은 P2/P3, 경보와 모든 운영 runbook 링크를 전달한다.
+
+## 현재 실행 기록
+
+릴리스 서버의 Docker·Compose·Tunnel·disk·checkout·backup timer·loopback listener와 공개 health를 read-only로 점검했다. 신규 production bootstrap 상태이며 변경은 수행하지 않았다. 불변 digest, 두 data source 선택지, 배포·canary·rollback 순서와 승인 대기 항목은 [`Phase 3 production 배포 preflight`](../../../docs/runbooks/1.0.0-phase3-deployment.md)에 기록했다.
