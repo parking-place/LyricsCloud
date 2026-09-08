@@ -3,13 +3,13 @@
 이 파일은 현재 버전·Phase·담당 작업의 단일 상태 원본입니다. 계획 문서는 범위를 정의하고 이 파일은 실제 진행 상황을 기록합니다.
 
 ```yaml
-current_version: "0.9.0"
-current_phase: "5phase.md"
+current_version: "0.9.1"
+current_phase: "1phase.md"
 state: "complete"
 owner: "Codex"
-started_at: "2026-09-08 06:18 KST"
-updated_at: "2026-09-08 10:05 KST"
-next_action: "0.9.0 문서 최종 SHA의 CI·image·동일 SHA 개발 배포·공개 smoke를 확인한 뒤 0.9.1 Phase 1 기능 동결을 시작"
+started_at: "2026-09-08 10:40 KST"
+updated_at: "2026-09-08 10:48 KST"
+next_action: "0.9.1 Phase 1 SHA의 CI·image·동일 SHA 개발 배포·공개 smoke를 확인한 뒤 Phase 2 보안 하드닝과 사용자 격리 감사를 시작"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -44,7 +44,7 @@ next_action: "0.9.0 문서 최종 SHA의 CI·image·동일 SHA 개발 배포·�
 | 0.7.0 | complete | Phase 1~5 완료 | 0.6.0 완료 |
 | 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
 | 0.9.0 | complete | Phase 1~5 완료 | 0.8.0 완료 |
-| 0.9.1 | planned | 없음 | 0.9.0 완료 |
+| 0.9.1 | in_progress | Phase 1 완료 | 0.9.0 완료 |
 | 1.0.0 | planned | 없음 | 0.9.1 release gate 통과 |
 
 ## 활성 작업
@@ -107,6 +107,7 @@ next_action: "0.9.0 문서 최종 SHA의 CI·image·동일 SHA 개발 배포·�
 
 | 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
 |---|---|---|---|---|---|
+| 2026-09-08 | 0.9.1 / Phase 1 | Codex | Sketch 49절 71개 요구사항과 15개 numbered README·8개 제안 source를 구현/검증 증적에 연결하고 orphan·미구현·부분 구현·검증 없음 0행, P0/P1 0건으로 동결했으며 OPS-0001을 Accepted로 확정 | `test:freeze:0911`, 0.9 감사·실기기 완료 validator, check, 57 files/208 tests, production build; [추적표](../../docs/architecture/0.9.1-RC-TRACEABILITY.md), [검증 기록](../../docs/runbooks/0.9.1-phase1-validation.md) | Phase 2가 인증·권한·XSS·CSRF·rate/size·container·dependency/secret 경계를 전수 감사 |
 | 2026-09-08 | 0.9.0 / Phase 5 | Codex | 지원 행렬, 15화면×4 viewport 최종 시각 기준선, 5개 브라우저 profile의 장문 한글·회전·Clipboard 회귀와 실제 iOS Safari·Android Chrome의 설치·IME·복사·offline·dirty update·logout 인수를 완료 | 57 files/208 tests, PC/mobile E2E 219 pass·25 skip, 출시 후보 10/10, production build·4 image/fresh DB 복구, CI `34164652951`·`34168682303`, `9ead2aa` 동일 SHA 개발 배포·공개 PWA/Axe/reflow smoke, 사용자 실기기 최종 보고; [검증 기록](../../docs/runbooks/0.9.0-phase5-validation.md) | 0.9.1 Phase 1이 모든 1.0 요구사항·목업 제안·P0/P1 정의와 RC 허용 변경을 동결 |
 | 2026-09-08 | 0.9.0 / Phase 4 | Codex | 15개 화면에 하나의 주 제목·명명된 main, 공통 빈 화면·오류 상태, 양 테마 대비, dialog focus trap·Escape·호출 지점 복원과 저장 재시도 본문·cursor 보존을 구현 | 57 files/208 tests, production build·4 image/fresh DB 복구, PC/mobile E2E 219 pass·21 skip, Axe serious·critical 0, CI `34160175567`, 네 image digest, `2d0ec0a` 동일 SHA 개발 배포와 공개 양 테마·200% reflow smoke; [검증 기록](../../docs/runbooks/0.9.0-phase4-validation.md) | Phase 5가 실제 iOS Safari·Android Chrome의 IME·복사·설치·오프라인 복구와 출시 후보 통합 행렬을 검증 |
 | 2026-09-08 | 0.9.0 / Phase 3 | Codex | 설치 manifest·192/512 아이콘, immutable Next 정적 자산 전용 service worker, owner IndexedDB 보존 upgrade, offline cold-start 복구, dirty update 승인 gate와 로그아웃 제거를 구현 | 57 files/208 tests, production build·4 image/fresh DB 복구, PC/mobile E2E 213 pass·21 skip, CI `34153262398`, 네 image digest, `10312ed` 동일 SHA 개발 배포와 공개 manifest·static-only cache·offline hit·no-store smoke; [검증 기록](../../docs/runbooks/0.9.0-phase3-validation.md) | Phase 4가 PWA 저장·오프라인·업데이트 상태를 15개 화면의 접근성·빈 화면·오류 표현과 통합 |

@@ -1,6 +1,6 @@
 {
   "name": "lyricscloud",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": true,
   "packageManager": "pnpm@11.25.0",
   "engines": {
@@ -34,6 +34,7 @@
     "test:pwa:0903": "node scripts/verify-0903-pwa.mjs",
     "test:release:0905": "node scripts/validate-0905-release-candidate.mjs",
     "test:release:0905:complete": "node scripts/validate-0905-release-candidate.mjs --require-physical",
+    "test:freeze:0911": "node scripts/validate-0911-feature-freeze.mjs",
     "test:e2e:release:0905": "playwright test --config=playwright.release.config.ts tests/e2e/release-candidate.spec.ts",
     "test:performance:0700": "node scripts/measure-0700-search.mjs",
     "test:migration:0700-release": "node scripts/verify-0700-release-migration.mjs",

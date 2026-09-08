@@ -58,7 +58,7 @@
 
 | ID | 결정 대상 | 결정 Phase | 소비·재검증 Phase | 초기 상태 |
 |---|---|---|---|---|
-| `OPS-0001` | RC 브랜치, 허용 변경, 태그 발행과 승인 절차 | [0.9.1 Phase 1](./0.9.1/1phase.md) | [1.0.0 Phase 5](./1.0.0/5phase.md) | `Proposed` |
+| [`OPS-0001`](../../docs/runbooks/0.9.1-rc-governance.md) | RC 브랜치, 허용 변경, 태그 발행과 승인 절차 | [0.9.1 Phase 1](./0.9.1/1phase.md) | [1.0.0 Phase 5](./1.0.0/5phase.md) | `Accepted` |
 | `OPS-0002` | image registry, 서명, provenance와 digest 승인 목록 | [0.9.1 Phase 5](./0.9.1/5phase.md) | [1.0.0 Phase 2](./1.0.0/2phase.md) | `Proposed` |
 | `OPS-0003` | 기준 서버·DB 규모, 동시 작업 수와 성능 budget | [0.9.1 Phase 3](./0.9.1/3phase.md) | 0.9.1 Phase 4~5, 1.0.0 | `Proposed` |
 | `OPS-0004` | 최종 gate 승인자, 예외 불가 조건과 운영 인수 책임 | [1.0.0 Phase 1](./1.0.0/1phase.md) | [1.0.0 Phase 5](./1.0.0/5phase.md) | `Proposed` |

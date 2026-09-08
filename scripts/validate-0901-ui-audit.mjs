@@ -18,7 +18,7 @@ for (const number of expectedScreens) {
   assertCount(audit, new RegExp(`\\| STATE-${number} \\|`, "g"), 1, `STATE-${number}`);
 }
 
-const additions = ["ADD-ROOT-01", "ADD-ROOT-02", "ADD-ROOT-03", "ADD-ROOT-04", "ADD-ROOT-05", "ADD-05-01", "ADD-09-01"];
+const additions = ["ADD-ROOT-01", "ADD-ROOT-02", "ADD-ROOT-03", "ADD-ROOT-04", "ADD-ROOT-05", "ADD-02-01", "ADD-05-01", "ADD-09-01"];
 for (const id of additions) assertCount(audit, new RegExp(`\\| ${id} \\|`, "g"), 1, id);
 
 const viewports = ["pc", "narrow-pc", "tablet", "mobile"];
@@ -32,7 +32,7 @@ for (const viewport of viewports) {
   }
 }
 
-console.log("0.9.0 Phase 1 UI audit: 15 screens, 15 state rows, 7 source suggestions, 4 viewports, 60 PNGs OK");
+console.log("0.9.0 Phase 1 UI audit: 15 screens, 15 state rows, 8 source suggestions, 4 viewports, 60 PNGs OK");
 
 function screenSlug(number) {
   return ({
