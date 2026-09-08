@@ -188,20 +188,25 @@ export class PostgresLifecycleStore {
       await client.query("select pg_advisory_xact_lock($1)", [741924]);
       const accounts = await client.query<{ id: string }>(`select id from app_users where status='withdrawal_pending' and withdrawal_purge_at<=$1
         order by withdrawal_purge_at,id for update skip locked limit $2`, [now, size]);
-      let accountCount = 0;
-      for (const account of accounts.rows) accountCount += (await client.query("delete from app_users where id=$1 and status='withdrawal_pending' and withdrawal_purge_at<=$2", [account.id, now])).rowCount ?? 0;
+      const accountIds = accounts.rows.map(({ id }) => id);
+      const accountCount = accountIds.length
+        ? (await client.query("delete from app_users where id=any($1::uuid[]) and status='withdrawal_pending' and withdrawal_purge_at<=$2", [accountIds, now])).rowCount ?? 0
+        : 0;
 
       const resources = await client.query<{ id: string; type: string }>(`select id,type from resources where purge_at<=$1
         order by purge_at,id for update skip locked limit $2`, [now, size]);
-      let resourceCount = 0;
-      for (const resource of resources.rows) {
-        if (resource.type === "song") await client.query("delete from resources where id in (select resource_id from lyrics where song_id=$1)", [resource.id]);
-        resourceCount += (await client.query("delete from resources where id=$1 and purge_at<=$2", [resource.id, now])).rowCount ?? 0;
-      }
+      const resourceIds = resources.rows.map(({ id }) => id);
+      const songIds = resources.rows.filter(({ type }) => type === "song").map(({ id }) => id);
+      if (songIds.length) await client.query("delete from resources where id in (select resource_id from lyrics where song_id=any($1::uuid[]))", [songIds]);
+      const resourceCount = resourceIds.length
+        ? (await client.query("delete from resources where id=any($1::uuid[]) and purge_at<=$2", [resourceIds, now])).rowCount ?? 0
+        : 0;
       const templates = await client.query<{ id: string }>(`select id from templates where purge_at<=$1
         order by purge_at,id for update skip locked limit $2`, [now, size]);
-      let templateCount = 0;
-      for (const template of templates.rows) templateCount += (await client.query("delete from templates where id=$1 and purge_at<=$2", [template.id, now])).rowCount ?? 0;
+      const templateIds = templates.rows.map(({ id }) => id);
+      const templateCount = templateIds.length
+        ? (await client.query("delete from templates where id=any($1::uuid[]) and purge_at<=$2", [templateIds, now])).rowCount ?? 0
+        : 0;
       await client.query("commit");
       await this.#pool.query(`update lifecycle_purge_runs set status='success',finished_at=$2,resource_count=$3,template_count=$4,account_count=$5
         where id=$1`, [runId, new Date(), resourceCount, templateCount, accountCount]);

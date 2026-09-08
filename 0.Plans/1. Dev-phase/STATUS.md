@@ -4,12 +4,12 @@
 
 ```yaml
 current_version: "0.9.1"
-current_phase: "2phase.md"
-state: "complete"
+current_phase: "3phase.md"
+state: "in_progress"
 owner: "Codex"
-started_at: "2026-09-08 10:49 KST"
-updated_at: "2026-09-08 13:14 KST"
-next_action: "0.9.1 Phase 3 성능·장시간 안정성 검증을 시작"
+started_at: "2026-09-08 13:34 KST"
+updated_at: "2026-09-08 13:34 KST"
+next_action: "OPS-0003 성능 budget과 합성 fixture를 확정하고 3회 반복 성능·소크·RC 회귀를 실행"
 ```
 
 상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
@@ -44,7 +44,7 @@ next_action: "0.9.1 Phase 3 성능·장시간 안정성 검증을 시작"
 | 0.7.0 | complete | Phase 1~5 완료 | 0.6.0 완료 |
 | 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
 | 0.9.0 | complete | Phase 1~5 완료 | 0.8.0 완료 |
-| 0.9.1 | in_progress | Phase 1~2 완료 | 0.9.0 완료 |
+| 0.9.1 | in_progress | Phase 1~2 완료, Phase 3 진행 중 | 0.9.0 완료 |
 | 1.0.0 | planned | 없음 | 0.9.1 release gate 통과 |
 
 ## 활성 작업
@@ -53,6 +53,7 @@ next_action: "0.9.1 Phase 3 성능·장시간 안정성 검증을 시작"
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 0.9.1 / Phase 3 | `LC-091-P3-01`~`LC-091-P3-08` | `docs/operations/**`, `docs/runbooks/**`, `scripts/**`, `tests/**`, `.github/workflows/**`, `0.Plans/1. Dev-phase/**` | 0.9.1 Phase 2 완료 SHA `5938089`, 합성 fixture 원칙, 단일 replica rate limiter 제한 | 2026-09-08 13:34 KST | 진행 중 |
 
 2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
 

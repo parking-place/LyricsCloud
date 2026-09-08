@@ -123,6 +123,10 @@ jobs:
         run: pnpm test:freeze:0911
       - name: Verify 0.9.1 security hardening
         run: pnpm test:security:0912
+      - name: Verify 0.9.1 performance contract
+        run: pnpm test:release:0913
+      - name: Measure 0.9.1 three-round performance budgets
+        run: pnpm test:performance:0913
       - name: Build development server production image
         run: docker build --file infra/docker/Dockerfile.web --tag lyricscloud-web-ci:${{ github.sha }} .
       - name: Build production service images
