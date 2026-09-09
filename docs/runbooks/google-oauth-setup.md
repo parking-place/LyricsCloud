@@ -117,7 +117,7 @@ docker compose up --build --wait
 
 한 번 마운트된 뒤에는 `.test_users`를 저장하면 다음 로그인 요청부터 애플리케이션 허용 목록에 자동 반영되므로 허용 메일 변경만으로 컨테이너를 다시 만들 필요가 없다. 파일을 삭제하거나 읽을 수 없게 만들거나 잘못된 메일을 넣으면 인증 설정은 안전하게 실패한다.
 
-Google 공식 문서는 Test users 관리를 Console의 Audience 화면 절차로만 안내하고 공개 관리 API를 문서화하지 않는다. 따라서 이 목록은 자동 반영하지 않으며 [Audience](https://support.google.com/cloud/answer/15549945?hl=ko)에서 같은 계정을 직접 추가하거나 제거한다.
+Google 공식 문서는 Test users 관리를 Console의 Audience 화면 절차로만 안내하고 공개 관리 API를 문서화하지 않는다. 이 목록은 앱 허용 등록과 별개로 자동 반영하지 않는다. 현재 `openid email profile`만 요청할 때는 [Testing 예외](https://support.google.com/cloud/answer/15549945?hl=en)상 Test users 등록이 필수가 아니다. 실제 scope/Audience/조직·계정 제한을 확인하고 추가 scope를 도입하거나 목록 관리가 필요한 경우 Console에서 수동 관리한다.
 
 브라우저에서 기존 로그인 세션이 남아 있다면 먼저 로그아웃하거나 시크릿 창을 열고 다음 주소로 접속한다.
 

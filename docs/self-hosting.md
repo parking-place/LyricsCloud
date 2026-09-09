@@ -57,7 +57,7 @@ Authorized JavaScript origin=https://<APP_ORIGIN_HOST>
 Authorized redirect URI=https://<APP_ORIGIN_HOST>/api/auth/callback
 ```
 
-scope는 `openid email profile`만 사용한다. `.test_users`는 Google Audience 목록과 별개인 LyricsCloud 초대 허용 목록이다. 둘 중 필요한 쪽이 누락되면 세션을 발급하지 않는다. `/api/auth/login`이 Google 승인 화면으로 이동하고 callback이 같은 host인지 확인한 뒤, 허용 계정으로 로그인·보호 route·로그아웃을 직접 확인한다. 자세한 절차는 [Google OAuth 설정](./runbooks/google-oauth-setup.md)을 따른다.
+scope는 `openid email profile`만 사용한다. `.test_users`는 Google Audience 목록과 별개인 LyricsCloud 초대 허용 목록이다. 현재 기본 신원 scope만 요청하면 [Google Testing 예외](https://support.google.com/cloud/answer/15549945?hl=en)상 Test users 등록은 필수가 아니다. 실제 Audience·조직/계정 제한을 확인하고 추가 scope 도입 시 재평가한다. 앱 `.test_users` 허용과 검증된 ID token/issuer+sub 경계는 유지한다. `/api/auth/login`이 Google 승인 화면으로 이동하고 callback이 같은 host인지 확인한 뒤, 허용 계정으로 로그인·보호 route·로그아웃을 직접 확인한다. 자세한 절차는 [Google OAuth 설정](./runbooks/google-oauth-setup.md)을 따른다.
 
 ## 4. secret과 redirect 교체
 

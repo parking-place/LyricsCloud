@@ -6,6 +6,8 @@
 
 현재 버전과 Phase는 반드시 [`STATUS.md`](./STATUS.md)에서 확인합니다. 버전별 문서는 해야 할 일을 정의하고, `STATUS.md`는 지금 무엇을 하고 있는지를 정의합니다.
 
+P6 이후 범위와 추가 기능 검수 변경의 인수 절차는 [후속 계획](../2.Patch-phase/README.md)에 있습니다. 다른 작업자는 공개된 [Future_Feature.md](../2.Patch-phase/Future_Feature.md)를 갱신하며, 현재 실행 상태와 기존 완료 이력은 이 디렉터리에 유지합니다.
+
 ## 계획 기준
 
 - 기능 기준: [`Sketch.md`](../Sketch.md), 특히 49절의 1차 출시 범위
@@ -86,7 +88,7 @@
 
 ## 다섯 Phase의 사용법
 
-각 버전에는 정확히 `1phase.md`부터 `5phase.md`까지 있습니다.
+이 디렉터리의 기존 계획은 `1phase.md`부터 `5phase.md`를 기본으로 작성했고 승인된 1.0.0 P6 이력을 보존합니다. 후속 [2.Patch-phase](../2.Patch-phase/README.md)는 기본 5 Phase이며 의존성/업무량에 따라 더 허용합니다. 1.0.1은 10 Phase입니다.
 
 1. `1phase`: 목표, 계약, 선행 조건, schema·상태·수용 기준을 잠급니다.
 2. `2phase`: 해당 버전의 핵심 도메인·서버·기반 동작을 만듭니다.
