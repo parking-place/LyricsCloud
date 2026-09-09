@@ -3,6 +3,9 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: false,
+  // Projects share one disposable database seeded by globalSetup. Serial workers
+  // prevent desktop/mobile runs from deleting each other's owner fixtures.
+  workers: 1,
   globalSetup: "./tests/e2e/global-setup.ts",
   reporter: "line",
   expect: { toHaveScreenshot: { animations: "disabled", maxDiffPixelRatio: 0.06 } },
