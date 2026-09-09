@@ -18,7 +18,7 @@ LyricsCloud 1.0은 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트
 ## 상태
 
 - 제품 version: `1.0.0`
-- 현재 작업: [1.0.0 Phase 5 — 최종 릴리스](<./0.Plans/1. Dev-phase/1.0.0/5phase.md>)
+- 현재 작업: [1.0.0 Phase 6 — 사후 안정화·검토](<./0.Plans/1. Dev-phase/1.0.0/6phase.md>)
 - 상태 단일 원본: [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>)
 - 프로덕션: 승인된 Phase 2 digest와 schema `0802_lifecycle.sql`로 배포·공개 smoke 완료
 - 예외: 공식 릴리스 서버의 OAuth/DB 자격 증명은 사용자 승인으로 개발 서버와 같은 값을 사용하며, 외부 암호화 backup·24시간 RPO·복원 훈련은 1.0.1+로 유예됨
@@ -58,6 +58,7 @@ production-mode 셀프호스트는 환경 검증, runtime allowlist 권한, HTTP
 | 보안 보고자 | [Security policy](./SECURITY.md), [보안 감사](./docs/security/0.9.1-security-audit.md) |
 | 검토자 | [1.0.0 release notes](./docs/releases/1.0.0.md), [최종 요구사항 추적](./docs/architecture/1.0.0-FINAL-TRACEABILITY.md), [1.0 release manifest](./config/release-manifest.1.0.0.json), [1.0.1+ backlog](./docs/operations/1.0.1-backlog.md), [CHANGELOG](./CHANGELOG.md) |
 | 기여자 | [Agent 지침](./Agent.md), [개발 로드맵](<./0.Plans/1. Dev-phase/README.md>), [ADR 색인](./docs/adr/README.md) |
+| 후속 개발 검토자 | [후속 계획·읽는 순서](./0.Plans/2.Patch-phase/README.md), [추가 후보 129개](./0.Plans/2.Patch-phase/Future_Feature.md), [검수 변경 인수 절차](./0.Plans/2.Patch-phase/FUTURE-INTAKE.md), [계획 인수 검토표](./0.Plans/2.Patch-phase/REVIEW-CHECKLIST.md) |
 
 ## 데이터와 개인정보 경계
 
@@ -77,3 +78,7 @@ production-mode 셀프호스트는 환경 검증, runtime allowlist 권한, HTTP
 | `docs/` | 사용자·셀프호스트·ADR·보안·운영 runbook |
 | `scripts/` | 검증·migration·배포 보조 명령 |
 | `0.Plans/` | 보호된 기획·목업·기술 결정과 Phase 상태 |
+
+## 후속 계획과 현재 구현 구분
+
+1.0.1은 10 Phase로 계획하며 긴급 베타 CLI는 P2에 배정했다. 해시 test-user·신규 베타 가입·로고/버전 표시·UI 수정은 실제 인수 전 현재 기능으로 안내하지 않는다. 후속 사전·폰트·다사용자 동시 편집/presence·디자인·다섯 OS 개발안은 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에서 확인한다. 현재 실행 상태는 1.0.0 P6 review이며 이 계획 게시로 제품 버전을 변경하지 않는다.

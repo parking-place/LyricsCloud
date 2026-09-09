@@ -14,9 +14,13 @@
 6. 현재 버전 폴더의 `1phase.md`부터 현재 Phase까지
 7. 작업 경로에 더 가까운 `AGENTS.md`가 있다면 그 지침
 
+후속 기능을 검토하거나 P6 이후 작업을 인수할 때는 [후속 계획 안내](./0.Plans/2.Patch-phase/README.md)를 읽습니다. 그 폴더의 STATUS는 계획 상태이며, P6 인수 전 실행 상태 원본은 위 기존 STATUS입니다.
+
 기준이 충돌하면 체크 완료된 구현 결정이 기술 방향을 정하고, `Sketch.md`가 기능 범위를 정하며, 페이지 README와 정적 목업이 화면 구성과 상태 표현을 정합니다. 아키텍처는 `ADR-*`, 사용자 동작은 `PROD-*`, 출시·운영 정책은 `OPS-*`의 승인 기록을 따르며 해결되지 않는 충돌은 해당 결정 또는 사용자 승인을 받기 전까지 코드로 고정하지 않습니다.
 
 ## 2. 현재 작업 범위 확인
+
+후속 번호와 배분은 [VERSIONING](./0.Plans/2.Patch-phase/VERSIONING.md)을 따릅니다. **major는 사용자 명시 지시 전까지 1 고정**이며 minor/patch는 다자리 정수입니다. 현재 제품 단계의 변경은 다음 가용 patch를 우선하고 새 OS·기능·UI·자릿수로 minor를 자동 올리지 않습니다. 각 버전은 기본 5 Phase이며 의존성·업무량에 따라 더 둘 수 있습니다. 1.0.1은 10 Phase, 긴급 CLI는 P2이며 빈 Phase로 수를 채우지 않습니다. 이미 발행된 버전·Git·migration 이력은 보존합니다.
 
 - `STATUS.md`의 `current_version`, `current_phase`, `state`를 단일 진행 상태 원본으로 사용합니다.
 - 시작 전 담당 Agent, 시작 시각, 수정할 경로를 `STATUS.md`의 활성 작업 표에 기록합니다.
@@ -43,7 +47,7 @@
 - 가사 편집은 CodeMirror 6을 기준으로 합니다.
 - 온라인 우선 PWA와 계정별 로컬 초안 복구를 제공합니다.
 - 검색은 PostgreSQL의 정확·부분 문자열 검색을 우선합니다.
-- 현재 계획은 같은 사용자의 여러 기기·탭만 자동 병합하고 다른 사용자 공유를 제외합니다. `ADR-0004`가 Accepted 되기 전에는 이 해석을 구현으로 고정하지 않습니다.
+- 현재 1.0.0 실행 범위는 같은 사용자의 여러 기기·탭 자동 병합입니다. 다사용자 공동 편집·보기·presence/cursor는 후속 1.1.x 계획에서 별도 계약과 인수로 확장합니다. `ADR-0004`가 Accepted 되기 전에는 이 해석을 구현으로 고정하지 않습니다.
 - 수정 기록, 휴지통, 인프라 백업을 서로 다른 복구 계층으로 유지합니다.
 - 확정되지 않은 인증·ORM·CRDT 서버·프록시·관측 도구는 승인된 ADR 없이 교체하거나 추가하지 않습니다.
 
@@ -78,14 +82,16 @@
 
 ## 8. 여러 Agent 협업
 
-- 시작 전에 활성 작업 표에서 파일 소유권이 겹치지 않는지 확인합니다.
-- 가능하면 화면, DB, 테스트처럼 파일 경계가 분명한 단위로 병렬화합니다.
-- 공통 타입이나 schema를 바꿀 Agent를 먼저 정하고 소비자는 해당 변경을 기준으로 작업합니다.
-- 다른 Agent의 미완성 변경을 정리한다는 이유로 삭제하거나 덮어쓰지 않습니다.
-- 충돌이 예상되면 상태 문서에 의존성을 기록하고 담당자에게 인계합니다.
-- 완료 시 변경 파일, migration, 실행한 검증, 남은 위험을 인계 기록에 남깁니다.
+- 현재 계획 정비는 문서 담당자 한 명이 작성하고 부모는 원본 처리·기술 출처·Git/PR을 맡습니다.
+- 1.0.1 P1 실제 구현 착수 뒤 난이도와 파일 경계에 따라 실익 있는 독립 작업만 여러 서브 에이전트에 위임할 수 있습니다. 어려운 코딩·큰 초안과 통합 판단은 부모가 맡습니다.
+- 지정 `astra_worker`는 조사·구현·리뷰, `luna_runner`는 입력·명령·완료 조건이 확정된 실행만 맡습니다. 사용자가 지정한 model/effort를 덮어쓰지 않습니다.
+- 한 에이전트에 한 결과와 명확한 cwd·파일/명령·목표·완료 조건을 줍니다. 기본 fork_context=false/fork_turns=none이며 중첩·자동 체인·중복 조사는 하지 않습니다.
+- 파일당 한 작성자와 공유 타입 소유자를 정합니다. 타인의 미완성 변경·프로세스·worktree를 건드리지 않고 기존 에이전트·성공 결과를 재사용합니다.
+- 부모는 인계와 최종 diff를 확인하고 성공한 동일 검증을 처음부터 반복하지 않습니다. 변경 파일·실행 증거·남은 실제 환경/승인 gate를 기록합니다.
 
 ## 9. 검증과 완료 처리
+
+**모든 push 직전과 각 Phase 완료 시** [Future 계획 검수 인수](./0.Plans/2.Patch-phase/FUTURE-INTAKE.md)를 한 번 수행한다. 저장소 전역의 tracked·untracked·hidden Future 문서를 rg/Git으로 발견하고, 이동·새 내용·체크 변경을 마지막 인수 commit/blob과 대조한다. 원본·백업·중복과 현행 입력을 구분하며 비공개/ignored 자료를 자동 공개하거나 강제 add하지 않는다. 상세 배정·충돌·중복 처리 기록은 연결 문서 한 곳에 둔다.
 
 - Phase 문서의 검증 명령과 수용 기준을 모두 통과해야 완료로 표시합니다.
 - 실행하지 못한 검증을 통과한 것으로 기록하지 않습니다.
@@ -97,7 +103,7 @@
 - 개발 서버의 migration과 컨테이너 health, 공개 HTTPS의 live·ready 및 변경 기능 smoke test를 통과하고 배포 SHA를 기록하기 전에는 Phase 완료를 사용자에게 보고하거나 다음 Phase로 이동하지 않습니다.
 - 인증·네트워크·원격 거부로 push하지 못하면 완료로 간주하지 않고 `STATUS.md`를 `review` 또는 실제 원인에 맞는 상태로 남기며, 실패 원인과 재시도 명령을 인계합니다.
 - 개발 서버 배포나 공개 검증에 실패해도 완료로 간주하지 않습니다. 기존 개발 배포를 임의로 지우지 않고 상태를 `review`로 남긴 뒤 실패 단계, 현재·목표 SHA와 안전한 재시도 또는 rollback 절차를 인계합니다.
-- 버전의 다섯 Phase가 모두 완료되고 버전 완료 기준이 충족된 뒤에만 다음 버전으로 이동합니다.
+- 버전에 배정된 모든 Phase가 완료되고 버전 완료 기준이 충족된 뒤에만 다음 버전으로 이동합니다.
 
 ## 10. GitHub 협업
 
@@ -105,16 +111,16 @@
 - 브랜치와 PR 제목에 버전·Phase를 포함합니다.
 - PR 설명에 관련 작업 ID, 기준 화면, DB 영향, 검증 결과, 남은 위험을 씁니다.
 - Phase 완료 시 `git push -u origin <phase-branch>`를 실행하고 원격 commit 반영을 확인합니다. 후속 commit이 생기면 같은 브랜치에 다시 push합니다.
-- 직접 `main`에 push하지 않고 Phase 브랜치와 PR을 사용하며, 필수 검사를 통과한 변경만 병합합니다.
+- Phase 브랜치와 PR을 사용합니다. `main`에는 필수 검사를 통과하고 사용자가 승인한 릴리스 때만 병합하며 직접 push하지 않습니다. 새 브랜치는 `codex/` 접두사를 기본으로 하고 기존 발행 브랜치 이력은 보존합니다.
 - 비밀 값, `.env`, DB 볼륨, 백업, export 묶음, 실제 사용자 자료를 커밋하지 않습니다.
 - 배포·migration·백업 복원처럼 운영 상태를 바꾸는 작업은 승인과 runbook을 확인합니다.
 
-Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SHA 일치 확인 → 필수 CI → version·commit SHA·Dev·Dev-latest tag를 포함한 Docker Hub image 발행 → 개발 서버에 같은 SHA 배포 → 공개 개발 주소 smoke test → 상태·배포 기록`으로 고정합니다. Docker Hub 초기 연결 전에는 발행 job이 비활성 상태임을 완료 보고에 명시하고, 연결 이후에는 발행 실패를 건너뛰지 않습니다. 구체적인 명령과 중단·되돌림 기준은 [`개발 서버 배포 runbook`](./docs/runbooks/development-deploy.md)과 [`Docker Hub 발행 runbook`](./docs/runbooks/dockerhub-publish.md)을 따릅니다.
+Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SHA 일치 확인 → 필수 CI → 해당 시점에 승인된 정책의 SHA 기반 Docker Hub image 발행 → 개발 서버에 같은 SHA 배포 → 공개 개발 주소 smoke test → 상태·배포 기록`으로 고정합니다. Docker Hub 초기 연결 전에는 발행 job이 비활성 상태임을 완료 보고에 명시하고, 연결 이후에는 발행 실패를 건너뛰지 않습니다. 구체적인 명령과 중단·되돌림 기준은 [`개발 서버 배포 runbook`](./docs/runbooks/development-deploy.md)과 [`Docker Hub 발행 runbook`](./docs/runbooks/dockerhub-publish.md)을 따릅니다.
 
 ## 11. 서버 정보와 환경별 운영 권한
 
 - 개발·릴리스 서버의 주소, 계정, 비밀번호, 키, 복구 코드, OAuth 비밀 값은 Git에서 제외된 `.private/`에만 기록합니다.
-- Google OAuth 테스트 계정 메일은 각 환경에서 Git과 Docker build context에서 제외된 `.test_users`에 한 줄에 하나씩 기록합니다. 애플리케이션 허용 목록에는 자동 반영되지만 Google Console의 Test users에는 수동으로 등록합니다. 개발·릴리스 파일을 합치거나 다른 환경으로 복사하지 않습니다.
+- 현재 구현은 환경별 `.test_users`의 평문 메일을 앱 허용 목록으로 사용합니다. 1.0.1 P3은 역추정·정규화·key rotation을 고려한 해시 기반 이행, P4는 검증된 Google identity 이후의 원자 grant 등록을 구현할 계획입니다. 인수 전 해시가 적용됐다고 안내하지 않습니다. 현재 `openid email profile`만 요청하면 Google Testing 예외상 Console Test users 등록은 필수가 아닙니다. 실제 scope/Audience/조직·계정 제한을 확인하고 추가 scope 도입 시 재평가합니다. Google Cloud Console 설정은 앱 허용 등록과 별개이며 앱이 자동 변경하지 않습니다. 파일은 Git/build context에서 제외하고 환경끼리 합치거나 복사하지 않습니다.
 - `.private/`와 `.test_users`의 내용은 `git add -f`로 강제 추가하지 않으며 이슈, PR, 채팅, 터미널 출력, 로그에도 노출하지 않습니다. 작업 중 필요한 경우에도 값 자체가 아니라 설정 여부와 참조 위치만 보고합니다.
 - 개발 서버는 사용자가 요청한 작업 범위 안에서 변경할 수 있습니다.
 - 검증을 마친 Phase commit은 위 완료 순서에 따라 개발 서버에 자동 반영합니다. 서버의 tracked 변경이나 목표 SHA 불일치, 필수 secret 누락이 발견되면 덮어쓰지 않고 중단합니다.
@@ -133,9 +139,8 @@ Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SH
 
 ## 13. Docker Hub image 발행
 
-- GitHub Actions의 전체 `verify` job을 통과한 push만 `parkingplace/lyricscloud-web`, `parkingplace/lyricscloud-collaboration`, `parkingplace/lyricscloud-worker`, `parkingplace/lyricscloud-migrate` 발행 대상으로 사용합니다.
-- 개발 발행은 각 repository에 `<version>`, 전체 `<commit SHA>`, `Dev`, `Dev-latest` 네 tag를 같은 image digest로 발행합니다.
-- 릴리스 발행은 위 네 tag에 `Release`, `latest`를 추가합니다. 사용자의 명시적 릴리스 지시가 있고 수동 workflow가 정확한 `v<VERSION>` Git tag에서 `release=true`로 실행될 때만 허용합니다.
-- `VERSION`, `STATUS.md`의 `current_version`, runtime의 기본 `APP_VERSION`을 함께 갱신합니다. 서로 다르면 image 발행을 중단합니다.
-- Docker Hub token은 GitHub Actions secret `DOCKERHUB_TOKEN`에만 저장하고 저장소, 로컬 문서, 명령 인수나 로그에 기록하지 않습니다. 로그인 username은 Actions variable로 관리합니다.
-- 발행 성공 시 repository별 필수 tag와 digest 일치를 CI 증거로 확인합니다. Docker Hub 연결이 활성화된 뒤에는 발행 실패 상태로 개발 서버 배포나 Phase 완료를 진행하지 않습니다.
+- 현행 발행 도구·workflow는 기존 1.0.0 규칙을 포함합니다. `release-phase-state.mjs`는 1.0.0 P5/P6 기준이므로 1.0.1·가변 Phase·다자리 숫자·새 계획 경로 대응을 [1.0.1 P8](./0.Plans/2.Patch-phase/1.0.1/8phase.md)에서 구현·검증합니다. 문서가 이미 지원한다는 근거가 되지 않습니다.
+- 1.0.1 이후 목표는 [릴리스 정책](./0.Plans/2.Patch-phase/RELEASE-POLICY.md)의 dev/정식 tag 분리입니다. 정식 release에서는 서비스별 `Release`, `latest`, `Release-latest`와 immutable version/SHA가 같은 digest를 가리켜야 합니다. dev push는 정식 tag를 이동시키지 않습니다.
+- 이 문서 개정은 기존 workflow 실행·tag 이동·공용 채널 발행을 승인하지 않습니다. P6 candidate 격리와 기존 발행 이력을 보존합니다.
+- `VERSION`, 실행 STATUS, runtime metadata와 발행 SHA의 일치는 실제 구현/릴리스 Phase에서 확인합니다. 계획 작성만으로 해당 값을 변경하지 않습니다.
+- Docker Hub token은 GitHub Actions secret `DOCKERHUB_TOKEN`에 저장하고 로그인 username은 Actions variable로 관리합니다. 실제 값은 저장소·명령 인수·로그에 넣지 않습니다. 필수 CI 및 서비스별 digest 일치가 확인되지 않으면 발행·배포 완료로 처리하지 않습니다.

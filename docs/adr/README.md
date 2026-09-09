@@ -23,3 +23,28 @@
 ADR가 Accepted 되기 전에는 해당 선택에 종속되는 package manifest나 운영 설정을 확정하지 않습니다.
 
 2026-09-04 사용자가 9개 권고안을 검토 후 계속 진행하도록 승인하여 모두 `Accepted`로 확정했습니다.
+
+## 후속 계획의 제안
+
+다음 문서는 모두 `Proposed`이며, 승인·소비 Phase는 [후속 결정 색인](../../0.Plans/2.Patch-phase/Decision-Ownership.md)에서 확인합니다.
+
+- [ADR-NF-001](./ADR-NF-001-beta-access.md): 베타 가입·해시 seed·접근권 부여
+- [ADR-NF-002](./ADR-NF-002-external-metadata.md): 외부 메타데이터
+- [ADR-NF-003](./ADR-NF-003-sharing.md): 공유 인가
+- [ADR-NF-004](./ADR-NF-004-windows-native.md): Windows 네이티브 개발안
+- [ADR-NF-005](./ADR-NF-005-android-native.md): Android 네이티브 개발안
+
+
+- [ADR-NF-006 — 사전 제공 경로·권리·조회 경계](./ADR-NF-006-dictionary-provider.md): Proposed, 1.0.13 P1.
+
+
+- [ADR-NF-007 — 웹폰트 자산·로딩·라이선스](./ADR-NF-007-web-fonts.md): Proposed, 1.0.14 P1.
+
+
+- [ADR-NF-008 — Linux 기술·패키징·수명주기](./ADR-NF-008-linux-platform.md): Proposed, 1.1.12 P1~P3.
+
+
+- [ADR-NF-009 — macOS 기술·패키징·수명주기](./ADR-NF-009-macos-platform.md): Proposed, 1.1.13 P1~P3.
+
+
+- [ADR-NF-010 — iOS 기술·패키징·수명주기](./ADR-NF-010-ios-platform.md): Proposed, 1.1.14 P1~P3.
