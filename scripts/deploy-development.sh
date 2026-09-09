@@ -49,32 +49,36 @@ runtime_secret_directory=.private/runtime
 runtime_secret_file=$runtime_secret_directory/auth_allowed_emails
 runtime_keyring_file=$runtime_secret_directory/auth_allowlist_hmac_keyring
 runtime_beta_index_file=$runtime_secret_directory/web_beta_code_index_key
-install -d -m 700 "$runtime_secret_directory"
-runtime_secret_temporary=$(mktemp "$runtime_secret_directory/auth_allowed_emails.XXXXXX")
-runtime_keyring_temporary=$(mktemp "$runtime_secret_directory/auth_allowlist_hmac_keyring.XXXXXX")
-runtime_beta_index_temporary=$(mktemp "$runtime_secret_directory/web_beta_code_index_key.XXXXXX")
-cleanup_runtime_secret_temporaries() {
-  [ -z "${runtime_secret_temporary:-}" ] || unlink "$runtime_secret_temporary" 2>/dev/null || true
-  [ -z "${runtime_keyring_temporary:-}" ] || unlink "$runtime_keyring_temporary" 2>/dev/null || true
-  [ -z "${runtime_beta_index_temporary:-}" ] || unlink "$runtime_beta_index_temporary" 2>/dev/null || true
+stage_runtime_auth_secrets() {
+  local runtime_secret_temporary runtime_keyring_temporary runtime_beta_index_temporary
+  install -d -m 700 "$runtime_secret_directory"
+  runtime_secret_temporary=$(mktemp "$runtime_secret_directory/auth_allowed_emails.XXXXXX")
+  runtime_keyring_temporary=$(mktemp "$runtime_secret_directory/auth_allowlist_hmac_keyring.XXXXXX")
+  runtime_beta_index_temporary=$(mktemp "$runtime_secret_directory/web_beta_code_index_key.XXXXXX")
+  cleanup_runtime_secret_temporaries() {
+    [ -z "${runtime_secret_temporary:-}" ] || unlink "$runtime_secret_temporary" 2>/dev/null || true
+    [ -z "${runtime_keyring_temporary:-}" ] || unlink "$runtime_keyring_temporary" 2>/dev/null || true
+    [ -z "${runtime_beta_index_temporary:-}" ] || unlink "$runtime_beta_index_temporary" 2>/dev/null || true
+  }
+  trap cleanup_runtime_secret_temporaries EXIT
+  install -o 65532 -g 65532 -m 400 .test_users "$runtime_secret_temporary"
+  install -o 65532 -g 65532 -m 400 "$allowlist_keyring" "$runtime_keyring_temporary"
+  install -o 65532 -g 65532 -m 400 "$beta_index_key" "$runtime_beta_index_temporary"
+  mv "$runtime_secret_temporary" "$runtime_secret_file"
+  mv "$runtime_keyring_temporary" "$runtime_keyring_file"
+  mv "$runtime_beta_index_temporary" "$runtime_beta_index_file"
+  runtime_secret_temporary=
+  runtime_keyring_temporary=
+  runtime_beta_index_temporary=
+  trap - EXIT
+  if [ "$(stat -c '%u:%g:%a' "$runtime_secret_file")" != "65532:65532:400" ] \
+    || [ "$(stat -c '%u:%g:%a' "$runtime_keyring_file")" != "65532:65532:400" ] \
+    || [ "$(stat -c '%u:%g:%a' "$runtime_beta_index_file")" != "65532:65532:400" ]; then
+    printf 'Development runtime auth secret ownership verification failed.\n' >&2
+    exit 6
+  fi
 }
-trap cleanup_runtime_secret_temporaries EXIT
-install -o 65532 -g 65532 -m 400 .test_users "$runtime_secret_temporary"
-install -o 65532 -g 65532 -m 400 "$allowlist_keyring" "$runtime_keyring_temporary"
-install -o 65532 -g 65532 -m 400 "$beta_index_key" "$runtime_beta_index_temporary"
-mv "$runtime_secret_temporary" "$runtime_secret_file"
-mv "$runtime_keyring_temporary" "$runtime_keyring_file"
-mv "$runtime_beta_index_temporary" "$runtime_beta_index_file"
-runtime_secret_temporary=
-runtime_keyring_temporary=
-runtime_beta_index_temporary=
-trap - EXIT
-if [ "$(stat -c '%u:%g:%a' "$runtime_secret_file")" != "65532:65532:400" ] \
-  || [ "$(stat -c '%u:%g:%a' "$runtime_keyring_file")" != "65532:65532:400" ] \
-  || [ "$(stat -c '%u:%g:%a' "$runtime_beta_index_file")" != "65532:65532:400" ]; then
-  printf 'Development runtime auth secret ownership verification failed.\n' >&2
-  exit 6
-fi
+stage_runtime_auth_secrets
 
 environment_file=$(mktemp)
 trap 'unlink "$environment_file" 2>/dev/null || true' EXIT
@@ -108,6 +112,9 @@ trap - EXIT
 "${compose[@]}" config --quiet
 "${compose[@]}" build
 "${compose[@]}" run --rm migrate
+# Re-stage immediately before container replacement. Compose file secrets are
+# bind mounts, so a missing source must never leave only part of the stack up.
+stage_runtime_auth_secrets
 "${compose[@]}" up -d --no-build --remove-orphans
 
 for _attempt in $(seq 1 30); do
