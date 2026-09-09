@@ -68,8 +68,16 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .pwa-message { flex-basis: 100%; white-space: normal; }
 }
 
-.brand { display: inline-flex; align-items: center; gap: .7rem; font-size: .78rem; font-weight: 800; letter-spacing: .15em; white-space: nowrap; }
-.brand-mark { display: inline-grid; width: 2rem; height: 2rem; place-items: center; border-radius: .58rem; background: var(--acid); color: var(--acid-ink); font-size: 1rem; font-weight: 900; letter-spacing: -.04em; box-shadow: 0 0 28px rgb(200 255 61 / 15%); }
+.brand { display: inline-flex; align-items: center; gap: .7rem; min-width: 0; white-space: nowrap; }
+.brand-mark { position: relative; display: inline-grid; width: 2rem; height: 2rem; flex: 0 0 2rem; place-items: center; filter: drop-shadow(0 0 14px rgb(200 255 61 / 15%)); }
+.brand-mark img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.brand-mark-dark { display: none !important; }
+html[data-theme="dark"] .brand-mark-light { display: none; }
+html[data-theme="dark"] .brand-mark-dark { display: block !important; }
+.brand-copy { display: grid; gap: .13rem; min-width: 0; }
+.brand-name { font-size: .78rem; font-weight: 800; letter-spacing: .15em; }
+.brand-build { color: var(--subtle); font-size: .61rem; font-weight: 700; letter-spacing: .04em; text-transform: none; }
+.brand-build::after { content: var(--lc-build-label); }
 .eyebrow { margin: 0; color: var(--acid); font-size: .72rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
 
 /* Authentication */
@@ -137,7 +145,7 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
 .logout-button { min-height: 2.65rem; display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); align-items: center; gap: .45rem; padding: .55rem .7rem; border: 0; border-radius: .6rem; background: transparent; color: var(--muted); text-align: left; cursor: pointer; }
 .logout-button:hover { background: var(--surface); color: var(--ink); }
 .logout-button:disabled, .top-logout:disabled, .mobile-logout:disabled { opacity: .55; cursor: wait; }
-.workspace-shell.is-collapsed .brand > span:last-child, .workspace-shell.is-collapsed .nav-label, .workspace-shell.is-collapsed .nav-text { visibility: hidden; }
+.workspace-shell.is-collapsed .brand-copy, .workspace-shell.is-collapsed .nav-label, .workspace-shell.is-collapsed .nav-text { visibility: hidden; }
 .workspace-shell.is-collapsed .rail-toggle { align-self: center; }
 .main-shell { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 4.5rem auto minmax(0, 1fr); }
 .topbar { min-width: 0; display: flex; align-items: center; gap: 1rem; padding: 0 clamp(1.25rem, 3vw, 3rem); border-bottom: 1px solid var(--line); background: rgb(9 11 14 / 88%); backdrop-filter: blur(18px); }
@@ -806,7 +814,8 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .workspace-shell.has-account-error .mobile-bottom-nav { grid-row: 5; }
   .topbar { display: none; }
   .mobile-header { grid-row: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; padding: max(.85rem, var(--lc-safe-top)) max(1rem, var(--lc-safe-right)) .85rem max(1rem, var(--lc-safe-left)); border-bottom: 1px solid var(--line); background: #0c0f13; }
-  .mobile-header .brand { font-size: .7rem; }
+  .mobile-header .brand-name { font-size: .7rem; }
+  .mobile-header .brand-build { font-size: .56rem; }
   .mobile-header .brand-mark { width: 1.8rem; height: 1.8rem; }
   .mobile-account { min-width: 0; max-width: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: clamp(.25rem, 2vw, .55rem); }
   .mobile-account .avatar { display: none; }
@@ -978,12 +987,12 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 
   .auth-layout { padding-inline: .85rem; }
   .auth-copy { padding-top: 2.3rem; }
   .auth-card { padding: 1rem; }
-  .brand { letter-spacing: .11em; }
+  .brand-name { letter-spacing: .11em; }
   .workspace-content { padding-inline: 1rem; }
   .private-badge { display: none; }
   .mobile-account { gap: .35rem; }
   .mobile-logout { padding-inline: .5rem; }
-  .mobile-header .brand > span:last-child, .mobile-account .avatar { display: none; }
+  .mobile-header .brand-copy, .mobile-account .avatar { display: none; }
   .songs-heading { display: grid; gap: .7rem; }
   .new-song-link { font-size: .72rem; }
   .new-song-link { width: fit-content; margin-left: 0; }

@@ -2,7 +2,9 @@ import "@lyricscloud/ui/tokens.css";
 import "./styles.css";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { readRuntimeConfig } from "@lyricscloud/config";
+import { formatBuildLabel } from "../lib/build-metadata.js";
 import { resolvePageThemePreference } from "../lib/page-auth.js";
 
 export const metadata: Metadata = {
@@ -11,7 +13,7 @@ export const metadata: Metadata = {
   applicationName: "LyricsCloud",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "LyricsCloud", statusBarStyle: "black-translucent" },
-  icons: { icon: "/icons/lyricscloud-192-0903.svg", apple: "/icons/lyricscloud-192-0903.svg" }
+  icons: { icon: "/icons/lyricscloud-favicon.svg", apple: "/icons/lyricscloud-mark-light.svg" }
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
@@ -20,8 +22,10 @@ const themeBootstrap = `(function(){var r=document.documentElement,p=r.dataset.t
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const themePreference = await resolvePageThemePreference();
-  return <html lang="ko" data-theme-preference={themePreference} suppressHydrationWarning>
+  const runtime = readRuntimeConfig(process.env);
+  const buildLabel = formatBuildLabel({ version: runtime.appVersion, channel: runtime.appChannel, phase: runtime.appPhase });
+  return <html lang="ko" data-theme-preference={themePreference} style={{ "--lc-build-label": `"${buildLabel}"` } as CSSProperties} suppressHydrationWarning>
     <head><script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeBootstrap }} /></head>
-    <body>{children}</body>
+    <body><span id="runtime-build-label" className="sr-only">{buildLabel}</span>{children}</body>
   </html>;
 }
