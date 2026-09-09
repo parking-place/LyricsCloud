@@ -39,6 +39,7 @@ describe("runtime configuration", () => {
 });
 
 describe("auth configuration", () => {
+  const syntheticHmacKey = () => Buffer.from(Array.from({ length: 32 }, (_, index) => index)).toString("base64url");
   const valid = {
     NODE_ENV: "test",
     APP_ORIGIN: "http://localhost:8080",
@@ -68,7 +69,7 @@ describe("auth configuration", () => {
   });
 
   it("matches environment-bound HMAC records across a bounded old/new key rotation", () => {
-    const oldKey = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8";
+    const oldKey = syntheticHmacKey();
     const newKey = Buffer.alloc(32, 9).toString("base64url");
     const record = JSON.stringify({ formatVersion: 1, environment: "development", purpose: "auth-bootstrap",
       normalizationVersion: "nfkc-trim-lower-v1", kid: "old-kid",
@@ -90,7 +91,7 @@ describe("auth configuration", () => {
   });
 
   it("fails closed for cross-environment records, missing kids, and expired rotation keys", () => {
-    const key = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8";
+    const key = syntheticHmacKey();
     const baseRecord = { formatVersion: 1, environment: "development", purpose: "auth-bootstrap",
       normalizationVersion: "nfkc-trim-lower-v1", kid: "old-kid",
       digest: "130c6d19a930ce952d2c36f2bc2526585f8d3eb33ad55893c20a74cd82d107cc", state: "active" };
