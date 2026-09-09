@@ -1,8 +1,8 @@
 # 후속 기능 계획 상태
 
 ```yaml
-plan_state: "review"
-plan_owner: "ChatGPT"
+plan_state: "active"
+plan_owner: "Codex"
 prepared_at: "2026-09-09"
 reference_sha: "7448f47b0dbbc51ab3bcda13876b63ef72c102d2"
 planning_root: "0.Plans/2.Patch-phase"
@@ -11,6 +11,8 @@ runtime_status_source: "0.Plans/1. Dev-phase/STATUS.md"
 next_planned_version: "1.0.1"
 next_planned_phase: "1.0.1/1phase.md"
 prerequisite: "로컬 Codex의 P6 실제 최종 SHA·결함·검증 인수"
+execution_authorized_by_user_request: true
+release_server_authorized_after_all_phases: true
 ```
 
 ## 단일 상태 원본
