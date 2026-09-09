@@ -1,0 +1,61 @@
+# Development server override: run the immutable image content without host source or dependency mounts.
+services:
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.service
+      target: migrate
+    command: ["/app/migrate.mjs"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    volumes: !reset []
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.web
+    command: ["/app/apps/web/server.js"]
+    environment:
+      NODE_ENV: production
+      AUTH_ALLOWLIST_FORMAT: hmac-v1
+      AUTH_ALLOWLIST_ENVIRONMENT: development
+      AUTH_ALLOWLIST_HMAC_KEYRING_FILE: /run/secrets/auth_allowlist_hmac_keyring
+    secrets:
+      - auth_allowed_emails
+      - auth_allowlist_hmac_keyring
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes: !reset []
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+  collaboration:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.service
+      target: collaboration
+    command: ["/app/collaboration.mjs"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes: !reset []
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3001/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.service
+      target: worker
+    command: ["/app/worker.mjs"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    volumes: !reset []
+    healthcheck:
+      test: ["CMD", "/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3002/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+
+secrets:
+  auth_allowed_emails:
+    file: ./.private/runtime/auth_allowed_emails
+  auth_allowlist_hmac_keyring:
+    file: ./.private/runtime/auth_allowlist_hmac_keyring

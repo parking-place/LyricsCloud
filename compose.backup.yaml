@@ -1,0 +1,43 @@
+services:
+  backup:
+    profiles: [backup]
+    build:
+      context: .
+      dockerfile: infra/backup/Dockerfile
+    init: true
+    restart: "no"
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      APP_VERSION: ${APP_VERSION:-1.0.1}
+      BUILD_ID: ${BUILD_ID:-local}
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: ${POSTGRES_USER:?POSTGRES_USER must be set}
+      PGDATABASE: ${POSTGRES_DB:?POSTGRES_DB must be set}
+      PGPASSWORD_FILE: /run/secrets/postgres_backup_password
+      AGE_RECIPIENT_FILE: /run/secrets/backup_age_recipient
+      BACKUP_REPOSITORY_DIR: /backup/repository
+      BACKUP_STORAGE_ID: ${BACKUP_STORAGE_ID:?BACKUP_STORAGE_ID must be set}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+      BACKUP_MAX_AGE_HOURS: ${BACKUP_MAX_AGE_HOURS:-24}
+      BACKUP_MIN_FREE_BYTES: ${BACKUP_MIN_FREE_BYTES:-67108864}
+    secrets:
+      - postgres_backup_password
+      - backup_age_recipient
+    volumes:
+      - type: bind
+        source: ${BACKUP_REPOSITORY_PATH:?BACKUP_REPOSITORY_PATH must be a mounted external repository}
+        target: /backup/repository
+    networks: [app]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+secrets:
+  postgres_backup_password:
+    file: ${BACKUP_POSTGRES_PASSWORD_FILE:?BACKUP_POSTGRES_PASSWORD_FILE must be set}
+  backup_age_recipient:
+    file: ${BACKUP_AGE_RECIPIENT_FILE:?BACKUP_AGE_RECIPIENT_FILE must be set}

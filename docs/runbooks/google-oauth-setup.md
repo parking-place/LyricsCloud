@@ -1,0 +1,186 @@
+# Google OAuth 개발 설정
+
+실제 자격 증명은 저장소나 채팅에 남기지 않고 대상 호스트의 비공개 환경 파일에만 둔다. 원칙적으로 환경별 OAuth client·DB·세션 secret과 `.test_users`를 분리한다. 현재 공식 릴리스 서버는 사용자의 명시적 승인 예외로 개발 서버의 Google OAuth client·DB 자격 증명·허용 목록을 재사용하지만, 값 자체는 계속 Git과 Docker image에서 제외한다. 릴리스 session secret은 별도로 유지한다.
+
+1. Google Cloud Console에서 프로젝트를 선택하고 OAuth 동의 화면을 구성한다. 현재 요청 범위인 `openid email profile`만 사용하면 Testing 상태에서도 Google 테스트 사용자 등록은 필수가 아니다. 다른 scope를 추가하면 아래 Audience 정책을 다시 확인한다.
+2. OAuth client 유형을 `Web application`으로 만들고 개발용 승인 redirect URI를 `http://localhost:8080/api/auth/callback`으로 등록한다.
+3. 저장소 루트에 파일이 없을 때만 `.env.example`을 `.env`로, `.test_users.example`을 `.test_users`로 복사한다. 기존 파일의 DB 비밀번호·세션 비밀 값은 보존하고 OAuth 자리 표시자만 교체한다.
+4. `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`에는 Web client 값을 넣는다.
+5. `SESSION_SECRET`이 아직 자리 표시자인 경우에만 최소 32바이트의 새 무작위 값을 넣는다. 예: `openssl rand -base64 48`의 출력.
+6. `.test_users`에는 로그인 허용 계정을 한 줄에 하나씩 넣고 [P3 HMAC 전환](./1.0.1-phase3-hmac-allowlist.md)을 수행한다. 이 목록 밖의 검증된 Google 계정에는 세션이 발급되지 않는다.
+7. [P3 HMAC 전환](./1.0.1-phase3-hmac-allowlist.md)에 따라 allowlist와 keyring runtime copy를 준비한다.
+8. `docker compose config --quiet`과 `docker compose up --build --wait`를 실행한 뒤 `http://localhost:8080/api/auth/login`에서 확인한다.
+
+### 현재 Windows 로컬 작업 사본
+
+개인 Google Cloud 프로젝트에서 `Web application` 클라이언트를 사용한다. `Authorized JavaScript origins`는 `http://localhost:8080`, `Authorized redirect URIs`는 **`http://localhost:8080/api/auth/callback`**이다. 로그인할 계정은 로컬 `.test_users`에 등록한다. 요청 범위가 `openid email profile`뿐이므로 Google Audience 테스트 사용자 등록은 선택 사항이다. 원 개발자의 클라이언트나 서버 설정을 복사하지 않는다. [Google OpenID Connect 설정](https://developers.google.com/identity/openid-connect/openid-connect#settingupop), [Testing 예외 정책](https://support.google.com/cloud/answer/15549945?hl=en)
+
+현재 작업 사본은 `.env`의 DB와 세션 값이 준비돼 있다. `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`만 해당 로컬 파일에서 교체하고 `.test_users`에 계정 주소를 적는다. 값을 채팅에 붙이지 않는다. 현재 실행 중인 별도 Compose 프로젝트에는 다음 명령으로 적용한다.
+
+```powershell
+docker compose -p lyricscloud-local -f compose.yaml -f .private/compose.local.yaml config --quiet
+docker compose -p lyricscloud-local -f compose.yaml -f .private/compose.local.yaml up -d --no-build --no-deps --force-recreate web
+```
+
+이 명령은 기존 DB와 다른 개인 컨테이너를 유지한다. 로컬 소스는 이미지에 복사되어 있으므로 코드 변경을 적용할 때는 해당 개발 이미지를 다시 빌드해야 한다. OAuth 환경변수만 바꿀 때는 web 재생성으로 충분하다. 실제 로그인·callback·보호 화면·로그아웃을 확인하기 전에는 Google OAuth 검증 완료로 기록하지 않는다.
+
+## 허용 메일 추가
+
+Google의 테스트 사용자 목록과 LyricsCloud의 로그인 허용 목록은 서로 독립적이다. 현재 신원 scope만 요청하는 구성에서는 Google 테스트 사용자 등록이 선택 사항이고, LyricsCloud `.test_users` 등록은 필수다.
+
+| 허용 목록 | 위치 | 역할 |
+|---|---|---|
+| Google 테스트 사용자 | Google Auth Platform의 `Audience` | Testing 상태의 OAuth 앱을 시험할 Google 계정 관리 |
+| LyricsCloud 허용 메일 | 대상 서버의 저장소 루트 `.test_users` | Google 인증 후 LyricsCloud 서버가 세션을 발급할 계정 제한 |
+
+Google 테스트 사용자 등록만으로 LyricsCloud 로그인이 허용되지는 않는다. 반대로 `.test_users`에만 추가하면 Google 프로젝트 상태나 조직 정책에 따라 OAuth 승인이 차단될 수 있다.
+
+### 1. Google Auth Platform에 테스트 사용자 추가
+
+1. [Google Cloud Console](https://console.cloud.google.com/)에서 OAuth client를 만든 개발 프로젝트를 선택한다. 다른 프로젝트를 선택하면 사용자 목록을 추가해도 현재 client에는 적용되지 않는다.
+2. 왼쪽 메뉴 또는 상단 검색에서 `Google Auth Platform`을 연다.
+3. `Audience`를 선택한다. 예전 Console에서는 `APIs & Services` → `OAuth consent screen` → `Test users`로 표시될 수 있다.
+4. User type이 `External`, Publishing status가 `Testing`인지 확인한다.
+5. `Test users` 영역에서 `Add users`를 누른다.
+6. 실제 로그인 시험에 사용할 Google 계정의 이메일 주소를 입력한다. 여러 명이면 입력란에 각각 추가한다.
+7. `Save`를 누른 뒤 Test users 목록에 해당 주소가 표시되는지 확인한다.
+
+Google의 현재 정책에서 Testing 상태는 일반적으로 등록한 테스트 사용자를 대상으로 한다. 다만 LyricsCloud처럼 기본 신원 scope인 `openid`, `email`, `profile`만 요청하는 경우에는 테스트 사용자 목록 제한·경고·7일 승인 만료의 예외가 적용된다. 협업 환경에서 개발 계정을 따로 관리하고 싶다면 Test users에 등록할 수 있다. Google Workspace 계정은 조직 관리자가 외부 앱을 차단하면 목록에 있어도 승인되지 않을 수 있다.
+
+`Test users`가 보이지 않으면 다음을 확인한다.
+
+- `Internal` 앱이면 같은 Google Workspace 조직 사용자만 허용되며 별도 Test users 목록이 없을 수 있다.
+- `In production`으로 게시된 앱에는 Testing용 사용자 목록이 제공되지 않는다.
+- 프로젝트를 여러 개 사용한다면 `.env`의 `GOOGLE_CLIENT_ID`가 속한 프로젝트를 선택했는지 확인한다.
+
+### 2. LyricsCloud `.test_users`에 같은 메일 추가
+
+최초 bootstrap 때만 저장소 루트의 `.test_users`를 열고 같은 주소를 한 줄에 하나씩 추가한다. 일반 셀프호스트 환경에서는 이 파일을 대상 서버 전용으로 유지한다. 현재 공식 릴리스 서버는 사용자 승인 예외로 개발 허용 목록과 같은 값을 사용하지만 환경 결합 HMAC과 keyring은 별도로 만든다.
+
+```text
+writer@example.com
+```
+
+여러 계정을 허용할 때는 줄을 나눈다. 빈 줄과 `#`으로 시작하는 주석은 무시된다.
+
+```text
+# 현재 환경의 베타 사용자
+writer@example.com
+reviewer@example.com
+```
+
+프로그램은 앞뒤 공백, 대소문자와 유니코드 표기 차이를 정규화하지만 Gmail 주소의 점이나 `+별칭`을 같은 계정으로 간주하지 않는다. Google이 반환할 실제 이메일 주소를 그대로 등록한다.
+
+```text
+# 권장: 로그인할 실제 주소를 정확히 기록
+lyricscloud.tester@gmail.com
+
+# 아래 주소는 위 주소와 별개 문자열로 판정될 수 있음
+lyricscloudtester+dev@gmail.com
+```
+
+실제 이메일을 `.test_users.example`, 문서, Issue, commit 또는 채팅에 넣지 않는다. 파일이 Git과 Docker build context에서 제외되는지는 값 자체를 출력하지 않고 다음 명령으로 확인한다.
+
+```bash
+git check-ignore -v .test_users
+grep -Fx '.test_users' .dockerignore
+```
+
+첫 명령에 `.gitignore` 규칙과 `.test_users`가 함께 표시되고 두 번째 명령이 `.test_users`를 반환하면 정상이다.
+
+이전 방식의 `.env` `AUTH_ALLOWED_EMAILS` 값은 다음 스크립트로 실제 주소를 출력하지 않고 한 번만 이관할 수 있다.
+
+```bash
+node scripts/migrate-test-users.mjs
+```
+
+호스트에 Node.js가 없다면 개발 컨테이너에서 실행한다.
+
+```bash
+docker compose run --rm --no-deps --user "$(id -u):$(id -g)" web \
+  node scripts/migrate-test-users.mjs
+```
+
+평문 입력 뒤에는 반드시 [P3 HMAC 전환](./1.0.1-phase3-hmac-allowlist.md)을 수행한다. HMAC 전환 뒤 파일에 평문 주소를 직접 추가하지 않는다. P4의 DB grant 가입 경로가 열리기 전 예외 변경은 암호화 backup을 명시적으로 복원하고 수정한 다음 새 backup 경로로 재전환한다.
+
+### 3. 변경한 허용 목록 적용
+
+최초 설정에서는 Compose 구성을 검사하고 web 컨테이너를 만든다. Compose는 `.private/runtime`의 HMAC allowlist와 keyring을 각각 `/run/secrets` 아래에 읽기 전용으로 마운트한다.
+
+```bash
+docker compose config --quiet
+docker compose up -d --force-recreate web
+```
+
+전체 환경을 아직 시작하지 않았다면 다음 명령을 사용한다.
+
+```bash
+docker compose up --build --wait
+```
+
+개발·릴리스 배포에서는 HMAC JSONL과 keyring의 UID `65532`, mode `400` runtime copy를 함께 갱신한 뒤 web을 재생성한다. key 누락, 환경 불일치, 만료된 레코드뿐인 구성, 잘못된 레코드는 인증 설정을 안전하게 실패시킨다.
+
+Google 공식 문서는 Test users 관리를 Console의 Audience 화면 절차로만 안내하고 공개 관리 API를 문서화하지 않는다. 이 목록은 앱 허용 등록과 별개로 자동 반영하지 않는다. 현재 `openid email profile`만 요청할 때는 [Testing 예외](https://support.google.com/cloud/answer/15549945?hl=en)상 Test users 등록이 필수가 아니다. 실제 scope/Audience/조직·계정 제한을 확인하고 추가 scope를 도입하거나 목록 관리가 필요한 경우 Console에서 수동 관리한다.
+
+브라우저에서 기존 로그인 세션이 남아 있다면 먼저 로그아웃하거나 시크릿 창을 열고 다음 주소로 접속한다.
+
+```text
+http://localhost:8080/api/auth/login
+```
+
+정상적인 허용 계정은 Google callback 후 LyricsCloud 내부 세션을 받는다. Google 인증은 성공했지만 `.test_users`에 없는 계정은 세션을 받지 않고 다음 오류로 종료된다.
+
+```text
+AUTH_NOT_ALLOWED
+```
+
+### 4. 허용 메일 제거
+
+Google 개발 프로젝트에서도 더 이상 시험하지 않을 계정을 제거하려면 `Google Auth Platform` → `Audience` → `Test users`에서 해당 주소를 삭제하고 저장한다. LyricsCloud에서는 대상 서버의 `.test_users`에서 주소를 제거한다. 애플리케이션의 새 로그인에는 다음 요청부터 자동 반영된다.
+
+현재 허용 목록 변경은 새 로그인 세션 발급에 적용된다. 이미 발급된 서버 세션을 즉시 모두 폐기하는 관리자 기능은 이 Phase 범위에 없으므로, 계정을 긴급 차단해야 할 때는 별도 세션 폐기 작업 없이 허용 목록만 수정했다고 끝내지 않는다.
+
+## 문제 해결
+
+- `AUTH_NOT_ALLOWED`: 로그인한 Google 이메일이 대상 서버의 `.test_users` 항목과 정확히 일치하는지 확인한다.
+- Google `access_denied`: Audience 상태, Test users 등록, Google Workspace 조직 정책을 확인한다.
+- 파일 변경이 반영되지 않음: 컨테이너 안의 `AUTH_ALLOWED_EMAILS_FILE`이 `/run/secrets/auth_allowed_emails`인지와 secret mount가 존재하는지만 확인하고 파일 내용은 출력하지 않는다. 최초 연결 전의 컨테이너라면 `docker compose up -d --force-recreate web`을 한 번 실행한다.
+- 다른 프로젝트에 추가함: `.env`의 client ID와 Google Console의 OAuth client ID 끝부분을 비교하되 client secret은 출력하거나 공유하지 않는다.
+
+운영에서는 `APP_ORIGIN`과 redirect URI를 동일한 HTTPS origin으로 바꾸고, Google issuer override를 사용하지 않는다. 자격 증명을 노출했다면 즉시 Google Cloud에서 client secret을 교체하고 session secret 변경 후 기존 세션을 폐기한다.
+
+## 홈랩 개발 서버 값
+
+Cloudflare Tunnel이 구성된 개발 서버에 앱을 배포할 때는 다음 값을 사용한다. 로컬 `localhost` 개발 OAuth client와 섞지 않고 홈랩 개발용 Web application client를 별도로 둔다.
+
+```text
+APP_ORIGIN=https://devlyrics.parkingp.kr
+Authorized JavaScript origin=https://devlyrics.parkingp.kr
+Authorized redirect URI=https://devlyrics.parkingp.kr/api/auth/callback
+Authorized domain=parkingp.kr
+```
+
+JavaScript origin에는 경로와 끝 슬래시를 넣지 않는다. redirect URI에는 `/api/auth/callback`을 포함한다. Tunnel과 TLS 검증은 [`개발 서버 Cloudflare Tunnel과 HTTPS`](./cloudflare-tunnel-setup.md)를 따른다.
+
+## 홈랩 릴리스 서버 값
+
+릴리스 서버의 실제 hostname과 OAuth 값은 Git에서 제외된 `.private/server-inventory.local.md`의 `릴리스 서버` → `Google OAuth` 항목을 단일 원본으로 사용한다. 공개 문서나 `.env.example`에 실제 릴리스 주소와 자격 증명을 복사하지 않는다.
+
+일반 운영 권고는 릴리스용 Google OAuth Web application client를 로컬·개발용 client와 분리하는 것이다. 현재 공식 릴리스 서버는 사용자 승인으로 개발 client를 재사용한다. 같은 client를 쓰더라도 Google Console에 릴리스 origin·redirect를 별도 등록하고 다음 관계를 정확히 유지한다.
+
+```text
+APP_ORIGIN=https://<RELEASE-HOSTNAME>
+Authorized JavaScript origin=https://<RELEASE-HOSTNAME>
+Authorized redirect URI=https://<RELEASE-HOSTNAME>/api/auth/callback
+Authorized domain=parkingp.kr
+```
+
+Google Console에서 값을 변경한 뒤 릴리스 서버의 `.env`와 `.test_users`를 반영하고 앱을 재배포해야 한다. 실제 로그인, callback, 보호 route와 로그아웃이 검증되기 전에는 릴리스 인증 구성이 완료된 것으로 기록하지 않는다. Tunnel 검증은 [`릴리스 서버 Cloudflare Tunnel과 HTTPS`](./release-cloudflare-tunnel-setup.md)를 따른다.
+
+client secret 교체는 Google Console의 새 secret과 대상 호스트 환경 파일을 같은 작업 창에서 반영하고 web만 재생성한다. `SESSION_SECRET` 교체는 기존 세션을 모두 무효화하므로 재로그인 안내와 smoke를 포함한다. redirect host 변경은 새 HTTPS·origin·callback을 추가하고 새 host 로그인 PASS 뒤 이전 redirect를 제거한다. 실제 값은 어떤 명령 출력에도 남기지 않는다.
+
+## 참고
+
+- [Google Auth Platform 시작 및 메뉴 구성](https://support.google.com/cloud/answer/15544987?hl=ko)
+- [Google Auth Platform Audience와 테스트 사용자 정책](https://support.google.com/cloud/answer/15549945?hl=ko)
+- [Google OAuth 앱 검증과 테스트 사용자](https://support.google.com/cloud/answer/13461325?hl=ko)

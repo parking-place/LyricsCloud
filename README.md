@@ -1,84 +1,114 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="apps/web/public/icons/lyricscloud-mark-dark.svg">
+    <img src="apps/web/public/icons/lyricscloud-mark-light.svg" width="112" height="112" alt="LyricsCloud">
+  </picture>
+</p>
+
 # LyricsCloud
 
-LyricsCloud는 Suno 음악 제작 과정의 곡, 여러 가사 버전, 라임 노트, 생성 프롬프트를 하나의 창작 흐름으로 연결하는 개인용 웹 워크스페이스입니다. PC에서의 집중 편집과 모바일에서의 빠른 확인·수정·복사를 모두 지원하는 것을 목표로 합니다.
+[![CI](https://github.com/parking-place/LyricsCloud/actions/workflows/ci.yml/badge.svg)](https://github.com/parking-place/LyricsCloud/actions/workflows/ci.yml)
+
+LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 개인 창작용 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합과 온라인 우선 PWA를 지원한다.
+
+현재 소스는 `1.0.1` Private Beta 후보이며 P9까지 개발 인수를 마치고 P10 최종 후보·릴리스 절차를 진행 중이다. 정식 운영 버전은 P10 릴리스가 끝날 때까지 `1.0.0`으로 유지한다.
+
+## 주요 기능
+
+- 곡 CRUD, 상태·메모·필터·즐겨찾기·핀과 곡 중심 대시보드
+- CodeMirror 기반 한글 가사 편집, 송폼 탐색, 전체·구간 복사, 집중 모드, 수정 기록 비교·복원
+- 같은 owner의 브라우저·기기·탭 CRDT 병합, 계정별 offline 초안과 재연결 복구
+- 라임 노트·Suno 프롬프트 작성, 검색, 연결, cursor 삽입과 복사
+- 통합 검색, 최근 작업·위치 복원, 템플릿, 표시 설정과 키보드 명령
+- 30일 휴지통, 탈퇴 철회, TXT/Markdown+JSON 전체 ZIP 내보내기
+- 설치형 PWA, light/dark 테마, 접근 가능한 PC·모바일 화면
+- Google OIDC와 1회성 초대 코드 기반 Private Beta 가입
+
+여러 사용자의 공동 편집, AI 생성, 미디어 업로드는 1.0 범위가 아니다.
 
 ## 현재 상태
 
-- 현재 개발 기준선: `0.0.0`
-- 현재 Phase: [`0.0.0/1phase.md`](<./0.Plans/1. Dev-phase/0.0.0/1phase.md>)
-- 상태 원본: [`STATUS.md`](<./0.Plans/1. Dev-phase/STATUS.md>)
-- 애플리케이션 코드: 아직 부트스트랩 전
-- Git 저장소·원격 GitHub: 아직 초기화·연결 전이며 `0.0.0/5phase`에서 기준선과 권한을 확인
-- 기획, 화면 목업, 기술 선택, `0.0.0 → 1.0.0` 실행 계획과 중립적 저장소 골격: 준비됨
-
-실행 가능한 패키지 설정과 Docker 구성은 `0.0.0`에서 ADR을 승인한 뒤 생성합니다. 현재 확정되지 않은 인증·ORM·CRDT 서버·프록시 패키지를 기본 골격이 임의로 선택하지 않도록 의도적으로 분리했습니다.
-
-## 목표
-
-- 한 곡에 여러 가사 버전을 안전하게 작성·복제·비교·복원
-- 송폼 탐색, 전체·구간 복사, 집중 모드를 갖춘 가사 편집 환경
-- 라임 노트의 태그·검색·복사와 가사 커서 위치 삽입
-- Suno 프롬프트의 태그 자동완성·중복 정리·순서 변경·복사
-- 곡 중심 대시보드와 연결 자료, 최근 작업, 즐겨찾기, 핀, 통합 검색
-- 자동 병합 동기화, 로컬 초안, 수정 기록, 휴지통, 내보내기로 창작물 보호
-- 15개 화면의 PC·모바일 경험과 설치 가능한 온라인 우선 PWA
-
-## 승인된 구현 기준 요약
-
-[`Implementation-Stack.md`](./0.Plans/Implementation-Stack.md)의 저장된 체크 상태가 기준입니다.
-
-| 영역 | 현재 선택 |
+| 항목 | 상태 |
 |---|---|
-| 운영 | 서버·DB를 로컬 Docker에서 개발한 뒤 홈랩으로 이관 가능한 자체 운영 Node.js + PostgreSQL |
-| 사용자 범위 | 개인 계정 중심 비공개 또는 초대 베타 |
-| 편집 | CodeMirror 6, UTF-8 순수 텍스트 |
-| 모바일 | 설치형 PWA, 온라인 우선, 작성 중 초안 로컬 복구 |
-| 검색 | 제목·본문·태그의 정확·부분 문자열 검색 |
-| 동기화 | CRDT/OT 계열 자동 병합. 현재 계획은 동일 계정의 여러 기기·탭으로 한정하며 ADR-0004에서 확정 |
-| 수정 기록 | 5분 간격 및 중요 작업 전, 180일·항목당 200개 한도 |
-| 삭제 | 휴지통 30일, 탈퇴 철회 7일 |
-| 운영 안전 | 창작물 본문을 제외한 오류·성능 수집, 매일 암호화 논리 백업 |
-| 이동성 | TXT/Markdown + JSON 전체 내보내기 |
+| 소스·runtime version | `1.0.1` |
+| 현재 작업 | [1.0.1 Phase 10 — 최종 후보·Private Beta 릴리스](<./0.Plans/2.Patch-phase/1.0.1/10phase.md>) |
+| 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
+| 정식 릴리스 | [1.0.0 Phase 5 — 최종 릴리스](<./0.Plans/1. Dev-phase/1.0.0/5phase.md>) |
+| 개발 인수 | P4 Google 가입, P5 Windows Chrome·Edge 한글 저장, P6 양 테마 UI, P7 브랜드, P8 릴리스 도구, P9 전체 통합 PASS |
+| 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
-`DEC-02-A`와 `DEC-06-C`의 결합은 1.0에서 “다른 사용자와 공유”가 아니라 “같은 사용자의 여러 기기·탭에서 자동 병합”하는 것으로 계획했습니다. 이는 [`ADR-0004`](./docs/adr/README.md) 승인 전의 계획 해석이며, 여러 사용자 공동 작업으로 넓히려면 구현 전에 기획·권한 모델을 별도로 승인해야 합니다.
+1.0.1은 모든 10개 Phase와 최종 CI·개발 HTTPS 검증이 끝난 뒤에만 `main`, 정식 이미지 태그와 릴리스 서버에 반영한다.
 
-## 주요 디렉터리
+## 화면
+
+신규 사용자는 초대 코드와 Google 계정 이메일을 입력하고, 같은 계정의 Google 본인 확인을 마쳐야 코드 소비와 접근권 등록이 함께 완료된다. 아래는 실제 계정·코드가 없는 합성 검증 화면이다.
+
+<p align="center">
+  <img src="docs/runbooks/evidence/1.0.1-phase4-beta-signup-desktop.png" width="760" alt="LyricsCloud 1.0.1 초대 코드 가입 PC 화면">
+</p>
+
+<p align="center">
+  <img src="docs/runbooks/evidence/1.0.1-phase4-beta-signup-mobile.png" width="300" alt="LyricsCloud 1.0.1 초대 코드 가입 모바일 화면">
+</p>
+
+## 빠른 시작
+
+로컬 개발에는 Node.js 24, pnpm 11, Docker Engine와 Compose가 필요하다.
+
+```bash
+cp .env.example .env
+cp .test_users.example .test_users
+# CHANGE_ME 값을 설정하고 HMAC allowlist 전환 절차를 완료한 뒤
+docker compose config --quiet
+docker compose up --build --wait
+curl --fail http://127.0.0.1:8080/api/health/ready
+```
+
+기본 주소는 `http://localhost:8080`이다. 일반 종료는 `docker compose down`이며 DB volume은 보존된다. `docker compose down --volumes`는 자료를 삭제하므로 disposable 초기화 환경 외에는 실행하지 않는다.
+
+운영 설치·HTTPS·OAuth·secret·upgrade 설정은 [셀프호스팅 안내](./docs/self-hosting.md)를 처음부터 따른다.
+
+## Private Beta 운영
+
+P2 관리자 CLI는 초대 코드 발급·조회·전체 교체를 제공한다. 원문 코드와 키를 명령 인수, 로그, Issue 또는 Git에 넣지 않는다.
+
+```bash
+LyricsCloud betacode -n 10
+LyricsCloud betacode ls
+LyricsCloud betacode refresh
+```
+
+정확한 입력·출력·동시성·복구 계약은 [Beta 관리자 runbook](./docs/runbooks/1.0.1-phase2-beta-admin.md), 기존 계정 HMAC 전환은 [allowlist runbook](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md), Google 설정은 [OAuth runbook](./docs/runbooks/google-oauth-setup.md)을 따른다.
+
+## 보안·백업 경계
+
+창작물은 PostgreSQL에, 전송 전 offline 초안은 계정별 브라우저 저장소에 둔다. 로그와 관측에는 제목·본문·태그·프롬프트·검색어·이메일·OAuth/session 값과 동적 resource ID를 넣지 않는다. 전체 내보내기는 이동용 사본이며 운영 backup을 대신하지 않는다.
+
+실제 `.env`, `.test_users`, DB volume, backup archive·identity, export와 창작물은 Git에 넣지 않는다. 현재 공식 릴리스 서버의 외부 backup은 미구축 상태이며 호스트 손실 시 복구 지점을 보장하지 않는다. 구축 전에는 이 위험과 승인 예외를 각 릴리스 기록에 명시한다. 취약점은 공개 Issue가 아닌 [비공개 보안 보고 절차](./SECURITY.md)를 사용한다.
+
+## 문서
+
+| 대상 | 문서 |
+|---|---|
+| 사용자 | [사용자 안내](./docs/user-guide.md), [지원 환경·알려진 제한](./docs/support.md) |
+| 셀프호스트 운영자 | [설치·설정·health·upgrade](./docs/self-hosting.md), [Docker 구성](./infra/docker/README.md) |
+| 인증·베타 운영자 | [Google OAuth](./docs/runbooks/google-oauth-setup.md), [초대 코드 CLI](./docs/runbooks/1.0.1-phase2-beta-admin.md), [HMAC allowlist](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md) |
+| 복구·배포 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md), [개발 배포](./docs/runbooks/development-deploy.md), [Docker Hub 발행](./docs/runbooks/dockerhub-publish.md) |
+| 보안·장애 담당자 | [Security policy](./SECURITY.md), [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
+| 릴리스 검토자 | [1.0.0 release notes](./docs/releases/1.0.0.md), [1.0.1 계획](./0.Plans/2.Patch-phase/1.0.1/README.md), [CHANGELOG](./CHANGELOG.md) |
+| 기여자 | [Agent 지침](./Agent.md), [후속 계획](./0.Plans/2.Patch-phase/README.md), [ADR 색인](./docs/adr/README.md) |
+
+## 저장소 구조
 
 | 경로 | 역할 |
 |---|---|
-| [`0.Plans`](./0.Plans/) | 변경 보호 대상인 기획·목업·기술 결정과 버전별 실행 계획 |
-| [`apps`](./apps/) | 웹, 실시간 동기화, 백그라운드 작업 애플리케이션 경계 |
-| [`packages`](./packages/) | 도메인, DB, 편집기, UI, 공통 설정 패키지 경계 |
-| [`tests`](./tests/) | E2E, 통합, DB 격리, 안전한 테스트 fixture |
-| [`infra`](./infra/) | 자체 운영 Docker, 프록시, 백업·복원 구성 |
-| [`docs`](./docs/) | ADR, 아키텍처, 데이터 모델, 보안, 운영 runbook |
-| [`scripts`](./scripts/) | 반복 가능하고 검증 가능한 개발·운영 보조 명령 |
+| `apps/` | web, collaboration, worker runtime |
+| `packages/` | auth, database, domain, editor, observability, UI |
+| `tests/` | 통합·E2E·owner 격리·브라우저 회귀 |
+| `infra/` | production image와 backup 도구 |
+| `config/` | 환경·migration·artifact·성능·경보 계약 |
+| `docs/` | 사용자·셀프호스트·ADR·보안·운영 runbook |
+| `scripts/` | 검증·migration·배포 보조 명령 |
+| `0.Plans/` | 보호된 기획·목업·기술 결정과 Phase 상태 |
 
-위 애플리케이션·패키지 하위 경계는 ADR 승인 전 후보 구조입니다. `0.0.0`에서 유지·통합·이름 변경 여부를 결정하기 전까지 실행 토폴로지의 확정 증거로 사용하지 않습니다.
-
-## 개발 시작 방법
-
-1. [`Agent.md`](./Agent.md)에서 저장소 작업 규칙을 읽습니다.
-2. [`STATUS.md`](<./0.Plans/1. Dev-phase/STATUS.md>)에서 현재 버전과 Phase를 확인합니다.
-3. 해당 Phase 문서의 선행 조건과 범위를 확인하고 담당자·시작 시각을 `STATUS.md`에 기록합니다.
-4. Phase의 체크리스트만 구현하고 명시된 검증을 실행합니다.
-5. 완료 조건을 모두 충족한 뒤 Phase 문서와 `STATUS.md`, 필요한 경우 [`CHANGELOG.md`](./CHANGELOG.md)를 갱신합니다.
-
-첫 작업은 [`0.0.0/1phase.md`](<./0.Plans/1. Dev-phase/0.0.0/1phase.md>)입니다. 실제 설치·실행 명령은 `0.0.0`에서 패키지 관리자와 서비스 구성이 확정되면 이 README에 추가합니다.
-
-## 기준 문서
-
-- 제품 요구사항: [`Sketch.md`](./0.Plans/Sketch.md)
-- 화면·상태 기준: [`Mock-up/README.md`](./0.Plans/Mock-up/README.md)
-- 구현 결정: [`Implementation-Stack.md`](./0.Plans/Implementation-Stack.md)
-- 전체 로드맵: [`1. Dev-phase/README.md`](<./0.Plans/1. Dev-phase/README.md>)
-- 요구사항 추적: [`Requirements-Traceability.md`](<./0.Plans/1. Dev-phase/Requirements-Traceability.md>)
-- 결정 권한: [`Decision-Ownership.md`](<./0.Plans/1. Dev-phase/Decision-Ownership.md>)
-
-## 협업 원칙
-
-- 한 작업은 한 버전·한 Phase의 완료 조건에 맞춰 작게 유지합니다.
-- 같은 파일을 여러 작업자가 동시에 맡지 않도록 먼저 소유 범위를 기록합니다.
-- 데이터 모델 변경은 migration과 검증을 함께 제출합니다.
-- 실제 사용자 가사·토큰·백업·내보내기 파일을 저장소에 넣지 않습니다.
-- 원본 기획 문서는 명시적인 기획 변경 요청이 없으면 수정하지 않습니다.
+1.0.2 이후 사전·폰트·공유·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있으며, 현재 1.0.1 완료를 의미하지 않는다.

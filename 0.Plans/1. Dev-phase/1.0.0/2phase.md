@@ -1,6 +1,6 @@
 # 1.0.0 Phase 2 — 불변 릴리즈 산출물과 마이그레이션 봉인
 
-- 상태: **대기**
+- 상태: **완료**
 - 단계 목적: 승인된 RC를 다시 빌드 가능한 source가 아니라 검증된 동일 산출물로 배포하게 한다.
 
 ## 목표
@@ -38,15 +38,15 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-100-P2-01` 애플리케이션과 모든 내부 서비스의 버전을 `1.0.0`으로 일관되게 고정한다.
-- [ ] `LC-100-P2-02` 승인 commit과 lockfile로 production Docker image를 깨끗한 builder에서 생성한다.
-- [ ] `LC-100-P2-03` `OPS-0002`에 승인된 registry·서명 방식으로 각 image의 digest, source commit, build 시각과 build provenance를 release manifest에 기록한다.
-- [ ] `LC-100-P2-04` SBOM과 dependency/container/secret scan을 생성하고 차단 결과가 없는지 확인한다.
-- [ ] `LC-100-P2-05` migration 순서·checksum·최소/최대 호환 버전과 rollback 제약을 봉인한다.
-- [ ] `LC-100-P2-06` 필수·선택 환경 변수, 형식과 secret 여부를 machine-readable schema로 검증한다.
-- [ ] `LC-100-P2-07` image가 비루트 사용자, health/readiness, 신호 기반 종료와 persistent volume 경계를 만족하게 한다.
-- [ ] `LC-100-P2-08` 동일 입력의 두 빌드 차이를 비교하고 설명되지 않는 변동을 제거하거나 기록한다.
-- [ ] `LC-100-P2-09` 검증된 digest만 다음 배포 단계에서 허용하는 승인 목록을 만든다.
+- [x] `LC-100-P2-01` 애플리케이션과 모든 내부 서비스의 버전을 `1.0.0`으로 일관되게 고정한다.
+- [x] `LC-100-P2-02` 승인 commit과 lockfile로 production Docker image를 깨끗한 builder에서 생성한다.
+- [x] `LC-100-P2-03` `OPS-0002`에 승인된 registry·서명 방식으로 각 image의 digest, source commit, build 시각과 build provenance를 release manifest에 기록한다.
+- [x] `LC-100-P2-04` SBOM과 dependency/container/secret scan을 생성하고 차단 결과가 없는지 확인한다.
+- [x] `LC-100-P2-05` migration 순서·checksum·최소/최대 호환 버전과 rollback 제약을 봉인한다.
+- [x] `LC-100-P2-06` 필수·선택 환경 변수, 형식과 secret 여부를 machine-readable schema로 검증한다.
+- [x] `LC-100-P2-07` image가 비루트 사용자, health/readiness, 신호 기반 종료와 persistent volume 경계를 만족하게 한다.
+- [x] `LC-100-P2-08` 동일 입력의 두 빌드 차이를 비교하고 설명되지 않는 변동을 제거하거나 기록한다.
+- [x] `LC-100-P2-09` 검증된 digest만 다음 배포 단계에서 허용하는 승인 목록을 만든다.
 
 ## 구체적 검증
 
@@ -58,10 +58,10 @@
 
 ## 완료 조건
 
-- [ ] 배포할 모든 Docker image가 digest와 승인 RC에 연결된다.
-- [ ] SBOM·scan·migration·환경 schema가 release manifest에 포함된다.
-- [ ] 빈 환경과 upgrade 환경 양쪽에서 동일 산출물의 smoke가 통과한다.
-- [ ] image와 빌드 산출물에 secret 또는 사용자 창작물이 없다.
+- [x] 배포할 모든 Docker image가 digest와 승인 RC에 연결된다.
+- [x] SBOM·scan·migration·환경 schema가 release manifest에 포함된다.
+- [x] 빈 환경과 upgrade 환경 양쪽에서 동일 산출물의 smoke가 통과한다.
+- [x] image와 빌드 산출물에 secret 또는 사용자 창작물이 없다.
 
 ## 산출물
 

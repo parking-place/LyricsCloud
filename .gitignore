@@ -20,6 +20,8 @@ blob-report/
 .env
 .env.*
 !.env.example
+.test_users
+.private/
 *.pem
 *.key
 
@@ -48,4 +50,3 @@ logs/
 .DS_Store
 Thumbs.db
 Desktop.ini
-

@@ -1,0 +1,23 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+.test_users
+.private
+node_modules
+.pnpm-store
+.next
+**/node_modules
+**/.pnpm-store
+**/.next
+dist
+coverage
+data
+var
+backups
+exports
+logs
+test-results
+playwright-report
+0.Plans/Mock-up 그림판

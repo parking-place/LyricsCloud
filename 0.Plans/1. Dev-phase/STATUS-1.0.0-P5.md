@@ -1,0 +1,194 @@
+# LyricsCloud 개발 상태
+
+이 파일은 현재 버전·Phase·담당 작업의 단일 상태 원본입니다. 계획 문서는 범위를 정의하고 이 파일은 실제 진행 상황을 기록합니다.
+
+```yaml
+current_version: "1.0.0"
+current_phase: "1.0.0/5phase.md"
+state: "complete"
+owner: "Codex"
+started_at: "2026-09-09 01:35 KST"
+updated_at: "2026-09-09 02:18 KST"
+next_action: "v1.0.0 운영 안정성을 감시하고 1.0.1+ 최우선 OPS-100-001 backup 구축을 별도 Phase에서 시작한다"
+```
+
+상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
+
+## 기준선 판정
+
+- `Sketch.md`: 71개 1.0 요구사항과 5개 사용자 흐름으로 Phase 1 기준선 승인 완료
+- `Mock-up`: 15개 README와 PC·모바일 30개 정적 화면을 화면 추적·20개 차이 항목에 연결, 원본은 수정하지 않음
+- `Implementation-Stack.md`: 13개 DEC에서 각각 하나 선택, `FINAL-APPROVAL` 선택 확인
+- `Implementation-Stack.md`의 문장형 상태는 아직 `사용자 선택 전`이지만 체크박스와 최종 승인을 현재 선택의 원본으로 판정함
+- `DEC-10` 선택 메모: 서버·DB를 먼저 로컬 Docker에서 개발하고 이후 홈랩으로 이관하며 개인 셀프호스팅이 가능해야 함
+- `CHECK-03`은 미선택이며 DEC-10 외 선택 메모가 없으므로 그 밖의 예외·우선순위는 기록되지 않은 것으로 판정함
+- `DEC-02-A`와 `DEC-06-C`의 결합은 Accepted `ADR-0004`에 따라 “같은 사용자의 기기·탭 자동 병합, 다른 사용자 공유 제외”로 확정
+- 기술·제품·운영 결정의 소유권과 확정 Phase는 [`Decision-Ownership.md`](./Decision-Ownership.md)를 따르며, 색인에 있는 `Proposed` 항목을 승인된 결정으로 간주하지 않음
+- 실행 가능한 중립 애플리케이션·Docker·PostgreSQL·migration·검사: 빈 작업 사본과 빈 volume을 포함해 구현·검증 완료
+- Docker Desktop의 Windows 예약 포트 `3000–3299`를 피해 기본 host web 포트를 `8080`으로 확정, liveness/readiness 200 확인
+- 로컬 Git 저장소와 `origin/main`: 연결 확인, branch protection·secret scanning·required checks는 권한 보유자 체크리스트로 인계
+- 버전별 실행 계획, 요구사항 추적표와 프로젝트 디렉터리: 0.0.0 전 Phase 검토·승인 완료
+
+## 버전 진행표
+
+| 버전 | 상태 | 현재/완료 Phase | 진입 조건 |
+|---|---|---|---|
+| 0.0.0 | complete | Phase 1~5 완료, 원격 Phase 브랜치 확인 | 충족 |
+| 0.1.0 | complete | Phase 1~5 완료 | 0.0.0 완료 |
+| 0.2.0 | complete | Phase 1~5 완료 | 0.1.0 완료 |
+| 0.3.0 | complete | Phase 1~5 완료 | 0.2.0 완료 |
+| 0.3.1 | complete | Phase 1~5 완료, 자동 장애 회귀·실제 기기·원격 CI·image·동일 SHA 개발 배포 검증 | 0.3.0 완료 |
+| 0.4.0 | complete | Phase 1~5 완료 | 0.3.1 완료 |
+| 0.5.0 | complete | Phase 1~5 완료 | 0.4.0 완료 |
+| 0.6.0 | complete | Phase 1~5 완료 | 0.5.0 완료 |
+| 0.7.0 | complete | Phase 1~5 완료 | 0.6.0 완료 |
+| 0.8.0 | complete | Phase 1~5 완료 | 0.7.0 완료 |
+| 0.9.0 | complete | Phase 1~5 완료 | 0.8.0 완료 |
+| 0.9.1 | complete | Phase 1~5 완료, 기능 동결·보안·성능·관측·복구 RC 검증 | 0.9.0 완료 |
+| 1.0.0 | complete | Phase 1~5 완료, 정식 release·운영 인수 | 0.9.1 release gate 통과 |
+
+## 활성 작업
+
+작업 시작 전 한 행을 추가하고 완료·인계 후 제거하거나 완료 기록으로 이동합니다.
+
+| 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
+|---|---|---|---|---|---|---|
+| 없음 | - | - | - | - | - | - |
+
+2026-09-06: 사용자의 “기능 개발은 … 계속 … 내 계정으로 로컬 테스트 환경으로 OAuth” 지시에 따라 다음 순서인 Phase 4의 로컬 구현을 진행한다. Phase 3을 원격 배포 완료로 승격하지 않는다. 이 예외는 로컬 개발에만 적용하며 GitHub push에 연결된 Docker Hub 발행과 개발 서버 배포는 별도 승인·검증 대상이다.
+
+2026-09-06: 사용자의 Phase 5 Goal 진행과 worker 활용 지시에 따라 로컬 통합 검증을 계속한다. 원격 Phase 완료를 선행 완료로 가정하지 않으며, 실제 기기·원격 CI·image 발행·개발 서버 배포는 별도 증거가 필요한 인수 항목으로 남긴다. 현재 Goal은 로컬 구현·검증·커밋과 검토 가능한 인계 준비까지다.
+
+문서·브라우저 worker의 담당 파일은 인계받았다. 부모가 실행 검증과 필요한 코드를 수정했고 GLM 5.3 Flash는 로그아웃 변경 경계의 읽기 전용 검토를 맡았다. 결과는 [Phase 5 로컬 검증 기록](../../docs/runbooks/0.3.1-phase5-local-validation.md)에 모았다.
+
+2026-09-06 GitHub 반영: Phase 3 보완 [PR #2](https://github.com/parking-place/LyricsCloud/pull/2) → Phase 4 [PR #3](https://github.com/parking-place/LyricsCloud/pull/3) → `phase/0.3.1-p5-resilience` 순서의 초안 PR로 인계한다. 원격 CI에서 확인한 초기화 대기 누락은 본문 입력 시험에 반영했고 편집기 PC·모바일 20개를 국소 재검증했다. 앱 코드는 기존 로컬 검증본과 같다. 각 push의 verify·네 개발 이미지 발행과 tag digest 일치를 확인한 뒤 다음 Phase 브랜치를 올린다. main·release 변경이나 개발 서버 배포는 이 GitHub 반영에 포함하지 않는다.
+
+2026-09-06 원격·개발 인수: Phase 5 기능 head `7734bf23713b8b405b3a63bc86af36d7036fec20`에서 로컬 check와 30 files/104 tests를 통과했다. push CI `34026897897`과 PR CI `34026900854`는 migration 복구, production image 복구, 전체 E2E와 secret scan을 통과했다. 네 Docker Hub repository의 `0.3.1`·전체 SHA·`Dev`·`Dev-latest` tag는 서비스별 같은 digest를 가리킨다. 로컬과 개발 서버 live/ready는 같은 SHA·0.3.1·`0311_lyric_revisions.sql`을 반환했고 공개 PC/모바일 가사 작성·저장·복제·다중 탭 로그아웃 smoke를 통과한 뒤 합성 자료를 제거했다.
+
+2026-09-06 실제 기기 인수: 사용자는 안내된 실제 Android/iOS·OS 한글 IME·LTE/5G의 동일 owner 동기화, 브라우저 종료·재접속 복구와 실제 Google 로그인·로그아웃 체크리스트가 통과했다고 보고했다. 제공되지 않은 기종·OS·브라우저 세부사항은 추정하지 않는다.
+
+## 0.0.0에서 닫아야 할 기술 게이트
+
+- [x] `ADR-0001` — 웹·협업·worker 프로세스 및 workspace 토폴로지
+- [x] `ADR-0002` — Google OIDC, 세션, 비공개·초대 허용 목록
+- [x] `ADR-0003` — PostgreSQL 접근 계층, migration, 소유권·RLS 전달
+- [x] `ADR-0004` — 자동 병합의 사용자 범위와 CRDT 문서 의미
+- [x] `ADR-0005` — CRDT transport, WebSocket, 영속화, 평문 검색 투영, snapshot
+- [x] `ADR-0006` — 자체 운영 프록시, TLS, WebSocket 전달, 배포 지역
+- [x] `ADR-0007` — 온라인 우선 PWA, 계정별 로컬 저장, 업데이트
+- [x] `ADR-0008` — 매일 논리 백업의 저장소, 암호화, 키, 보존, 복원
+- [x] `ADR-0009` — 창작물 본문을 제거하는 오류·성능 관측
+
+## 기획상 발견 사항
+
+아래 항목은 구현 중 조용히 가정하지 않고 담당 Phase의 계약 작업에서 명시적으로 닫습니다.
+
+| 항목 | 결정 ID | 처리 버전 | 초기 해석 |
+|---|---|---|---|
+| CRDT 자동 병합 범위 | `ADR-0004` | 0.0.0, 0.3.1 | 같은 소유자의 기기·탭만 포함, 사용자 공유 제외 |
+| 모바일 네 번째 내비 항목 | `PROD-0001` | 0.1.0 | 고정 `더보기` 진입점과 하위 메뉴를 수용 기준으로 비교 |
+| 빠른 아이디어의 자료 종류 | `PROD-0005` | 0.6.0 | 분류 전 임시 inbox를 새로 만들지 말고 곡·가사 메모 또는 라임 생성 흐름으로 연결 |
+| 라임·프롬프트와 곡 관계 | `PROD-0002` | 0.2.0, 0.6.0 | N:M, owner가 같은 연결 쌍은 하나, 연결 해제는 독립 원본을 보존하는 것으로 Accepted |
+| 라임 독립 화면의 가사 삽입 | `PROD-0006` | 0.4.0, 0.6.0 | 살아 있는 편집 대상이 확인될 때만 삽입, 아니면 복사 제공 |
+| 가사 버전과 revision | `PROD-0004` | 0.3.0, 0.3.1 | 이름 있는 가사는 독립 resource, revision은 복구 snapshot |
+| 최근 작업 의미 | `PROD-0007` | 0.7.0 | 수정 시각과 열람 시각을 분리하고 마지막 커서·송폼 위치 저장 |
+| 곡 삭제와 연결 자료 | `PROD-0010` | 0.2.0, 0.8.0 | 당시 활성 소속 가사만 함께 숨기고 같은 삭제 작업분만 복원, 독립 연결 자료·관계는 보존으로 Accepted |
+| 목업 전용 보완 기능 | 관련 `PROD-*` 또는 담당 Phase 계약 | 담당 버전 | 버전 비교, 상세 필터, 저장 상태, 비드래그 이동 수단은 1.0 범위에 포함 |
+
+## 결정과 구현 대조
+
+- ADR-0002의 동일 계정 전체 세션 로그아웃은 Phase 5에서 구현하고 다른 계정·폐기된 예전 토큰 경계를 검증했다.
+- ADR-0005에 명시된 binding·awareness와 현재 transaction adapter·presence 미구현의 차이를 해당 ADR의 구현 대조와 [어댑터 인계](../../docs/architecture/0.3.1-SYNC-ADAPTER-HANDOFF.md)에 기록했다. 기존 adapter를 유지하며 재설계나 공유 편집을 추가하지 않았다.
+
+## 다음 작업
+
+1.0.0 Phase 5와 정식 운영 인수까지 완료했다. 이후에는 운영 안정성을 관찰하고 [1.0.1+ backlog](../../docs/operations/1.0.1-backlog.md)의 `OPS-100-001` backup 구축을 최우선으로 별도 Phase에서 수행한다. 현재 production backup은 미구축이며 24시간 RPO를 보장하지 않는다. 과거 완료 기록은 당시 검증 범위를 기록한 이력이다.
+
+## 완료 기록
+
+| 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
+|---|---|---|---|---|---|
+| 2026-09-09 | 1.0.0 / Phase 5 | Codex | 71개 요구사항·15개 화면·8개 제안과 P0/P1 0건을 재대조하고 production 합성 핵심 흐름·owner 격리·PWA·OAuth 시작·안정 구간, 운영 연락·rollback·release notes·1.0.1+ backlog를 봉인했으며 사용자가 개발과 동일한 OAuth/DB credential 및 backup 유예를 승인 | 후보 `d208c1a` 로컬 1.0.0 gate·secret scan, CI `34253130389` 재실행 전체 verify와 네 signed image, 동일 SHA 개발 배포·공개 smoke, production 사전 재검증; [최종 인수](../../docs/runbooks/1.0.0-phase5-release.md) | `v1.0.0` 운영 감시, 실제 Google credential callback은 수동 확인, `OPS-100-001` 외부 암호화 backup·timer·복원 훈련을 1.0.1+ 최우선으로 수행 |
+| 2026-09-09 | 1.0.0 / Phase 4 | Codex | README·사용자·셀프호스트·지원·보안·OAuth·backup/restore/upgrade/rollback·관측/사고 문서를 실제 운영 계약에 맞추고 production-mode self-host override를 clean-room 검증했으며, 공식 production backup 미구축은 사용자 승인 예외 `OPS-100-001`로 명시 | 256 Markdown link·15 화면·환경/정책/명령·secret canary 검사, 빈 전용 DB self-host 네 runtime health·schema·auth 차단, CI `34248044744`, 네 signed image, 후보 `f746d80` 동일 SHA 개발 배포·공개 smoke; [검증 기록](../../docs/runbooks/1.0.0-phase4-validation.md) | Phase 5가 최종 추적·P0/P1·production manifest/smoke·승인 예외·잔여 P2/P3를 봉인하고 `v1.0.0`과 공식 release artifacts를 발행 |
+| 2026-09-09 | 1.0.0 / Phase 3 | Codex | Phase 2 승인 digest와 17개 봉인 migration으로 빈 신규 production을 bootstrap하고 공개 전 동일 DB 비공개 canary·실패 제거, 합성 owner 격리 창작 흐름·PWA·OAuth 시작·안정 구간을 통과했으며 사용자 승인 예외로 개발과 동일한 OAuth/DB credential을 사용하고 backup 구축은 1.0.1+로 유예 | 공개 live/ready·auth·metrics, OAuth callback/PKCE, 합성 session·곡·가사·한글 저장·검색·교차 차단·휴지통 복원·ZIP export, canary DB health 503 제거, 30회 p95 296.15ms·로그 본문 0, CI `34239648988`, 네 signed image, `e6135b8` 동일 SHA 개발 배포·공개 smoke; [배포 기록](../../docs/runbooks/1.0.0-phase3-deployment.md) | Phase 4가 실제 production SHA·digest·schema와 승인 예외·남은 backup 위험을 README·셀프호스트·운영·사용자 문서에 명시 |
+| 2026-09-08 | 1.0.0 / Phase 2 | Codex | 앱·11개 package를 1.0.0으로 고정하고 lockfile·17 migration checksum·환경 schema·65개 production license inventory·네 image digest와 SBOM/SLSA/keyless signature를 write-once release manifest에 봉인했으며 nonroot/read-only health와 재현 build·fresh/upgrade/rollback을 검증 | `test:release:1002`, 독립 image build 2회 정규화 content 일치, 60 files/226 tests, PC/mobile E2E 223 pass·27 skip, 5-browser RC 10, CI `34228604151`, 네 signed digest, `976e250` 동일 SHA 개발 배포·공개 health/auth/metrics smoke, 사용자 iOS/Android update PASS; [검증 기록](../../docs/runbooks/1.0.0-phase2-validation.md) | Phase 3이 production authority 없는 승인 manifest의 네 digest·migration 순서·환경 schema·backup/rollback 입력으로 preflight를 수행하고 명시적 운영 승인 뒤에만 release 변경 |
+| 2026-09-08 | 1.0.0 / Phase 1 | Codex | Sketch 49절 71개 요구사항, 15개 목업·8개 제안 source와 선택 DEC 8개를 최종 증거에 연결하고 GitHub open issue 0, 미해결 P0/P1 각 0건을 확인했으며 P2/P3 세 항목의 상향 조건·후속 목표와 gate/정식 승인/운영 인수 권한을 Accepted `OPS-0004`로 고정 | `test:release:1001`, 60 files/225 tests, PC/mobile E2E 223, 5-browser RC 10, backup/restore·upgrade/rollback, CI `34219266919`, 네 signed digest, `fb8d51a` 동일 SHA 개발 배포와 공개 health/auth/metrics smoke; [최종 추적표](../../docs/architecture/1.0.0-FINAL-TRACEABILITY.md), [검증 기록](../../docs/runbooks/1.0.0-phase1-validation.md) | Phase 2가 승인 RC 입력과 Phase 1 최종 SHA를 versioned image·SBOM·migration·환경 schema release manifest에 봉인 |
+| 2026-09-08 | 0.9.1 / Phase 5 | Codex | age 암호화 일일 PostgreSQL 논리 backup·24시간 RPO·30일 보존, 분리된 키와 저장소, 독립 restore·제품 smoke, 이전 RC upgrade와 migration/application rollback을 자동화하고 Docker Hub keyless 서명·SLSA/SBOM·digest 승인 계약 `OPS-0002`를 Accepted로 확정 | 60 files/225 tests, PC/mobile E2E 223 pass, 5-browser RC 10 pass, backup 2회·4종 failure injection·restore 671ms, 0.9.0 upgrade 1,661ms·rollback 2,815ms, fixable High/Critical 0, CI `34214593249`, 네 signed digest, `266679f` 동일 SHA 개발 배포와 공개 health/auth/metrics smoke; [검증 기록](../../docs/runbooks/0.9.1-phase5-validation.md) | 1.0.0 Phase 1이 RC 식별자·전체 추적표·보안·성능·복원 증적과 미해결 P2/P3를 최종 gate에 고정 |
+| 2026-09-08 | 0.9.1 / Phase 4 | Codex | OpenTelemetry 경계에 strict allowlist·재귀 redaction·길이 제한과 fail-open transport를 두고 구조화 오류/request ID, 저장·검색·purge·backup·서비스 경보와 본문 없는 dashboard/runbook을 연결했으며 공개 metrics와 행동 이벤트를 제거 | 60 files 중 비통합 42 files/149 tests와 통합 18 files/74 tests, PC/mobile E2E 223 pass·27 skip, 5-browser RC 10 pass, CI `34196375529`, 네 image digest, `d400cdd` 동일 SHA 개발 배포, 공개 canary 0·구조화 오류 상관·인증 14-route·Axe/reflow, 사용자 iOS/Android update 모두 PASS; [검증 기록](../../docs/runbooks/0.9.1-phase4-validation.md) | Phase 5가 backup·restore·upgrade·rollback 작업에 같은 허용 지표와 경보/runbook 형식을 적용 |
+| 2026-09-08 | 0.9.1 / Phase 3 | Codex | 자체 운영 기준 환경·2,500 resource 합성 fixture와 p95/error budget을 확정하고 10,000줄 편집·검색·자동 저장·동시 충돌·export·purge·24시간 가속 소크를 자동화했으며 purge N+1을 set 기반 batch로 제거 | 로컬 3회 전 지표 budget·오류율 0%, 58 files/213 tests, PC/mobile E2E 223 pass·27 skip, 5-browser RC 10 pass, CI `34189013471`, 네 image digest, `12fd263` 동일 SHA 개발 성능·공개 인증 14-route·Axe/reflow, 사용자 iOS/Android update 모두 PASS; [검증 기록](../../docs/runbooks/0.9.1-phase3-validation.md) | Phase 4가 확정된 지표·오류 분류·본문 없는 관측 원칙과 성능 임계값을 운영 runbook에 연결 |
+| 2026-09-08 | 0.9.1 / Phase 2 | Codex | OAuth state·nonce·PKCE, 60 API·32 table owner 경계, 53 mutation Origin gate, 1 MiB body·인증/검색/export rate limit와 nonce CSP를 검증하고 네 runtime을 고정 digest Distroless nonroot/read-only 이미지로 축소했으며 Drizzle advisory와 mode `600` allowlist runtime 접근을 해소 | 58 files/213 tests, migration 전체 복구, PC/mobile E2E 223 pass·27 skip, 5-browser RC 10 pass, 네 image file-allowlist session·fresh DB·재시작·revision 복구, pnpm audit·Gitleaks·Trivy·image canary, CI `34186401585`, `5938089` 동일 SHA 개발 배포·공개 인증 14-route·Axe/reflow 모두 PASS; [감사](../../docs/security/0.9.1-security-audit.md), [행렬](../../docs/security/0.9.1-api-ownership-matrix.md), [검증 기록](../../docs/runbooks/0.9.1-phase2-validation.md) | Phase 3이 단일 replica rate limiter 제한과 합성 데이터 원칙을 유지하며 성능·장시간 안정성을 측정 |
+| 2026-09-08 | 0.9.1 / Phase 1 | Codex | Sketch 49절 71개 요구사항과 15개 numbered README·8개 제안 source를 구현/검증 증적에 연결하고 orphan·미구현·부분 구현·검증 없음 0행, P0/P1 0건으로 동결했으며 OPS-0001을 Accepted로 확정 | `test:freeze:0911`, 0.9 감사·실기기 완료 validator, check, 57 files/208 tests, production build; [추적표](../../docs/architecture/0.9.1-RC-TRACEABILITY.md), [검증 기록](../../docs/runbooks/0.9.1-phase1-validation.md) | Phase 2가 인증·권한·XSS·CSRF·rate/size·container·dependency/secret 경계를 전수 감사 |
+| 2026-09-08 | 0.9.0 / Phase 5 | Codex | 지원 행렬, 15화면×4 viewport 최종 시각 기준선, 5개 브라우저 profile의 장문 한글·회전·Clipboard 회귀와 실제 iOS Safari·Android Chrome의 설치·IME·복사·offline·dirty update·logout 인수를 완료 | 57 files/208 tests, PC/mobile E2E 219 pass·25 skip, 출시 후보 10/10, production build·4 image/fresh DB 복구, CI `34164652951`·`34168682303`, `9ead2aa` 동일 SHA 개발 배포·공개 PWA/Axe/reflow smoke, 사용자 실기기 최종 보고; [검증 기록](../../docs/runbooks/0.9.0-phase5-validation.md) | 0.9.1 Phase 1이 모든 1.0 요구사항·목업 제안·P0/P1 정의와 RC 허용 변경을 동결 |
+| 2026-09-08 | 0.9.0 / Phase 4 | Codex | 15개 화면에 하나의 주 제목·명명된 main, 공통 빈 화면·오류 상태, 양 테마 대비, dialog focus trap·Escape·호출 지점 복원과 저장 재시도 본문·cursor 보존을 구현 | 57 files/208 tests, production build·4 image/fresh DB 복구, PC/mobile E2E 219 pass·21 skip, Axe serious·critical 0, CI `34160175567`, 네 image digest, `2d0ec0a` 동일 SHA 개발 배포와 공개 양 테마·200% reflow smoke; [검증 기록](../../docs/runbooks/0.9.0-phase4-validation.md) | Phase 5가 실제 iOS Safari·Android Chrome의 IME·복사·설치·오프라인 복구와 출시 후보 통합 행렬을 검증 |
+| 2026-09-08 | 0.9.0 / Phase 3 | Codex | 설치 manifest·192/512 아이콘, immutable Next 정적 자산 전용 service worker, owner IndexedDB 보존 upgrade, offline cold-start 복구, dirty update 승인 gate와 로그아웃 제거를 구현 | 57 files/208 tests, production build·4 image/fresh DB 복구, PC/mobile E2E 213 pass·21 skip, CI `34153262398`, 네 image digest, `10312ed` 동일 SHA 개발 배포와 공개 manifest·static-only cache·offline hit·no-store smoke; [검증 기록](../../docs/runbooks/0.9.0-phase3-validation.md) | Phase 4가 PWA 저장·오프라인·업데이트 상태를 15개 화면의 접근성·빈 화면·오류 표현과 통합 |
+| 2026-09-08 | 0.9.0 / Phase 2 | Codex | 공통 shell breakpoint와 mobile More sheet·tablet editor panel을 정리하고 focus/selection·draft 연속성, prompt template 추가/삭제, 곡 작업 조건을 owner 경계와 함께 구현 | 57 files/208 tests, production build·4 image/fresh DB 복구, 230 E2E(211 pass, 19 skip), CI `34147746032`, 네 image digest, `fc623d8` 동일 SHA 개발 배포와 공개 responsive·filter·prompt delete·schema·no-store smoke; [검증 기록](../../docs/runbooks/0.9.0-phase2-validation.md) | Phase 3이 반응형 shell과 계정별 초안 계약 위에 안전한 PWA 설치·cache·offline·update 흐름을 구현 |
+| 2026-09-08 | 0.9.0 / Phase 1 | Codex | 목업 15개를 실제 route·component·기획 절에 연결하고 추가 제안 7개 원문 행, 상태 15행, 네 viewport의 합성 기준선 60장을 고정했으며 P0 0·P1 4·P2 4·P3 1개로 차이를 분류 | 57 files/208 tests, production build·4 image 복구, PC/mobile E2E 207 통과·17 skip, CI `34138200153`, 네 image digest, `64ef5ed` 동일 SHA 개발 배포와 공개 auth·보호 route 14개·schema·no-store smoke; [검증 기록](../../docs/runbooks/0.9.0-phase1-validation.md) | Phase 2가 P1 shell·mobile navigation·tablet editor panel·prompt editor 결함을 먼저 닫고 320~1440px 접근성을 검증 |
+| 2026-09-07 | 0.8.0 / Phase 5 | Codex | owner 전용 repeatable-read snapshot에서 50행씩 읽는 UTF-8 TXT/Markdown+versioned JSON 스트리밍 ZIP, 안전한 고유 파일명, 탈퇴 전 실제 다운로드와 취소 rollback을 구현하고 0.8.0의 45개 작업 ID를 추적 | 57 files/208 tests, production build·표준 ZIP CRC·4 image fresh-volume/재시작 복구, PC/mobile E2E 206 통과·16 skip, CI `34132291134`, 네 image digest, `b47b387` 동일 SHA 개발 배포와 공개 대용량 ZIP·schema·owner smoke; [검증 기록](../../docs/runbooks/0.8.0-phase5-validation.md) | 0.9.0 Phase 1이 15개 화면의 PC·모바일 차이와 상태·토큰·접근성 결함을 합성 export fixture와 함께 전수 감사 |
+| 2026-09-07 | 0.8.0 / Phase 4 | Codex | 자료·템플릿의 정확한 30일 휴지통, batch 곡·가사 복원, 제목 확인 hard delete, 탈퇴 즉시 차단·7일 철회, content-free 멱등 purge worker와 로컬 개인 cache 정리를 구현 | 54 files/201 tests, 0802 migration·복구, production build·4 image fresh-volume/재시작 복구, PC/mobile E2E 204 통과·16 skip, CI `34125931148`, 네 image digest, `77e0af8` 동일 SHA 개발 배포와 공개 휴지통·owner·탈퇴·철회·worker smoke; [검증 기록](../../docs/runbooks/0.8.0-phase4-validation.md) | Phase 5가 탈퇴 전 안내를 실제 전체 내보내기 진입점으로 바꾸고 13~15번 화면·시간 정책을 통합 검증 |
+| 2026-09-07 | 0.8.0 / Phase 3 | Codex | 운영체제별 8개 공통 명령, 검색 가능한 설정·전역 도움말, IME·입력·브라우저 키 충돌 방지와 편집기 초안·커서·scroll·focus 보존을 구현 | 52 files/193 tests, production build·4 image fresh-volume/재시작 복구, PC/mobile E2E 201 통과·15 skip, Chromium/Firefox/WebKit shortcut 9 통과, CI `34118400109`, 네 image digest, `eb6b793` 동일 SHA 개발 배포와 공개 도움말·편집기 navigation smoke; [검증 기록](../../docs/runbooks/0.8.0-phase3-validation.md) | Phase 4가 설정 계정 관리와 자료 삭제 명령을 휴지통 30일·탈퇴 7일·purge 수명주기에 연결 |
+| 2026-09-07 | 0.8.0 / Phase 2 | Codex | system/light/dark 테마와 계정별 글꼴·크기·줄 간격·자간·집중 모드, 가사별 완전 재정의·초기화, 초기 깜박임 방지와 PC·모바일 설정 화면을 구현 | 51 files/189 tests, 0801 migration 복구, production build·4 image fresh-volume/재시작 복구, PC/mobile E2E 197 통과·13 skip, CI `34110202574`, 네 image digest, `bdf68b1` 동일 SHA 개발 배포와 공개 설정·CAS·owner·병합·SSR smoke; [검증 기록](../../docs/runbooks/0.8.0-phase2-validation.md) | Phase 3이 설정 화면과 편집기 셸에 공통 단축키 안내·개인화 영역을 연결하고 전체 키보드 흐름을 검증 |
+| 2026-09-07 | 0.8.0 / Phase 1 | Codex | 읽기 전용 기본·owner 전용 가사/프롬프트 템플릿, CRUD·복제·soft delete, 사용자별 즐겨찾기·최근 사용, 독립 적용과 PC·360px 선택·미리보기를 구현 | 49 files/185 tests, 0800 migration 복구, production build·4 image fresh-volume 복구, PC/mobile E2E 192 통과·12 skip, CI `34103326904`, 네 image digest, `7f2cf2e` 동일 SHA 개발 배포와 공개 필터·권한·독립 복사 smoke; [검증 기록](../../docs/runbooks/0.8.0-phase1-validation.md) | Phase 2가 템플릿 화면에도 적용될 owner 설정, theme와 글쓰기 표시 기본값을 구현 |
+| 2026-09-07 | 0.7.0 / Phase 5 | Codex | Phase 1~5의 43개 작업 ID를 증적에 연결하고 검색→가사 Hook 편집→최근 저장 cursor 복귀, saved filter URL→새 모바일 기기, 두 owner·삭제 자료 격리, PC·모바일 상태 회귀와 0.6.0→0.7.0 migration을 통합 검증 | 47 files/177 tests, release migration, 합성 2,000 resource 성능 기준, production build·4 image fresh-volume 복구, PC/mobile E2E 189 통과·11 skip, CI `34094881051`, 네 image digest, `ed1de7b` 동일 SHA 개발 배포와 공개 search·recent·saved·owner smoke; [검증 기록](../../docs/runbooks/0.7.0-phase5-validation.md) | 0.8.0 Phase 1이 owner·active resource·content-free URL 계약을 템플릿 목록·적용에 재사용하고 `PROD-0008`을 확정 |
+| 2026-09-07 | 0.7.0 / Phase 4 | Codex | 네 자료 공통 즐겨찾기·핀과 content-free 통합 화면, 유형·곡·상태·표시 범위 URL 필터, owner별 새 핀 append·해제 compact·원자 reorder, drag·키보드·버튼 이동과 연속 toggle 직렬화를 구현 | 47 files/177 tests, production build·4 image fresh-volume 복구, PC/mobile E2E 183 통과·9 skip, CI `34090441547`, 네 image tag/digest, `325e70f` 동일 SHA 개발 배포와 공개 saved API/UI smoke; [검증 기록](../../docs/runbooks/0.7.0-phase4-validation.md) | Phase 5가 검색·최근 위치·즐겨찾기·핀·URL 딥링크를 하나의 owner 격리 수직 흐름으로 검증 |
+| 2026-09-07 | 0.7.0 / Phase 3 | Codex | 수정과 열람 시각을 분리한 네 자료 통합 최근 작업, content-free 문맥 카드, 2초/15초 병합 위치 저장, 같은 viewport cursor·scroll과 다른 viewport 송폼 우선 복원, 삭제·owner 경계를 구현 | 46 files/175 tests, 0200~0702 migration 복구, production build·4 image 및 fresh-volume 복구, PC/mobile E2E 180 통과·8 skip, CI `34087267900`, 네 image tag/digest, `21cb464` 동일 SHA 개발 배포와 공개 health·owner/API/UI smoke; [검증 기록](../../docs/runbooks/0.7.0-phase3-validation.md) | Phase 4가 통합 자료 표현과 owner 경계를 즐겨찾기·핀, 수동 순서와 URL 필터에 재사용 |
+| 2026-09-07 | 0.7.0 / Phase 2 | Codex | PC·모바일 통합 검색, URL 유형 필터, 안전한 강조, 자료·가사 본문 deep link, 키보드 탐색, 일반화된 비노출 오류와 owner별 최근 검색어를 구현 | 43 files/165 tests, 0200~0701 migration 복구, production build·4 image 복구, PC/mobile E2E 177 통과·7 skip, CI `34082482383`, 네 image tag/digest, `5ae8ee2` 동일 SHA 개발 배포와 공개 검색 기반·인증 API/UI smoke; [검증 기록](../../docs/runbooks/0.7.0-phase2-validation.md) | Phase 3이 공통 `returnTo`·가사 본문 위치 계약을 최근 작업과 마지막 편집 위치 복원에 재사용 |
+| 2026-09-07 | 0.7.0 / Phase 1 | Codex | 곡·가사·라임·프롬프트의 owner 전용 통합 검색 계약, 원문과 분리된 NFKC projection, 문자 그대로 부분 검색, `pg_trgm` GIN index, 제목·태그·본문 점수와 안정 keyset을 구현 | 42 files/158 tests, 0200~0700 migration 복구, production build·4 image 복구, PC/mobile E2E 173 통과·5 skip, CI `34079253245`, 네 image tag/digest, `9ed1011` 동일 SHA 개발 배포와 공개 health·projection·index smoke; [검증 기록](../../docs/runbooks/0.7.0-phase1-validation.md) | Phase 2가 공통 결과와 점수·cursor만 소비해 통합 검색 UI·유형 filter·deep link를 구현 |
+| 2026-09-07 | 0.6.0 / Phase 5 | Codex | Phase 1~4의 32개 작업 ID를 증적에 연결하고 빈 곡 목록부터 곡·가사 생성, 송폼 복사, 연결 라임 cursor 삽입과 preview보다 긴 프롬프트의 정확한 panel 복사까지 PC·모바일 수직 흐름으로 자동화했으며, 모바일 sheet 위 clipboard 수동 복사 dialog가 가려지는 결함을 수정 | 40 files/151 tests, 0200~0501 migration 복구, production build·fresh DB image 복구, PC/mobile E2E 173 통과·5 skip, CI `34076493043`, 네 image tag/digest, `49f0658` 동일 SHA 개발 배포와 공개 연결 panel·exact detail·owner smoke; [검증 기록](../../docs/runbooks/0.6.0-phase5-validation.md) | 다음 commit에서 0.7.0으로 전환하고 [창작 흐름 인계](../../docs/architecture/0.6.0-CREATIVE-FLOW-HANDOFF.md)의 owner 평문·deep link·위치 계약으로 통합 검색을 시작 |
+| 2026-09-07 | 0.6.0 / Phase 4 | Codex | 라임 전체·선택 표현을 현재 가사의 CRDT 상대 cursor에 한 번의 undo transaction으로 삽입하고, 원격 변경·삭제·권한·IME 실패의 원문 보존 대안, 공통 복사 상태, 전역 네 유형 빠른 추가와 부모 곡 선택, 계정별 오프라인 멱등 빠른 아이디어를 구현 | 40 files/151 tests, 0200~0501 migration 복구, production build, PC/mobile E2E 171 통과·5 skip, CI `34074089627`, 네 image tag/digest, `d9977ec` 동일 SHA 개발 배포와 공개 삽입 경계·전역 진입점 smoke; [검증 기록](../../docs/runbooks/0.6.0-phase4-validation.md) | Phase 5가 Phase 1~4를 신규 곡부터 라임 삽입·프롬프트 복사까지 하나의 수직 흐름으로 회귀 검증 |
+| 2026-09-07 | 0.6.0 / Phase 3 | Codex | 가사 편집기에서 다른 곡·다른 가사·라임·프롬프트를 같은 owner 계약으로 탐색하고, 연결 우선/전체 검색, 안전한 전환·새 창, PC 접기/너비·focus mode 상태 복원, 모바일 내부 스크롤·가상 키보드와 삭제·오류 상태를 구현 | 36 files/145 tests, 0200~0501 migration 복구, production build·4 image 복구, PC/mobile E2E 162 통과·2 skip, CI `34070500341`, 네 image tag/digest, `fe92561` 동일 SHA 개발 배포와 공개 네 탭 smoke; [검증 기록](../../docs/runbooks/0.6.0-phase3-validation.md) | Phase 4가 panel의 라임을 CRDT 상대 cursor에 삽입하고 공통 복사·전역 빠른 추가를 연결 |
+| 2026-09-07 | 0.6.0 / Phase 2 | Codex | 곡 대시보드의 라임·프롬프트 유형 탭과 연결 목록, owner 제목·본문/토큰 검색, 연결됨·미연결 필터, 다중 선택·멱등 연결, 이름 확인 해제와 원본 보존, PC modal·모바일 sheet 및 실패 후 선택 유지·focus 복원을 구현 | 35 files/143 tests, 0200~0501 migration 복구, production build·4 image 복구, PC/mobile E2E 156 통과·2 skip, CI `34064718164`, 네 image tag/digest, `cc85917` 동일 SHA 개발 배포와 공개 연결 smoke; [검증 기록](../../docs/runbooks/0.6.0-phase2-validation.md) | Phase 3이 owner 연결 query를 가사 편집기의 다른 곡·다른 가사·라임·프롬프트 네 탭에서 소비 |
+| 2026-09-07 | 0.6.0 / Phase 1 | Codex | 곡 hero·실제 가사/프롬프트/라임 count, 가사 카드·생성/열기/복제/이름 확인 삭제, 곡·가사 분리 메모, 연결 preview, 영역별 실패·재시도와 목록 filter·scroll 왕복을 PC·모바일에 구현 | 35 files/140 tests, 0200~0501 migration 복구, production build·4 image 복구, PC/mobile E2E 156 통과·2 skip, CI `34061711046`, 네 image tag/digest, `ce278d1` 동일 SHA 개발 배포와 공개 대시보드 smoke; [검증 기록](../../docs/runbooks/0.6.0-phase1-validation.md) | Phase 2가 기존 N:M 관계와 preview를 전체 목록·검색·다중 연결·확인 해제로 확장 |
+| 2026-09-07 | 0.5.0 / Phase 5 | Codex | Phase 1~4의 32개 작업을 증적에 연결하고 빈 목록부터 작성·자동완성·중복 정리·순서 변경·복사·즐겨찾기·곡 연결·필터·길게 복사·독립 복제까지 통합 검증, 오프라인 재정렬 직후 오래된 저장 완료 상태가 노출되는 경쟁 조건 수정 | 35 files/140 tests, 0200~0501 migration 복구, production build·4 image 복구, PC/mobile E2E 154 통과·2 skip, CI `34059279073`, 네 image tag/digest, `9197524` 동일 SHA 개발 배포와 공개 Phase 2~5 smoke; [검증 기록](../../docs/runbooks/0.5.0-phase5-validation.md) | 0.6.0은 [프롬프트 인계](../../docs/architecture/0.5.0-PROMPT-HANDOFF.md)의 owner N:M·`plainText` 계약을 곡 중심 연결 패널에서 소비 |
+| 2026-09-07 | 0.5.0 / Phase 4 | Codex | handle drag·버튼·방향키와 focus/announcement를 갖춘 토큰 순서 변경, 동시 이동·삭제 수렴, 정확한 복사·수동 대안, 중요 기록 후 멱등 복제, 즐겨찾기·핀과 owner 곡 연결·확인 해제를 구현 | 35 files/140 tests, 0200~0501 migration 복구, production build·4 image 복구, PC/mobile E2E 152 통과·2 skip, CI `34056950606`, 네 image tag/digest, `99bbc3e` 동일 SHA 개발 배포와 공개 Phase 2~4 smoke; [검증 기록](../../docs/runbooks/0.5.0-phase4-validation.md) | Phase 5가 08~09번 프롬프트 전체 흐름·격리·동기화·접근성을 통합 검증 |
+| 2026-09-07 | 0.5.0 / Phase 3 | Codex | 신규·복제·기존 프롬프트에 owner 자동완성·쉼표 builder·위치 포함 중복 정리, 제목·occurrence sequence CRDT/IndexedDB·평문 projection·revision 복원을 PC·모바일에 구현 | 35 files/138 tests, 0200~0501 migration 복구, production build·4 image 복구, PC/mobile E2E 150 통과·2 skip, CI `34054525044`, 네 image tag/digest, `15599a3` 동일 SHA 개발 배포와 공개 editor·두 탭 수렴 smoke; [검증 기록](../../docs/runbooks/0.5.0-phase3-validation.md) | Phase 4가 토큰 순서 이동·최종 복사·곡 연결을 편집기에 추가 |
+| 2026-09-07 | 0.5.0 / Phase 2 | Codex | owner 범위 프롬프트 목록에 제목·토큰·연결 곡 검색, 즐겨찾기·최근 사용 필터, 여섯 정렬·cursor, PC 2열/모바일 1열 카드와 정확한 복사·길게 누르기·수동 대안·멱등 복제를 구현 | 35 files/135 tests, 0200~0501 migration 복구, production build, PC/mobile E2E 142 통과·2 skip, CI `34051539662`, 네 image tag/digest, `9dd672f` 동일 SHA 로컬·개발 배포와 공개 prompt smoke; [검증 기록](../../docs/runbooks/0.5.0-phase2-validation.md) | Phase 3이 `/prompts/new`·`/prompts/:id`의 토큰 편집·자동완성·중복 상태를 연결 |
+| 2026-09-07 | 0.5.0 / Phase 1 | Codex | 표시 값을 보존하는 쉼표 parser·NFKC 중복 키, occurrence 기반 Yjs sequence와 무중복 평문 projection, owner 토큰 이력·멱등 쓰기·곡 연결·soft delete 계약 구현 | 35 files/133 tests, 0200~0500 migration 복구, production build·4 image 복구, PC/mobile E2E 138 통과·2 skip, CI `34044477557`·`34044480587`, 네 image tag/digest, `bfd359c` 동일 SHA 로컬·개발 배포와 공개 smoke; [검증 기록](../../docs/runbooks/0.5.0-phase1-validation.md) | Phase 2가 owner query에 제목·토큰·곡 검색, URL 필터·정렬, 카드 복사·복제를 연결 |
+| 2026-09-07 | 0.4.0 / Phase 5 | Codex | Phase 1~4 고유 ID를 증적과 연결하고 라임 전체 흐름·owner 격리·다중 탭/오프라인 복구·접근성을 통합 검증, 느린 메타데이터 응답 경쟁 조건을 수정 | 33 files/122 tests, migration 복구·production build·4 image 복구, PC/mobile E2E 138 통과·2 skip, CI `34042009944`·`34042030495`, 네 image tag/digest, `cf5ba57` 동일 SHA 로컬·개발 배포와 공개 smoke; [검증 기록](../../docs/runbooks/0.4.0-phase5-validation.md) | 0.5.0 Phase 1은 [라임 인계](../../docs/architecture/0.4.0-RHYME-HANDOFF.md)의 owner/resource·목록·명령 queue 패턴을 프롬프트에 재사용 |
+| 2026-09-06 | 0.4.0 / Phase 4 | Codex | 태그 필터 이동, owner 곡 후보 검색·멱등 연결·선택 해제, 전체/선택 복사·빈 선택·수동 복사와 0.6.0용 Yjs 상대 위치 삽입 계약을 구현 | 20 files/122 tests, production build·4 image 복구, PC/mobile E2E 134 통과·2 skip, CI `34039901090`·`34039912586`, 네 image tag/digest, `3a2b2f3` 동일 SHA 로컬·개발 배포와 공개 연결 smoke; [검증 기록](../../docs/runbooks/0.4.0-phase4-validation.md) | Phase 5가 06~07번 전체 흐름·격리·동기화·접근성을 통합 검증 |
+| 2026-09-06 | 0.4.0 / Phase 3 | Codex | 오프라인 신규 초안, 제목 메타데이터와 CRDT 본문 동시 저장, 태그·핀·즐겨찾기·색상, 수정 기록 비교·비파괴 복원, 정확한 전체 복사와 이름 확인 soft delete를 PC·모바일에 구현 | 32 files/119 tests, production build·4 image 복구, PC/mobile E2E 132 통과·2 skip, CI `34037598862`·`34037609584`, 네 image tag/digest, `d75fa34` 동일 SHA 로컬·개발 배포와 공개 라임 CRUD smoke; [검증 기록](../../docs/runbooks/0.4.0-phase3-validation.md) | Phase 4가 곡 연결·선택 복사와 0.6.0 cursor 삽입 계약을 완성 |
+| 2026-09-06 | 0.4.0 / Phase 2 | Codex | owner 범위 라임 노트 목록에 문자 그대로 검색·태그/곡 조합 필터·다섯 정렬·pagination과 PC 2열/모바일 1열 카드, URL 상태, 메타데이터·정확한 본문 복사 및 실패 대안을 구현 | 32 files/118 tests, production build·4 image 복구, PC/mobile E2E 124 통과·2 skip, CI `34034902221`·`34034904785`, 네 image tag/digest, `d441a9b` 동일 SHA 개발 배포·공개 health; [검증 기록](../../docs/runbooks/0.4.0-phase2-validation.md) | Phase 3이 `/rhymes/new`·`/rhymes/:id`에 CRDT 생성·편집·수정 기록·삭제를 연결 |
+| 2026-09-06 | 0.4.0 / Phase 1 | Codex | 라임 노트·owner 태그·곡 연결과 공통 표시 속성, 멱등 생성·복제·soft delete, 가사 CRDT·평문·revision 재사용 기반 구현 | 32 files/116 tests, 0200~0400 migration 복구, production build·4 image 복구 smoke, PC/mobile E2E 120 통과·2 skip, CI `34032838270`·`34032860376`, 네 image tag/digest, `fb83f00` 동일 SHA 개발 배포·공개 health; [검증 기록](../../docs/runbooks/0.4.0-phase1-validation.md) | Phase 2가 owner/삭제 경계를 유지하며 목록 query·URL 상태·복사를 구현 |
+| 2026-09-06 | 0.3.1 / Phase 5 | Codex | 다중 탭·기기 자동 병합, 장애 복구, 저장 상태, 수정 기록·복원과 계정 격리를 통합 검증하고 실제 기기 인수를 완료 | 30 files/104 tests, 전체 production 복구·E2E, CI `34026897897`·`34026900854`, 네 image tag/digest, `7734bf2` 동일 SHA 개발 배포·공개 Chromium smoke, 사용자 보고 실제 기기·OS IME·다른 물리 네트워크·Google 로그아웃 인수; [검증 기록](../../docs/runbooks/0.3.1-phase5-local-validation.md) | 0.4.0 Phase 1이 owner 전용 동기화·revision 계약을 라임 노트에 재사용 |
+| 2026-09-06 | 0.3.1 / Phase 4 | Codex | 5분·중요 작업 전 revision, 180일/200개 정리, PC·모바일 비교와 비파괴 복원을 구현 | DB 정책·원자 복원·재시도·offline 병합, PC/mobile 비교·복원, Phase 5 통합 검증; [검증 기록](../../docs/runbooks/0.3.1-phase4-local-validation.md) | Phase 5 통합 장애 회귀와 실제 기기 인수 |
+| 2026-09-05 | 0.3.1 / Phase 3 | Codex | 인증 WebSocket, 멱등 update ACK, snapshot·raw update·receipt 영속화, 평문 projection·재처리·압축과 내용 없는 지표를 구현 | 0310 migration 복구, check, 93 tests, production build/images, PC/mobile E2E 76개, CI 33953374325, 네 image tag/digest 일치, `e2d7a27` 개발 배포; [검증 기록](../../docs/runbooks/0.3.1-phase3-validation.md) | Phase 4가 durable CRDT snapshot과 projector를 자동 revision·비파괴 복원에 사용 |
+| 2026-09-05 | 0.3.1 / Phase 2 | Codex | IndexedDB Yjs 초안, BroadcastChannel 탭 병합, offline 복구·계정별 삭제와 저장 상태를 편집기에 연결 | check, 90 tests, production build, PC/mobile E2E 76개; [검증 기록](../../docs/runbooks/0.3.1-phase2-validation.md) | Phase 3이 local update를 인증 collaboration 서버에 ACK·projection transaction으로 연결 |
+| 2026-09-05 | 0.3.1 / Phase 1 | Codex | 동일 owner Yjs 본문, opaque document/update ID, fail-closed 접근, 중복·역순·snapshot과 관계형 제목+CRDT 본문 projection 계약을 구현 | check, 24 files/90 tests, production build, secret scan, PC/mobile baseline 재검증; [검증 기록](../../docs/runbooks/0.3.1-phase1-validation.md) | Phase 2가 owner+document key IndexedDB와 BroadcastChannel 병합·저장 상태를 구현 |
+| 2026-09-05 | 0.3.0 / Phase 5 | Codex | 곡 대시보드와 PC·모바일 editor에 실제 가사 카드·생성·전환·복제·삭제·metadata를 연결하고 owner 범위 활성 가사 검색과 CRDT transaction 인계를 완성 | migration·복구, check, 86 tests, production build, PC/mobile E2E 74개, CI 33950119025, 네 image tag/digest 일치, `b8fdec7` 개발 배포·공개 전체 흐름 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase5-validation.md) | 0.3.1 Phase 1이 현재 text와 transaction port를 최초 Yjs 문서와 update schema에 연결 |
+| 2026-09-05 | 0.3.0 / Phase 4 | Codex | 현재 CodeMirror 문서의 전체·단일·복수 송폼 복사, 문서 순서·빈 줄 보존, Clipboard 실패 수동 대안, 키보드 선택과 PC·모바일 집중 모드를 구현 | migration·복구, check, 84 tests, production build, PC/mobile E2E 70개, CI 33948308267, 네 image tag/digest 일치, `8a685c6` 개발 배포·공개 복사/집중 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase4-validation.md) | Phase 5가 현재 editor copy command·selection·focus 상태 계약을 유지하며 가사 대시보드 전체 흐름을 연결 |
+| 2026-09-05 | 0.3.0 / Phase 3 | Codex | 증분 송폼 parser·CodeMirror line decoration, 반복 구간 고유 ID, cursor·viewport active 추적, PC 목차·모바일 시트 탐색을 구현 | check, 80 unit/DB tests, production build, PC/mobile E2E 64개, CI 33947031270, 네 image tag/digest 일치, `1a80f99` 개발 배포·공개 탐색 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase3-validation.md) | Phase 4가 current editor text와 tag 포함 section 범위·문서 순서 선택을 사용 |
+| 2026-09-05 | 0.3.0 / Phase 2 | Codex | CodeMirror 순수 텍스트 편집, IME 안전 직렬 자동 저장, 정확한 저장 상태·재시도, PC·모바일 레이아웃과 10만 자 입력을 구현 | check, 75 unit/DB tests, production build, PC/mobile E2E 60개, secret scan, CI 33945630864, 네 image tag/digest 일치, `cef1d0c` 개발 배포·공개 편집 smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase2-validation.md) | Phase 3 parser가 editor DOM을 수정하지 않고 transaction·visible range·selection port를 사용 |
+| 2026-09-05 | 0.3.0 / Phase 1 | Codex | 가사 1:1 subtype·동일 owner 부모·순수 텍스트 CRUD·CAS·멱등 복제·삭제 batch·실제 가사 수 구현 | 70 unit/DB tests, migration 0200/0201/0300 복구, production build/image, PC/mobile E2E 52개, CI 33943267049, 네 image tag/digest 일치, 299a683 개발 배포·공개 API smoke 통과; [검증 기록](../../docs/runbooks/0.3.0-phase1-validation.md) | 사용자 지시에 따라 여기서 중지, Phase 2 미시작 |
+| 2026-09-05 | 0.2.0 / 운영 보완 | Codex | 네 service image를 독립 Docker Hub repository로 분리하고 개발은 version·전체 SHA·`Dev`·`Dev-latest`, 승인된 릴리스는 `Release`·`latest`까지 같은 digest로 발행하도록 자동화·협업 문서를 갱신 | actionlint 1.7.12, Compose·shell·tag/ref 차단 계약, check, 59 tests, GitHub Actions publish와 네 repository의 tag·digest 일치 확인 | 릴리스는 사용자의 명시적 지시와 정확한 `v<VERSION>` Git tag에서만 수동 실행하고 릴리스 서버는 별도 지시 전까지 변경하지 않음 |
+| 2026-09-05 | 0.2.0 / 운영 보완 | Codex | 기존 필수 version+SHA tag를 유지하면서 네 service에 `beta-latest-<service>` 다중 tag를 추가하고, 충돌 없는 기본 `beta-latest`를 web에만 연결 | actionlint 1.7.12, Compose·shell·tag 계약, check, 59 tests, GitHub Actions publish와 Docker Hub alias·digest 일치 확인 | 정식 전환 지시 전까지 `beta-latest*`는 beta image만 가리키며 `latest`는 생성하지 않음 |
+| 2026-09-05 | 0.2.0 / 운영 보완 | Codex | CI 검증 뒤 web·collaboration·worker·migrate image를 `parkingplace/lyricscloud`에 필수 version·beta·commit·service 고정 tag와 버전별 이동식 beta tag로 자동 발행하고, 명시적 승인 전 정식·latest tag를 차단 | migration·복구, check, 59 tests, production build, E2E 42개, 네 production image runtime smoke, GitHub Actions 33940168228, Docker Hub 8개 tag·service별 digest 일치 | 이후 `main`·`phase/**` push마다 beta 자동 발행을 필수 확인하고, 사용자가 명시적으로 요청할 때만 정식 tag 정책 추가 |
+| 2026-09-05 | 0.2.0 / 운영 보완 | Codex | 로컬·개발·릴리스 Docker 작업 뒤 LyricsCloud 중지 컨테이너·미사용 image·network와 builder cache를 정리하고 volume·실행 중 자산은 보존하는 공통 스크립트와 운영 원칙을 추가 | shell·옵션·Compose 검사, check, 59 tests, dry-run, 로컬 실제 정리 약 10.5GB 회수 및 실행 중 컨테이너·전체 volume 전후 일치, [`정리 runbook`](../../docs/runbooks/docker-cleanup.md) | 개발 배포 성공 경로에서 자동 실행, 별도 test project도 명시 정리, 릴리스는 명시적으로 승인된 배포 smoke 성공 뒤 실행 |
+| 2026-09-05 | 0.2.0 / Phase 5 | Codex | 실제 곡 대시보드, 미지원 0 집계, 가사·연결 자료 빈 상태, 작업 메모, pin·favorite rollback, 제목·영향 기반 soft delete 확인과 목록 query 복귀를 완성하고 공개 개발 web을 production standalone asset으로 보정해 0.2.0 종료 | check, 59 tests, production build, production Docker image CSS 일치, desktop/mobile 전체 E2E 42개, A/B 상세·삭제 차단, orphan 0건, secret scan, [`검증 보고서`](../../docs/runbooks/0.2.0-phase5-validation.md) | [`0.3.0 가사 영역 인계`](../../docs/architecture/0.3.0-LYRICS-HANDOFF.md) |
+| 2026-09-05 | 0.2.0 / Phase 4 | Codex | 새 곡·곡 수정 공통 폼에 domain 길이 계약, 7개 상태·5개 색상, pin·favorite, 저장 오류·진행 상태, 이탈 확인과 owner 범위 서버 로드를 구현 | check, 58 tests, production build, 기본값·validation·중복 제출·전체 필드 생성/수정·320px·교차 계정 desktop/mobile E2E, [`검증 기록`](../../docs/runbooks/0.2.0-phase4-validation.md) | Phase 5 곡 대시보드, soft delete와 전체 곡 흐름 |
+| 2026-09-05 | 0.2.0 / Phase 3 | Codex | owner 범위 곡 목록을 PC 2열·모바일 1열 카드로 구현하고 지연 검색, URL 상태, 상태·다섯 정렬, cursor 추가 로드, pin·favorite 낙관적 갱신과 구분된 빈·오류 상태 완성 | check, 57 tests, production build, 0·30곡 desktop/mobile E2E 및 320px·큰 글자·focus 검증, [`검증 기록`](../../docs/runbooks/0.2.0-phase3-validation.md) | Phase 4 새 곡·곡 수정 공통 폼과 대시보드 이동 |
+| 2026-09-05 | 0.2.0 / Phase 2 | Codex | owner 범위 곡 CRUD·명시적 메타데이터 명령, owner별 생성 멱등성, 문자 그대로 부분 검색, 상태 필터, 핀 우선 다섯 keyset 정렬과 미지원 집계 capability 완성 | 0200·0201 migration 재적용/rollback/recovery, 14 files/57 tests, production build, desktop/mobile E2E 30개, secret scan, [`검증 기록`](../../docs/runbooks/0.2.0-phase2-validation.md) | Phase 3 곡 목록 URL 상태·카드·cursor UI |
+| 2026-09-05 | 0.2.0 / Phase 1 | Codex | 공통 resource·song 1:1 schema, 상태·색상·길이·DB 시각 계약, owner RLS, soft delete, 제품 삭제·연결 의미 확정 | clean migration 2회, 합성 fixture 3쌍, down·재적용, 12 files/49 tests, index EXPLAIN, check·build·E2E·secret scan, 개발 서비스 readiness 200, GitHub Actions 33930137076 통과, [`검증 기록`](../../docs/runbooks/0.2.0-phase1-validation.md) | Phase 2 생성 transaction·idempotency·CRUD·목록 query |
+| 2026-09-05 | 0.1.0 / Phase 5 | Codex | 로컬 OIDC 로그인·세션 복원·갱신·로그아웃, A/B 소유권 공격, PC·모바일 시각·보안 회귀를 CI에 연결하고 0.1.0 완료 | migration 2회, check, 41 tests, production build, desktop/mobile E2E 26개, secret scan 0건, Docker restart readiness 200, [`검증 보고서`](../../docs/runbooks/0.1.0-phase5-validation.md) | [`0.2.0 owner context 인계`](../../docs/architecture/0.2.0-OWNER-CONTEXT-HANDOFF.md)와 합성 A/B fixture |
+| 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 개발·릴리스 Debian 13 서버에 Docker Engine·Compose·Buildx·Git·기본 운영 도구 설치 | 양쪽 Docker 29.8.0·Compose 5.5.1·Buildx 0.37.0·Git 2.47.3, Compose hello-world, overlayfs·systemd cgroup, daemon enabled/active, TCP API 비공개, GitHub read, Tunnel active | 환경별 deploy key·배포 경로·운영 Compose와 secret 배치 |
+| 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 신규 릴리스 서버에 릴리스 전용 Cloudflare Tunnel·DNS·HTTPS 경로를 구성하고 오접속 기록·인벤토리 정정 | 실제 대상 SSH 확인, cloudflared 2026.8.3, ingress 유효, systemd enabled/active, DNS CNAME·TLS hostname 검증, 개발·릴리스 machine/Tunnel ID 분리, 예상 502 | 릴리스 앱 배포 시 Google OAuth client·환경 값·실제 로그인 검증 |
+| 2026-09-05 | 0.1.0 / 운영 보완 | Codex | 개발 Tunnel 공개 주소를 `devlyrics.parkingp.kr`로 변경하고 기존 DNS 제거, 로컬 공개·비공개 문서 동기화 | Tunnel ingress 검증, systemd enabled/active, 공개 DNS 신규 CNAME·기존 NXDOMAIN, Universal SSL SAN 일치, 예상 502 확인 | Google Cloud Console의 홈랩 개발 OAuth origin·redirect 수동 변경 후 앱 배포 |
+| 2026-09-04 | 0.1.0 / Phase 4 | Codex | Google 로그인 PC·모바일 상태 화면, 실제 정책 route, no-store 경계와 보호된 반응형 workspace shell 완성 | check, 31 unit, production build, 320·390·1440px E2E 12개, 시각 캡처 4개, GitHub Actions 33883741006 통과 | 인증 fixture·locator·브라우저 행렬 통합 검증 |
+| 2026-09-04 | 0.1.0 / Phase 3 | Codex | profile owner 규약·transaction-local 내부 user context·non-superuser 강제 RLS·계정별 cache 계약 완성 | 36 tests, A/B CRUD 차단, 기본 거부·pool 격리·blocked session 차단, migration 2회, build | 로그인 화면과 보호 route UI |
+| 2026-09-04 | 0.1.0 / Phase 2 | Codex | Google OIDC·PKCE·허용 목록·opaque session 경계와 실계정 로그인 완성 | 28 tests, 격리 DB migration 2회, 실계정 로그인 후 내부 user·identity·active session 각 1건 및 중복 0건, GitHub Actions 통과 | 내부 user ID 기반 profile·소유권 schema |
+| 2026-09-04 | 0.1.0 / Phase 1 | Codex | 실행·config·오류·health·격리 test DB·CI 기반 완성 | 12 unit tests, build, PC/mobile E2E, DB 장애·인증 분류, GitHub Actions 33870853702 통과 | Google OIDC·서버 session 경계 |
+| 2026-09-04 | 0.0.0 / Phase 5 | Codex | 요구사항·ADR·Docker·Git·보안 기준선 통합 검증, 0.1.0 진입 승인 | 계획 검증 통과, 빈 작업 사본·빈 volume readiness 200, DB 장애 503·회복 200, secret scan 0건, PC·모바일 smoke, 원격 Phase branch SHA 일치 | 0.1.0 / Phase 1 |
+| 2026-09-04 | 0.0.0 / Phase 2 | Codex | ADR-0001~0009 작성 및 사용자 승인으로 Accepted | ADR 색인·개별 문서 상태 일치, 각 대안·보안·철회 경로 기록 | 아키텍처 중립 골격 |
+| 2026-09-04 | 0.0.0 / Phase 3 | Codex | workspace, 15 route, 중립 타입, config·health, 반응형 token과 경계 검사 구현 | Node 24.20.0 임시 도구로 `pnpm check` 통과 | Docker 개발환경 |
+| 2026-09-04 | 0.0.0 / Phase 4 | Codex | Compose 5개 서비스, PostgreSQL 18.6, migration·health·volume·host 8080 개발환경 검증 | 로컬·container check/test/build, DB 지속·초기화, 정상/실패 health, Playwright PC·모바일 통과 | 0.0.0 통합 게이트 |
+| 2026-09-04 | 0.0.0 / Phase 1 | Codex | 71개 요구사항, 15개 화면, 5개 흐름, 20개 목업 차이, 복구 계층·제외 범위 기준선 확정 | 고유 REQ 71개(AUTH 5, SONG 11, LYRIC 17, RHYME 10, PROMPT 14, COMMON 14), 고유 작업 ID 576개 확인 | ADR-0001~0009 승인 게이트 |
+| 2026-09-04 | 계획 초안 준비 | Codex | 전체 로드맵, Phase 문서, 프로젝트 후보 구조 생성 | `scripts/validate-plans.ps1` 통과: 13개 버전·65개 Phase·576개 작업 ID·71개 §49 요구사항; Phase 수용 검토는 미실행 | 0.0.0/1phase 시작 |
+
+## 인계 기록 형식
+
+```text
+완료한 작업 ID:
+변경한 파일과 migration:
+실행한 검증 및 결과:
+실행하지 못한 검증:
+남은 결함·위험:
+다음 Agent가 먼저 읽을 문서·산출물:
+```

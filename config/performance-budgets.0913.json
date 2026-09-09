@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "lyricscloud.performance.0913.v1",
+  "fixture": {
+    "resources": 2500,
+    "songs": 500,
+    "lyrics": 1500,
+    "rhymeNotes": 250,
+    "prompts": 250,
+    "standardBodyCharacters": 4000,
+    "longDocumentLines": 10000,
+    "concurrentEditors": 3
+  },
+  "budgets": {
+    "songListP95Ms": 150,
+    "songDashboardP95Ms": 120,
+    "searchShortP95Ms": 180,
+    "searchNormalP95Ms": 150,
+    "saveP95Ms": 120,
+    "revisionP95Ms": 160,
+    "exportTotalMs": 5000,
+    "exportRssGrowthMiB": 64,
+    "purgeTotalMs": 2000,
+    "concurrentReadP95Ms": 250,
+    "editorParseP95Ms": 120,
+    "editorCopyP95Ms": 30,
+    "errorRatePercent": 0,
+    "roundP95CvPercent": 75,
+    "acceleratedSoakRssGrowthMiB": 48
+  }
+}

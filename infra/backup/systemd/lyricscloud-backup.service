@@ -1,0 +1,23 @@
+[Unit]
+Description=LyricsCloud encrypted PostgreSQL backup
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=lyricscloud
+Group=lyricscloud
+WorkingDirectory=/srv/lyricscloud
+EnvironmentFile=/etc/lyricscloud/backup.env
+ExecStart=/usr/bin/docker compose --env-file .env -f compose.yaml -f compose.backup.yaml --profile backup run --rm backup
+ExecStart=/usr/bin/docker compose --env-file .env -f compose.yaml -f compose.backup.yaml --profile backup run --rm --entrypoint /usr/local/bin/lyricscloud-check-rpo backup
+TimeoutStartSec=2h
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/lyricscloud /run/docker.sock
+
+[Install]
+WantedBy=multi-user.target

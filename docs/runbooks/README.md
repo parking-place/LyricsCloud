@@ -12,3 +12,63 @@
 
 실제 명령은 관련 구성이 구현되고 검증된 버전에서만 추가합니다.
 
+## 서버 공통 운영
+
+- [`개발·릴리스 서버 기본 환경 구성`](./server-bootstrap.md)
+- [`1.0 셀프호스팅 설치·설정`](../self-hosting.md)
+- [`1.0 사용자 안내`](../user-guide.md)
+- [`1.0 지원 정책과 알려진 제한`](../support.md)
+
+## 완료된 기준선 검증
+
+- [`0.0.0 기준선 통합 검증 보고서`](./0.0.0-release-readiness.md)
+- [`0.0.0 Docker 검증 기록`](../../infra/docker/VALIDATION.md)
+- [`0.1.0 Phase 1 검증`](./0.1.0-phase1-validation.md)
+- [`0.1.0 Phase 2 검증`](./0.1.0-phase2-validation.md)
+- [`0.1.0 Phase 3 검증`](./0.1.0-phase3-validation.md)
+- [`0.1.0 Phase 5 통합 검증`](./0.1.0-phase5-validation.md)
+- [`0.2.0 Phase 1 resource·song 데이터 모델 검증`](./0.2.0-phase1-validation.md)
+- [`0.2.0 Phase 2 곡 CRUD·목록 검증`](./0.2.0-phase2-validation.md)
+- [`0.3.0 Phase 1 가사 resource·CRUD 검증`](./0.3.0-phase1-validation.md)
+- [`0.3.0 Phase 2 CodeMirror 편집기 검증`](./0.3.0-phase2-validation.md)
+- [`0.3.0 Phase 3 송폼 인식·탐색 검증`](./0.3.0-phase3-validation.md)
+- [`0.3.0 Phase 4 가사 복사·집중 모드 검증`](./0.3.0-phase4-validation.md)
+- [`0.5.0 Phase 1 프롬프트 계약·데이터 모델 검증`](./0.5.0-phase1-validation.md)
+- [`0.5.0 Phase 2 프롬프트 목록 검증`](./0.5.0-phase2-validation.md)
+- [`0.5.0 Phase 3 프롬프트 편집기 검증`](./0.5.0-phase3-validation.md)
+- [`0.5.0 Phase 4 프롬프트 순서·복사·곡 연결 검증`](./0.5.0-phase4-validation.md)
+- [`0.5.0 Phase 5 프롬프트 통합 검증`](./0.5.0-phase5-validation.md)
+- [`0.6.0 Phase 1 곡 대시보드 검증`](./0.6.0-phase1-validation.md)
+- [`0.7.0 Phase 1 통합 검색 기반 검증`](./0.7.0-phase1-validation.md)
+- [`0.7.0 Phase 2 검색 화면·딥링크 검증`](./0.7.0-phase2-validation.md)
+- [`1.0.1 Phase 1 인수·결함 경계`](./1.0.1-phase1-intake.md)
+- [`1.0.1 Phase 2 베타 관리자 CLI`](./1.0.1-phase2-beta-admin.md)
+- [`1.0.1 Phase 3 HMAC allowlist`](./1.0.1-phase3-hmac-allowlist.md)
+- [`1.0.1 Phase 4 베타 가입 인수`](./1.0.1-phase4-beta-signup.md)
+- [`1.0.1 Phase 5 Windows IME`](./1.0.1-phase5-windows-ime.md)
+- [`1.0.1 Phase 6 UI·테마`](./1.0.1-phase6-ui-theme.md)
+- [`1.0.1 Phase 7 브랜드·build metadata`](./1.0.1-phase7-brand-metadata.md)
+- [`1.0.1 Phase 8 문서·버전·릴리스 도구`](./1.0.1-phase8-release-tooling.md)
+- [`1.0.1 Phase 9 권한·동시성·복구 통합 인수`](./1.0.1-phase9-integration-acceptance.md)
+- [`1.0.1 Private Beta 릴리스 체크리스트`](./1.0.1-release-checklist.md)
+- [`1.0.1 Phase 10 최종 후보·Private Beta 릴리스`](./1.0.1-phase10-private-beta-release.md)
+- [`0.7.0 Phase 3 최근 작업·위치 복원 검증`](./0.7.0-phase3-validation.md)
+
+## 개발 서버 운영
+
+- [`검증된 Phase commit 배포`](./development-deploy.md)
+- [`암호화 backup·격리 restore·upgrade·rollback`](./backup-restore-upgrade.md)
+- [`Docker 저장소 정리`](./docker-cleanup.md)
+- [`Docker Hub versioned image 발행`](./dockerhub-publish.md)
+- [`Cloudflare Tunnel과 HTTPS`](./cloudflare-tunnel-setup.md)
+- [`Google OAuth 개발 설정`](./google-oauth-setup.md)
+
+## 릴리스 서버 운영
+
+- [`릴리스 서버 Cloudflare Tunnel과 HTTPS`](./release-cloudflare-tunnel-setup.md)
+- [`1.0.0 Phase 3 production 배포 기록`](./1.0.0-phase3-deployment.md)
+- [`1.0.0 Phase 4 문서·운영 인계 검증`](./1.0.0-phase4-validation.md)
+- [`1.0.0 Phase 5 최종 릴리스·운영 인수`](./1.0.0-phase5-release.md)
+- [`관측 경보 대응`](./observability-alerts.md)
+- [`사고 기록 양식`](./incident-record-template.md)
+- [`암호화 backup·격리 restore·upgrade·rollback`](./backup-restore-upgrade.md)

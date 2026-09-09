@@ -21,3 +21,78 @@ powershell -NoProfile -File scripts/validate-plans.ps1
 - 저장소 내 Markdown 로컬 링크 대상의 존재 여부
 
 이 검사는 문서 문장의 의미, 요구사항과 구현의 실제 동작 일치, 외부 URL·Markdown 앵커 유효성까지 증명하지는 않습니다.
+
+## 0.7.0 탐색 release 검증
+
+격리 test DB에서 신규 설치와 0.6.0(`0501_prompt_usage.sql`) 업그레이드를 재현하고, 통합 검색·최근·saved 목록의 합성 대량 기준을 측정한다.
+
+```bash
+DATABASE_URL=postgresql://.../lyricscloud_test pnpm test:migration:0700-release
+DATABASE_URL=postgresql://.../lyricscloud_test pnpm test:performance:0700-release
+```
+
+두 명령은 `_test`로 끝나는 source DB만 허용하고 매 실행마다 별도 임시 DB를 생성·강제 제거한다. 기존 source DB와 Docker volume은 변경하지 않는다. 성능 출력은 warm run 회귀 기준이며 운영 SLO가 아니다.
+
+## 0.8.0 템플릿 migration 검증
+
+격리 test DB에서 기본 템플릿, 유형별 payload, owner 강제 RLS와 rollback/reapply를 확인한다.
+
+```bash
+DATABASE_URL=postgresql://.../lyricscloud_test pnpm test:migration:0800
+DATABASE_URL=postgresql://.../lyricscloud_test pnpm test:migration:0801
+```
+
+## 허용 메일 파일 이관
+
+이전 설정의 `.env` `AUTH_ALLOWED_EMAILS` 값을 현재 환경의 `.test_users`로 값 노출 없이 이관한다.
+
+```bash
+node scripts/migrate-test-users.mjs
+```
+
+스크립트는 기존 `.test_users` 항목과 병합·정규화한 뒤 `.env`에서 `AUTH_ALLOWED_EMAILS` 행을 제거한다. 두 파일 권한은 `600`으로 맞추며 실제 이메일은 출력하지 않는다.
+
+### 1.0.1 HMAC 전환
+
+평문 bootstrap 파일은 환경별 HMAC keyring을 만든 뒤 dry-run, 암호화 rollback backup, 원자 교체 순서로 한 번 전환한다. 아래 예시는 개발 환경이며 릴리스에서는 `development`를 `release`로 바꾸고 별도 keyring과 backup을 사용한다.
+
+```bash
+node scripts/provision-auth-allowlist-keys.mjs --kid development-2026-09
+node scripts/migrate-test-users-hmac.mjs --dry-run \
+  --source .test_users --keyring .private/keys/auth_allowlist_hmac_keyring \
+  --environment development
+node scripts/migrate-test-users-hmac.mjs --apply \
+  --source .test_users --keyring .private/keys/auth_allowlist_hmac_keyring \
+  --environment development \
+  --backup-key .private/keys/auth_allowlist_migration_backup_key \
+  --backup-output .private/backups/test-users-pre-hmac.enc
+```
+
+원본 주소는 출력하지 않으며 `.test_users`에는 HMAC JSONL만 남는다. HMAC은 익명화가 아니고 key 유출이나 후보 대입 위험이 있으므로 keyring과 레코드, 암호화 backup을 서로 분리한다. 복원·회전·삭제 조건은 [P3 운영 인수](../docs/runbooks/1.0.1-phase3-hmac-allowlist.md)를 따른다.
+
+## Docker 정리
+
+로컬·개발·릴리스 환경에서 LyricsCloud 빌드와 검증이 성공한 뒤 불필요한 Docker 객체를 정리한다.
+
+```bash
+pnpm docker:cleanup
+# 또는
+./scripts/cleanup-docker.sh --build-cache
+```
+
+기본 정리 대상은 `com.docker.compose.project=lyricscloud` 라벨이 있는 중지 컨테이너, 미사용 image와 network다. 별도 Compose project name으로 테스트했다면 `--project <name>`으로 각각 실행한다. `--build-cache`는 여러 프로젝트가 공유할 수 있는 현재 builder의 미사용 cache를 모두 정리하므로 Docker 빌드를 모두 마친 뒤 사용한다. volume, 실행 중 컨테이너, 사용 중 image는 삭제하지 않는다. 삭제 전 대상만 확인하려면 `--dry-run`을 추가한다.
+
+## Docker image tag
+
+Docker Hub tag를 Git ref와 현재 `VERSION`으로 계산한다.
+
+```bash
+./scripts/docker-image-tag.sh branch phase/0.2.0-p5-song-dashboard <40-character-commit-sha> web dev
+./scripts/docker-image-tag.sh tag v0.2.0 <40-character-commit-sha> web release
+```
+
+검증된 `VERSION`을 출력한다. service는 `web`, `collaboration`, `worker`, `migrate`만 허용한다. `dev` channel은 branch ref만, `release` channel은 정확한 `v<VERSION>` Git tag만 허용한다. `VERSION`과 `STATUS.md`의 현재 버전이 다르거나 ref·SHA·channel이 잘못되면 실패한다.
+
+## 1.0.1 베타코드 관리자 CLI
+
+관리자 전용 키를 값 노출 없이 준비한 뒤 `bin/LyricsCloud`에서 `betacode -n`, `betacode ls`, `betacode refresh`를 실행한다. Node/pnpm이 없는 서버에서는 wrapper가 `compose.admin.yaml`의 격리 컨테이너를 사용한다. 세부 권한·출력·복구 절차는 [P2 관리자 인수](../docs/runbooks/1.0.1-phase2-beta-admin.md)를 따른다.

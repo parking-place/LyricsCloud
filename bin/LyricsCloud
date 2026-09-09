@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_path=$(readlink -f "${BASH_SOURCE[0]}")
+repository_root=$(cd "$(dirname "$script_path")/.." && pwd)
+cd "$repository_root"
+
+if command -v pnpm >/dev/null 2>&1; then
+  exec pnpm --filter @lyricscloud/database exec tsx src/beta-admin.ts "$@"
+fi
+if ! command -v docker >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
+  printf 'BETA_ADMIN_RUNTIME_UNAVAILABLE\n' >&2
+  exit 1
+fi
+
+export LYRICSCLOUD_ADMIN_UID=${LYRICSCLOUD_ADMIN_UID:-$(id -u)}
+export LYRICSCLOUD_ADMIN_GID=${LYRICSCLOUD_ADMIN_GID:-$(id -g)}
+exec docker compose -f compose.yaml -f compose.admin.yaml --profile admin run --rm admin "$@"

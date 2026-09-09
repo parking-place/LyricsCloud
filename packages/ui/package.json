@@ -1,0 +1,4 @@
+{
+  "name": "@lyricscloud/ui", "version": "1.0.1", "private": true, "type": "module",
+  "exports": { "./tokens.css": "./src/tokens.css" }
+}

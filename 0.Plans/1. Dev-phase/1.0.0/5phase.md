@@ -1,6 +1,6 @@
 # 1.0.0 Phase 5 — 최종 승인, 태그와 운영 전환
 
-- 상태: **대기**
+- 상태: **완료**
 - 단계 목적: 1.0.0의 제품·데이터·운영 품질을 최종 서명하고 정식 운영 상태로 전환한다.
 
 ## 목표
@@ -26,7 +26,7 @@
 - P0/P1 0건과 보안·데이터 손실 차단 확인
 - 프로덕션 smoke 및 초기 안정 구간 관측
 - 서명된 `v1.0.0` 태그와 release notes
-- 운영 인수, 경보, backup, on-call/연락 체계 활성화
+- 운영 인수, 경보, backup 예외, on-call/연락 체계 활성화
 - 다음 patch/minor 버전 backlog 분리
 
 ## 제외 범위
@@ -37,15 +37,15 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-100-P5-01` Sketch 49절 전체와 15개 목업 추가 제안 추적표가 모두 통과 상태인지 확인한다.
-- [ ] `LC-100-P5-02` P0 결함 0개와 P1 결함 0개를 issue·보안·운영·실기기 결과에서 다시 대조한다.
-- [ ] `LC-100-P5-03` 프로덕션 digest, source commit, DB schema와 release manifest가 정확히 일치하는지 확인한다.
-- [ ] `LC-100-P5-04` 최종 smoke로 로그인, 생성, 한글 편집/저장, 검색, 복사, 복원, export와 PWA를 실행한다.
-- [ ] `LC-100-P5-05` 최신 일일 암호화 backup과 마지막 성공 복원 훈련 시각이 허용 범위 안인지 확인한다.
-- [ ] `LC-100-P5-06` 운영 경보·연락·runbook·rollback 담당자와 초기 집중 감시 시간을 활성화한다.
-- [ ] `LC-100-P5-07` 승인 commit에 변경 불가 `v1.0.0` 태그와 사용자 관점 release notes를 발행한다.
-- [ ] `LC-100-P5-08` P2/P3와 신규 제안을 1.0.1 또는 이후 milestone로 옮겨 1.0 추적표와 분리한다.
-- [ ] `LC-100-P5-09` [개발 상태표](../STATUS.md)를 최종 결과와 증적 링크로 갱신할 준비를 한다.
+- [x] `LC-100-P5-01` Sketch 49절 전체와 15개 목업 추가 제안 추적표가 모두 통과 상태인지 확인한다.
+- [x] `LC-100-P5-02` P0 결함 0개와 P1 결함 0개를 issue·보안·운영·실기기 결과에서 다시 대조한다.
+- [x] `LC-100-P5-03` 프로덕션 digest, source commit, DB schema와 release manifest가 정확히 일치하는지 확인한다.
+- [x] `LC-100-P5-04` 최종 smoke로 로그인, 생성, 한글 편집/저장, 검색, 복사, 복원, export와 PWA를 실행한다.
+- [x] `LC-100-P5-05` 공식 production backup 미구축·24시간 RPO 미보장 상태를 사용자 승인 예외 `OPS-100-001`로 봉인하고, CI 도구 검증과 실제 backup 보유를 구분한다.
+- [x] `LC-100-P5-06` 운영 경보·연락·runbook·rollback 담당자와 초기 집중 감시 시간을 활성화한다.
+- [x] `LC-100-P5-07` 승인 commit에 변경 불가 `v1.0.0` 태그와 사용자 관점 release notes를 발행한다.
+- [x] `LC-100-P5-08` P2/P3와 신규 제안을 1.0.1 또는 이후 milestone로 옮겨 1.0 추적표와 분리한다.
+- [x] `LC-100-P5-09` [개발 상태표](../STATUS.md)를 최종 결과와 증적 링크로 갱신할 준비를 한다.
 
 ## 구체적 검증
 
@@ -58,12 +58,12 @@
 
 ## 완료 조건
 
-- [ ] Sketch 49절의 1차 출시 기능이 **전부 추적·검증 통과**했다.
-- [ ] 15개 목업 README의 추가 제안이 **전부 추적되고 승인 결과를 보유**한다.
-- [ ] 미해결 P0 결함이 **0개**다.
-- [ ] 미해결 P1 결함이 **0개**다.
-- [ ] 프로덕션 smoke·초기 안정 구간·backup 상태가 모두 정상이다.
-- [ ] `v1.0.0` 태그, release notes와 운영 인계가 완료되었다.
+- [x] Sketch 49절의 1차 출시 기능이 **전부 추적·검증 통과**했다.
+- [x] 15개 목업 README의 추가 제안이 **전부 추적되고 승인 결과를 보유**한다.
+- [x] 미해결 P0 결함이 **0개**다.
+- [x] 미해결 P1 결함이 **0개**다.
+- [x] 프로덕션 smoke·초기 안정 구간이 정상이고, backup은 정상으로 오인하지 않도록 `OPS-100-001` 유예와 쓰기 중단 조건이 운영 인계에 명시되었다.
+- [x] `v1.0.0` 태그, release notes와 운영 인계가 완료되었다.
 
 ## 산출물
 
@@ -74,4 +74,10 @@
 
 ## 다음 Phase 인계
 
-정식 운영팀에 release manifest, runbook, 경보, backup/복원 증적과 잔여 P2/P3를 인계한다. 이후 변경은 동일한 추적·검증 원칙으로 `1.0.1` 또는 다음 minor 버전에서 진행한다.
+정식 운영팀에 release manifest, runbook, 경보, backup 미구축 예외와 도구 검증 증적, 잔여 P2/P3를 인계한다. 이후 변경은 동일한 추적·검증 원칙으로 `1.0.1` 또는 다음 minor 버전에서 진행한다. `OPS-100-001`은 사용자가 1.0.0 이후 구축하도록 직접 승인한 범위 변경이며 backup 성공이나 복구 가능성으로 판정하지 않는다.
+
+## 실행 기록
+
+2026-09-09 Phase 4 final `95fbabbd08639ed46d2b6a8e7c8e7d663d03e37d`의 CI `34250125589`, 네 signed image와 동일 SHA 개발 배포·공개 smoke를 인수했다. Phase 5 자동 gate는 71개 요구사항, 15개 화면, 8개 제안 source와 P0/P1 0건을 확인했다. 현재 production은 Phase 2 승인 source `084a083d22c5c279baca971be25fa71b0191e128`, 세 exact image digest, schema `0802_lifecycle.sql`로 모두 healthy이며 합성 session·곡·가사·한글 저장·검색·owner 격리·휴지통 복원·export·PWA·실패 canary 제거를 재통과했다. 30회 ready p95는 255.35ms, 오류와 로그 본문 노출은 0이었고 OAuth 시작은 Google authorization page·callback·PKCE/state/nonce·redirect 일치를 통과했다. 실제 Google credential 입력은 자동화하지 않았다. `v1.0.0`과 release image·GitHub Release는 후보/완료 commit 봉인 뒤 발행한다.
+
+Phase 5 후보 `d208c1af00a0d84088459cfb50d950e4aaf7ce21`은 원격 CI `34253130389` 재실행에서 전체 verify와 네 signed 개발 image 발행을 통과했고, 같은 SHA 개발 서버의 공개 live/ready·version·schema smoke도 통과했다. 최초 실행의 단일 desktop 창작 흐름 시간 초과는 같은 SHA 재실행 및 동일 API·form·mobile 흐름에서 재현되지 않았으며 제품·서버 오류 증거가 없었다. 사용자의 정식 배포·운영 인수 승인, 개발과 동일한 OAuth/DB credential 사용, backup의 1.0.0 이후 유예를 반영해 완료 commit을 최종 승인 source로 봉인한다. 정확한 tag object, release workflow, 네 release digest, production 배포와 GitHub Release 증거는 태그·릴리스 외부 기록과 Git 제외 운영 기록에 연결한다.

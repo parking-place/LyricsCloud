@@ -1,0 +1,40 @@
+# Isolated administrator-only CLI. This file is opt-in and is never part of the
+# normal web/collaboration/worker deployment.
+services:
+  admin:
+    profiles: [admin]
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.service
+      target: migrate
+    entrypoint: ["/nodejs/bin/node", "/app/admin.mjs"]
+    command: ["betacode", "ls"]
+    user: "${LYRICSCLOUD_ADMIN_UID:?set to the owner UID of the beta key files}:${LYRICSCLOUD_ADMIN_GID:?set to the owner GID of the beta key files}"
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set in .env}
+      BETA_ENVIRONMENT: ${BETA_ENVIRONMENT:?BETA_ENVIRONMENT must be development, release, or test}
+      BETA_CODE_INDEX_KID: ${BETA_CODE_INDEX_KID:?BETA_CODE_INDEX_KID must be set}
+      BETA_CODE_INDEX_KEY_FILE: /run/secrets/beta_code_index_key
+      BETA_CODE_AEAD_KEY_FILE: /run/secrets/beta_code_aead_key
+      BETA_CODE_TTL_HOURS: ${BETA_CODE_TTL_HOURS:-24}
+    volumes:
+      - type: bind
+        source: ./.private/runtime/beta_code_index_key
+        target: /run/secrets/beta_code_index_key
+        read_only: true
+      - type: bind
+        source: ./.private/runtime/beta_code_aead_key
+        target: /run/secrets/beta_code_aead_key
+        read_only: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [app]

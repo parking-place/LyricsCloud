@@ -1,0 +1,23 @@
+{
+  "name": "@lyricscloud/database",
+  "version": "1.0.1",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "check": "tsc -p tsconfig.json",
+    "migrate": "tsx src/migrate.ts"
+  },
+  "dependencies": {
+    "@lyricscloud/config": "workspace:*",
+    "@lyricscloud/domain": "workspace:*",
+    "@lyricscloud/observability": "workspace:*",
+    "drizzle-orm": "0.45.2",
+    "pg": "8.16.3",
+    "yjs": "13.6.32"
+  },
+  "devDependencies": {
+    "@types/pg": "8.15.5",
+    "tsx": "4.20.6"
+  }
+}

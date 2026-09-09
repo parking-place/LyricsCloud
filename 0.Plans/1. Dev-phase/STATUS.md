@@ -1,107 +1,74 @@
 # LyricsCloud 개발 상태
 
-이 파일은 현재 버전·Phase·담당 작업의 단일 상태 원본입니다. 계획 문서는 범위를 정의하고 이 파일은 실제 진행 상황을 기록합니다.
-
 ```yaml
-current_version: "0.0.0"
-current_phase: "1phase.md"
-state: "ready"
-owner: "unassigned"
-started_at: null
-updated_at: "2026-09-04"
-next_action: "0.0.0/1phase.md의 기준선·추적표 검증만 완료한 뒤 다음 Phase 진입 판정"
+current_version: "1.0.1"
+current_phase: "../2.Patch-phase/1.0.1/10phase.md"
+state: "complete"
+owner: "Codex"
+started_at: "2026-09-09"
+updated_at: "2026-09-10"
+next_action: "승인된 release PR을 main에 병합해 최종 SHA를 재검증하고 v1.0.1 정식 image와 릴리스 서버 배포를 수행한다"
 ```
 
-상태 값은 `ready`, `in_progress`, `blocked`, `review`, `complete` 중 하나를 사용합니다.
+## 승인과 기준
 
-## 기준선 판정
+2026-09-09 사용자가 1.0.1 계획의 모든 Phase 실행과 전체 완료 후 릴리스 서버 배포를 승인했다. `ADR-NF-001`, `PROD-NF-001`, `OPS-NF-001`의 권장 대안을 Accepted로 확정했다. 릴리스 서버 변경 권한은 P1~P10 완료와 최종 후보 검증 뒤에만 소비하며, 그 전에는 Phase별 개발 서버 인수만 수행한다.
 
-- `Sketch.md`: 로드맵 작성을 위한 1차 분석 완료, 0.0.0 Phase 1 승인 전
-- `Mock-up`: 15개 README와 PC·모바일 30개 정적 화면의 1차 분석 완료, 수정하지 않음, Phase 1 전수 추적 승인 전
-- `Implementation-Stack.md`: 13개 DEC에서 각각 하나 선택, `FINAL-APPROVAL` 선택 확인
-- `Implementation-Stack.md`의 문장형 상태는 아직 `사용자 선택 전`이지만 체크박스와 최종 승인을 현재 선택의 원본으로 판정함
-- `DEC-10` 선택 메모: 서버·DB를 먼저 로컬 Docker에서 개발하고 이후 홈랩으로 이관하며 개인 셀프호스팅이 가능해야 함
-- `CHECK-03`은 미선택이며 DEC-10 외 선택 메모가 없으므로 그 밖의 예외·우선순위는 기록되지 않은 것으로 판정함
-- `DEC-02-A`와 `DEC-06-C`의 결합은 “같은 사용자의 기기·탭 자동 병합, 다른 사용자 공유 제외”를 현재 계획 해석으로 사용하되 `ADR-0004` Accepted 전에는 구현 확정으로 보지 않음
-- 기술·제품·운영 결정의 소유권과 확정 Phase는 [`Decision-Ownership.md`](./Decision-Ownership.md)를 따르며, 색인에 있는 `Proposed` 항목을 승인된 결정으로 간주하지 않음
-- 실행 가능한 애플리케이션·Docker·DB·CI: 미구현
-- 로컬 Git 저장소와 GitHub 원격: 미초기화, 0.0.0 Phase 5에서 추적 대상과 권한을 확인한 뒤 진행
-- 버전별 실행 계획, 요구사항 추적표와 프로젝트 디렉터리: 사전 초안 생성 완료, 각 0.0.0 Phase에서 검토·승인 예정
+사용자가 1.0.1 이전의 1.0.0 P6 안정화와 GitHub 반영을 승인했다. 착수 기준 SHA는 `9e362f60f183b6adedfe358554b077334645ed0c`, 당시 전용 브랜치는 `phase/1.0.0-p6-stabilization`이다. 2026-09-09 사용자가 PR #11을 P5에 병합하고 원격 P6 브랜치를 삭제했다. 현재 병합 기준 `7c3930b5bc2be4f25f8f7586b7ce3f02b039af99`는 후보 `405e535`와 동일 tree다. 후보 CI 통과와 별개로 병합 CI의 performance round CV 실패는 조사 중이며, [인수 출발점](../2.Patch-phase/CODEX-HANDOFF.md)에 증거를 연결했다. 운영 배포·정식 태그 재발행·다른 개발자의 작업 덮어쓰기는 승인에 포함하지 않는다.
 
-## 버전 진행표
+## 기존 기록 보존
 
-| 버전 | 상태 | 현재/완료 Phase | 진입 조건 |
-|---|---|---|---|
-| 0.0.0 | ready | 1phase 대기 | 기준 문서와 본 로드맵 확인 |
-| 0.1.0 | planned | 없음 | 0.0.0 완료 |
-| 0.2.0 | planned | 없음 | 0.1.0 완료 |
-| 0.3.0 | planned | 없음 | 0.2.0 완료 |
-| 0.3.1 | planned | 없음 | 0.3.0 완료 |
-| 0.4.0 | planned | 없음 | 0.3.1 완료 |
-| 0.5.0 | planned | 없음 | 0.4.0 완료 |
-| 0.6.0 | planned | 없음 | 0.5.0 완료 |
-| 0.7.0 | planned | 없음 | 0.6.0 완료 |
-| 0.8.0 | planned | 없음 | 0.7.0 완료 |
-| 0.9.0 | planned | 없음 | 0.8.0 완료 |
-| 0.9.1 | planned | 없음 | 0.9.0 완료 |
-| 1.0.0 | planned | 없음 | 0.9.1 release gate 통과 |
+P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원본 blob `5492cb6eececa27ac9202eedb5aeb0a108f00286` 그대로** 보존했다. 모든 버전 진행표·승인·활성 작업 이력·완료 기록을 삭제하지 않고 같은 디렉터리로 옮겨 상대 링크를 유지한다. 현재 상태와 과거 증거를 분리하기 위한 변경이며 P1~P5 완료 기록을 소급 변경하지 않는다.
+
+## 진행표
+
+| 범위 | 상태 | 근거 |
+|---|---|---|
+| 0.0.0~1.0.0 P5 | 당시 완료 기록 보존 | 위 원본 STATUS와 기존 Phase 문서 |
+| 1.0.0 P6 | review | 일부 코드 후보·격리 회귀, 전체 인수 미완료 |
+| 1.0.1 P1 | 완료 | 사용자 재현·최초 손실 경계·베타/가입/릴리스 계약 확정 |
+| 1.0.1 P2 | complete | `0900`·CLI·관리 컨테이너와 동일 SHA 개발 인수 완료 |
+| 1.0.1 P3 | complete | 환경별 HMAC 이행·암호화 rollback·key rotation과 동일 SHA 개발 인수 완료 |
+| 1.0.1 P4 | complete | 실제 Google 신규 가입·원자 code 소비·grant와 동일 SHA 개발 인수 완료 |
+| 1.0.1 P5 | complete | Windows Chrome·Edge 실제 IME와 동일 SHA 개발 저장 무손실 인수 완료 |
+| 1.0.1 P6 | complete | 동일 SHA 공개 light/dark·새 가사·연결 관리·모바일/rail 인수 완료 |
+| 1.0.1 P7 | complete | 주 로고·아이콘 자산군과 runtime/health 공통 build metadata 공개 인수 완료 |
+| 1.0.1 P8 | complete | README·현재 문서·1.0.1 runtime·가변 Phase와 dev/release tag 격리의 동일 SHA 개발 인수 완료 |
+| 1.0.1 P9 | complete | 전체 브라우저·DB 경쟁·production image·복원·rollback·성능과 동일 SHA 개발 인수 완료 |
+| 1.0.1 P10 | complete | 최종 후보 전체 CI·네 dev image·동일 SHA 개발 공개 인수 완료, 승인된 release 실행 gate 개방 |
 
 ## 활성 작업
 
-작업 시작 전 한 행을 추가하고 완료·인계 후 제거하거나 완료 기록으로 이동합니다.
-
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| 없음 | - | - | - | - | - | ready |
+| Codex | 1.0.1/P10 | LC-NF-1.0.1-P10-01~06 | 요구 추적·최종 CI·release manifest·main/image/운영 배포 | P9 동일 SHA 개발 인수 | 2026-09-10 | complete |
+| Codex | 1.0.1/P9 | LC-NF-1.0.1-P9-01~05 | 통합 회귀·DB 경쟁·image/secret·backup/restore·성능 | P8 동일 SHA 개발 인수 | 2026-09-10 | complete |
+| Codex | 1.0.1/P8 | LC-NF-1.0.1-P8-01~04 | README·현재 문서·version·release tooling | P7 공개 brand/build metadata 인수 | 2026-09-10 | complete |
+| Codex | 1.0.1/P7 | LC-NF-1.0.1-P7-01~03 | public logo/icon 자산·navigation·build metadata | P6 공개 양 테마 UI 인수 | 2026-09-10 | complete |
+| Codex | 1.0.1/P6 | LC-NF-1.0.1-P6-01~03 | web components·공통 UI·스타일·portal | P5 Windows 실제 IME·공개 개발 HTTPS | 2026-09-10 | complete |
+| Codex | 1.0.1/P5 | LC-NF-1.0.1-P5-01~05 | lyric editor IME·저장 drain·재진입 복구 | P4 실제 Google 가입·기존 P6 회귀 | 2026-09-09 | complete |
+| Codex | 1.0.1/P4 | LC-NF-1.0.1-P4-01~05 | signup UI·OIDC callback·auth/DB grant | P3 HMAC bootstrap·0900 상태 | 2026-09-09 | complete |
+| Codex | 1.0.1/P3 | LC-NF-1.0.1-P3-01~03 | test-user reader/import·config·키 운영 runbook | P2 환경·키 계약 | 2026-09-09 | complete |
+| Codex | 1.0.1/P2 | LC-NF-1.0.1-P2-01~05 | 관리 CLI·auth/DB 코드 상태·설치 경로 | P1 Accepted 계약·PostgreSQL | 2026-09-09 | complete |
+| Codex | 1.0.1/P1 | LC-NF-1.0.1-P1-01~08 | 계약·인수 문서, editor/auth/UI 원인 경로 | P6 회귀·실제 Windows IME·공개 개발 HTTPS | 2026-09-09T17:55:11+09:00 | complete |
+| ChatGPT | 1.0.0/P6 | LC-100-P6-01, LC-100-P6-04, LC-100-P6-05, LC-100-P6-06 | CI·scripts·backup·observability·export·settings·P6 문서 | 별도 DB/브라우저 및 원격 CI 검증 | 2026-09-09 | review |
+| Codex | 1.0.0/P6 | LC-100-P6-01, LC-100-P6-03, LC-100-P6-04, LC-100-P6-08 | CI·Compose·기동 검증·탈퇴 E2E·초안/PWA·P6 인계 문서 | Chromium/DB 회귀 및 로컬 5개 서비스 확인, 원격 CI·실제 환경 인수 | 2026-09-09 | review |
+| Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
-## 0.0.0에서 닫아야 할 기술 게이트
+## 인계
 
-- [ ] `ADR-0001` — 웹·협업·worker 프로세스 및 workspace 토폴로지
-- [ ] `ADR-0002` — Google OIDC, 세션, 비공개·초대 허용 목록
-- [ ] `ADR-0003` — PostgreSQL 접근 계층, migration, 소유권·RLS 전달
-- [ ] `ADR-0004` — 자동 병합의 사용자 범위와 CRDT 문서 의미
-- [ ] `ADR-0005` — CRDT transport, WebSocket, 영속화, 평문 검색 투영, snapshot
-- [ ] `ADR-0006` — 자체 운영 프록시, TLS, WebSocket 전달, 배포 지역
-- [ ] `ADR-0007` — 온라인 우선 PWA, 계정별 로컬 저장, 업데이트
-- [ ] `ADR-0008` — 매일 논리 백업의 저장소, 암호화, 키, 보존, 복원
-- [ ] `ADR-0009` — 창작물 본문을 제거하는 오류·성능 관측
+1.0.1 P1의 자동 P6 감사 100건과 개발 서버·공개 live/ready/auth 기준은 [P1 인수 기록](../../docs/runbooks/1.0.1-phase1-intake.md)에 연결했다. 사용자 PC의 기존 Compose는 healthy지만 앱 `0.7.0`·schema `0701_recent_searches.sql`로 오래되어 현재 결함 판정에서 제외했고, source 갱신 전 DB custom archive와 목록 판독을 확인했다. 사용자가 실제 Windows 입력·재진입 손실과 `+ 새 가사`·`연결 관리` 테마 오류 화면을 제출했다. 최초 손실 경계는 이탈 시 취소되는 지연 composition commit, 테마 원인은 정의되지 않은 `primary-button` selector로 판정했다. P5 후보 `fa06b0ba1c74c314345dbe4eb2fb873ca1d7cb00`의 공개 서버 영구 저장 smoke와 Windows Chrome·Edge 실제 입력이 PASS였다. 양 테마·버튼은 P6에서 같은 후보 SHA로 닫는다.
 
-## 기획상 발견 사항
+[현재 Phase](./1.0.0/6phase.md), [검증 수준과 잔여 사항](../../docs/runbooks/1.0.0-phase6-stabilization.md)을 따른다. REVIEW-01~05·07·10의 초안·재시도·취소·템플릿·PWA 경로를 수정했으며 Chromium PC/모바일 회귀와 기존 복구 흐름을 확인했다. 전체 의미 기반 품질/성능/의존성 감사와 실제 기기 인수는 미완료다. 미해결 P0/P1을 0으로 선언하지 않는다.
 
-아래 항목은 구현 중 조용히 가정하지 않고 담당 Phase의 계약 작업에서 명시적으로 닫습니다.
+사용자 요청에 따라 GitHub P6를 사용자 PC로 가져왔다. `.change`의 30개 경로/blob이 원격 후보와 일치함을 확인한 뒤 허가된 폴더만 삭제했다. 로컬 Docker 갱신은 기존 PostgreSQL 볼륨과 비공개 설정을 보존하며 DB 백업 후 진행한다. 공용 개발/운영 서버와 향후 버전 계획은 이번 PC 작업 대상이 아니다.
 
-| 항목 | 결정 ID | 처리 버전 | 초기 해석 |
-|---|---|---|---|
-| CRDT 자동 병합 범위 | `ADR-0004` | 0.0.0, 0.3.1 | 같은 소유자의 기기·탭만 포함, 사용자 공유 제외 |
-| 모바일 네 번째 내비 항목 | `PROD-0001` | 0.1.0 | 고정 `더보기` 진입점과 하위 메뉴를 수용 기준으로 비교 |
-| 빠른 아이디어의 자료 종류 | `PROD-0005` | 0.6.0 | 분류 전 임시 inbox를 새로 만들지 말고 곡·가사 메모 또는 라임 생성 흐름으로 연결 |
-| 라임·프롬프트와 곡 관계 | `PROD-0002` | 0.2.0, 0.6.0 | 여러 곡과 여러 자료를 잇는 N:M 후보, 제품 계약과 schema에서 확정 |
-| 라임 독립 화면의 가사 삽입 | `PROD-0006` | 0.4.0, 0.6.0 | 살아 있는 편집 대상이 확인될 때만 삽입, 아니면 복사 제공 |
-| 가사 버전과 revision | `PROD-0004` | 0.3.0, 0.3.1 | 이름 있는 가사는 독립 resource, revision은 복구 snapshot |
-| 최근 작업 의미 | `PROD-0007` | 0.7.0 | 수정 시각과 열람 시각을 분리하고 마지막 커서·송폼 위치 저장 |
-| 곡 삭제와 연결 자료 | `PROD-0010` | 0.2.0, 0.8.0 | 소속 가사는 함께 숨기고 공유 연결 자료는 삭제하지 않으며 연결 복원 규칙 검증 |
-| 목업 전용 보완 기능 | 관련 `PROD-*` 또는 담당 Phase 계약 | 담당 버전 | 버전 비교, 상세 필터, 저장 상태, 비드래그 이동 수단은 1.0 범위에 포함 |
+로컬은 `lyricscloud-local` 한 그룹의 postgres·web·collaboration·worker가 healthy이고 migrate가 exit 0이다. 임시 컨테이너는 제거했으며 live/ready·인증 화면·정적 asset·Google OAuth 시작을 확인했다. PC도 production 웹 빌드를 사용하며, 기존 HTTP OAuth 주소는 명시적인 loopback 전용 opt-in으로 유지한다. 공용/LAN origin은 여전히 HTTPS가 필수다. 실제 로그인 완료는 사용자가 기존 브라우저에서 확인한다.
 
-## 다음 작업
+P6 push 자동 발행은 차단하며 수동 candidate도 공용 tag를 변경하지 않는다. 기존 `v1.0.0`, release manifest, migration, lockfile은 보존한다. `OPS-100-001` 운영 외부 백업 미구축은 별도 승인·실제 복원 인수까지 계속 열려 있다.
 
-1. [`0.0.0/1phase.md`](./0.0.0/1phase.md)의 작업 ID를 Issue 또는 작업 기록에 연결합니다.
-2. 활성 작업 표에 담당자와 Phase 1에서 수정할 경로를 기록합니다.
-3. 사전 생성된 추적표·화면 매핑·차이 목록을 전수 검토하고 누락을 보완합니다.
-4. Phase 1 완료 조건을 승인한 뒤에만 Phase 2의 ADR 작업을 시작합니다.
+P8 구현 후보 `17aa226abe48acee9642d6c539809b915362a28e`은 원격 PR #20과 개발 서버 checkout·build metadata가 일치한다. 공개 ready는 `1.0.1`, channel `dev`, phase `p8`, schema `0901_beta_signup.sql`을 반환했고 postgres·web·collaboration·worker가 모두 healthy였다. dev 발행에서 숫자·Release 계열을 제외하고 승인 tag release에서만 `Release`·`latest`·`Release-latest`를 같은 서비스 build에 묶는 30개 경계 검사를 통과했다. 필수 원격 통합 CI는 저장소 정책대로 P10 후보에서 실행한다.
 
-## 완료 기록
+P9 구현 후보 `565ed50335197855b7d3c14f3ea9e5519e1f838f`는 unit·실제 PostgreSQL integration 250건, 순차 브라우저 회귀 263건과 의도적 제외 31건, release browser matrix, production image·암호화 복원·upgrade/rollback·secret·취약점·관측·성능 예산을 통과했다. 인수 기록을 포함한 `3b05a34468874877043b3c36abdacf216a092565`는 원격 PR #21·개발 서버 checkout·공개 build metadata와 일치하며 channel `dev`, phase `p9`, schema `0901_beta_signup.sql`, 네 서비스 healthy를 확인했다. `OPS-100-001`은 사용자의 현재 위험 승인 예외로 계속 열어 둔다.
 
-| 완료일 | 버전/Phase | 담당자 | 결과 | 검증 증거 | 다음 인계 |
-|---|---|---|---|---|---|
-| 2026-09-04 | 계획 초안 준비 | Codex | 전체 로드맵, Phase 문서, 프로젝트 후보 구조 생성 | `scripts/validate-plans.ps1` 통과: 13개 버전·65개 Phase·576개 작업 ID·71개 §49 요구사항; Phase 수용 검토는 미실행 | 0.0.0/1phase 시작 |
-
-## 인계 기록 형식
-
-```text
-완료한 작업 ID:
-변경한 파일과 migration:
-실행한 검증 및 결과:
-실행하지 못한 검증:
-남은 결함·위험:
-다음 Agent가 먼저 읽을 문서·산출물:
-```
+P10 후보 `869e32b8a15c2e1e7524a75ab4d8b4428a925c79`는 원격 CI run `34394222604`의 전체 verify와 네 dev image 발행을 통과했다. 개발 서버 checkout/build metadata가 같은 SHA였고 `1.0.1`, channel `dev`, phase `p10`, schema `0901_beta_signup.sql`, 네 서비스 healthy를 확인했다. 공개 합성 smoke에서 가사·라임·프롬프트 즉시 이탈·재진입 저장, light/dark의 `＋ 새 가사`·`연결 관리`, 테마 저장, 키보드/focus, 320/390px 모바일, CSP·CSS·service worker가 PASS였고 합성 자료를 제거했다. 사용자 확인 `P4 Google signup PASS`, `P5 Windows Chrome PASS, Edge PASS`, `iOS update PASS, Android update PASS`를 실제 환경 증거로 동결했다. P10은 완료됐으며 사용자가 승인한 main·정식 image·릴리스 서버 실행으로 이동한다. `OPS-100-001`은 명시적 예외로 계속 열려 있다.

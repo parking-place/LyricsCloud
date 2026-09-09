@@ -1,0 +1,34 @@
+import { AuthError, clearSessionCookie, cookieNames, readCookie } from "@lyricscloud/auth";
+import { getAuthContext } from "../../../../lib/auth-context.js";
+import { errorResponse, privateResponseHeaders } from "../../../../lib/http-response.js";
+import { mutationOriginAllowed } from "../../../../lib/song-api.js";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export async function POST(request: Request): Promise<Response> {
+  try {
+    const { config, service } = getAuthContext();
+    if (!mutationOriginAllowed(request)) return errorResponse("FORBIDDEN", 403);
+    const token = readCookie(request.headers.get("cookie"), cookieNames(config).session);
+    const expectedOwner = request.headers.get("x-expected-owner");
+    if (token && expectedOwner) {
+      try {
+        if ((await service.resolveSession(token)).userId !== expectedOwner) return errorResponse("FORBIDDEN", 403);
+      } catch (error) {
+        if (!(error instanceof AuthError && error.code === "AUTH_SESSION_EXPIRED")) throw error;
+      }
+    }
+    await service.logout(token);
+    return Response.json(
+      { authenticated: false },
+      { headers: {
+        ...privateResponseHeaders,
+        "Set-Cookie": clearSessionCookie(config),
+        "Clear-Site-Data": '"cache", "storage"'
+      } }
+    );
+  } catch {
+    return errorResponse("AUTH_PROVIDER_UNAVAILABLE", 503);
+  }
+}

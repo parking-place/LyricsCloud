@@ -1,0 +1,67 @@
+FROM node:24.20.0-bookworm-slim AS build
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+WORKDIR /workspace
+
+RUN npm install --global pnpm@11.25.0
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/collaboration/package.json apps/collaboration/package.json
+COPY apps/worker/package.json apps/worker/package.json
+COPY packages/config/package.json packages/config/package.json
+COPY packages/database/package.json packages/database/package.json
+COPY packages/domain/package.json packages/domain/package.json
+COPY packages/observability/package.json packages/observability/package.json
+RUN pnpm install --frozen-lockfile
+
+COPY tsconfig.base.json ./
+COPY apps/collaboration apps/collaboration
+COPY apps/worker apps/worker
+COPY packages/config packages/config
+COPY packages/database packages/database
+COPY packages/domain packages/domain
+COPY packages/observability packages/observability
+
+RUN mkdir -p /out \
+  && pnpm exec esbuild apps/collaboration/src/server.ts --bundle --platform=node --format=esm --target=node24 \
+    --banner:js="import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" \
+    --external:pg --external:ws --external:yjs --outfile=/out/collaboration.mjs \
+  && pnpm exec esbuild apps/worker/src/server.ts --bundle --platform=node --format=esm --target=node24 \
+    --banner:js="import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" \
+    --external:pg-native --outfile=/out/worker.mjs \
+  && pnpm exec esbuild packages/database/src/migrate.ts --bundle --platform=node --format=esm --target=node24 \
+    --banner:js="import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" \
+    --external:pg-native --outfile=/out/migrate.mjs \
+  && pnpm exec esbuild packages/database/src/beta-admin.ts --bundle --platform=node --format=esm --target=node24 \
+    --banner:js="import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" \
+    --external:pg-native --outfile=/out/admin.mjs
+RUN pnpm --filter @lyricscloud/collaboration deploy --prod --legacy /deploy/collaboration
+
+FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:774b7d020b24214835769e24c3544835526cd0288f0b094eae48e8b2c2429a79 AS runtime-base
+
+ENV NODE_ENV=production
+WORKDIR /app
+
+FROM runtime-base AS collaboration
+ENV COLLABORATION_PORT=3001
+COPY --from=build --chown=65532:65532 /deploy/collaboration/node_modules ./node_modules
+COPY --from=build --chown=65532:65532 /out/collaboration.mjs ./collaboration.mjs
+EXPOSE 3001
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD ["/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3001/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+CMD ["collaboration.mjs"]
+
+FROM runtime-base AS worker
+ENV WORKER_HEALTH_PORT=3002
+COPY --from=build --chown=65532:65532 /out/worker.mjs ./worker.mjs
+EXPOSE 3002
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD ["/nodejs/bin/node", "-e", "fetch('http://127.0.0.1:3002/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+CMD ["worker.mjs"]
+
+FROM runtime-base AS migrate
+COPY --from=build --chown=65532:65532 /out/migrate.mjs ./migrate.mjs
+COPY --from=build --chown=65532:65532 /out/admin.mjs ./admin.mjs
+COPY --from=build --chown=65532:65532 /workspace/packages/database/migrations /migrations
+CMD ["migrate.mjs"]

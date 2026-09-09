@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "lyricscloud.release-operations.0915.v1",
+  "backup": {
+    "format": "PostgreSQL custom",
+    "encryption": "age X25519 recipient",
+    "schedule": "daily",
+    "rpoHours": 24,
+    "retentionDays": 30,
+    "restoreRtoSeconds": 300,
+    "repositoryBoundary": "externally mounted storage distinct from checkout and PostgreSQL volume"
+  },
+  "previousRc": {
+    "version": "0.9.0",
+    "sourceSha": "713f3113b6db07f9a444291e23d32f961839c3e2",
+    "images": {
+      "web": "parkingplace/lyricscloud-web@sha256:1dabbe8a534401be91d1b9fc20a66a0b7a152b039ee51f14374aeef3b6570c7c",
+      "collaboration": "parkingplace/lyricscloud-collaboration@sha256:84f392c209784d36639d1f586c8060c8f47d773fe7160e46da603d53c1bac724",
+      "worker": "parkingplace/lyricscloud-worker@sha256:c5d46e31b960fad873e567f68ec4311bb2ea85140d122aab269879ed8435ff61",
+      "migrate": "parkingplace/lyricscloud-migrate@sha256:637a7c9c0f57dc9a95062f6943ff2234808ee55bdbf04dd8eb321c8d5290878b"
+    }
+  },
+  "rollback": {
+    "applicationFirstWhenSchemaCompatible": true,
+    "databaseRecovery": "restore encrypted backup into a new empty database",
+    "destructiveDownMigration": false,
+    "rollbackRtoSeconds": 180
+  }
+}
