@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.1"
-current_phase: "../2.Patch-phase/1.0.1/4phase.md"
+current_phase: "../2.Patch-phase/1.0.1/5phase.md"
 state: "active"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-09"
-next_action: "P4 코드+메일 signup과 검증된 Google identity의 원자 code 소비·grant를 구현한다"
+next_action: "P5 Windows 한글 IME 조합 종료·이탈·재진입 저장 손실을 수정하고 실제 입력을 검증한다"
 ```
 
 ## 승인과 기준
@@ -29,14 +29,16 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.1 P1 | 완료 | 사용자 재현·최초 손실 경계·베타/가입/릴리스 계약 확정 |
 | 1.0.1 P2 | complete | `0900`·CLI·관리 컨테이너와 동일 SHA 개발 인수 완료 |
 | 1.0.1 P3 | complete | 환경별 HMAC 이행·암호화 rollback·key rotation과 동일 SHA 개발 인수 완료 |
-| 1.0.1 P4 | active | 코드+메일 signup·검증된 Google identity 원자 grant |
-| 1.0.1 P5~P10 | 미착수 | 앞 Phase 인수 뒤 순차 수행 |
+| 1.0.1 P4 | complete | 실제 Google 신규 가입·원자 code 소비·grant와 동일 SHA 개발 인수 완료 |
+| 1.0.1 P5 | active | Windows 한글 IME·이탈·재진입 저장 무손실 |
+| 1.0.1 P6~P10 | 미착수 | 앞 Phase 인수 뒤 순차 수행 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.1/P4 | LC-NF-1.0.1-P4-01~05 | signup UI·OIDC callback·auth/DB grant | P3 HMAC bootstrap·0900 상태 | 2026-09-09 | active |
+| Codex | 1.0.1/P5 | LC-NF-1.0.1-P5-01~05 | lyric editor IME·저장 drain·재진입 복구 | P4 실제 Google 가입·기존 P6 회귀 | 2026-09-09 | active |
+| Codex | 1.0.1/P4 | LC-NF-1.0.1-P4-01~05 | signup UI·OIDC callback·auth/DB grant | P3 HMAC bootstrap·0900 상태 | 2026-09-09 | complete |
 | Codex | 1.0.1/P3 | LC-NF-1.0.1-P3-01~03 | test-user reader/import·config·키 운영 runbook | P2 환경·키 계약 | 2026-09-09 | complete |
 | Codex | 1.0.1/P2 | LC-NF-1.0.1-P2-01~05 | 관리 CLI·auth/DB 코드 상태·설치 경로 | P1 Accepted 계약·PostgreSQL | 2026-09-09 | complete |
 | Codex | 1.0.1/P1 | LC-NF-1.0.1-P1-01~08 | 계약·인수 문서, editor/auth/UI 원인 경로 | P6 회귀·실제 Windows IME·공개 개발 HTTPS | 2026-09-09T17:55:11+09:00 | complete |

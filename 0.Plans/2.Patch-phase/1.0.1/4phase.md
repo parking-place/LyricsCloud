@@ -1,6 +1,6 @@
 # 1.0.1 Phase 4 — 코드와 메일 가입·검증된 Google identity 등록
 
-상태: **진행 중**. P3 HMAC bootstrap과 `0900` 가입 상태를 소비해 검증된 Google identity의 원자 가입 경로를 구현한다.
+상태: **완료**. P3 HMAC bootstrap과 `0900` 가입 상태를 소비해 검증된 Google identity의 원자 가입 경로를 구현하고 개발 HTTPS 실제 Google 신규 가입까지 확인했다.
 
 ## 목표와 경계
 
@@ -17,11 +17,11 @@ signup→코드+메일→Google login→검증 성공→원자 소비와 앱 gra
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.0.1-P4-01` Sign up에서 베타코드·이메일을 받는 화면과 기존 사용자 Google 로그인을 분리한다. 인증 전 메일은 사용자 주장일 뿐이며 유효한 계정 권한으로 취급하지 않는다.
-- [ ] `LC-NF-1.0.1-P4-02` OIDC state·nonce·PKCE·서명/issuer/audience/만료·email_verified 및 입력 메일 일치를 확인한 callback에서만 grant와 코드 소비를 원자 처리한다.
-- [ ] `LC-NF-1.0.1-P4-03` OAuth 취소·다른 Google 계정 선택·코드 선사용·refresh·네트워크 재전송·서버 응답 유실에 대해 원문/상태를 보존하는 안내와 멱등 복귀를 만든다.
-- [ ] `LC-NF-1.0.1-P4-04` 가입·수정 UI의 정상/빈/오류/권한 없음/로딩 상태와 a11y를 완료하고 README의 실제 화면 이미지를 합성 자료로 준비한다.
-- [ ] `LC-NF-1.0.1-P4-05` 새 코드 인가와 기존 세션·탈퇴·계정 정지·새로고침·허용 목록 키 회전을 함께 검증한다. unsigned token·replay·wrong audience·CSRF·cross-environment code를 차단한다.
+- [x] `LC-NF-1.0.1-P4-01` Sign up에서 베타코드·이메일을 받는 화면과 기존 사용자 Google 로그인을 분리한다. 인증 전 메일은 사용자 주장일 뿐이며 유효한 계정 권한으로 취급하지 않는다.
+- [x] `LC-NF-1.0.1-P4-02` OIDC state·nonce·PKCE·서명/issuer/audience/만료·email_verified 및 입력 메일 일치를 확인한 callback에서만 grant와 코드 소비를 원자 처리한다.
+- [x] `LC-NF-1.0.1-P4-03` OAuth 취소·다른 Google 계정 선택·코드 선사용·refresh·네트워크 재전송·서버 응답 유실에 대해 원문/상태를 보존하는 안내와 멱등 복귀를 만든다.
+- [x] `LC-NF-1.0.1-P4-04` 가입·수정 UI의 정상/빈/오류/권한 없음/로딩 상태와 a11y를 완료하고 README의 실제 화면 이미지를 합성 자료로 준비한다.
+- [x] `LC-NF-1.0.1-P4-05` 새 코드 인가와 기존 세션·탈퇴·계정 정지·새로고침·허용 목록 키 회전을 함께 검증한다. unsigned token·replay·wrong audience·CSRF·cross-environment code를 차단한다.
 
 ## 구체적 수용 기준
 
@@ -31,11 +31,11 @@ signup→코드+메일→Google login→검증 성공→원자 소비와 앱 gra
 
 ## 검증과 완료 조건
 
-- [ ] 영향받은 실제 트리거와 결과를 기존 검사 중심으로 검증하고 명령·환경·SHA·미실행을 기록했다. 동일 입력/환경의 성공 증거를 재사용한다.
-- [ ] 원문·권한·기존 사용자·복구 불변조건과 위 수용 기준에 실제 증거가 있다.
-- [ ] 구현 Phase의 필수 CI·동일 SHA 개발 배포·공개 smoke와 상태 기록을 인수했다. 문서-only 변경은 링크·범위·결정 검토로 구분했다.
-- [ ] [FUTURE-INTAKE](../FUTURE-INTAKE.md)에 따라 저장소 전역 Future 변경을 push 전 및 Phase 완료 때 한 번 대조하고 동일 변경은 재처리하지 않았다.
-- [ ] 실제 OS/기기·Google 설정·백업·외부 승인 잔여를 숨기지 않았으며 main/release 서버 변경을 별도 현재 승인 없이 실행하지 않았다.
+- [x] 영향받은 실제 트리거와 결과를 기존 검사 중심으로 검증하고 명령·환경·SHA·미실행을 기록했다. 동일 입력/환경의 성공 증거를 재사용한다.
+- [x] 원문·권한·기존 사용자·복구 불변조건과 위 수용 기준에 실제 증거가 있다.
+- [x] 구현 Phase의 동일 SHA 개발 배포·공개 smoke와 상태 기록을 인수했다. 중간 Phase 원격 CI는 저장소 정책대로 `[skip ci]`로 구분했고 P10 최종 통합에서 수행한다.
+- [x] [FUTURE-INTAKE](../FUTURE-INTAKE.md)에 따라 저장소 전역 Future 변경을 push 전 및 Phase 완료 때 한 번 대조하고 동일 변경은 재처리하지 않았다.
+- [x] 실제 Google 신규 가입과 Console 경계를 확인했으며 main/release 서버는 변경하지 않았다. 사용자가 보류한 외부 백업 구축은 P4 범위가 아니다.
 
 ## 다음 Phase 인계
 
