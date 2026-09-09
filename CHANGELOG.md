@@ -2,6 +2,23 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
+## [1.0.1 P8 candidate] - 2026-09-10
+
+### Added
+
+- 검증된 Google identity와 1회성 초대 코드의 메일이 일치할 때만 코드 소비와 가입 권한 등록이 함께 완료되는 Private Beta 가입
+- 승인된 LyricsCloud 로고의 light/dark, favicon, maskable PWA, monochrome 자산과 접근 가능한 브랜드 표시
+- 개발 `v1.0.1-pN dev`·정식 `v1.0.1 Release`를 같은 runtime/health metadata에서 만드는 channel·phase 계약
+
+### Fixed
+
+- Windows Chrome·Edge 한글 IME 조합 직후 이탈 시 마지막 입력을 drain하고, 재진입 때 서버 저장본과 계정별 초안을 안전하게 복구
+- light/dark 양쪽에서 `+ 새 가사`와 `연결 관리`에 공통 primary theme를 적용하고 좁은 화면의 제목·action·rail 겹침을 제거
+- dev image가 숫자/Release alias를 이동하지 않고 승인된 tag release만 `Release`·`latest`·`Release-latest`를 같은 서비스 digest로 승격하도록 발행 계약 분리
+- 릴리스 Phase 판정을 1.0.1 P1~P10, 추가 Phase, `2.Patch-phase`, 다자리 version/phase에 대응하면서 1.0.0 P5/P6 이력은 보존
+
+이 항목은 P8 개발 후보 기록이다. P9 통합 인수와 P10 최종 CI·main 병합·정식 이미지·릴리스 서버 배포 전에는 1.0.1 정식 릴리스를 의미하지 않는다. 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 여전히 미구축인 Known limitations다.
+
 ## [1.0.1 P3 candidate] - 2026-09-09
 
 ### Security

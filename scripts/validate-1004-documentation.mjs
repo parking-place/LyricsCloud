@@ -57,6 +57,8 @@ const support = read("docs/support.md");
 const observation = read("docs/operations/OBSERVABILITY-DATA-CLASSIFICATION.md");
 const alerts = read("docs/runbooks/observability-alerts.md");
 const changelog = read("CHANGELOG.md");
+const readme = read("README.md");
+const publicationRunbook = read("docs/runbooks/dockerhub-publish.md");
 const environmentExample = read(".env.example");
 const environmentSchema = JSON.parse(read("config/environment-schema.1.0.0.json"));
 
@@ -85,16 +87,18 @@ for (const [document, markers] of [
   [observation, ["trace/log는 7일", "집계 metric은 30일", "90일", "제목·가사·메모·태그"]],
   [alerts, ["autosave-failure", "search-latency", "purge-failure", "backup-failure", "service-unavailable", "사고 기록 양식"]],
   [support, ["RC-091-001", "RC-100-001", "RC-091-002", "OPS-100-001", "미해결 P0/P1은 0건"]],
-  [changelog, ["## [1.0.0] - 2026-09-09", "Known limitations", "1.0.1+"]]
+  [changelog, ["## [1.0.1 P8 candidate] - 2026-09-10", "## [1.0.0] - 2026-09-09", "Known limitations"]],
+  [readme, ["apps/web/public/icons/lyricscloud-mark-dark.svg", "actions/workflows/ci.yml/badge.svg", "1.0.1 Phase 8", "LyricsCloud betacode", "P5 Windows Chrome·Edge"]],
+  [publicationRunbook, ["dev-<VERSION>-p<N>", "Release-latest", "dev 발행은 숫자 version", "release 발행은 Dev 계열"]]
 ]) for (const marker of markers) assert(document.includes(marker), `documentation policy marker missing: ${marker}`);
 
 assert(existsSync(path.join(root, "SECURITY.md")), "SECURITY.md missing");
 assert(statSync(path.join(root, "compose.selfhost.yaml")).isFile(), "compose.selfhost.yaml missing");
 
 if (failures.length) {
-  console.error(`1.0.0 Phase 4 documentation validation failed (${failures.length})`);
+  console.error(`1.0.1 current documentation validation failed (${failures.length})`);
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
-console.log(`1.0.0 Phase 4 documentation validation PASS (${markdownFiles.length} Markdown files, ${uiNames.length} screens)`);
+console.log(`1.0.1 current documentation validation PASS (${markdownFiles.length} Markdown files, ${uiNames.length} screens)`);

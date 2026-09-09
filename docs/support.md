@@ -1,4 +1,4 @@
-# LyricsCloud 1.0 지원 정책
+# LyricsCloud 1.0.1 지원 정책
 
 ## 지원 환경
 
@@ -16,10 +16,12 @@
 
 | ID | 등급 | 현재 경계 | 후속 |
 |---|---|---|---|
-| `RC-091-001` | P2 기술 위험 | production build의 Yjs duplicate import 경고. 10,000줄·동기화·offline·restore·가속 소크는 오류 없이 통과 | 1.0.1에서 bundle 단일 import 경로 조사 |
+| `RC-091-001` | P2 기술 위험 | production build의 Yjs duplicate import 경고. 10,000줄·동기화·offline·restore·가속 소크는 오류 없이 통과 | P9에서 현재 후보의 import graph와 무해성을 재판정 |
 | `RC-100-001` | P2 운영 제한 | 인증·검색·export rate limiter는 단일 web replica 메모리 경계 | scale-out 전에 공용 limiter 도입 |
 | `RC-091-002` | P3 증거 품질 | 실제 iOS/Android 결과는 PASS지만 상세 기기 정보가 없음 | 다음 실제 기기 인수 때 버전 기록 |
-| `OPS-100-001` | 운영 위험 | 공식 릴리스 서버의 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 요청으로 미구축 | 1.0.1+에서 우선 구축·훈련 |
+| `OPS-100-001` | 운영 위험 | 공식 릴리스 서버의 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자의 현재 승인 예외로 미구축이며 호스트 손실 복구 지점을 보장하지 않음 | 후속 운영 작업에서 구축·훈련; 그 전 각 릴리스 기록에 위험 재기재 |
+
+1.0.1 P4 실제 Google 신규 가입, P5 Windows Chrome·Edge 한글 IME 저장·재진입, P6 light/dark 핵심 action, P7 로고·runtime metadata 인수는 완료됐다. 자동 브라우저와 사용자 실기기 결과는 서로 구분해 보존한다.
 
 미해결 P0/P1은 0건이다. 저장 수렴 실패, 다른 사용자의 자료 노출, 인증 우회, 핵심 모바일 불능, 복구 불가능 증거가 생기면 즉시 P0/P1으로 재분류하고 배포를 중단한다.
 

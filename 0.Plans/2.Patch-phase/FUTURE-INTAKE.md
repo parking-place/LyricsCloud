@@ -43,6 +43,7 @@
 | 2026-09-10 1.0.1 P6 완료·P7 착수 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `2f69dc41a4e8617391c16d05591325484a590e73` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 공개 양 테마·action·responsive 인수 완료, 기존 P7 brand/version 범위 유지 | 1.0.1 P6 후보 push 전 행 |
 | 2026-09-10 1.0.1 P7 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `af77b84face489315700db7af67a23b20bf936a8` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 기존 주 로고의 theme/favicon/PWA 변형과 runtime build label 범위만 구현 | 1.0.1 P6 완료·P7 착수 push 전 행 |
 | 2026-09-10 1.0.1 P7 완료·P8 착수 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `6897b96d82893e18b4c966187a81a2098f5b0a71` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 공개 양 테마 brand와 runtime/health 인수 완료, 기존 P8 문서·릴리스 도구 범위 유지 | 1.0.1 P7 후보 push 전 행 |
+| 2026-09-10 1.0.1 P8 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `77b857c323472b830ef74f024edb51f5617262dc` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P8 현재 문서·1.0.1 runtime·가변 Phase와 dev/release tag 격리 범위만 구현 | 1.0.1 P7 완료·P8 착수 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 

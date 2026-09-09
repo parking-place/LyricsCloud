@@ -1,4 +1,4 @@
-# LyricsCloud 1.0 셀프호스팅
+# LyricsCloud 1.0.1 셀프호스팅
 
 이 문서는 새 Linux 호스트 한 대에 단일 web replica, PostgreSQL 18, collaboration, worker를 Docker Compose로 실행하는 1.0 지원 경로다. 다중 web replica는 현재 메모리 기반 rate limiter를 공유하지 않으므로 지원 범위가 아니다.
 
@@ -11,18 +11,18 @@
 
 ## 1. 고정 source와 환경 준비
 
-정식 설치는 `v1.0.0` tag가 발행된 뒤 그 tag를 checkout한다. 출시 전 검토는 승인된 전체 40자리 commit SHA만 사용한다.
+현재 정식 설치 기준은 `v1.0.0`이다. 1.0.1 정식 발행 뒤에는 불변 `v1.0.1` tag를 사용하며, 출시 전 후보 검토는 승인된 전체 40자리 commit SHA만 사용한다. moving alias나 branch 이름을 운영 checkout 기준으로 쓰지 않는다.
 
 ```bash
 git clone https://github.com/parking-place/LyricsCloud.git
 cd LyricsCloud
-APPROVED_REF=v1.0.0
+APPROVED_REF=v1.0.1
 git checkout --detach "$APPROVED_REF"
 cp .env.example .env
 cp .test_users.example .test_users
 ```
 
-`.env`의 모든 `CHANGE_ME`를 바꾼다. `NODE_ENV=production`, `APP_VERSION=1.0.0`, `BUILD_ID=<현재 40자리 SHA>`, `APP_ORIGIN=https://<호스트>`로 설정한다. `DATABASE_URL`의 사용자·비밀번호·DB명은 같은 파일의 PostgreSQL 값과 일치해야 한다. `SESSION_SECRET`은 32바이트 이상의 무작위 값이어야 한다. 실제 값은 채팅·Issue·Git·image build argument에 넣지 않는다.
+`.env`의 모든 `CHANGE_ME`를 바꾼다. `NODE_ENV=production`, `APP_VERSION=1.0.1`, `BUILD_ID=<현재 40자리 SHA>`, `APP_CHANNEL=release`, `APP_ORIGIN=https://<호스트>`로 설정하고 release에서는 `APP_PHASE`를 비운다. 개발 후보만 `APP_CHANNEL=dev`, `APP_PHASE=p<N>`을 사용한다. `DATABASE_URL`의 사용자·비밀번호·DB명은 같은 파일의 PostgreSQL 값과 일치해야 한다. `SESSION_SECRET`은 32바이트 이상의 무작위 값이어야 한다. 실제 값은 채팅·Issue·Git·image build argument에 넣지 않는다.
 
 `.test_users`에 허용할 Google 이메일을 한 줄에 하나씩 적은 뒤, 릴리스 환경 전용 keyring과 암호화 rollback key를 만들고 HMAC JSONL로 전환한다. 아래 backup 경로는 새 파일이어야 하며 기존 파일을 덮어쓰지 않는다.
 
@@ -56,7 +56,7 @@ curl --fail --silent http://127.0.0.1:8080/api/health/live
 curl --fail --silent http://127.0.0.1:8080/api/health/ready
 ```
 
-두 endpoint는 200이어야 하고 ready 응답의 `version`, `build.id`, `database.latestMigration`은 각각 `1.0.0`, checkout SHA, `0802_lifecycle.sql`이어야 한다. `/api/health/metrics` 같은 공개 metrics 경로는 제공하지 않는다. 보호 API는 비로그인 요청을 거부해야 한다.
+두 endpoint는 200이어야 하고 1.0.1 ready 응답의 `version`, `build.id`, `channel`, `phase`, `database.latestMigration`은 각각 `1.0.1`, checkout SHA, `release`, `null`, `0901_beta_signup.sql`이어야 한다. 개발 후보는 `channel=dev`와 해당 `phase`를 반환한다. `/api/health/metrics` 같은 공개 metrics 경로는 제공하지 않는다. 보호 API는 비로그인 요청을 거부해야 한다.
 
 `docker compose down`은 컨테이너만 내리고 DB volume을 보존한다. `docker compose down --volumes`는 운영·개발 자료를 영구 삭제하므로 이 문서의 정상 운영 명령이 아니다.
 

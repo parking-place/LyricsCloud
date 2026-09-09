@@ -59,4 +59,4 @@ Agent/AGENTS·STATUS·version parser·manifest/health/header·CI·DockerHub·dev
 
 ## 구현 소비 보강
 
-기본 5 Phase·업무량/의존성에 따른 추가 허용·1.0.1 10 Phase는 최신 사용자 범위다. 현행 `release-phase-state.mjs`의 1.0.0 P5/P6 전제를 새 경로·다자리 숫자·가변 Phase로 확장하는 실제 구현/검증은 1.0.1 P8이 맡는다. 모든 Phase 인수 뒤에만 Private Beta release 후보를 확정한다.
+기본 5 Phase·업무량/의존성에 따른 추가 허용·1.0.1 10 Phase는 최신 사용자 범위다. P8에서 `release-phase-state.mjs`의 1.0.0 P5/P6 이력을 보존한 채 새 경로·다자리 숫자·가변 Phase 판정과 dev/release tag 분리를 구현하고 자동 검사했다. 모든 Phase 인수 뒤에만 Private Beta release 후보를 확정한다.
