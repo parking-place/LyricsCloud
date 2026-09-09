@@ -44,7 +44,7 @@ git check-ignore -v .env .test_users .private/runtime/auth_allowed_emails .priva
 
 환경별 keyring은 공유하지 않는다. HMAC은 익명화가 아니며 rollback backup은 기존 계정 로그인과 복원을 검증한 뒤 정한 보존 기한까지 별도 보호한다. 자세한 회전·복원 절차는 [P3 운영 인수](./runbooks/1.0.1-phase3-hmac-allowlist.md)를 따른다.
 
-환경 이름·형식의 기준은 [1.0 environment schema](../config/environment-schema.1.0.0.json)다. Google 설정은 아래 OAuth 절차를 먼저 마친다.
+환경 이름·형식의 기준은 [1.0.1 environment schema](../config/environment-schema.1.0.1.json)다. Google 설정은 아래 OAuth 절차를 먼저 마친다. 릴리스 적용 전에는 `node scripts/check-environment.mjs <service>`로 web·collaboration·worker·migrate·admin 설정을 각각 검사한다.
 
 ## 2. 구성 검사, 기동과 health
 

@@ -2,6 +2,7 @@ import { AuthError, transactionCookie } from "@lyricscloud/auth";
 import type { ErrorCode } from "@lyricscloud/domain";
 import { getAuthContext } from "../../../../lib/auth-context.js";
 import { errorResponse, privateResponseHeaders } from "../../../../lib/http-response.js";
+import { mutationOriginAllowed } from "../../../../lib/song-api.js";
 import {
   apiBodyExceedsLimit,
   rateLimitResponse,
@@ -15,7 +16,7 @@ export const runtime = "nodejs";
 export async function POST(request: Request): Promise<Response> {
   try {
     const context = getAuthContext();
-    if (request.headers.get("origin") !== context.config.appOrigin) return errorResponse("FORBIDDEN", 403);
+    if (!mutationOriginAllowed(request)) return errorResponse("FORBIDDEN", 403);
     const rate = requestRateLimiter.consume(`auth-signup:${requestClientKey(request)}`, 10, 15 * 60_000);
     if (!rate.allowed) return rateLimitResponse(rate);
     if (await apiBodyExceedsLimit(request, 4_096)) return errorResponse("PAYLOAD_TOO_LARGE", 413);

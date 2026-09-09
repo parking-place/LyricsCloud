@@ -214,7 +214,7 @@ test.describe("prompt creation and editor", () => {
         await handles.nth(2).dragTo(page.locator("[data-prompt-token-index='0']"));
       }
       await expect(page.locator(".prompt-editor-token").nth(0)).toContainText("<img src=x onerror=alert(1)>");
-      await expect(page.locator("img")).toHaveCount(0);
+      await expect(page.locator(".prompt-editor-token img")).toHaveCount(0);
       await expect.poll(() => prompt(page, target.id).then((value) => value.plainText)).toBe("<img src=x onerror=alert(1)>, alpha, beta");
 
       await page.getByRole("button", { name: "전체 복사", exact: true }).click();

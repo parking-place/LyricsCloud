@@ -5,6 +5,7 @@ revision=${1:?Usage: verify-0915-upgrade-rollback.sh IMAGE_TAG}
 [[ "$revision" =~ ^[A-Za-z0-9._-]+$ ]]
 current_version=$(tr -d '\r\n' < VERSION)
 previous_version=$(node -p 'require("./config/release-operations.0915.json").previousRc.version')
+current_schema=$(find packages/database/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | sort | tail -1)
 name="lyricscloud-0915-upgrade-$$-$RANDOM"
 allowlist_file=$(mktemp)
 printf 'fixture@example.invalid\n' > "$allowlist_file"
@@ -153,11 +154,12 @@ start_generation previous previous
 rollback_duration_ms=$(( $(date +%s%3N) - rollback_started ))
 [[ "$rollback_duration_ms" -le 180000 ]]
 [[ "$(docker exec "$name-db" psql -Atq -U upgrade_operator -d lyricscloud_upgrade -c "select count(*) from resources where title='LC_CANARY_UPGRADE_0915'")" == 1 ]]
-[[ "$(docker exec "$name-db" psql -Atq -U upgrade_operator -d lyricscloud_upgrade -c "select max(name) from schema_migrations")" == 0802_lifecycle.sql ]]
+# Application rollback intentionally keeps forward-compatible migrations in place.
+[[ "$(docker exec "$name-db" psql -Atq -U upgrade_operator -d lyricscloud_upgrade -c "select max(name) from schema_migrations")" == "$current_schema" ]]
 
 stop_generation previous
 run_migration "lyricscloud-migrate-ci:$revision"
 start_generation current current
 
-printf '{"upgradeRollback0915":"PASS","previousRc":"0.9.0","upgradeDurationMs":%s,"migrationFaultRollback":"PASS","healthFault":"PASS","applicationRollbackDurationMs":%s,"dataCanary":"PRESERVED","rollForward":"PASS"}\n' \
-  "$upgrade_duration_ms" "$rollback_duration_ms"
+printf '{"upgradeRollback0915":"PASS","previousRc":"0.9.0","upgradeDurationMs":%s,"migrationFaultRollback":"PASS","healthFault":"PASS","applicationRollbackDurationMs":%s,"schemaDuringApplicationRollback":"%s","dataCanary":"PRESERVED","rollForward":"PASS"}\n' \
+  "$upgrade_duration_ms" "$rollback_duration_ms" "$current_schema"
