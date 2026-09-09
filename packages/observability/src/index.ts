@@ -43,7 +43,7 @@ export function observabilityFromEnvironment(
 
 const tracer = trace.getTracer("@lyricscloud/observability", "0.1.0");
 const allowed = new Set<string>(TELEMETRY_ALLOWED_FIELDS);
-const forbidden = new Set<string>(TELEMETRY_FORBIDDEN_FIELDS.map((field) => field.toLowerCase()));
+const forbidden = TELEMETRY_FORBIDDEN_FIELDS.map((field) => field.toLowerCase());
 const safeCode = /^[A-Z][A-Z0-9_]{0,79}$/u;
 const safeIdentifier = /^[A-Za-z0-9._-]{1,128}$/u;
 const safeRequestId = /^req_[0-9a-f]{32}$/u;
@@ -94,7 +94,13 @@ export function toRouteTemplate(pathname: string): string | undefined {
 }
 
 export function redactRecursively(value: unknown, key = "", depth = 0): unknown {
-  if (depth > 8 || forbiddenKey(key)) return "[REDACTED]";
+  if (depth > 8) return "[REDACTED]";
+  // This operational field shares a word with authored templates. Normalize
+  // it before the generic denylist; never exempt its raw value from redaction.
+  if (key === "routeTemplate") {
+    return typeof value === "string" ? toRouteTemplate(value) ?? "[REDACTED]" : "[REDACTED]";
+  }
+  if (forbiddenKey(key)) return "[REDACTED]";
   if (Array.isArray(value)) return value.slice(0, 20).map((item) => redactRecursively(item, key, depth + 1));
   if (value && typeof value === "object") {
     const output: Record<string, unknown> = {};
@@ -108,11 +114,12 @@ export function redactRecursively(value: unknown, key = "", depth = 0): unknown 
 }
 
 export function sanitizeTelemetry(input: TelemetryInput): TelemetryRecord {
-  const redacted = redactRecursively(input) as Record<string, unknown>;
   const output: TelemetryRecord = {};
-  for (const [key, raw] of Object.entries(redacted)) {
+  // Drop unknown fields before traversing their values, while keeping the
+  // original top-level bound and child depth for allowed fields.
+  for (const [key, raw] of Object.entries(input).slice(0, 100)) {
     if (!allowed.has(key)) continue;
-    const value = sanitizeValue(key as AllowedField, raw);
+    const value = sanitizeValue(key as AllowedField, redactRecursively(raw, key, 1));
     if (value !== undefined) output[key as AllowedField] = value;
   }
   return output;
@@ -240,7 +247,7 @@ function sanitizeValue(key: AllowedField, value: unknown): TelemetryValue | unde
 
 function forbiddenKey(key: string): boolean {
   const normalized = key.replace(/[^A-Za-z0-9]/gu, "").toLowerCase();
-  return [...forbidden].some((part) => normalized.includes(part.toLowerCase()));
+  return forbidden.some((part) => normalized.includes(part));
 }
 
 function looksSecret(value: string): boolean {

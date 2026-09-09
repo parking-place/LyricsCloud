@@ -2,6 +2,8 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getImagePublication } from "./image-publication-plan.mjs";
+import { validateReleasePhase } from "./release-phase-state.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relative) => readFileSync(path.join(root, relative), "utf8");
@@ -57,9 +59,18 @@ for (const marker of ["annotated `v1.0.0`", "publish=true", "release=true", "Rel
 assert(!phase3.includes("개발 credential은 재사용하지 않는다"), "Phase 3 deployment contradicts approved credential reuse");
 assert(phase3.includes("production DB/volume은 분리") && phase3.includes("OPS-100-001"), "Phase 3 approved production boundary missing");
 assert(governance.includes("annotated/signature-capable tag") && governance.includes("tag는 이동하지 않고"), "immutable tag governance missing");
-assert(workflow.includes("inputs.release == true") && workflow.includes("value=Release") && workflow.includes("value=latest"), "release workflow tags missing");
+assert(workflow.includes("inputs.release == true") && workflow.includes("tags: ${{ steps.publication.outputs.tags }}")
+  && workflow.includes("flavor: latest=false"), "tested publication plan is not wired into CI");
+const publicationInput = { eventName: "workflow_dispatch", refType: "tag", refName: "v1.0.0", sha: "a".repeat(40), version: "1.0.0", release: true };
+const releaseTags = getImagePublication(publicationInput).tags;
+for (const tag of ["1.0.0", "Release", "latest"]) assert(releaseTags.includes(tag), `release tag missing: ${tag}`);
+const candidateTags = getImagePublication({ ...publicationInput, refType: "branch", refName: "phase/1.0.0-p6-stabilization", release: false }).tags;
+for (const tag of ["1.0.0", "Release", "latest", "Dev", "Dev-latest"]) assert(!candidateTags.includes(tag), `P6 candidate moves protected tag: ${tag}`);
 assert(tagScript.includes("release:tag") && tagScript.includes("^v([0-9]+\\.[0-9]+\\.[0-9]+)$"), "release tag guard missing");
-assert(status.includes('current_version: "1.0.0"') && status.includes('current_phase: "1.0.0/5phase.md"'), "STATUS is not on 1.0.0 Phase 5");
+try {
+  const phase6Plan = status.includes('current_phase: "1.0.0/6phase.md"') ? read("0.Plans/1. Dev-phase/1.0.0/6phase.md") : "";
+  validateReleasePhase(status, { requireRelease, phase6Plan });
+} catch { failures.push("STATUS must be P5 release or registered P6 review, never P6 release"); }
 for (const marker of ["1.0.0 Phase 5 — 최종 릴리스", "docs/releases/1.0.0.md", "docs/operations/1.0.1-backlog.md"]) {
   assert(readme.includes(marker), `README release handoff marker missing: ${marker}`);
 }
@@ -83,4 +94,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`1.0.0 Phase 5 final release validation PASS (${requirementIds.size} requirements, ${uiIds.size} screens, ${additionIds.size} proposal sources${requireRelease ? ", annotated tag exact" : ""})`);
+console.log(`1.0.0 historical release contract validation PASS (${requirementIds.size} requirements, ${uiIds.size} screens, ${additionIds.size} proposal sources${requireRelease ? ", annotated tag exact" : ""})`);

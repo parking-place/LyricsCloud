@@ -105,7 +105,8 @@ export function SettingsScreen({ initialSettings, ownerId }: { initialSettings: 
   }
 
   async function requestWithdrawal() {
-    if (withdrawalBusy || withdrawalConfirmation !== "탈퇴" || !exportAcknowledged) return;
+    if (withdrawalBusyRef.current || withdrawalBusy || withdrawalConfirmation !== "탈퇴" || !exportAcknowledged) return;
+    withdrawalBusyRef.current = true;
     setWithdrawalBusy(true); setWithdrawalMessage("");
     let completed = false;
     try {
@@ -120,16 +121,17 @@ export function SettingsScreen({ initialSettings, ownerId }: { initialSettings: 
       if (!response.ok) throw new Error("WITHDRAWAL_FAILED");
       completed = true;
     } catch {
-      const session = await fetch("/api/auth/session", { cache: "no-store" }).catch(() => null);
-      completed = session?.status === 401;
-      if (!completed) setWithdrawalMessage("탈퇴 요청을 완료하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.");
+      // A 401 from a separate session probe also means expiration or logout,
+      // not necessarily successful withdrawal. Keep local drafts until confirmed.
+      setWithdrawalMessage("탈퇴 요청 결과를 확인하지 못했습니다. 이 기기의 자료는 삭제하지 않았습니다. 연결과 Google 재인증 후 계정 상태를 확인해 주세요.");
+    } finally {
+      if (!completed) { withdrawalBusyRef.current = false; setWithdrawalBusy(false); }
     }
     if (completed) {
       await Promise.race([clearAccountPrivateData(ownerId).catch(() => undefined), new Promise<void>((resolve) => setTimeout(resolve, 2_000))]);
       window.location.replace("/auth?withdrawal=pending");
       return;
     }
-    setWithdrawalBusy(false);
   }
 
   return <section className="settings-page" aria-labelledby="settings-title">
