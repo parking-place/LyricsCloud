@@ -87,8 +87,8 @@ for (const [document, markers] of [
   [observation, ["trace/log는 7일", "집계 metric은 30일", "90일", "제목·가사·메모·태그"]],
   [alerts, ["autosave-failure", "search-latency", "purge-failure", "backup-failure", "service-unavailable", "사고 기록 양식"]],
   [support, ["RC-091-001", "RC-100-001", "RC-091-002", "OPS-100-001", "미해결 P0/P1은 0건"]],
-  [changelog, ["## [1.0.1 P8 candidate] - 2026-09-10", "## [1.0.0] - 2026-09-09", "Known limitations"]],
-  [readme, ["apps/web/public/icons/lyricscloud-mark-dark.svg", "actions/workflows/ci.yml/badge.svg", "1.0.1 Phase 9", "LyricsCloud betacode", "P5 Windows Chrome·Edge"]],
+  [changelog, ["## [1.0.1 P9 candidate] - 2026-09-10", "## [1.0.0] - 2026-09-09", "Known limitations"]],
+  [readme, ["apps/web/public/icons/lyricscloud-mark-dark.svg", "actions/workflows/ci.yml/badge.svg", "1.0.1 Phase 10", "LyricsCloud betacode", "P5 Windows Chrome·Edge"]],
   [publicationRunbook, ["dev-<VERSION>-p<N>", "Release-latest", "dev 발행은 숫자 version", "release 발행은 Dev 계열"]]
 ]) for (const marker of markers) assert(document.includes(marker), `documentation policy marker missing: ${marker}`);
 

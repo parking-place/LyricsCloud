@@ -11,7 +11,7 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 개인 창작용 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합과 온라인 우선 PWA를 지원한다.
 
-현재 소스는 `1.0.1` Private Beta 후보이며 P8까지 개발 인수를 마치고 P9 통합 검증 중이다. 정식 운영 버전은 P10 최종 인수와 릴리스 절차가 끝날 때까지 `1.0.0`으로 유지한다.
+현재 소스는 `1.0.1` Private Beta 후보이며 P9까지 개발 인수를 마치고 P10 최종 후보·릴리스 절차를 진행 중이다. 정식 운영 버전은 P10 릴리스가 끝날 때까지 `1.0.0`으로 유지한다.
 
 ## 주요 기능
 
@@ -31,10 +31,10 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 | 항목 | 상태 |
 |---|---|
 | 소스·runtime version | `1.0.1` |
-| 현재 작업 | [1.0.1 Phase 9 — 권한·동시성·복구 통합 인수](<./0.Plans/2.Patch-phase/1.0.1/9phase.md>) |
+| 현재 작업 | [1.0.1 Phase 10 — 최종 후보·Private Beta 릴리스](<./0.Plans/2.Patch-phase/1.0.1/10phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | [1.0.0 Phase 5 — 최종 릴리스](<./0.Plans/1. Dev-phase/1.0.0/5phase.md>) |
-| 개발 인수 | P4 실제 Google 가입, P5 Windows Chrome·Edge 한글 저장, P6 양 테마 UI, P7 브랜드·build metadata PASS |
+| 개발 인수 | P4 Google 가입, P5 Windows Chrome·Edge 한글 저장, P6 양 테마 UI, P7 브랜드, P8 릴리스 도구, P9 전체 통합 PASS |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.0.1은 모든 10개 Phase와 최종 CI·개발 HTTPS 검증이 끝난 뒤에만 `main`, 정식 이미지 태그와 릴리스 서버에 반영한다.

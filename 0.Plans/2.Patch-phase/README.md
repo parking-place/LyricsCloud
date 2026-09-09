@@ -1,6 +1,6 @@
 # LyricsCloud 후속 패치 계획
 
-문서 상태: **1.0.1 실행 중**, 2026-09-10. P1~P7은 개발 서버 인수를 마쳤고 P8의 README·현재 문서·버전·릴리스 도구 정비를 진행한다. 정확한 현재 Phase와 SHA는 [실행 STATUS](<../1. Dev-phase/STATUS.md>)를 단일 원본으로 사용한다.
+문서 상태: **1.0.1 실행 중**, 2026-09-10. P1~P9는 개발 서버 인수를 마쳤고 P10의 최종 후보·원격 CI·Private Beta 릴리스를 진행한다. 정확한 현재 Phase와 SHA는 [실행 STATUS](<../1. Dev-phase/STATUS.md>)를 단일 원본으로 사용한다.
 
 ## 읽는 순서
 
@@ -20,6 +20,6 @@ major는 사용자 명시 지시 전까지 **1 고정**이다. minor/patch는 �
 
 ## 구현과 외부 결정
 
-NAVER 세 언어 사전 제공/권리·폰트별 라이선스/서브셋·Suno provider·후속 실제 OS/IME·UX 시안 선택·SDK/패키징은 해당 Phase gate로 남는다. P7에서 기존 제품 표식을 주 로고로 승인해 앱과 아이콘에 적용했다. P8은 `release-phase-state.mjs`의 1.0.0 P5/P6 이력을 보존하면서 새 경로·1.0.1·가변 Phase·다자리 숫자를 지원하고 dev와 정식 Docker tag를 분리한다. P9/P10 인수 전에는 이를 정식 릴리스 완료로 안내하지 않는다.
+NAVER 세 언어 사전 제공/권리·폰트별 라이선스/서브셋·Suno provider·후속 실제 OS/IME·UX 시안 선택·SDK/패키징은 해당 Phase gate로 남는다. P7에서 기존 제품 표식을 주 로고로 승인해 앱과 아이콘에 적용했고, P8은 새 계획 경로·가변 Phase·다자리 숫자와 dev/정식 Docker tag 분리를 구현했다. P9는 권한·동시성·복구 통합 인수를 완료했다. P10 정식 릴리스 전에는 이를 운영 완료로 안내하지 않는다.
 
 원본 Sketch·Implementation-Stack·Mock-up과 기존 P6 이력을 보호한다. 원본 193파일/비공개 ZIP은 부모가 해시 일치를 확인했으나 재승인 삭제도 자동 검토에 거부돼 그대로 보존·commit 제외한다. 상세는 [인계](CODEX-HANDOFF.md)와 [출처](SOURCES.md)를 따른다.
