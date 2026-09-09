@@ -74,3 +74,7 @@ Docker Hub tag를 Git ref와 현재 `VERSION`으로 계산한다.
 ```
 
 검증된 `VERSION`을 출력한다. service는 `web`, `collaboration`, `worker`, `migrate`만 허용한다. `dev` channel은 branch ref만, `release` channel은 정확한 `v<VERSION>` Git tag만 허용한다. `VERSION`과 `STATUS.md`의 현재 버전이 다르거나 ref·SHA·channel이 잘못되면 실패한다.
+
+## 1.0.1 베타코드 관리자 CLI
+
+관리자 전용 키를 값 노출 없이 준비한 뒤 `bin/LyricsCloud`에서 `betacode -n`, `betacode ls`, `betacode refresh`를 실행한다. Node/pnpm이 없는 서버에서는 wrapper가 `compose.admin.yaml`의 격리 컨테이너를 사용한다. 세부 권한·출력·복구 절차는 [P2 관리자 인수](../docs/runbooks/1.0.1-phase2-beta-admin.md)를 따른다.
