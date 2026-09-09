@@ -1,30 +1,30 @@
 # 사용자 요구사항 추적표
 
-원래 NF-REQ-001~041을 유지하고 최신 필수 요구를 NF-REQ-042~048로 보강했다. 모든 행은 **계획됨 / 구현 증거 미등록**이다. 여러 패치가 배정된 요구는 모든 담당 범위가 끝나야 전체 완료로 표시한다.
+원래 NF-REQ-001~041을 유지하고 최신 필수 요구를 NF-REQ-042~048로 보강했다. 1.0.1의 NF-REQ-001~020은 [최종 요구 추적](../../docs/architecture/1.0.1-FINAL-TRACEABILITY.md)과 P1~P9 개발 인수로 완료했고, NF-REQ-021은 P10 정식 릴리스 gate를 진행 중이다. 이후 요구는 계획 상태이며 여러 패치가 배정된 요구는 모든 담당 범위가 끝나야 전체 완료로 표시한다.
 
 | ID | 요구 | 담당 버전·설계 | 대표 수용 결과 | 상태 |
 |---|---|---|---|---|
-| `NF-REQ-001` | Windows 한글 자모/받침 소실 수정 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 실제 IME로 바라봐·마냥·마땅한의 원문이 저장/재접속까지 보존 | 계획됨 |
-| `NF-REQ-002` | 다른 입력 영역 확산 여부 검사 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 라임 이외 가사/prompt/제목/메모/태그/검색/template 검사 결과 | 계획됨 |
-| `NF-REQ-003` | 개발 HTTPS의 버튼 클릭 불능 수정 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | dark mode·새 가사·연결 관리의 실제 공개 주소 smoke | 계획됨 |
-| `NF-REQ-004` | 전 UI dark/light 누락 수정 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 새 가사·연결 관리·portal 포함 양 테마 검증 | 계획됨 |
-| `NF-REQ-005` | UI 겹침 수정 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 모바일·PC·200% 확대에서 overlay/keyboard 겹침 회귀 | 계획됨 |
-| `NF-REQ-006` | 닫힌 sidebar 아이콘 수정 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | viewBox/크기/flex/focus의 양 테마 회귀 | 계획됨 |
-| `NF-REQ-007` | test user 파일 hash 기반 전환 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 평문 없는 .test_users 이행·키 분리·기존 계정 보존 | 계획됨 |
-| `NF-REQ-008` | 서버 관리자 CLI 제공 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 호스트에서 LyricsCloud 명령 실행, 최소 권한과 배포 경로 | 계획됨 |
-| `NF-REQ-009` | 베타코드 일괄 발급 -n | [1.0.1](1.0.1/README.md) | LyricsCloud betacode -n 7이 정확히 7개 발급 | 계획됨 |
-| `NF-REQ-010` | 랜덤 영숫자 6자리 | [1.0.1](1.0.1/README.md) | CSPRNG A-Z0-9 6자리·유일성·남용 제한 | 계획됨 |
-| `NF-REQ-011` | 베타코드 단일 사용 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 경쟁 소비 승자1·재사용불가·기존 계정 재로그인 | 계획됨 |
-| `NF-REQ-012` | 미사용 베타코드 refresh | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 미사용 전체 폐기·가입 대기 무효화·기존 grant 보존 | 계획됨 |
-| `NF-REQ-013` | 미사용 베타코드 ls | [1.0.1](1.0.1/README.md) | 관리자에게 실제 사용 가능한 코드 재조회 | 계획됨 |
-| `NF-REQ-014` | Sign up→코드+메일→Google 동선 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 인증 전 입력과 검증된 identity를 구별한 UI | 계획됨 |
-| `NF-REQ-015` | 앱 test user 자동 등록 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 검증된 Google callback에서 원자 grant 부여, Console 목록과 구분 | 계획됨 |
-| `NF-REQ-016` | 메인 아이콘/로고 | [1.0.1](1.0.1/README.md) | 승인된 light/dark·favicon·PWA/maskable·출처 | 계획됨 |
-| `NF-REQ-017` | 로고 옆 version/phase/channel | [1.0.1](1.0.1/README.md) | v1.0.1 Release 및 v1.1.12-p3 dev 형식 | 계획됨 |
-| `NF-REQ-018` | 라임/prompt 버튼 옆 버전 제거 | [1.0.1](1.0.1/README.md) | 해당 navigation의 중복/하드코딩 버전 0 | 계획됨 |
-| `NF-REQ-019` | GitHub README 최신화·미관 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 승인 로고·실제 기능/설치/스크린샷/CI badge·목차 | 계획됨 |
-| `NF-REQ-020` | 모든 현재 문서·버전 규칙 최신화 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | major1·다자리minor/patch·과거 이력 보존·새 폴더 | 계획됨 |
-| `NF-REQ-021` | 모든 10 Phase 인수 후 Private Beta release | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | main은 release 시에만·3 aliases·app.example.test 별도 승인 배포 | 계획됨 |
+| `NF-REQ-001` | Windows 한글 자모/받침 소실 수정 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 실제 IME로 바라봐·마냥·마땅한의 원문이 저장/재접속까지 보존 | 1.0.1 완료 |
+| `NF-REQ-002` | 다른 입력 영역 확산 여부 검사 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 라임 이외 가사/prompt/제목/메모/태그/검색/template 검사 결과 | 1.0.1 완료 |
+| `NF-REQ-003` | 개발 HTTPS의 버튼 클릭 불능 수정 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | dark mode·새 가사·연결 관리의 실제 공개 주소 smoke | 1.0.1 완료 |
+| `NF-REQ-004` | 전 UI dark/light 누락 수정 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 새 가사·연결 관리·portal 포함 양 테마 검증 | 1.0.1 완료 |
+| `NF-REQ-005` | UI 겹침 수정 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 모바일·PC·200% 확대에서 overlay/keyboard 겹침 회귀 | 1.0.1 완료 |
+| `NF-REQ-006` | 닫힌 sidebar 아이콘 수정 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | viewBox/크기/flex/focus의 양 테마 회귀 | 1.0.1 완료 |
+| `NF-REQ-007` | test user 파일 hash 기반 전환 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 평문 없는 .test_users 이행·키 분리·기존 계정 보존 | 1.0.1 완료 |
+| `NF-REQ-008` | 서버 관리자 CLI 제공 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 호스트에서 LyricsCloud 명령 실행, 최소 권한과 배포 경로 | 1.0.1 완료 |
+| `NF-REQ-009` | 베타코드 일괄 발급 -n | [1.0.1](1.0.1/README.md) | LyricsCloud betacode -n 7이 정확히 7개 발급 | 1.0.1 완료 |
+| `NF-REQ-010` | 랜덤 영숫자 6자리 | [1.0.1](1.0.1/README.md) | CSPRNG A-Z0-9 6자리·유일성·남용 제한 | 1.0.1 완료 |
+| `NF-REQ-011` | 베타코드 단일 사용 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 경쟁 소비 승자1·재사용불가·기존 계정 재로그인 | 1.0.1 완료 |
+| `NF-REQ-012` | 미사용 베타코드 refresh | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 미사용 전체 폐기·가입 대기 무효화·기존 grant 보존 | 1.0.1 완료 |
+| `NF-REQ-013` | 미사용 베타코드 ls | [1.0.1](1.0.1/README.md) | 관리자에게 실제 사용 가능한 코드 재조회 | 1.0.1 완료 |
+| `NF-REQ-014` | Sign up→코드+메일→Google 동선 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 인증 전 입력과 검증된 identity를 구별한 UI | 1.0.1 완료 |
+| `NF-REQ-015` | 앱 test user 자동 등록 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 검증된 Google callback에서 원자 grant 부여, Console 목록과 구분 | 1.0.1 완료 |
+| `NF-REQ-016` | 메인 아이콘/로고 | [1.0.1](1.0.1/README.md) | 승인된 light/dark·favicon·PWA/maskable·출처 | 1.0.1 완료 |
+| `NF-REQ-017` | 로고 옆 version/phase/channel | [1.0.1](1.0.1/README.md) | v1.0.1 Release 및 v1.1.12-p3 dev 형식 | 1.0.1 완료 |
+| `NF-REQ-018` | 라임/prompt 버튼 옆 버전 제거 | [1.0.1](1.0.1/README.md) | 해당 navigation의 중복/하드코딩 버전 0 | 1.0.1 완료 |
+| `NF-REQ-019` | GitHub README 최신화·미관 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 승인 로고·실제 기능/설치/스크린샷/CI badge·목차 | 1.0.1 완료 |
+| `NF-REQ-020` | 모든 현재 문서·버전 규칙 최신화 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | major1·다자리minor/patch·과거 이력 보존·새 폴더 | 1.0.1 완료 |
+| `NF-REQ-021` | 모든 10 Phase 인수 후 Private Beta release | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | main은 release 시에만·3 aliases·app.example.test 별도 승인 배포 | P10 인수 중 |
 | `NF-REQ-022` | 프롬프트 태그형↔문장형 | [1.0.3](1.0.3/README.md), [1.0.4](1.0.4/README.md), [1.0.12](1.0.12/README.md) | 모드 전환·ASCII . 분할 표시·원문/구두점 보존 | 계획됨 |
 | `NF-REQ-023` | 프롬프트 최종 copy 1000자 경고 | [1.0.4](1.0.4/README.md), [1.0.12](1.0.12/README.md) | 두 모드 모두 >1000 advisory, 입력/저장/복사 허용 | 계획됨 |
 | `NF-REQ-024` | 가사 최종 copy 3000자 경고 | [1.0.5](1.0.5/README.md), [1.0.12](1.0.12/README.md) | >3000 advisory, 입력/저장/복사 허용 | 계획됨 |

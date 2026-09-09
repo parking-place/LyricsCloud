@@ -46,6 +46,10 @@ const workflow = read(".github/workflows/ci.yml");
 const tagScript = read("scripts/docker-image-tag.sh");
 const readme = read("README.md");
 const runbookIndex = read("docs/runbooks/README.md");
+const currentTraceability = read("docs/architecture/1.0.1-FINAL-TRACEABILITY.md");
+const currentReleaseNotes = read("docs/releases/1.0.1.md");
+const currentReleaseRunbook = read("docs/runbooks/1.0.1-phase10-private-beta-release.md");
+const currentManifest = JSON.parse(read("config/release-manifest.1.0.1.json"));
 
 for (const marker of ["주요 기능", "설치와 업그레이드", "알려진 제한과 운영 위험", "지원과 보안", "iOS update PASS, Android update PASS", "미해결 P0/P1은 0건"]) {
   assert(releaseNotes.includes(marker), `release notes marker missing: ${marker}`);
@@ -77,6 +81,29 @@ for (const marker of ["1.0.0 Phase 5 — 최종 릴리스", "1.0.1 계획", "CHA
 }
 assert(runbookIndex.includes("1.0.0-phase5-release.md"), "runbook index missing Phase 5 release handoff");
 
+const currentRequirementIds = new Set(currentTraceability.match(/NF-REQ-(?:00[1-9]|01[0-9]|02[01])/gu) ?? []);
+assert(currentRequirementIds.size === 21, `expected 21 current requirement IDs, found ${currentRequirementIds.size}`);
+for (const marker of ["P10 release gate", "미해결 제품 P0/P1 0건", "OPS-100-001", "Windows Chrome·Edge PASS", "Google signup"]) {
+  assert(currentTraceability.includes(marker), `1.0.1 traceability marker missing: ${marker}`);
+}
+for (const marker of ["Private Beta", "Windows Chrome·Edge", "알려진 제한", "OPS-100-001"]) {
+  assert(currentReleaseNotes.includes(marker), `1.0.1 release notes marker missing: ${marker}`);
+}
+for (const marker of ["annotated `v1.0.1`", "publish=true", "release=true", "Release-latest", "application-first rollback"]) {
+  assert(currentReleaseRunbook.includes(marker), `1.0.1 release runbook marker missing: ${marker}`);
+}
+assert(currentManifest.releaseVersion === currentVersion && currentManifest.database.requiredLatestSchema === "0901_beta_signup.sql",
+  "1.0.1 release manifest boundary invalid");
+const currentReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${currentVersion}`,
+  sha: "b".repeat(40), version: currentVersion, release: true }).tags;
+for (const tag of [currentVersion, "Release", "latest", "Release-latest"]) assert(currentReleaseTags.includes(tag), `current release tag missing: ${tag}`);
+const currentDevTags = getImagePublication({ eventName: "push", refType: "branch", refName: "phase/1.0.1-p10-private-beta-release",
+  sha: "b".repeat(40), version: currentVersion, release: false }).tags;
+for (const tag of ["1.0.1", "Release", "latest", "Release-latest"]) assert(!currentDevTags.includes(tag), `P10 dev moves protected tag: ${tag}`);
+for (const marker of ["APP_VERSION: 1.0.1", "APP_PHASE: p10", "test:migration:0900", "test:environment:101"]) {
+  assert(workflow.includes(marker), `P10 CI marker missing: ${marker}`);
+}
+
 if (requireRelease) {
   try {
     const tagName = `v${currentVersion}`;
@@ -96,4 +123,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`1.0.0 historical artifacts plus ${currentVersion} release boundary validation PASS (${requirementIds.size} requirements, ${uiIds.size} screens, ${additionIds.size} proposal sources${requireRelease ? ", annotated tag exact" : ""})`);
+console.log(`1.0.0 historical artifacts plus ${currentVersion} release boundary validation PASS (${currentRequirementIds.size} current requirements, ${requirementIds.size} historical requirements, ${uiIds.size} screens, ${additionIds.size} proposal sources${requireRelease ? ", annotated tag exact" : ""})`);

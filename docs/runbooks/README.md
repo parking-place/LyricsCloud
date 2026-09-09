@@ -51,6 +51,7 @@
 - [`1.0.1 Phase 8 문서·버전·릴리스 도구`](./1.0.1-phase8-release-tooling.md)
 - [`1.0.1 Phase 9 권한·동시성·복구 통합 인수`](./1.0.1-phase9-integration-acceptance.md)
 - [`1.0.1 Private Beta 릴리스 체크리스트`](./1.0.1-release-checklist.md)
+- [`1.0.1 Phase 10 최종 후보·Private Beta 릴리스`](./1.0.1-phase10-private-beta-release.md)
 - [`0.7.0 Phase 3 최근 작업·위치 복원 검증`](./0.7.0-phase3-validation.md)
 
 ## 개발 서버 운영

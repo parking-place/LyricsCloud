@@ -20,7 +20,10 @@ for (const service of ["web", "collaboration", "worker", "migrate"]) {
   if (!/^sha256:[0-9a-f]{64}$/.test(args.get(`${service}-digest`))) fail(`${service} digest is invalid`);
 }
 
-const manifest = JSON.parse(await readFile(new URL("../config/release-manifest.1.0.0.json", import.meta.url), "utf8"));
+const version = (await readFile(new URL("../VERSION", import.meta.url), "utf8")).trim();
+if (!/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/.test(version)) fail("VERSION is invalid");
+const manifest = JSON.parse(await readFile(new URL(`../config/release-manifest.${version}.json`, import.meta.url), "utf8"));
+if (manifest.releaseVersion !== version) fail("release template version does not match VERSION");
 manifest.source.commit = args.get("source-sha");
 manifest.source.builtAt = new Date(args.get("built-at")).toISOString();
 manifest.source.sourceDateEpoch = Number(args.get("source-date-epoch"));

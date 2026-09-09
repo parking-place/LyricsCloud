@@ -100,4 +100,33 @@ for (const path of ["scripts/check-environment-1002.mjs", "scripts/generate-1002
   "scripts/docker-image-tag.sh", "scripts/verify-image-artifact.sh", "scripts/scan-container-vulnerabilities.sh", "scripts/scan-container-secrets.sh",
   "scripts/verify-production-images.sh", "scripts/verify-0915-upgrade-rollback.sh"]) await read(path);
 
-console.log(`1.0.1 runtime versions plus sealed 1.0.0 artifact contract: ${packages.length} package versions, ${migrationFiles.length} sealed migrations, 4 digest-only signed images verified`);
+const currentEnvironmentText = await read("config/environment-schema.1.0.1.json");
+const currentMigrationsText = await read("config/migrations.1.0.1.json");
+const currentLicensesText = await read("config/licenses.1.0.1.json");
+const currentEnvironment = JSON.parse(currentEnvironmentText);
+const currentMigrations = JSON.parse(currentMigrationsText);
+const currentLicenses = JSON.parse(currentLicensesText);
+const currentManifest = await json("config/release-manifest.1.0.1.json");
+assert(currentEnvironment.properties.APP_VERSION.const === version, "current environment version differs");
+assert(currentEnvironment.properties.APP_CHANNEL.const === "release", "current environment release channel missing");
+assert(currentMigrations.productVersion === version && currentMigrations.latestSchema === "0901_beta_signup.sql", "current migration boundary differs");
+assert(currentMigrations.applyOrder.length === migrationFiles.length, "current migration manifest is incomplete");
+for (const entry of currentMigrations.applyOrder) {
+  assert(migrationFiles.includes(entry.name), `${entry.name} is missing from current migration history`);
+  assert(hash(await read(`packages/database/migrations/${entry.name}`)) === entry.sha256, `${entry.name} current checksum changed`);
+}
+assert(currentLicenses.productVersion === version && currentLicenses.lockfileSha256 === hash(lockfile), "current license inventory differs");
+assert(Object.values(currentLicenses.licenses).flat().length === currentLicenses.totalPackages, "current license inventory count changed");
+assert(currentLicenses.review.unknownLicenses.length === 0 && currentLicenses.review.blockedLicenses.length === 0, "current license review has blockers");
+assert(currentManifest.releaseVersion === version && currentManifest.releaseChannel === "release", "current release template boundary invalid");
+assert(currentManifest.source.commit === "$GIT_SHA" && currentManifest.source.lockfileSha256 === hash(lockfile), "current release source placeholders differ");
+assert(currentManifest.database.manifestSha256 === hash(currentMigrationsText), "current migration manifest checksum differs");
+assert(currentManifest.environment.schemaSha256 === hash(currentEnvironmentText), "current environment schema checksum differs");
+assert(currentManifest.licenses.inventorySha256 === hash(currentLicensesText), "current license inventory checksum differs");
+assert(currentManifest.database.requiredLatestSchema === currentMigrations.latestSchema, "current release schema differs");
+for (const service of ["web", "collaboration", "worker", "migrate"]) {
+  assert(currentManifest.images[service].repository === `parkingplace/lyricscloud-${service}`, `${service} current repository invalid`);
+  assert(currentManifest.images[service].digest === `$${service.toUpperCase()}_DIGEST`, `${service} current digest placeholder invalid`);
+}
+
+console.log(`1.0.1 runtime and release artifacts plus sealed 1.0.0 contract: ${packages.length} package versions, ${migrationFiles.length} current migrations, 4 digest-only signed images verified`);

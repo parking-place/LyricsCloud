@@ -24,7 +24,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     services:
       postgres:
         image: postgres:18-bookworm
@@ -44,8 +44,10 @@ jobs:
       NODE_ENV: test
       DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
       AUTH_DATABASE_INTEGRATION: "true"
-      APP_VERSION: 0.9.1
+      APP_VERSION: 1.0.1
       BUILD_ID: ${{ github.sha }}
+      APP_CHANNEL: dev
+      APP_PHASE: p10
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -99,6 +101,8 @@ jobs:
         run: pnpm test:migration:0801
       - name: Verify 0.8.0 lifecycle migration recovery
         run: pnpm test:migration:0802
+      - name: Verify 1.0.1 beta migration and administrator contracts
+        run: pnpm test:migration:0900 && pnpm test:migration:0901 && pnpm test:beta-admin:0900 && pnpm test:beta-signup:0901
       - name: Verify 0.7.0 fresh and 0.6.0 upgrade release paths
         run: pnpm test:migration:0700-release
       - name: Measure 0.7.0 navigation release baseline
@@ -137,6 +141,8 @@ jobs:
         run: pnpm test:release:0914 && pnpm test:observability:0914
       - name: Verify 0.9.1 backup, restore and artifact contract
         run: pnpm test:release:0915
+      - name: Verify 1.0.1 final release contracts
+        run: pnpm test:release:1001 && pnpm test:release:1002 && pnpm test:release:1004 && pnpm test:release:1005 && pnpm test:environment:101
       - name: Build development server production image
         run: docker build --file infra/docker/Dockerfile.web --tag lyricscloud-web-ci:${{ github.sha }} .
       - name: Build production service images
