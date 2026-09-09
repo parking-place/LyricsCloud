@@ -9,15 +9,15 @@ planning_root: "0.Plans/2.Patch-phase"
 execution_authorized_by_this_file: false
 runtime_status_source: "0.Plans/1. Dev-phase/STATUS.md"
 next_planned_version: "1.0.1"
-next_planned_phase: "1.0.1/2phase.md"
-prerequisite: "P1 사용자 재현·최초 손실 경계·베타/가입/릴리스 계약 인수 완료"
+next_planned_phase: "1.0.1/3phase.md"
+prerequisite: "P2 0900 schema·관리 CLI·동일 SHA 개발 인수 완료"
 execution_authorized_by_user_request: true
 release_server_authorized_after_all_phases: true
 ```
 
 ## 단일 상태 원본
 
-현재 실행 상태는 `0.Plans/1. Dev-phase/STATUS.md`의 1.0.1 P2다. P1에서 P6 실제 후보와 잔여 결함, 사용자 Windows 입력 손실·공개 UI 테마 화면을 인수하고 승인된 계약을 확정했다. 이 문서는 계획 상태만 관리하며 실행 상태 원본은 계속 기존 STATUS 한 곳이다.
+현재 실행 상태는 `0.Plans/1. Dev-phase/STATUS.md`의 1.0.1 P3다. P2 후보의 원격 push와 같은 SHA 개발 서버 `0900` migration·관리 CLI canary·공개 smoke를 완료했다. 이 문서는 계획 상태만 관리하며 실행 상태 원본은 계속 기존 STATUS 한 곳이다.
 
 ## 담당 경계
 

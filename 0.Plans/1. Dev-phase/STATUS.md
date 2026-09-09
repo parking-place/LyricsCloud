@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.1"
-current_phase: "../2.Patch-phase/1.0.1/2phase.md"
+current_phase: "../2.Patch-phase/1.0.1/3phase.md"
 state: "active"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-09"
-next_action: "P2 후보를 원격 push하고 같은 SHA의 개발 서버 migration·관리 CLI canary·공개 smoke를 완료한다"
+next_action: "P3 환경별 HMAC test-user 이행·정규화·key rotation과 암호화 rollback 절차를 구현한다"
 ```
 
 ## 승인과 기준
@@ -27,14 +27,16 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 0.0.0~1.0.0 P5 | 당시 완료 기록 보존 | 위 원본 STATUS와 기존 Phase 문서 |
 | 1.0.0 P6 | review | 일부 코드 후보·격리 회귀, 전체 인수 미완료 |
 | 1.0.1 P1 | 완료 | 사용자 재현·최초 손실 경계·베타/가입/릴리스 계약 확정 |
-| 1.0.1 P2 | review | 관리자 베타코드 CLI·영속 상태 구현 완료, 원격·개발 인수 대기 |
-| 1.0.1 P3~P10 | 미착수 | 앞 Phase 인수 뒤 순차 수행 |
+| 1.0.1 P2 | complete | `0900`·CLI·관리 컨테이너와 동일 SHA 개발 인수 완료 |
+| 1.0.1 P3 | active | HMAC test-user 이행·정규화·key rotation |
+| 1.0.1 P4~P10 | 미착수 | 앞 Phase 인수 뒤 순차 수행 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.1/P2 | LC-NF-1.0.1-P2-01~05 | 관리 CLI·auth/DB 코드 상태·설치 경로 | P1 Accepted 계약·PostgreSQL | 2026-09-09 | review |
+| Codex | 1.0.1/P3 | LC-NF-1.0.1-P3-01~03 | test-user reader/import·config·키 운영 runbook | P2 환경·키 계약 | 2026-09-09 | active |
+| Codex | 1.0.1/P2 | LC-NF-1.0.1-P2-01~05 | 관리 CLI·auth/DB 코드 상태·설치 경로 | P1 Accepted 계약·PostgreSQL | 2026-09-09 | complete |
 | Codex | 1.0.1/P1 | LC-NF-1.0.1-P1-01~08 | 계약·인수 문서, editor/auth/UI 원인 경로 | P6 회귀·실제 Windows IME·공개 개발 HTTPS | 2026-09-09T17:55:11+09:00 | complete |
 | ChatGPT | 1.0.0/P6 | LC-100-P6-01, LC-100-P6-04, LC-100-P6-05, LC-100-P6-06 | CI·scripts·backup·observability·export·settings·P6 문서 | 별도 DB/브라우저 및 원격 CI 검증 | 2026-09-09 | review |
 | Codex | 1.0.0/P6 | LC-100-P6-01, LC-100-P6-03, LC-100-P6-04, LC-100-P6-08 | CI·Compose·기동 검증·탈퇴 E2E·초안/PWA·P6 인계 문서 | Chromium/DB 회귀 및 로컬 5개 서비스 확인, 원격 CI·실제 환경 인수 | 2026-09-09 | review |

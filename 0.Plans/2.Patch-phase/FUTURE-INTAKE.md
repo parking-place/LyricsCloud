@@ -31,6 +31,7 @@
 | 2026-09-09 1.0.1 P1 중간 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `bc8336627368e65c6b1f2df63c9e17f883207888` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P1 승인 계약과 기존 이관표 유지 | 최초 push 전 검수 행 |
 | 2026-09-09 1.0.1 P1 완료·P2 착수 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `381f94483d0fd8832d6d25da376977aa2ef5b6b7` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P1 재현 인수와 기존 P2~P10 배정 유지 | 1.0.1 P1 중간 push 전 행 |
 | 2026-09-09 1.0.1 P2 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `e307d03d9884b2e34892c6f8284ffeea2cf30388` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P2 CLI·영속 상태 범위만 구현 | 1.0.1 P1 완료·P2 착수 push 전 행 |
+| 2026-09-09 1.0.1 P2 완료·P3 착수 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `0dcbd643fe045048ebee000093904e63d25ae1aa` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P2 개발 인수 완료, 기존 P3 이행 범위 유지 | 1.0.1 P2 후보 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
