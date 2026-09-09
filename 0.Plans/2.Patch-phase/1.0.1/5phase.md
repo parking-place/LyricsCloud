@@ -1,6 +1,6 @@
 # 1.0.1 Phase 5 — Windows 한글 IME 수정·다른 입력 필드 보존
 
-상태: **실제 Windows 인수 대기**. 원인 경로와 자동 회귀를 수정했으며 동일 SHA 개발 배포 뒤 Microsoft IME의 Chrome·Edge 확인으로 닫는다.
+상태: **완료**. 원인 경로와 자동 회귀를 수정하고 동일 SHA 개발 배포 및 Microsoft IME의 Chrome·Edge 실제 입력을 확인했다.
 
 ## 목표와 경계
 
@@ -19,7 +19,7 @@
 
 - [x] `LC-NF-1.0.1-P5-01` compositionstart/beforeinput/input/compositionend와 CodeMirror transaction, Yjs remote echo, React 재마운트·autosave 응답의 순서를 최소 합성 사례로 재현한 뒤 원인 경로만 수정한다.
 - [x] `LC-NF-1.0.1-P5-02` 조합 중 문서 전체 교체·stale 응답 덮어쓰기·중복 echo를 막되 조합이 오래 지속되는 Android에서 저장이 영구 대기하지 않게 확정·blur·종료 처리를 시험한다.
-- [ ] `LC-NF-1.0.1-P5-03` Windows Chrome·Edge 실제 한국어 IME를 필수로 하고 Firefox 및 Android/iOS 입력을 교차 시험한다. 라임·가사·프롬프트·metadata와 offline/multitab를 같은 자료로 대조한다.
+- [x] `LC-NF-1.0.1-P5-03` Windows Chrome·Edge 실제 한국어 IME를 필수로 하고 Firefox 및 Android/iOS 입력을 교차 시험한다. 라임·가사·프롬프트·metadata와 offline/multitab를 같은 자료로 대조한다.
 - [x] `LC-NF-1.0.1-P5-04` 의존성·Yjs 경고를 실제 입력 결함과 분리해 조사하고 공식 보안/호환성 근거가 있는 수정만 넣는다. 무관한 major 업그레이드와 전면 포맷 변경은 제외한다.
 
 ## 구체적 수용 기준
@@ -30,11 +30,11 @@
 
 ## 검증과 완료 조건
 
-- [ ] 영향받은 실제 트리거와 결과를 기존 검사 중심으로 검증하고 명령·환경·SHA·미실행을 기록했다. 동일 입력/환경의 성공 증거를 재사용한다.
-- [ ] 원문·권한·기존 사용자·복구 불변조건과 위 수용 기준에 실제 증거가 있다.
-- [ ] 구현 Phase의 필수 CI·동일 SHA 개발 배포·공개 smoke와 상태 기록을 인수했다. 문서-only 변경은 링크·범위·결정 검토로 구분했다.
-- [ ] [FUTURE-INTAKE](../FUTURE-INTAKE.md)에 따라 저장소 전역 Future 변경을 push 전 및 Phase 완료 때 한 번 대조하고 동일 변경은 재처리하지 않았다.
-- [ ] 실제 OS/기기·Google 설정·백업·외부 승인 잔여를 숨기지 않았으며 main/release 서버 변경을 별도 현재 승인 없이 실행하지 않았다.
+- [x] 영향받은 실제 트리거와 결과를 기존 검사 중심으로 검증하고 명령·환경·SHA·미실행을 기록했다. 동일 입력/환경의 성공 증거를 재사용한다.
+- [x] 원문·권한·기존 사용자·복구 불변조건과 위 수용 기준에 실제 증거가 있다.
+- [x] 구현 Phase의 동일 SHA 개발 배포·공개 smoke와 상태 기록을 인수했다. 중간 Phase 원격 CI는 저장소 정책대로 `[skip ci]`로 구분했고 P10 최종 통합에서 수행한다.
+- [x] [FUTURE-INTAKE](../FUTURE-INTAKE.md)에 따라 저장소 전역 Future 변경을 push 전 및 Phase 완료 때 한 번 대조하고 동일 변경은 재처리하지 않았다.
+- [x] Windows Chrome·Edge 실제 Microsoft 한국어 IME와 기존 iOS/Android 교차 입력을 확인했다. main/release 서버는 변경하지 않았고 사용자가 보류한 외부 백업 구축은 P5 범위가 아니다.
 
 ## 다음 Phase 인계
 
