@@ -121,7 +121,11 @@ export function RhymeEditor({ ownerId, initialRhyme, returnTo = "/rhymes" }: { o
       onStateChange(state) { if (active) setSyncState(state); }
     }).then((sync) => { if (active) syncRef.current = sync; else void sync.destroy(); })
       .catch(() => { if (active) setSyncState("error"); });
-    const leave = () => { void controller.flush(); syncRef.current?.leave(); };
+    const finishInput = () => {
+      editor.finishComposition();
+      if (titleComposingRef.current) { titleComposingRef.current = false; controller.compositionEnd(); }
+    };
+    const leave = () => { finishInput(); void controller.flush(); syncRef.current?.leave(); };
     const unregisterLogout = registerLogoutSave(async () => {
       if (titleComposingRef.current) return false;
       await controller.flush();
@@ -132,6 +136,7 @@ export function RhymeEditor({ ownerId, initialRhyme, returnTo = "/rhymes" }: { o
     const frame = requestAnimationFrame(() => editor.focus());
     return () => {
       active = false; cancelAnimationFrame(frame); window.removeEventListener("pagehide", leave); unregisterLogout();
+      finishInput();
       editor.destroy(); syncRef.current?.leave(); void syncRef.current?.destroy(); syncRef.current = null;
       if (editorRef.current === editor) editorRef.current = null;
       void controller.dispose(); controllerRef.current = null;
@@ -173,6 +178,8 @@ export function RhymeEditor({ ownerId, initialRhyme, returnTo = "/rhymes" }: { o
   }
 
   async function flushBeforeCommand(checkpoint?: boolean): Promise<boolean> {
+    editorRef.current?.finishComposition();
+    if (titleComposingRef.current) { titleComposingRef.current = false; controllerRef.current?.compositionEnd(); }
     await controllerRef.current?.flush();
     if (controllerRef.current?.state.status !== "saved" || !await syncRef.current?.flush()) {
       setNotice("현재 변경 내용을 먼저 저장해야 합니다. 저장과 동기화를 다시 시도해 주세요."); return false;

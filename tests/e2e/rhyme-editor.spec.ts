@@ -141,6 +141,37 @@ test.describe("rhyme note creation and editor", () => {
     } finally { await removeAccount(owner.userId); }
   });
 
+  test("preserves completed Korean body and title compositions across immediate navigation", async ({ context, page }) => {
+    const owner = await account([context]);
+    try {
+      const created = await page.request.post("/api/rhymes", { headers, data: {
+        requestId: randomUUID(), title: "조합 전 제목", body: "조합 전 본문"
+      } });
+      expect(created.status()).toBe(201);
+      const id = (await created.json()).rhyme.id as string;
+      await page.goto(`/rhymes/${id}`); await ready(page);
+      const editor = page.locator(".cm-content");
+      const bodyValue = "바라봐, 마냥, 마땅한\n라임 한글 IME";
+      await editor.dispatchEvent("compositionstart", { data: "ㅂ" });
+      await editor.fill(bodyValue);
+      await editor.evaluate((element) => {
+        element.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, data: "한" }));
+        window.location.assign("/rhymes");
+      });
+      await page.waitForURL("**/rhymes");
+      await page.goto(`/rhymes/${id}`); await ready(page);
+      await expect.poll(() => body(page, id)).toBe(bodyValue);
+
+      const title = page.getByRole("textbox", { name: "노트 제목" });
+      await title.dispatchEvent("compositionstart", { data: "ㅈ" });
+      await title.fill("마땅한 라임 제목");
+      await title.dispatchEvent("compositionend", { data: "목" });
+      await page.getByRole("button", { name: "← 라임 노트" }).click();
+      await page.waitForURL("**/rhymes");
+      expect((await rhyme(page, id)).title).toBe("마땅한 라임 제목");
+    } finally { await removeAccount(owner.userId); }
+  });
+
   test("keeps missing and oversized titles local and offers a named discard confirmation", async ({ context, page }) => {
     const owner = await account([context]);
     try {

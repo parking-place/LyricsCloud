@@ -43,6 +43,7 @@ export interface CodeMirrorTextEditor {
   readonly scrollTop: number;
   readonly composing: boolean;
   readonly songForm: SongFormNavigationState;
+  finishComposition(): void;
   replace(from: number, to: number, value: string, requestId?: string): void;
   applyTransaction(transaction: Omit<EditorDocumentTransaction, "origin" | "composing">): void;
   goToSongFormSection(sectionId: string): boolean;
@@ -58,10 +59,22 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
   const transactionRequestId = Annotation.define<string>();
   const editable = new Compartment();
   let compositionChanges: ChangeSet | null = null;
-  let compositionTimer: ReturnType<typeof setTimeout> | undefined;
+  let compositionCommitQueued = false;
+  let compositionEnded = false;
   let pastePending = false;
   let requestedEditable = !options.readOnly;
   let disposed = false;
+  const finishComposition = () => {
+    // Never promote a still-active IME preedit value. This drain exists only
+    // after compositionend, including the narrow window before its microtask.
+    if (!compositionChanges || !compositionEnded) return;
+    const changes: EditorTextChange[] = [];
+    compositionChanges.iterChanges((from, to, _a, _b, inserted) => changes.push({ from, to, insert: inserted.toString() }));
+    compositionChanges = null;
+    compositionEnded = false;
+    if (changes.length) options.onTransaction?.({ changes, origin: "user", composing: false });
+    options.onCompositionEnd();
+  };
   const refreshEditable = () => view.dispatch({ effects: editable.reconfigure([
     EditorState.readOnly.of(!requestedEditable || pastePending), EditorView.editable.of(requestedEditable && !pastePending)
   ]) });
@@ -155,18 +168,19 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
         },
         compositionstart: () => {
           compositionChanges ??= ChangeSet.empty(view.state.doc.length);
+          compositionEnded = false;
           options.onCompositionStart?.();
           return false;
         },
         compositionend: () => {
-          clearTimeout(compositionTimer);
-          compositionTimer = setTimeout(() => {
-            const changes: EditorTextChange[] = [];
-            compositionChanges?.iterChanges((from, to, _a, _b, inserted) => changes.push({ from, to, insert: inserted.toString() }));
-            compositionChanges = null;
-            if (changes.length) options.onTransaction?.({ changes, origin: "user", composing: false });
-            options.onCompositionEnd();
-          }, 0);
+          compositionEnded = true;
+          if (!compositionCommitQueued) {
+            compositionCommitQueued = true;
+            queueMicrotask(() => {
+              compositionCommitQueued = false;
+              if (!disposed) finishComposition();
+            });
+          }
           return false;
         }
       }),
@@ -194,6 +208,7 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       return { anchor: selection.anchor, head: selection.head, from: selection.from, to: selection.to };
     },
     get composing() { return compositionChanges !== null || view.compositionStarted; },
+    finishComposition,
     get scrollTop() { return view.scrollDOM.scrollTop; },
     get songForm() {
       const sections = view.plugin(songFormPlugin)?.sections ?? [];
@@ -261,8 +276,8 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       requestedEditable = value; refreshEditable();
     },
     destroy() {
+      finishComposition();
       disposed = true;
-      clearTimeout(compositionTimer);
       if (navigationFrame !== null) cancelAnimationFrame(navigationFrame);
       navigationFrame = null;
       pendingNavigation = null;

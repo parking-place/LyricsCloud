@@ -1,6 +1,6 @@
 # 1.0.1 Phase 5 — Windows 한글 IME 수정·다른 입력 필드 보존
 
-상태: **계획 검토 / 구현 미착수**. 문서 작업만으로 실행 STATUS·runtime version을 바꾸지 않는다.
+상태: **실제 Windows 인수 대기**. 원인 경로와 자동 회귀를 수정했으며 동일 SHA 개발 배포 뒤 Microsoft IME의 Chrome·Edge 확인으로 닫는다.
 
 ## 목표와 경계
 
@@ -17,10 +17,10 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.0.1-P5-01` compositionstart/beforeinput/input/compositionend와 CodeMirror transaction, Yjs remote echo, React 재마운트·autosave 응답의 순서를 최소 합성 사례로 재현한 뒤 원인 경로만 수정한다.
-- [ ] `LC-NF-1.0.1-P5-02` 조합 중 문서 전체 교체·stale 응답 덮어쓰기·중복 echo를 막되 조합이 오래 지속되는 Android에서 저장이 영구 대기하지 않게 확정·blur·종료 처리를 시험한다.
+- [x] `LC-NF-1.0.1-P5-01` compositionstart/beforeinput/input/compositionend와 CodeMirror transaction, Yjs remote echo, React 재마운트·autosave 응답의 순서를 최소 합성 사례로 재현한 뒤 원인 경로만 수정한다.
+- [x] `LC-NF-1.0.1-P5-02` 조합 중 문서 전체 교체·stale 응답 덮어쓰기·중복 echo를 막되 조합이 오래 지속되는 Android에서 저장이 영구 대기하지 않게 확정·blur·종료 처리를 시험한다.
 - [ ] `LC-NF-1.0.1-P5-03` Windows Chrome·Edge 실제 한국어 IME를 필수로 하고 Firefox 및 Android/iOS 입력을 교차 시험한다. 라임·가사·프롬프트·metadata와 offline/multitab를 같은 자료로 대조한다.
-- [ ] `LC-NF-1.0.1-P5-04` 의존성·Yjs 경고를 실제 입력 결함과 분리해 조사하고 공식 보안/호환성 근거가 있는 수정만 넣는다. 무관한 major 업그레이드와 전면 포맷 변경은 제외한다.
+- [x] `LC-NF-1.0.1-P5-04` 의존성·Yjs 경고를 실제 입력 결함과 분리해 조사하고 공식 보안/호환성 근거가 있는 수정만 넣는다. 무관한 major 업그레이드와 전면 포맷 변경은 제외한다.
 
 ## 구체적 수용 기준
 

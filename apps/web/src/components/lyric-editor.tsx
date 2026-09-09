@@ -234,7 +234,17 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       onStateChange(state) { if (active) setLocalSyncState(state); }
     }).then((sync) => { if (active) localSyncRef.current = sync; else void sync.destroy(); })
       .catch(() => { if (active) setLocalSyncState("error"); });
-    const flush = () => { void controller.flush(); void positionSaver.flush().catch(() => undefined); localSyncRef.current?.leave(); };
+    const finishInput = () => {
+      editor.finishComposition();
+      if (titleComposingRef.current) { titleComposingRef.current = false; controller.compositionEnd(); }
+      if (memoComposingRef.current) { memoComposingRef.current = false; controller.compositionEnd(); }
+    };
+    const flush = () => {
+      finishInput();
+      void controller.flush();
+      void positionSaver.flush().catch(() => undefined);
+      localSyncRef.current?.leave();
+    };
     const unregisterLogout = registerLogoutSave(async () => {
       if (titleComposingRef.current || memoComposingRef.current) return false;
       await controller.flush();
@@ -254,6 +264,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       cancelAnimationFrame(focusFrame);
       window.removeEventListener("pagehide", flush);
       unregisterLogout();
+      finishInput();
       editor.destroy();
       localSyncRef.current?.leave();
       void localSyncRef.current?.destroy();
@@ -334,6 +345,9 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   }
 
   async function flushBeforeCommand(reason?: "leave" | "duplicate"): Promise<boolean> {
+    editorRef.current?.finishComposition();
+    if (titleComposingRef.current) { titleComposingRef.current = false; controllerRef.current?.compositionEnd(); }
+    if (memoComposingRef.current) { memoComposingRef.current = false; controllerRef.current?.compositionEnd(); }
     await controllerRef.current?.flush();
     if (controllerRef.current?.state.status === "error" || !await localSyncRef.current?.flush()) {
       setCommandNotice("현재 변경 내용을 먼저 저장해야 합니다. 저장을 다시 시도해 주세요.");

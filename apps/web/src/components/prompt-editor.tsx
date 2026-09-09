@@ -86,7 +86,10 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
   useEffect(() => {
     let active = true;
     let sync: BrowserPromptSync | null = null;
-    const unregister = registerLogoutSave(async () => sync?.flush() ?? true, () => ({
+    const unregister = registerLogoutSave(async () => {
+      finishPromptTitle(sync);
+      return sync?.flush() ?? true;
+    }, () => ({
       resourceId: initialPrompt.id, title: snapshotRef.current.title, body: snapshotRef.current.tokens.map(({ displayValue }) => displayValue).join(", ")
     }));
     void createBrowserPromptSync({
@@ -95,9 +98,12 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
       onStateChange(value) { if (active) setSyncState(value); },
       onEditableChange(value) { if (active) setEditable(value); }
     }).then((created) => { if (!active) void created.destroy(); else { sync = created; syncRef.current = created; } });
-    const onPageHide = () => sync?.leave();
+    const onPageHide = () => { finishPromptTitle(sync); void sync?.flush(); sync?.leave(); };
     window.addEventListener("pagehide", onPageHide);
-    return () => { active = false; unregister(); window.removeEventListener("pagehide", onPageHide); syncRef.current = null; void sync?.destroy(); };
+    return () => {
+      active = false; unregister(); window.removeEventListener("pagehide", onPageHide);
+      finishPromptTitle(sync); syncRef.current = null; void sync?.destroy();
+    };
   }, [initialPrompt.id, ownerId]);
 
   useEffect(() => {
@@ -117,6 +123,7 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
 
   async function flushBeforeLeave() {
     const sync = syncRef.current;
+    finishPromptTitle(sync);
     if (!sync || !await sync.flush()) { setNotice("현재 변경 내용을 먼저 동기화해야 합니다. 연결을 확인해 주세요."); return false; }
     if (!await sync.checkpoint("leave")) { setNotice("이동 전 수정 기록을 저장하지 못했습니다. 연결을 확인해 주세요."); return false; }
     return true;
@@ -140,6 +147,14 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
     const next = { ...snapshotRef.current, title: value };
     snapshotRef.current = next; setSnapshot(next);
     if (!composing.current) syncRef.current?.setTitle(value);
+  }
+
+  function finishPromptTitle(sync = syncRef.current) {
+    if (!composing.current) return;
+    const value = snapshotRef.current.title;
+    composing.current = false;
+    sync?.setComposing(false);
+    sync?.setTitle(value);
   }
 
   async function copyPrompt() {
@@ -267,7 +282,7 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
       <input id="prompt-title" value={snapshot.title} disabled={!editable} aria-invalid={Boolean(titleError)}
         onChange={(event) => changeTitle(event.target.value)}
         onCompositionStart={() => { composing.current = true; syncRef.current?.setComposing(true); }}
-        onCompositionEnd={(event) => { composing.current = false; syncRef.current?.setComposing(false); syncRef.current?.setTitle(event.currentTarget.value); }} />
+        onCompositionEnd={() => finishPromptTitle()} />
       <span className={titleLength > PROMPT_LIMITS.title ? "over" : ""}>{titleLength} / {PROMPT_LIMITS.title}</span>
       {titleError ? <small role="alert">{titleError}</small> : null}
     </div>

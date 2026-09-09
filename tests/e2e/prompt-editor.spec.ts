@@ -40,6 +40,26 @@ test.describe("prompt creation and editor", () => {
     } finally { await removeAccount(owner.userId); }
   });
 
+  test("preserves a completed Korean title composition across immediate page exit", async ({ context, page }) => {
+    const owner = await account([context]);
+    try {
+      const target = await create(page, { title: "조합 전 프롬프트", tokens: ["keep"] });
+      await page.goto(`/prompts/${target.id}`); await ready(page);
+      const title = titleFor(page);
+      await title.dispatchEvent("compositionstart", { data: "ㅂ" });
+      await title.fill("바라봐 마냥 마땅한 프롬프트");
+      await title.evaluate((element) => {
+        element.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, data: "트" }));
+        window.location.assign("/prompts");
+      });
+      await page.waitForURL("**/prompts");
+      await page.goto(`/prompts/${target.id}`); await ready(page);
+      await expect(titleFor(page)).toHaveValue("바라봐 마냥 마땅한 프롬프트");
+      await expect.poll(() => prompt(page, target.id).then((value) => value.title))
+        .toBe("바라봐 마냥 마땅한 프롬프트");
+    } finally { await removeAccount(owner.userId); }
+  });
+
   test("supports suggestions, direct input, duplicate cleanup, history restore and two-tab convergence", async ({ browser, context, page }, info) => {
     test.setTimeout(100_000);
     const owner = await account([context]);

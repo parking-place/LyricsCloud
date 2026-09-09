@@ -88,6 +88,28 @@ test.describe("same-owner server synchronization", () => {
     } finally { await other.close(); await removeAccount(userId); }
   });
 
+  test("drains a completed Windows-style composition before immediate page exit and re-entry", async ({ context, page }) => {
+    const userId = await account([context]);
+    try {
+      const id = await lyric(page);
+      await page.goto(`/lyrics/${id}`);
+      const editor = page.locator(".cm-content");
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
+      const expected = "바라봐, 마냥, 마땅한\n한글 English 👩‍🎤 e\u0301";
+      await editor.dispatchEvent("compositionstart", { data: "ㅂ" });
+      await editor.fill(expected);
+      await editor.evaluate((element) => {
+        element.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, data: "한" }));
+        window.location.assign("/songs");
+      });
+      await page.waitForURL("**/songs");
+      await page.goto(`/lyrics/${id}`);
+      await expect(editor).toContainText("바라봐, 마냥, 마땅한");
+      await expect(editor).toContainText("한글 English 👩‍🎤 e\u0301");
+      await expect.poll(() => body(page, id)).toBe(expected);
+    } finally { await removeAccount(userId); }
+  });
+
   test("rolls back a failed local queue write and recovers the retained input on retry", async ({ context, page }) => {
     const userId = await account([context]);
     await page.addInitScript(() => {
