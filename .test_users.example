@@ -1,3 +1,4 @@
-# Copy this file to .test_users on each server and enter one email per line.
-# Keep development and release server files separate.
+# One-time bootstrap input only. Copy to .test_users, enter one email per line,
+# provision the HMAC keyring, then run scripts/migrate-test-users-hmac.mjs.
+# Never deploy this plaintext example or keep a plaintext rollback copy.
 user@example.com

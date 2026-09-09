@@ -7,8 +7,6 @@ services:
       dockerfile: infra/docker/Dockerfile.service
       target: migrate
     command: ["/app/migrate.mjs"]
-    environment:
-      NODE_ENV: production
     read_only: true
     tmpfs:
       - /tmp:size=32m,mode=1777
@@ -21,6 +19,12 @@ services:
     command: ["/app/apps/web/server.js"]
     environment:
       NODE_ENV: production
+      AUTH_ALLOWLIST_FORMAT: hmac-v1
+      AUTH_ALLOWLIST_ENVIRONMENT: release
+      AUTH_ALLOWLIST_HMAC_KEYRING_FILE: /run/secrets/auth_allowlist_hmac_keyring
+    secrets:
+      - auth_allowed_emails
+      - auth_allowlist_hmac_keyring
     read_only: true
     tmpfs:
       - /tmp:size=64m,mode=1777
@@ -66,3 +70,5 @@ services:
 secrets:
   auth_allowed_emails:
     file: ./.private/runtime/auth_allowed_emails
+  auth_allowlist_hmac_keyring:
+    file: ./.private/runtime/auth_allowlist_hmac_keyring

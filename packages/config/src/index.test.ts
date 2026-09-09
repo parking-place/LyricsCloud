@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ConfigError, readAuthConfig, readRuntimeConfig } from "./index.js";
+import { ConfigError, hmacAllowlistDigest, readAuthConfig, readRuntimeConfig } from "./index.js";
 
 describe("runtime configuration", () => {
   it("accepts a PostgreSQL URL", () => {
@@ -56,6 +56,49 @@ describe("auth configuration", () => {
     );
     expect([...config.allowedEmails]).toEqual(["file.user@example.com", "second@example.com"]);
     expect(config.allowedEmails.has("legacy@example.com")).toBe(false);
+  });
+
+  it("matches environment-bound HMAC records across a bounded old/new key rotation", () => {
+    const oldKey = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8";
+    const newKey = Buffer.alloc(32, 9).toString("base64url");
+    const record = JSON.stringify({ formatVersion: 1, environment: "development", purpose: "auth-bootstrap",
+      normalizationVersion: "nfkc-trim-lower-v1", kid: "old-kid",
+      digest: "130c6d19a930ce952d2c36f2bc2526585f8d3eb33ad55893c20a74cd82d107cc", state: "active" });
+    const keyring = JSON.stringify({ formatVersion: 1, activeKid: "new-kid", keys: [
+      { kid: "old-kid", key: oldKey, notAfter: "2099-01-01T00:00:00.000Z" },
+      { kid: "new-kid", key: newKey }
+    ] });
+    const config = readAuthConfig({ ...valid, AUTH_ALLOWED_EMAILS_FILE: "/run/secrets/auth_allowed_emails",
+      AUTH_ALLOWLIST_FORMAT: "hmac-v1", AUTH_ALLOWLIST_ENVIRONMENT: "development",
+      AUTH_ALLOWLIST_HMAC_KEYRING_FILE: "/run/secrets/auth_allowlist_hmac_keyring" },
+    (path) => path.endsWith("keyring") ? keyring : `${record}\n`);
+    expect(config.allowedEmails.has(" User@Example.com ")).toBe(true);
+    expect(config.allowedEmails.has("user+other@example.com")).toBe(false);
+    expect(hmacAllowlistDigest("user@example.com", "development", Buffer.from(oldKey, "base64url")))
+      .toBe("130c6d19a930ce952d2c36f2bc2526585f8d3eb33ad55893c20a74cd82d107cc");
+    expect(hmacAllowlistDigest("user@example.com", "release", Buffer.from(oldKey, "base64url")))
+      .not.toBe(hmacAllowlistDigest("user@example.com", "development", Buffer.from(oldKey, "base64url")));
+  });
+
+  it("fails closed for cross-environment records, missing kids, and expired rotation keys", () => {
+    const key = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8";
+    const baseRecord = { formatVersion: 1, environment: "development", purpose: "auth-bootstrap",
+      normalizationVersion: "nfkc-trim-lower-v1", kid: "old-kid",
+      digest: "130c6d19a930ce952d2c36f2bc2526585f8d3eb33ad55893c20a74cd82d107cc", state: "active" };
+    const env = { ...valid, AUTH_ALLOWED_EMAILS_FILE: "/allowlist", AUTH_ALLOWLIST_FORMAT: "hmac-v1",
+      AUTH_ALLOWLIST_ENVIRONMENT: "development", AUTH_ALLOWLIST_HMAC_KEYRING_FILE: "/keyring" };
+    const expired = JSON.stringify({ formatVersion: 1, activeKid: "new-kid",
+      keys: [{ kid: "old-kid", key, notAfter: "2000-01-01T00:00:00.000Z" },
+        { kid: "new-kid", key: Buffer.alloc(32, 9).toString("base64url") }] });
+    expect(() => readAuthConfig(env, (path) => path === "/keyring" ? expired : JSON.stringify(baseRecord)))
+      .toThrow("AUTH_ALLOWED_EMAILS_FILE");
+    expect(() => readAuthConfig(env, (path) => path === "/keyring"
+      ? JSON.stringify({ formatVersion: 1, activeKid: "new-kid", keys: [{ kid: "new-kid", key }] })
+      : JSON.stringify(baseRecord))).toThrow("AUTH_ALLOWED_EMAILS_FILE");
+    expect(() => readAuthConfig(env, (path) => path === "/keyring" ? expired
+      : JSON.stringify({ ...baseRecord, environment: "release" }))).toThrow("AUTH_ALLOWED_EMAILS_FILE");
+    expect(() => readAuthConfig(env, (path) => path === "/keyring" ? expired
+      : JSON.stringify({ ...baseRecord, state: "revoked" }))).toThrow("AUTH_ALLOWED_EMAILS_FILE");
   });
 
   it("fails closed without exposing an unreadable allowlist path", () => {

@@ -25,19 +25,14 @@ export class RequestAuthError extends Error {
   constructor() { super("AUTH_REQUIRED"); this.name = "RequestAuthError"; }
 }
 
-let cached: { key: string; context: AuthContext; allowedEmails: Set<string> } | undefined;
+let cached: { key: string; context: AuthContext } | undefined;
 
 export function getAuthContext(): AuthContext {
   const runtime = readRuntimeConfig(process.env);
   const config = readAuthConfig(process.env);
-  const key = `${runtime.databaseUrl}\u0000${config.appOrigin}\u0000${config.issuer}\u0000${config.clientId}`;
-  if (cached?.key === key) {
-    cached.allowedEmails.clear();
-    for (const email of config.allowedEmails) cached.allowedEmails.add(email);
-    return cached.context;
-  }
-  const allowedEmails = new Set(config.allowedEmails);
-  const liveConfig = { ...config, allowedEmails };
+  const key = `${runtime.databaseUrl}\u0000${config.appOrigin}\u0000${config.issuer}\u0000${config.clientId}\u0000${config.allowlistFingerprint ?? "static"}`;
+  if (cached?.key === key) return cached.context;
+  const liveConfig = config;
   const store = new PostgresAuthStore(runtime.databaseUrl);
   const context = {
     config: liveConfig,
@@ -56,7 +51,7 @@ export function getAuthContext(): AuthContext {
     lifecycle: new PostgresLifecycleStore(runtime.databaseUrl),
     exports: new PostgresExportStore(runtime.databaseUrl)
   };
-  cached = { key, context, allowedEmails };
+  cached = { key, context };
   return context;
 }
 

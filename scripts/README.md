@@ -52,6 +52,24 @@ node scripts/migrate-test-users.mjs
 
 스크립트는 기존 `.test_users` 항목과 병합·정규화한 뒤 `.env`에서 `AUTH_ALLOWED_EMAILS` 행을 제거한다. 두 파일 권한은 `600`으로 맞추며 실제 이메일은 출력하지 않는다.
 
+### 1.0.1 HMAC 전환
+
+평문 bootstrap 파일은 환경별 HMAC keyring을 만든 뒤 dry-run, 암호화 rollback backup, 원자 교체 순서로 한 번 전환한다. 아래 예시는 개발 환경이며 릴리스에서는 `development`를 `release`로 바꾸고 별도 keyring과 backup을 사용한다.
+
+```bash
+node scripts/provision-auth-allowlist-keys.mjs --kid development-2026-09
+node scripts/migrate-test-users-hmac.mjs --dry-run \
+  --source .test_users --keyring .private/keys/auth_allowlist_hmac_keyring \
+  --environment development
+node scripts/migrate-test-users-hmac.mjs --apply \
+  --source .test_users --keyring .private/keys/auth_allowlist_hmac_keyring \
+  --environment development \
+  --backup-key .private/keys/auth_allowlist_migration_backup_key \
+  --backup-output .private/backups/test-users-pre-hmac.enc
+```
+
+원본 주소는 출력하지 않으며 `.test_users`에는 HMAC JSONL만 남는다. HMAC은 익명화가 아니고 key 유출이나 후보 대입 위험이 있으므로 keyring과 레코드, 암호화 backup을 서로 분리한다. 복원·회전·삭제 조건은 [P3 운영 인수](../docs/runbooks/1.0.1-phase3-hmac-allowlist.md)를 따른다.
+
 ## Docker 정리
 
 로컬·개발·릴리스 환경에서 LyricsCloud 빌드와 검증이 성공한 뒤 불필요한 Docker 객체를 정리한다.

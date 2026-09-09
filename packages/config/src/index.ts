@@ -1,3 +1,4 @@
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 export type RuntimeName = "development" | "test" | "production";
@@ -15,7 +16,34 @@ export interface AuthConfig {
   readonly clientSecret: string;
   readonly sessionSecret: string;
   readonly allowedEmails: ReadonlySet<string>;
+  readonly allowlistFingerprint?: string;
   readonly secureCookies: boolean;
+}
+
+export type AllowlistEnvironment = "development" | "release" | "test";
+export const AUTH_ALLOWLIST_PURPOSE = "auth-bootstrap";
+export const AUTH_EMAIL_NORMALIZATION_VERSION = "nfkc-trim-lower-v1";
+
+export interface HmacAllowlistRecord {
+  readonly formatVersion: 1;
+  readonly environment: AllowlistEnvironment;
+  readonly purpose: typeof AUTH_ALLOWLIST_PURPOSE;
+  readonly normalizationVersion: typeof AUTH_EMAIL_NORMALIZATION_VERSION;
+  readonly kid: string;
+  readonly digest: string;
+  readonly state: "active" | "revoked";
+}
+
+export interface HmacAllowlistKey {
+  readonly kid: string;
+  readonly key: string;
+  readonly notAfter?: string;
+}
+
+export interface HmacAllowlistKeyring {
+  readonly formatVersion: 1;
+  readonly activeKid: string;
+  readonly keys: readonly HmacAllowlistKey[];
 }
 
 export class ConfigError extends Error {
@@ -79,9 +107,35 @@ export function readAuthConfig(
     try { allowedEmailSource = readTextFile(allowedEmailFile); }
     catch { invalid.push(allowedEmailKey); allowedEmailSource = ""; }
   }
-  const allowedEmails = parseAllowedEmails(allowedEmailSource);
-  if (allowedEmailSource.length > 65_536 || allowedEmails.size === 0
-    || [...allowedEmails].some((email) => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))) invalid.push(allowedEmailKey);
+  const allowlistFormat = env.AUTH_ALLOWLIST_FORMAT ?? "legacy-plaintext";
+  let allowedEmails: ReadonlySet<string> = new Set();
+  let allowlistFingerprint = "invalid";
+  if (allowlistFormat === "legacy-plaintext") {
+    const legacy = parseAllowedEmails(allowedEmailSource);
+    allowedEmails = legacy;
+    allowlistFingerprint = fingerprint(allowedEmailSource);
+    if (allowedEmailSource.length > 65_536 || legacy.size === 0
+      || [...legacy].some((email) => !isEmailShape(email))) invalid.push(allowedEmailKey);
+  } else if (allowlistFormat === "hmac-v1") {
+    const environment = env.AUTH_ALLOWLIST_ENVIRONMENT;
+    const keyringFile = env.AUTH_ALLOWLIST_HMAC_KEYRING_FILE?.trim();
+    if (!isAllowlistEnvironment(environment)) invalid.push("AUTH_ALLOWLIST_ENVIRONMENT");
+    if (!keyringFile) invalid.push("AUTH_ALLOWLIST_HMAC_KEYRING_FILE");
+    if (isAllowlistEnvironment(environment) && keyringFile) {
+      try {
+        const keyringSource = readTextFile(keyringFile);
+        const records = parseHmacAllowlistRecords(allowedEmailSource, environment);
+        const keyring = parseHmacAllowlistKeyring(keyringSource);
+        allowedEmails = new HmacEmailAllowlist(records, keyring, environment);
+        allowlistFingerprint = fingerprint(`${allowedEmailSource}\u0000${keyringSource}\u0000${environment}`);
+        if (allowedEmailSource.length > 1_048_576 || allowedEmails.size === 0) invalid.push(allowedEmailKey);
+      } catch {
+        invalid.push(allowedEmailKey, "AUTH_ALLOWLIST_HMAC_KEYRING_FILE");
+      }
+    }
+  } else {
+    invalid.push("AUTH_ALLOWLIST_FORMAT");
+  }
   if (invalid.length) throw new ConfigError([...new Set(invalid)]);
   return {
     appOrigin: origin!.origin,
@@ -90,6 +144,7 @@ export function readAuthConfig(
     clientSecret: env.GOOGLE_CLIENT_SECRET!,
     sessionSecret: env.SESSION_SECRET!,
     allowedEmails,
+    allowlistFingerprint,
     secureCookies: origin!.protocol === "https:"
   };
 }
@@ -108,4 +163,129 @@ function parseAllowedEmails(source: string): Set<string> {
     return !trimmed || trimmed.startsWith("#") ? [] : trimmed.split(",");
   });
   return new Set(entries.map(normalizeEmail).filter(Boolean));
+}
+
+export function hmacAllowlistDigest(normalizedEmail: string, environment: AllowlistEnvironment, key: Buffer): string {
+  if (key.length !== 32) throw new Error("AUTH_ALLOWLIST_KEY_INVALID");
+  const email = normalizeEmail(normalizedEmail);
+  if (!isEmailShape(email)) throw new Error("AUTH_ALLOWLIST_EMAIL_INVALID");
+  return createHmac("sha256", key)
+    .update(`lyricscloud|${AUTH_ALLOWLIST_PURPOSE}|v1|${environment}|${AUTH_EMAIL_NORMALIZATION_VERSION}|${email}`, "utf8")
+    .digest("hex");
+}
+
+export function parseHmacAllowlistRecords(source: string, environment: AllowlistEnvironment): HmacAllowlistRecord[] {
+  const records = source.split(/\r?\n/u).flatMap((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) return [];
+    const value: unknown = JSON.parse(trimmed);
+    if (!isHmacAllowlistRecord(value) || value.environment !== environment) throw new Error("AUTH_ALLOWLIST_RECORD_INVALID");
+    return [value];
+  });
+  const identities = new Set<string>();
+  for (const record of records) {
+    const identity = `${record.environment}\u0000${record.kid}\u0000${record.digest}`;
+    if (identities.has(identity)) throw new Error("AUTH_ALLOWLIST_RECORD_DUPLICATE");
+    identities.add(identity);
+  }
+  return records;
+}
+
+export function parseHmacAllowlistKeyring(source: string): HmacAllowlistKeyring {
+  const value: unknown = JSON.parse(source);
+  if (!value || typeof value !== "object") throw new Error("AUTH_ALLOWLIST_KEYRING_INVALID");
+  const candidate = value as Partial<HmacAllowlistKeyring>;
+  if (candidate.formatVersion !== 1 || !safeKid(candidate.activeKid) || !Array.isArray(candidate.keys)
+    || candidate.keys.length < 1 || candidate.keys.length > 8) throw new Error("AUTH_ALLOWLIST_KEYRING_INVALID");
+  const kids = new Set<string>();
+  for (const key of candidate.keys) {
+    if (!key || typeof key !== "object" || !safeKid(key.kid) || kids.has(key.kid)
+      || typeof key.key !== "string" || !/^[A-Za-z0-9_-]{43}$/u.test(key.key)
+      || Buffer.from(key.key, "base64url").length !== 32
+      || (key.notAfter !== undefined && !validFutureOrPastTimestamp(key.notAfter))) {
+      throw new Error("AUTH_ALLOWLIST_KEYRING_INVALID");
+    }
+    kids.add(key.kid);
+  }
+  const active = candidate.keys.find((key) => key.kid === candidate.activeKid);
+  if (!active || active.notAfter !== undefined) throw new Error("AUTH_ALLOWLIST_KEYRING_INVALID");
+  return candidate as HmacAllowlistKeyring;
+}
+
+class HmacEmailAllowlist implements ReadonlySet<string> {
+  readonly #records: readonly HmacAllowlistRecord[];
+  readonly #keys: ReadonlyMap<string, { key: Buffer; notAfter?: number }>;
+  readonly #environment: AllowlistEnvironment;
+
+  constructor(records: readonly HmacAllowlistRecord[], keyring: HmacAllowlistKeyring, environment: AllowlistEnvironment) {
+    this.#records = records;
+    this.#environment = environment;
+    this.#keys = new Map(keyring.keys.map((entry) => [entry.kid, {
+      key: Buffer.from(entry.key, "base64url"),
+      ...(entry.notAfter ? { notAfter: Date.parse(entry.notAfter) } : {})
+    }]));
+    for (const record of records) if (!this.#keys.has(record.kid)) throw new Error("AUTH_ALLOWLIST_KID_MISSING");
+  }
+
+  get size(): number {
+    const now = Date.now();
+    return this.#records.filter((record) => {
+      const key = this.#keys.get(record.kid);
+      return record.state === "active" && key && (key.notAfter === undefined || key.notAfter > now);
+    }).length;
+  }
+
+  has(value: string): boolean {
+    const normalized = normalizeEmail(value);
+    if (!isEmailShape(normalized)) return false;
+    const now = Date.now();
+    return this.#records.some((record) => {
+      if (record.state !== "active") return false;
+      const key = this.#keys.get(record.kid);
+      if (!key || (key.notAfter !== undefined && key.notAfter <= now)) return false;
+      const candidate = hmacAllowlistDigest(normalized, this.#environment, key.key);
+      return timingSafeEqual(Buffer.from(candidate, "hex"), Buffer.from(record.digest, "hex"));
+    });
+  }
+
+  *values(): SetIterator<string> {
+    for (const record of this.#records) if (record.state === "active") yield `hmac:${record.kid}:${record.digest}`;
+  }
+  keys(): SetIterator<string> { return this.values(); }
+  *entries(): SetIterator<[string, string]> { for (const value of this.values()) yield [value, value]; }
+  [Symbol.iterator](): SetIterator<string> { return this.values(); }
+  forEach(callbackfn: (value: string, value2: string, set: ReadonlySet<string>) => void, thisArg?: unknown): void {
+    for (const value of this.values()) callbackfn.call(thisArg, value, value, this);
+  }
+}
+
+function isHmacAllowlistRecord(value: unknown): value is HmacAllowlistRecord {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Partial<HmacAllowlistRecord>;
+  return record.formatVersion === 1 && isAllowlistEnvironment(record.environment)
+    && record.purpose === AUTH_ALLOWLIST_PURPOSE
+    && record.normalizationVersion === AUTH_EMAIL_NORMALIZATION_VERSION
+    && safeKid(record.kid) && typeof record.digest === "string" && /^[0-9a-f]{64}$/u.test(record.digest)
+    && (record.state === "active" || record.state === "revoked");
+}
+
+function isAllowlistEnvironment(value: unknown): value is AllowlistEnvironment {
+  return value === "development" || value === "release" || value === "test";
+}
+
+function safeKid(value: unknown): value is string {
+  return typeof value === "string" && /^[A-Za-z0-9._-]{1,64}$/u.test(value);
+}
+
+function validFutureOrPastTimestamp(value: unknown): value is string {
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/u.test(value)
+    && Number.isFinite(Date.parse(value));
+}
+
+function isEmailShape(value: string): boolean {
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/u.test(value);
+}
+
+function fingerprint(value: string): string {
+  return createHash("sha256").update(value, "utf8").digest("hex");
 }

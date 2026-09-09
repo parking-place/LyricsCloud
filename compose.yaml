@@ -91,6 +91,7 @@ services:
     command: ["pnpm", "--filter", "@lyricscloud/web", "dev"]
     secrets:
       - auth_allowed_emails
+      - auth_allowlist_hmac_keyring
     environment:
       CI: "true"
       NODE_ENV: development
@@ -104,6 +105,9 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-CHANGE_ME}
       SESSION_SECRET: ${SESSION_SECRET:-CHANGE_ME_AT_LEAST_32_RANDOM_BYTES}
       AUTH_ALLOWED_EMAILS_FILE: /run/secrets/auth_allowed_emails
+      AUTH_ALLOWLIST_FORMAT: hmac-v1
+      AUTH_ALLOWLIST_ENVIRONMENT: development
+      AUTH_ALLOWLIST_HMAC_KEYRING_FILE: /run/secrets/auth_allowlist_hmac_keyring
     ports:
       - "${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-8080}:3000"
     healthcheck:
@@ -159,4 +163,6 @@ volumes:
 
 secrets:
   auth_allowed_emails:
-    file: ./.test_users
+    file: ./.private/runtime/auth_allowed_emails
+  auth_allowlist_hmac_keyring:
+    file: ./.private/runtime/auth_allowlist_hmac_keyring

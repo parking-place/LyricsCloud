@@ -24,13 +24,25 @@ cp .test_users.example .test_users
 
 `.env`의 모든 `CHANGE_ME`를 바꾼다. `NODE_ENV=production`, `APP_VERSION=1.0.0`, `BUILD_ID=<현재 40자리 SHA>`, `APP_ORIGIN=https://<호스트>`로 설정한다. `DATABASE_URL`의 사용자·비밀번호·DB명은 같은 파일의 PostgreSQL 값과 일치해야 한다. `SESSION_SECRET`은 32바이트 이상의 무작위 값이어야 한다. 실제 값은 채팅·Issue·Git·image build argument에 넣지 않는다.
 
-`.test_users`에 허용할 Google 이메일을 한 줄에 하나씩 적고 non-root runtime만 읽는 copy를 준비한다.
+`.test_users`에 허용할 Google 이메일을 한 줄에 하나씩 적은 뒤, 릴리스 환경 전용 keyring과 암호화 rollback key를 만들고 HMAC JSONL로 전환한다. 아래 backup 경로는 새 파일이어야 하며 기존 파일을 덮어쓰지 않는다.
 
 ```bash
+node scripts/provision-auth-allowlist-keys.mjs --kid release-2026-09
+node scripts/migrate-test-users-hmac.mjs --dry-run \
+  --source .test_users --keyring .private/keys/auth_allowlist_hmac_keyring \
+  --environment release
+node scripts/migrate-test-users-hmac.mjs --apply \
+  --source .test_users --keyring .private/keys/auth_allowlist_hmac_keyring \
+  --environment release \
+  --backup-key .private/keys/auth_allowlist_migration_backup_key \
+  --backup-output .private/backups/test-users-pre-hmac.enc
 install -d -m 0700 .private/runtime
 sudo install -o 65532 -g 65532 -m 0400 .test_users .private/runtime/auth_allowed_emails
-git check-ignore -v .env .test_users .private/runtime/auth_allowed_emails
+sudo install -o 65532 -g 65532 -m 0400 .private/keys/auth_allowlist_hmac_keyring .private/runtime/auth_allowlist_hmac_keyring
+git check-ignore -v .env .test_users .private/runtime/auth_allowed_emails .private/runtime/auth_allowlist_hmac_keyring
 ```
+
+환경별 keyring은 공유하지 않는다. HMAC은 익명화가 아니며 rollback backup은 기존 계정 로그인과 복원을 검증한 뒤 정한 보존 기한까지 별도 보호한다. 자세한 회전·복원 절차는 [P3 운영 인수](./runbooks/1.0.1-phase3-hmac-allowlist.md)를 따른다.
 
 환경 이름·형식의 기준은 [1.0 environment schema](../config/environment-schema.1.0.0.json)다. Google 설정은 아래 OAuth 절차를 먼저 마친다.
 

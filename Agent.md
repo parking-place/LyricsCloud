@@ -122,7 +122,7 @@ Phase 완료 순서는 `로컬 수용 테스트 → commit → 원격 push와 SH
 ## 11. 서버 정보와 환경별 운영 권한
 
 - 개발·릴리스 서버의 주소, 계정, 비밀번호, 키, 복구 코드, OAuth 비밀 값은 Git에서 제외된 `.private/`에만 기록합니다.
-- 현재 구현은 환경별 `.test_users`의 평문 메일을 앱 허용 목록으로 사용합니다. 1.0.1 P3은 역추정·정규화·key rotation을 고려한 해시 기반 이행, P4는 검증된 Google identity 이후의 원자 grant 등록을 구현할 계획입니다. 인수 전 해시가 적용됐다고 안내하지 않습니다. 현재 `openid email profile`만 요청하면 Google Testing 예외상 Console Test users 등록은 필수가 아닙니다. 실제 scope/Audience/조직·계정 제한을 확인하고 추가 scope 도입 시 재평가합니다. Google Cloud Console 설정은 앱 허용 등록과 별개이며 앱이 자동 변경하지 않습니다. 파일은 Git/build context에서 제외하고 환경끼리 합치거나 복사하지 않습니다.
+- 개발·릴리스 서버의 `.test_users`는 환경·purpose·정규화 버전·`kid`에 결합된 HMAC 레코드이고 HMAC keyring과 분리합니다. 평문은 최초 bootstrap과 명시적 암호화 rollback 복원에만 사용하며 해시를 익명화로 설명하지 않습니다. P4는 검증된 Google identity 이후의 원자 grant 등록을 구현합니다. 현재 `openid email profile`만 요청하면 Google Testing 예외상 Console Test users 등록은 필수가 아닙니다. 실제 scope/Audience/조직·계정 제한을 확인하고 추가 scope 도입 시 재평가합니다. Google Cloud Console 설정은 앱 허용 등록과 별개이며 앱이 자동 변경하지 않습니다. 파일은 Git/build context에서 제외하고 환경끼리 합치거나 복사하지 않습니다.
 - `.private/`와 `.test_users`의 내용은 `git add -f`로 강제 추가하지 않으며 이슈, PR, 채팅, 터미널 출력, 로그에도 노출하지 않습니다. 작업 중 필요한 경우에도 값 자체가 아니라 설정 여부와 참조 위치만 보고합니다.
 - 개발 서버는 사용자가 요청한 작업 범위 안에서 변경할 수 있습니다.
 - 검증을 마친 Phase commit은 위 완료 순서에 따라 개발 서버에 자동 반영합니다. 서버의 tracked 변경이나 목표 SHA 불일치, 필수 secret 누락이 발견되면 덮어쓰지 않고 중단합니다.

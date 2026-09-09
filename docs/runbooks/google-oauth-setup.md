@@ -7,8 +7,9 @@
 3. 저장소 루트에 파일이 없을 때만 `.env.example`을 `.env`로, `.test_users.example`을 `.test_users`로 복사한다. 기존 파일의 DB 비밀번호·세션 비밀 값은 보존하고 OAuth 자리 표시자만 교체한다.
 4. `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`에는 Web client 값을 넣는다.
 5. `SESSION_SECRET`이 아직 자리 표시자인 경우에만 최소 32바이트의 새 무작위 값을 넣는다. 예: `openssl rand -base64 48`의 출력.
-6. `.test_users`에는 로그인 허용 계정을 한 줄에 하나씩 넣는다. 이 목록 밖의 검증된 Google 계정에는 세션이 발급되지 않는다.
-7. `docker compose config --quiet`과 `docker compose up --build --wait`를 실행한 뒤 `http://localhost:8080/api/auth/login`에서 확인한다.
+6. `.test_users`에는 로그인 허용 계정을 한 줄에 하나씩 넣고 [P3 HMAC 전환](./1.0.1-phase3-hmac-allowlist.md)을 수행한다. 이 목록 밖의 검증된 Google 계정에는 세션이 발급되지 않는다.
+7. [P3 HMAC 전환](./1.0.1-phase3-hmac-allowlist.md)에 따라 allowlist와 keyring runtime copy를 준비한다.
+8. `docker compose config --quiet`과 `docker compose up --build --wait`를 실행한 뒤 `http://localhost:8080/api/auth/login`에서 확인한다.
 
 ### 현재 Windows 로컬 작업 사본
 
@@ -54,7 +55,7 @@ Google의 현재 정책에서 Testing 상태는 일반적으로 등록한 테스
 
 ### 2. LyricsCloud `.test_users`에 같은 메일 추가
 
-저장소 루트의 `.test_users`를 열고 같은 주소를 한 줄에 하나씩 추가한다. 일반 셀프호스트 환경에서는 이 파일을 대상 서버 전용으로 유지한다. 현재 공식 릴리스 서버는 사용자 승인 예외로 개발 허용 목록과 같은 값을 사용한다.
+최초 bootstrap 때만 저장소 루트의 `.test_users`를 열고 같은 주소를 한 줄에 하나씩 추가한다. 일반 셀프호스트 환경에서는 이 파일을 대상 서버 전용으로 유지한다. 현재 공식 릴리스 서버는 사용자 승인 예외로 개발 허용 목록과 같은 값을 사용하지만 환경 결합 HMAC과 keyring은 별도로 만든다.
 
 ```text
 writer@example.com
@@ -100,9 +101,11 @@ docker compose run --rm --no-deps --user "$(id -u):$(id -g)" web \
   node scripts/migrate-test-users.mjs
 ```
 
+평문 입력 뒤에는 반드시 [P3 HMAC 전환](./1.0.1-phase3-hmac-allowlist.md)을 수행한다. HMAC 전환 뒤 파일에 평문 주소를 직접 추가하지 않는다. P4의 DB grant 가입 경로가 열리기 전 예외 변경은 암호화 backup을 명시적으로 복원하고 수정한 다음 새 backup 경로로 재전환한다.
+
 ### 3. 변경한 허용 목록 적용
 
-최초 설정에서는 Compose 구성을 검사하고 web 컨테이너를 만든다. Compose는 `.test_users`를 `/run/secrets/auth_allowed_emails`에 읽기 전용으로 마운트한다.
+최초 설정에서는 Compose 구성을 검사하고 web 컨테이너를 만든다. Compose는 `.private/runtime`의 HMAC allowlist와 keyring을 각각 `/run/secrets` 아래에 읽기 전용으로 마운트한다.
 
 ```bash
 docker compose config --quiet
@@ -115,7 +118,7 @@ docker compose up -d --force-recreate web
 docker compose up --build --wait
 ```
 
-한 번 마운트된 뒤에는 `.test_users`를 저장하면 다음 로그인 요청부터 애플리케이션 허용 목록에 자동 반영되므로 허용 메일 변경만으로 컨테이너를 다시 만들 필요가 없다. 파일을 삭제하거나 읽을 수 없게 만들거나 잘못된 메일을 넣으면 인증 설정은 안전하게 실패한다.
+개발·릴리스 배포에서는 HMAC JSONL과 keyring의 UID `65532`, mode `400` runtime copy를 함께 갱신한 뒤 web을 재생성한다. key 누락, 환경 불일치, 만료된 레코드뿐인 구성, 잘못된 레코드는 인증 설정을 안전하게 실패시킨다.
 
 Google 공식 문서는 Test users 관리를 Console의 Audience 화면 절차로만 안내하고 공개 관리 API를 문서화하지 않는다. 이 목록은 앱 허용 등록과 별개로 자동 반영하지 않는다. 현재 `openid email profile`만 요청할 때는 [Testing 예외](https://support.google.com/cloud/answer/15549945?hl=en)상 Test users 등록이 필수가 아니다. 실제 scope/Audience/조직·계정 제한을 확인하고 추가 scope를 도입하거나 목록 관리가 필요한 경우 Console에서 수동 관리한다.
 

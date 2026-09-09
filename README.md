@@ -37,7 +37,8 @@ LyricsCloud 1.0은 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트
 ```bash
 cp .env.example .env
 cp .test_users.example .test_users
-# .env의 모든 CHANGE_ME와 .test_users의 허용 계정을 설정
+# .env의 모든 CHANGE_ME와 .test_users의 최초 허용 계정을 설정한 뒤
+# docs/runbooks/1.0.1-phase3-hmac-allowlist.md에 따라 HMAC 전환·runtime staging
 docker compose config --quiet
 docker compose up --build --wait
 curl --fail http://127.0.0.1:8080/api/health/ready
