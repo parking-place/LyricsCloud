@@ -11,6 +11,7 @@ test.describe("1.0.1 P7 brand and build metadata", () => {
       .toBe('"v1.0.0-p7 dev"');
     await expect(brand.locator(".brand-mark-dark")).toBeVisible();
     await expect(brand.locator(".brand-mark-light")).toBeHidden();
+    await expect(page.locator(".auth-card .brand-mark-dark")).toBeVisible();
 
     const live = await (await page.request.get("/api/health/live")).json() as {
       build: { version: string; channel: string; phase: string | null };
@@ -21,6 +22,7 @@ test.describe("1.0.1 P7 brand and build metadata", () => {
     await page.reload();
     await expect(brand.locator(".brand-mark-light")).toBeVisible();
     await expect(brand.locator(".brand-mark-dark")).toBeHidden();
+    await expect(page.locator(".auth-card .brand-mark-light")).toBeVisible();
   });
 
   test("publishes favicon, PWA and maskable SVG assets without legacy tab versions", async ({ page }) => {
