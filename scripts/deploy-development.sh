@@ -87,11 +87,14 @@ if [[ ! $app_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   printf 'Invalid application VERSION; deployment stopped.\n' >&2
   exit 6
 fi
-if [[ ! $branch =~ ^phase/[0-9]+\.[0-9]+\.[0-9]+-p([1-9][0-9]*)- ]]; then
-  printf 'Development branch must include a version and pN phase.\n' >&2
+if [[ $branch =~ ^phase/[0-9]+\.[0-9]+\.[0-9]+-p([1-9][0-9]*)- ]]; then
+  app_phase=p${BASH_REMATCH[1]}
+elif [ "$branch" = main ]; then
+  app_phase=
+else
+  printf 'Development branch must be main or include a version and pN phase.\n' >&2
   exit 6
 fi
-app_phase=p${BASH_REMATCH[1]}
 awk -v build_id="$expected_commit" -v app_version="$app_version" -v app_phase="$app_phase" '
   BEGIN { found = 0; version_found = 0; channel_found = 0; phase_found = 0 }
   /^BUILD_ID=/ {
@@ -110,7 +113,7 @@ awk -v build_id="$expected_commit" -v app_version="$app_version" -v app_phase="$
     next
   }
   /^APP_PHASE=/ {
-    if (!phase_found) print "APP_PHASE=" app_phase
+    if (!phase_found && app_phase != "") print "APP_PHASE=" app_phase
     phase_found = 1
     next
   }
@@ -119,7 +122,7 @@ awk -v build_id="$expected_commit" -v app_version="$app_version" -v app_phase="$
     if (!found) print "BUILD_ID=" build_id
     if (!version_found) print "APP_VERSION=" app_version
     if (!channel_found) print "APP_CHANNEL=dev"
-    if (!phase_found) print "APP_PHASE=" app_phase
+    if (!phase_found && app_phase != "") print "APP_PHASE=" app_phase
   }
 ' .env > "$environment_file"
 chmod 600 "$environment_file"

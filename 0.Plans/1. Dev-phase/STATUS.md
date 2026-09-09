@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.0.1"
 current_phase: "../2.Patch-phase/1.0.1/10phase.md"
-state: "active"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "P10 최종 후보를 원격 CI와 동일 SHA 개발 환경에서 인수한 뒤 승인된 Private Beta 릴리스를 수행한다"
+next_action: "승인된 release PR을 main에 병합해 최종 SHA를 재검증하고 v1.0.1 정식 image와 릴리스 서버 배포를 수행한다"
 ```
 
 ## 승인과 기준
@@ -35,13 +35,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.1 P7 | complete | 주 로고·아이콘 자산군과 runtime/health 공통 build metadata 공개 인수 완료 |
 | 1.0.1 P8 | complete | README·현재 문서·1.0.1 runtime·가변 Phase와 dev/release tag 격리의 동일 SHA 개발 인수 완료 |
 | 1.0.1 P9 | complete | 전체 브라우저·DB 경쟁·production image·복원·rollback·성능과 동일 SHA 개발 인수 완료 |
-| 1.0.1 P10 | active | 최종 후보·원격 CI·main·정식 image·Private Beta 릴리스 수행 |
+| 1.0.1 P10 | complete | 최종 후보 전체 CI·네 dev image·동일 SHA 개발 공개 인수 완료, 승인된 release 실행 gate 개방 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.1/P10 | LC-NF-1.0.1-P10-01~06 | 요구 추적·최종 CI·release manifest·main/image/운영 배포 | P9 동일 SHA 개발 인수 | 2026-09-10 | active |
+| Codex | 1.0.1/P10 | LC-NF-1.0.1-P10-01~06 | 요구 추적·최종 CI·release manifest·main/image/운영 배포 | P9 동일 SHA 개발 인수 | 2026-09-10 | complete |
 | Codex | 1.0.1/P9 | LC-NF-1.0.1-P9-01~05 | 통합 회귀·DB 경쟁·image/secret·backup/restore·성능 | P8 동일 SHA 개발 인수 | 2026-09-10 | complete |
 | Codex | 1.0.1/P8 | LC-NF-1.0.1-P8-01~04 | README·현재 문서·version·release tooling | P7 공개 brand/build metadata 인수 | 2026-09-10 | complete |
 | Codex | 1.0.1/P7 | LC-NF-1.0.1-P7-01~03 | public logo/icon 자산·navigation·build metadata | P6 공개 양 테마 UI 인수 | 2026-09-10 | complete |
@@ -70,3 +70,5 @@ P6 push 자동 발행은 차단하며 수동 candidate도 공용 tag를 변경�
 P8 구현 후보 `17aa226abe48acee9642d6c539809b915362a28e`은 원격 PR #20과 개발 서버 checkout·build metadata가 일치한다. 공개 ready는 `1.0.1`, channel `dev`, phase `p8`, schema `0901_beta_signup.sql`을 반환했고 postgres·web·collaboration·worker가 모두 healthy였다. dev 발행에서 숫자·Release 계열을 제외하고 승인 tag release에서만 `Release`·`latest`·`Release-latest`를 같은 서비스 build에 묶는 30개 경계 검사를 통과했다. 필수 원격 통합 CI는 저장소 정책대로 P10 후보에서 실행한다.
 
 P9 구현 후보 `565ed50335197855b7d3c14f3ea9e5519e1f838f`는 unit·실제 PostgreSQL integration 250건, 순차 브라우저 회귀 263건과 의도적 제외 31건, release browser matrix, production image·암호화 복원·upgrade/rollback·secret·취약점·관측·성능 예산을 통과했다. 인수 기록을 포함한 `3b05a34468874877043b3c36abdacf216a092565`는 원격 PR #21·개발 서버 checkout·공개 build metadata와 일치하며 channel `dev`, phase `p9`, schema `0901_beta_signup.sql`, 네 서비스 healthy를 확인했다. `OPS-100-001`은 사용자의 현재 위험 승인 예외로 계속 열어 둔다.
+
+P10 후보 `869e32b8a15c2e1e7524a75ab4d8b4428a925c79`는 원격 CI run `34394222604`의 전체 verify와 네 dev image 발행을 통과했다. 개발 서버 checkout/build metadata가 같은 SHA였고 `1.0.1`, channel `dev`, phase `p10`, schema `0901_beta_signup.sql`, 네 서비스 healthy를 확인했다. 공개 합성 smoke에서 가사·라임·프롬프트 즉시 이탈·재진입 저장, light/dark의 `＋ 새 가사`·`연결 관리`, 테마 저장, 키보드/focus, 320/390px 모바일, CSP·CSS·service worker가 PASS였고 합성 자료를 제거했다. 사용자 확인 `P4 Google signup PASS`, `P5 Windows Chrome PASS, Edge PASS`, `iOS update PASS, Android update PASS`를 실제 환경 증거로 동결했다. P10은 완료됐으며 사용자가 승인한 main·정식 image·릴리스 서버 실행으로 이동한다. `OPS-100-001`은 명시적 예외로 계속 열려 있다.
