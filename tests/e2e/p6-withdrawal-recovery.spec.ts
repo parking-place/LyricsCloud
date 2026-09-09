@@ -37,14 +37,18 @@ test.describe("P6 withdrawal modal recovery", () => {
       await dialog.getByRole("textbox").fill("탈퇴");
       await dialog.getByRole("button", { name: "탈퇴 요청", exact: true }).click();
       await expect(dialog.getByRole("alert")).toContainText("최근 Google 재인증");
-      await expect(page.getByRole("alert")).toHaveCount(1);
+      // Next's route announcer also has role=alert. Count the recovery message,
+      // including any duplicate outside the modal, rather than unrelated alerts.
+      const recoveryAlerts = page.getByRole("alert").filter({ hasText: "최근 Google 재인증" });
+      await expect(recoveryAlerts).toHaveCount(1);
       await expect(dialog.getByRole("link", { name: "Google로 재인증" })).toHaveAttribute("href", "/api/auth/login?returnTo=%2Fsettings%3Fwithdrawal%3Dconfirm%23account");
       await expect(dialog.getByRole("button", { name: "취소", exact: true })).toBeEnabled();
       await expect(dialog.getByRole("button", { name: "탈퇴 요청", exact: true })).toBeEnabled();
       expect(requests).toBe(1);
       await page.keyboard.press("Escape");
       await expect(dialog).toBeHidden();
-      await expect(page.getByRole("alert")).toContainText("최근 Google 재인증");
+      await expect(recoveryAlerts).toHaveCount(1);
+      await expect(recoveryAlerts).toBeVisible();
       await expect(page.getByRole("button", { name: "회원 탈퇴 검토" })).toBeFocused();
     } finally {
       await withE2eDatabase(pool => pool.query("delete from app_users where id=$1", [userId]).then(() => undefined));

@@ -7,7 +7,7 @@ state: "review"
 owner: "ChatGPT"
 started_at: "2026-09-09"
 updated_at: "2026-09-09"
-next_action: "P6 후보의 원격 CI와 전체 코드 검사 결과를 확인하고, 미해결 초안·PWA·템플릿 보존 문제를 실제 환경에서 검증한다"
+next_action: "P6 수정 SHA의 원격 CI를 확인하고 로컬 후보 이미지·기존 DB 보존·Compose 기동을 검증한 뒤 인계 증거를 갱신한다"
 ```
 
 ## 승인과 기준
@@ -31,9 +31,12 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
 | ChatGPT | 1.0.0/P6 | LC-100-P6-01, LC-100-P6-04, LC-100-P6-05, LC-100-P6-06 | CI·scripts·backup·observability·export·settings·P6 문서 | 별도 DB/브라우저 및 원격 CI 검증 | 2026-09-09 | review |
+| Codex | 1.0.0/P6 | LC-100-P6-01, LC-100-P6-03, LC-100-P6-04, LC-100-P6-08 | CI·Compose·기동 검증·탈퇴 E2E·초안/PWA·P6 인계 문서 | 최신 P6의 CI 실패 재현, 격리 테스트 DB, 로컬 후보 이미지 | 2026-09-09 | in_progress |
 
 ## 인계
 
-[현재 Phase](./1.0.0/6phase.md), [검증 수준과 잔여 사항](../../docs/runbooks/1.0.0-phase6-stabilization.md)을 따른다. REVIEW-01~05·07·10과 전체 품질/성능/의존성 감사는 미완료다. 현재 코드의 미해결 P0/P1을 0으로 선언하지 않는다. 사용자 PC 폴더, 실제 DB·초안, 개발/운영 서버는 변경하지 않았다.
+[현재 Phase](./1.0.0/6phase.md), [검증 수준과 잔여 사항](../../docs/runbooks/1.0.0-phase6-stabilization.md)을 따른다. REVIEW-01~05·07·10의 초안·재시도·취소·템플릿·PWA 경로를 수정했으며 Chromium PC/모바일 회귀와 기존 복구 흐름을 확인했다. 전체 의미 기반 품질/성능/의존성 감사와 실제 기기 인수는 미완료다. 미해결 P0/P1을 0으로 선언하지 않는다.
+
+사용자 요청에 따라 GitHub P6를 사용자 PC로 가져왔다. `.change`의 30개 경로/blob이 원격 후보와 일치함을 확인한 뒤 허가된 폴더만 삭제했다. 로컬 Docker 갱신은 기존 PostgreSQL 볼륨과 비공개 설정을 보존하며 DB 백업 후 진행한다. 공용 개발/운영 서버와 향후 버전 계획은 이번 PC 작업 대상이 아니다.
 
 P6 push 자동 발행은 차단하며 수동 candidate도 공용 tag를 변경하지 않는다. 기존 `v1.0.0`, release manifest, migration, lockfile은 보존한다. `OPS-100-001` 운영 외부 백업 미구축은 별도 승인·실제 복원 인수까지 계속 열려 있다.

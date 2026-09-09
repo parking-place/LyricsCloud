@@ -1,7 +1,7 @@
 "use client";
 
 import { hasOwnerPendingDrafts, migrateOwnerLocalDrafts } from "@lyricscloud/editor";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface InstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -17,6 +17,27 @@ export function PwaManager({ ownerId }: { ownerId: string }) {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
   const [pendingDrafts, setPendingDrafts] = useState(false);
   const [message, setMessage] = useState("");
+  const composing = useRef(false);
+  const activated = useRef(false);
+
+  function memoryPending() {
+    return composing.current || Boolean(document.querySelector('[data-pending-input="true"]'));
+  }
+  async function updateBlocked() {
+    const before = memoryPending();
+    const durable = await hasOwnerPendingDrafts(ownerId).catch(() => true);
+    return before || durable || memoryPending();
+  }
+  useEffect(() => {
+    const start = () => { composing.current = true; };
+    const end = () => { composing.current = false; };
+    window.addEventListener("compositionstart", start, true);
+    window.addEventListener("compositionend", end, true);
+    return () => {
+      window.removeEventListener("compositionstart", start, true);
+      window.removeEventListener("compositionend", end, true);
+    };
+  }, []);
 
   useEffect(() => {
     setOnline(navigator.onLine);
@@ -43,9 +64,16 @@ export function PwaManager({ ownerId }: { ownerId: string }) {
 
     let active = true;
     let poll: ReturnType<typeof setInterval> | undefined;
-    const controllerChanged = () => {
+    const controllerChanged = async () => {
       if (sessionStorage.getItem(UPDATE_APPROVED) !== "1") return;
       sessionStorage.removeItem(UPDATE_APPROVED);
+      activated.current = true;
+      // Input may have changed while the worker was activating.
+      if (await updateBlocked()) {
+        if (active) { setPendingDrafts(true); setMessage("현재 입력을 보존하기 위해 새로고침을 보류했습니다. 저장 후 업데이트를 다시 적용해 주세요."); }
+        return;
+      }
+      if (!active || memoryPending()) return;
       location.reload();
     };
     navigator.serviceWorker.addEventListener("controllerchange", controllerChanged);
@@ -81,13 +109,14 @@ export function PwaManager({ ownerId }: { ownerId: string }) {
     if (!waiting) return;
     let active = true;
     async function refresh() {
-      const pending = await hasOwnerPendingDrafts(ownerId).catch(() => true);
+      const pending = await updateBlocked();
       if (active) setPendingDrafts(pending);
     }
     void refresh();
     const poll = setInterval(() => { void refresh(); }, 2_000);
-    window.addEventListener("online", refresh);
-    return () => { active = false; clearInterval(poll); window.removeEventListener("online", refresh); };
+    const events = ["online", "input", "change", "compositionstart", "compositionend"];
+    for (const event of events) window.addEventListener(event, refresh, true);
+    return () => { active = false; clearInterval(poll); for (const event of events) window.removeEventListener(event, refresh, true); };
   }, [ownerId, waiting]);
 
   async function install() {
@@ -100,12 +129,13 @@ export function PwaManager({ ownerId }: { ownerId: string }) {
 
   async function applyUpdate() {
     if (!waiting) return;
-    const pending = await hasOwnerPendingDrafts(ownerId).catch(() => true);
+    const pending = await updateBlocked();
     setPendingDrafts(pending);
     if (pending) {
-      setMessage("미전송 초안을 서버에 저장한 뒤 업데이트할 수 있습니다.");
+      setMessage("현재 입력과 미전송 초안을 저장한 뒤 업데이트할 수 있습니다.");
       return;
     }
+    if (activated.current) { location.reload(); return; }
     sessionStorage.setItem(UPDATE_APPROVED, "1");
     setMessage("업데이트를 적용하고 있습니다…");
     waiting.postMessage({ type: "SKIP_WAITING" });

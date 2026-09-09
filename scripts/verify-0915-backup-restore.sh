@@ -42,7 +42,7 @@ docker run -d --name "$name-restore" --network "$name" --network-alias restore-d
 for container in "$name-source" "$name-restore"; do
   ready=false
   for _ in {1..30}; do
-    if docker exec "$container" pg_isready >/dev/null 2>&1; then ready=true; break; fi
+    if docker exec "$container" pg_isready -h 127.0.0.1 >/dev/null 2>&1; then ready=true; break; fi
     sleep 1
   done
   [[ "$ready" == true ]]

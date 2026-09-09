@@ -15,8 +15,15 @@ export function LyricNewScreen({ currentSongId, returnTo, templateId }: { curren
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
   const requestId = useRef(crypto.randomUUID());
+  const submission = useRef<{ url: string; body: string } | null>(null);
+  const active = useRef(true);
+  const requestAbort = useRef<AbortController | null>(null);
   const [template, setTemplate] = useState<TemplateRecord | null>(null);
   const router = useRouter();
+  useEffect(() => {
+    active.current = true;
+    return () => { active.current = false; requestAbort.current?.abort(); };
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -64,34 +71,41 @@ export function LyricNewScreen({ currentSongId, returnTo, templateId }: { curren
     if (saving || !songId || !title.trim() || [...title.trim()].length > LYRIC_LIMITS.title) return;
     setSaving(true); setNotice("");
     try {
-      const response = await fetch(template ? `/api/templates/${template.id}/apply` : `/api/songs/${songId}/lyrics`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+      submission.current ??= { url: template ? `/api/templates/${template.id}/apply` : `/api/songs/${songId}/lyrics`,
         body: JSON.stringify(template ? { requestId: requestId.current, targetType: "lyrics", title, songId }
           : { requestId: requestId.current, title, body: "", memo: "", status: "draft" })
+      };
+      requestAbort.current = new AbortController();
+      const response = await fetch(submission.current.url, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: submission.current.body, signal: requestAbort.current.signal
       });
       const result = await response.json().catch(() => ({})) as { lyric?: LyricRecord; resource?: { id: string } };
       const id = result.lyric?.id ?? result.resource?.id;
+      if ([400, 401, 403, 404, 422].includes(response.status)) submission.current = null;
       if (!response.ok || !id) throw new Error(response.status === 404 ? "PARENT_UNAVAILABLE" : "CREATE_FAILED");
+      if (!active.current) return;
       router.replace(`/lyrics/${id}?returnTo=${encodeURIComponent("/songs")}`);
       router.refresh();
     } catch (error) {
+      if (!active.current) return;
       setNotice(error instanceof Error && error.message === "PARENT_UNAVAILABLE"
         ? "선택한 곡이 삭제되었거나 접근 권한이 없습니다. 다른 곡을 선택해 주세요."
-        : "새 가사를 만들지 못했습니다. 입력은 그대로 유지됩니다.");
+        : "서버 생성 결과를 확인하지 못했습니다. 입력을 유지한 채 같은 요청을 다시 시도해 주세요.");
       setSaving(false);
     }
   }
 
   const titleTooLong = [...title.trim()].length > LYRIC_LIMITS.title;
-  return <section className="lyric-new-page" aria-labelledby="new-lyric-title">
+  const locked = saving || Boolean(submission.current);
+  return <section className="lyric-new-page" aria-labelledby="new-lyric-title" data-pending-input={Boolean(title || saving)}>
     <header className="form-heading"><div><a className="back-inline" href={returnTo}>← 이전 화면</a><p className="eyebrow">Quick add · Lyrics</p><h1 id="new-lyric-title">새 가사 시작</h1><p>{template ? `“${template.title}” 구조를 독립된 새 가사에 복사합니다.` : "현재 곡을 그대로 쓰거나 내 곡 중 부모를 선택한 뒤 빈 초안을 엽니다."}</p></div></header>
     <nav className="creation-source" aria-label="가사 시작 방식"><a aria-current={!templateId ? "page" : undefined} href={`/lyrics/new${currentSongId ? `?songId=${currentSongId}` : ""}`}>빈 가사</a><a aria-current={templateId ? "page" : undefined} href="/templates?type=lyrics">템플릿에서 선택</a></nav>
     {notice ? <div className="form-error-banner" role="status"><span>{notice}</span></div> : null}
     <form className="lyric-new-form" onSubmit={submit}>
       <label className="form-field"><span className="field-label">가사 제목<em>필수</em><span className={titleTooLong ? "over" : ""}>{[...title].length} / {LYRIC_LIMITS.title}</span></span>
-        <input autoFocus aria-label="가사 제목" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="예: Hook 초안" aria-invalid={titleTooLong} />
+        <input autoFocus aria-label="가사 제목" disabled={locked} value={title} onChange={(event) => setTitle(event.target.value)} placeholder="예: Hook 초안" aria-invalid={titleTooLong} />
       </label>
-      <fieldset><legend>부모 곡 선택</legend>
+      <fieldset disabled={locked}><legend>부모 곡 선택</legend>
         {currentSongId && songId === currentSongId ? <p className="current-parent-song">현재 열려 있던 곡을 사용합니다.</p> : null}
         <label className="editor-resource-search"><span className="sr-only">부모 곡 검색</span><span aria-hidden="true">⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="곡 제목 검색" /></label>
         {loading ? <p>곡 목록을 불러오는 중…</p> : songs.length ? <div className="parent-song-list">{songs.map((song) => <label key={song.id} className={songId === song.id ? "selected" : ""}><input type="radio" name="parent-song" value={song.id} checked={songId === song.id} onChange={() => setSongId(song.id)} /><span><strong>{song.title}</strong><small>가사 {song.lyricCount}개</small></span></label>)}</div>

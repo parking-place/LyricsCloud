@@ -21,18 +21,24 @@ export interface BrowserLyricSync {
   destroy(): Promise<void>;
 }
 export type BrowserRhymeSync = BrowserLyricSync;
+export interface CreationSubmission { readonly url: string; readonly body: string }
 export interface RhymeCreationDraft {
   readonly requestId: string;
   readonly title: string;
   readonly body: string;
   readonly updatedAt: string;
+  readonly submission?: CreationSubmission;
 }
 export interface PromptCreationDraft {
   readonly requestId: string;
   readonly title: string;
   readonly tokens: readonly string[];
   readonly updatedAt: string;
+  readonly sourceTemplateId?: string;
+  readonly selectedTemplateId?: string | null;
+  readonly submission?: CreationSubmission;
 }
+export interface CreationDraftLease<T> { readonly key: string; readonly draft: T | null; release(): void }
 export interface QuickCreationDraft {
   readonly requestId: string;
   readonly kind: "rhyme_note" | "prompt";
@@ -385,41 +391,79 @@ export async function clearOwnerLocalDrafts(ownerId: string): Promise<void> {
   for (const name of await Dexie.getDatabaseNames()) if (name.startsWith(prefix)) await Dexie.delete(name);
 }
 
-export async function readRhymeCreationDraft(ownerId: string): Promise<RhymeCreationDraft | null> {
+export async function readRhymeCreationDraft(ownerId: string, key = "new"): Promise<RhymeCreationDraft | null> {
   const name = await rhymeCreationName(ownerId);
   if (!(await Dexie.getDatabaseNames()).includes(name)) return null;
   const storage = await rhymeCreationStorage(ownerId);
-  try { return await storage.table<RhymeCreationDraft, string>("drafts").get("new") ?? null; }
+  try { return await storage.table<RhymeCreationDraft, string>("drafts").get(key) ?? null; }
   finally { storage.close(); }
 }
 
-export async function writeRhymeCreationDraft(ownerId: string, draft: RhymeCreationDraft): Promise<void> {
+export async function writeRhymeCreationDraft(ownerId: string, draft: RhymeCreationDraft, key = "new"): Promise<void> {
   const storage = await rhymeCreationStorage(ownerId);
-  try { await storage.table<RhymeCreationDraft & { key: string }, string>("drafts").put({ key: "new", ...draft }); }
+  try { await storage.table<RhymeCreationDraft & { key: string }, string>("drafts").put({ ...draft, key }); }
   finally { storage.close(); }
 }
 
-export async function clearRhymeCreationDraft(ownerId: string): Promise<void> {
+export async function clearRhymeCreationDraft(ownerId: string, key = "new"): Promise<void> {
   const storage = await rhymeCreationStorage(ownerId);
-  try { await storage.table("drafts").delete("new"); }
+  try { await storage.table("drafts").delete(key); }
   finally { storage.close(); }
 }
-export async function readPromptCreationDraft(ownerId: string): Promise<PromptCreationDraft | null> {
+export async function readPromptCreationDraft(ownerId: string, key = "new"): Promise<PromptCreationDraft | null> {
   const name = await promptCreationName(ownerId);
   if (!(await Dexie.getDatabaseNames()).includes(name)) return null;
   const storage = await promptCreationStorage(ownerId);
-  try { return await storage.table<PromptCreationDraft, string>("drafts").get("new") ?? null; }
+  try { return await storage.table<PromptCreationDraft, string>("drafts").get(key) ?? null; }
   finally { storage.close(); }
 }
-export async function writePromptCreationDraft(ownerId: string, draft: PromptCreationDraft): Promise<void> {
+export async function writePromptCreationDraft(ownerId: string, draft: PromptCreationDraft, key = "new"): Promise<void> {
   const storage = await promptCreationStorage(ownerId);
-  try { await storage.table<PromptCreationDraft & { key: string }, string>("drafts").put({ key: "new", ...draft }); }
+  try { await storage.table<PromptCreationDraft & { key: string }, string>("drafts").put({ ...draft, key }); }
   finally { storage.close(); }
 }
-export async function clearPromptCreationDraft(ownerId: string): Promise<void> {
+export async function clearPromptCreationDraft(ownerId: string, key = "new"): Promise<void> {
   const storage = await promptCreationStorage(ownerId);
-  try { await storage.table("drafts").delete("new"); }
+  try { await storage.table("drafts").delete(key); }
   finally { storage.close(); }
+}
+
+export async function openRhymeCreationDraft(ownerId: string): Promise<CreationDraftLease<RhymeCreationDraft>> {
+  return claimCreationDraft<RhymeCreationDraft>(await rhymeCreationStorage(ownerId));
+}
+export async function openPromptCreationDraft(ownerId: string, templateId?: string): Promise<CreationDraftLease<PromptCreationDraft>> {
+  return claimCreationDraft<PromptCreationDraft>(await promptCreationStorage(ownerId), draft => draft.sourceTemplateId === templateId);
+}
+
+async function creationDrafts<T>(storage: Dexie): Promise<Array<T & { key: string }>> {
+  try {
+    if (!(await Dexie.getDatabaseNames()).includes(storage.name)) return [];
+    return await storage.table<T & { key: string }, string>("drafts").orderBy("updatedAt").toArray();
+  } finally { storage.close(); }
+}
+
+// A tab holds a browser-managed lease until it leaves. Closed tabs release it
+// automatically, so their persisted draft can be recovered without stealing an
+// active tab's slot. The legacy "new" row is recovered through the same path.
+async function claimCreationDraft<T>(storage: Dexie, matches: (draft: T) => boolean = () => true): Promise<CreationDraftLease<T>> {
+  const candidates = (await creationDrafts<T>(storage)).filter(matches);
+  for (const candidate of [...candidates, null]) {
+    const key = candidate?.key ?? crypto.randomUUID();
+    const lease = await new Promise<CreationDraftLease<T> | null>((resolve, reject) => {
+      void navigator.locks.request(`${storage.name}:${key}`, { ifAvailable: true }, async lock => {
+        if (!lock) { resolve(null); return; }
+        let draft: T | null = null;
+        if (candidate) {
+          try { await storage.open(); draft = await storage.table<T, string>("drafts").get(key) ?? null; }
+          finally { storage.close(); }
+          if (!draft) { resolve(null); return; }
+        }
+        await new Promise<void>(release => resolve({ key, draft, release }));
+      }).catch(reject);
+    });
+    if (lease) return lease;
+  }
+  throw new Error("CREATION_DRAFT_UNAVAILABLE");
 }
 export async function readQuickCreationDraft(ownerId: string): Promise<QuickCreationDraft | null> {
   const name = await quickCreationName(ownerId);
@@ -445,11 +489,11 @@ export async function hasOwnerPendingDrafts(ownerId: string): Promise<boolean> {
     try { if ((await storage.updates.count()) > 0) return true; }
     finally { storage.close(); }
   }
-  const creation = await readRhymeCreationDraft(ownerId);
-  const promptCreation = await readPromptCreationDraft(ownerId);
+  const creations = await creationDrafts<RhymeCreationDraft>(await rhymeCreationStorage(ownerId));
+  const promptCreations = await creationDrafts<PromptCreationDraft>(await promptCreationStorage(ownerId));
   const quickCreation = await readQuickCreationDraft(ownerId);
-  return Boolean((creation && (creation.title || creation.body))
-    || (promptCreation && (promptCreation.title || promptCreation.tokens.length))
+  return Boolean(creations.some(creation => creation.title || creation.body || creation.submission)
+    || promptCreations.some(creation => creation.title || creation.tokens.length || creation.submission)
     || (quickCreation && (quickCreation.title || quickCreation.body)));
 }
 export async function migrateOwnerLocalDrafts(ownerId: string): Promise<void> {
@@ -486,11 +530,11 @@ export async function readOwnerPendingDrafts(ownerId: string): Promise<Array<{ r
       }));
     } finally { storage.close(); }
   }
-  const creation = await readRhymeCreationDraft(ownerId);
-  if (creation && (creation.title || creation.body)) drafts.push({ resourceId: creation.requestId, title: creation.title, body: creation.body });
-  const promptCreation = await readPromptCreationDraft(ownerId);
-  if (promptCreation && (promptCreation.title || promptCreation.tokens.length)) {
-    drafts.push({ resourceId: promptCreation.requestId, title: promptCreation.title, body: promptCreation.tokens.join(", ") });
+  for (const creation of await creationDrafts<RhymeCreationDraft>(await rhymeCreationStorage(ownerId))) {
+    if (creation.title || creation.body) drafts.push({ resourceId: creation.requestId, title: creation.title, body: creation.body });
+  }
+  for (const creation of await creationDrafts<PromptCreationDraft>(await promptCreationStorage(ownerId))) {
+    if (creation.title || creation.tokens.length) drafts.push({ resourceId: creation.requestId, title: creation.title, body: creation.tokens.join(", ") });
   }
   const quickCreation = await readQuickCreationDraft(ownerId);
   if (quickCreation && (quickCreation.title || quickCreation.body)) {

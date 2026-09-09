@@ -28,7 +28,7 @@ REVIEW-11~14 백업·관측성, REVIEW-06 내보내기 projection guard, REVIEW-
 
 ## 미해결 항목
 
-REVIEW-01~05, REVIEW-07, REVIEW-10은 미해결이다. 신규 초안 수명주기, PWA 메모리/IME 보호, 템플릿 복구를 현재 부분 수정만으로 해결 처리하지 않는다. Yjs, 전체 React 훅·비동기·성능 감사와 의존성 최신화도 미완료다.
+REVIEW-01~05, REVIEW-07, REVIEW-10의 재현 가능한 신규 초안 수명주기·PWA 메모리/IME 보호·템플릿 복구 경로를 수정했다. 합성 PostgreSQL과 Chromium PC/모바일 회귀 범위에서 검증했으며 실제 OS IME·기기·장시간 인수까지 완료한 것은 아니다. Yjs, 전체 React 훅·비동기·성능 감사와 의존성 최신화 판정은 미완료다.
 
 ## 테스트 원칙
 
