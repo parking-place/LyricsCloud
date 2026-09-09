@@ -75,6 +75,15 @@ describe("auth configuration", () => {
     expect(() => readAuthConfig({ ...valid, NODE_ENV: "production" })).toThrow(ConfigError);
   });
 
+  it("permits real Google OAuth on loopback HTTP only with an explicit local opt-in", () => {
+    const local = { ...valid, NODE_ENV: "production", GOOGLE_ISSUER: "https://accounts.google.com", LOCAL_HTTP_OAUTH: "true" };
+    expect(readAuthConfig(local)).toMatchObject({ appOrigin: "http://localhost:8080", secureCookies: false, issuer: "https://accounts.google.com/" });
+    expect(() => readAuthConfig({ ...local, LOCAL_HTTP_OAUTH: "false" })).toThrow("APP_ORIGIN");
+    expect(() => readAuthConfig({ ...local, APP_ORIGIN: "http://192.168.1.2:8080" })).toThrow("LOCAL_HTTP_OAUTH");
+    expect(() => readAuthConfig({ ...local, APP_ORIGIN: "http://localhost.example:8080" })).toThrow("LOCAL_HTTP_OAUTH");
+    expect(() => readAuthConfig({ ...local, GOOGLE_ISSUER: "http://127.0.0.1:3100" })).toThrow("GOOGLE_ISSUER");
+  });
+
   it("allows a production-build OIDC fixture only when both endpoints are loopback", () => {
     const fixture = readAuthConfig({
       ...valid,

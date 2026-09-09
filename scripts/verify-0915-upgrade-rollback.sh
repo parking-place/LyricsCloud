@@ -44,10 +44,10 @@ docker run -d --name "$name-db" --network "$name" --network-alias db \
   -e POSTGRES_USER=upgrade_operator -e POSTGRES_DB=lyricscloud_upgrade -e POSTGRES_PASSWORD=upgrade-secret-only \
   postgres:18-bookworm >/dev/null
 for _ in {1..30}; do
-  docker exec "$name-db" pg_isready -U upgrade_operator -d lyricscloud_upgrade >/dev/null 2>&1 && break
+  docker exec "$name-db" pg_isready -h 127.0.0.1 -U upgrade_operator -d lyricscloud_upgrade >/dev/null 2>&1 && break
   sleep 1
 done
-docker exec "$name-db" pg_isready -U upgrade_operator -d lyricscloud_upgrade >/dev/null
+docker exec "$name-db" pg_isready -h 127.0.0.1 -U upgrade_operator -d lyricscloud_upgrade >/dev/null
 database_url=postgresql://upgrade_operator:upgrade-secret-only@db:5432/lyricscloud_upgrade
 
 run_migration() {

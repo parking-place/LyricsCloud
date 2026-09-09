@@ -49,6 +49,13 @@ export class PostgresExportStore {
         union all select 'identities',to_jsonb(i)-'user_id' from auth_identities i where i.user_id=$1`, [ownerId]);
       await client.query("set local role lyricscloud_app");
       await client.query("select set_config('app.user_id',$1,true)", [ownerId]);
+      // A repeatable snapshot can still contain stale plaintext. Never emit a
+      // successful archive while durable CRDT updates await their projection.
+      const projection = await client.query<{ pending: boolean }>(`select exists(
+        select 1 from sync_documents
+        where owner_id=app_current_user_id() and projection_error_code is not null
+      ) pending`);
+      if (projection.rows[0]?.pending !== false) throw new Error("EXPORT_PROJECTION_PENDING");
       return new ExportSnapshot(client, result.rows[0]!.exported_at, bootstrap.rows);
     } catch (error) {
       await client.query("rollback").catch(() => undefined);
@@ -76,7 +83,7 @@ export class ExportSnapshot {
     for await (const row of this.#rows(READABLE_RESOURCES_QUERY, batchSize)) {
       yield {
         id: String(row.id), type: row.type as ExportReadableResource["type"], title: String(row.title),
-        deletedAt: typeof row.deleted_at === "string" ? row.deleted_at : null,
+        deletedAt: exportTimestamp(row.deleted_at),
         songId: typeof row.song_id === "string" ? row.song_id : null,
         status: typeof row.status === "string" ? row.status : null,
         description: String(row.description ?? ""), workNotes: String(row.work_notes ?? ""),
@@ -91,7 +98,7 @@ export class ExportSnapshot {
         id: String(row.id), type: row.type as ExportReadableTemplate["type"], title: String(row.title),
         lyricBody: typeof row.lyric_body === "string" ? row.lyric_body : null,
         promptTokens: Array.isArray(row.prompt_tokens) ? row.prompt_tokens.map(String) : null,
-        deletedAt: typeof row.deleted_at === "string" ? row.deleted_at : null
+        deletedAt: exportTimestamp(row.deleted_at)
       };
     }
   }
@@ -161,3 +168,9 @@ where r.owner_id=app_current_user_id() order by r.type,r.created_at,r.id`;
 
 const READABLE_TEMPLATES_QUERY = `select id,type,title,lyric_body,prompt_tokens,deleted_at from templates
 where owner_id=app_current_user_id() order by type,created_at,id`;
+
+function exportTimestamp(value: unknown): string | null {
+  // node-postgres decodes timestamptz as Date; JSON queries already yield text.
+  if (value instanceof Date) return value.toISOString();
+  return typeof value === "string" ? value : null;
+}

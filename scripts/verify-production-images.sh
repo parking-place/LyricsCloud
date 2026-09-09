@@ -26,7 +26,7 @@ docker run -d --name "$name-db" --network "$name" --network-alias db --mount "ty
 database_url=postgresql://lyricscloud_test:lyricscloud_test_only@db:5432/lyricscloud_test
 ready=false
 for attempt in {1..30}; do
-  if docker exec "$name-db" pg_isready -U lyricscloud_test -d lyricscloud_test >/dev/null 2>&1; then ready=true; break; fi
+  if docker exec "$name-db" pg_isready -h 127.0.0.1 -U lyricscloud_test -d lyricscloud_test >/dev/null 2>&1; then ready=true; break; fi
   sleep 1
 done
 [[ "$ready" == true ]]

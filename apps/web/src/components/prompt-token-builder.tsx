@@ -143,7 +143,7 @@ export function PromptTokenBuilder(props: {
     }
   }
 
-  return <section className="prompt-builder-card" aria-labelledby={`${props.idPrefix}-tokens-label`}>
+  return <section className="prompt-builder-card" aria-labelledby={`${props.idPrefix}-tokens-label`} data-pending-input={Boolean(input)}>
     <header><div><h2 id={`${props.idPrefix}-tokens-label`}>프롬프트 태그</h2><p>쉼표 붙여넣기와 직접 입력을 같은 규칙으로 처리합니다.</p></div>
       <span>{props.items.length} / {PROMPT_LIMITS.tokensPerPrompt}</span></header>
     <div className="prompt-editor-cloud" aria-describedby={duplicates.length ? `${props.idPrefix}-duplicate-warning` : undefined}>

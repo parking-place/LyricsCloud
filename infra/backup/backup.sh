@@ -13,6 +13,7 @@ partial=""
 manifest_partial=""
 status_partial=""
 lock_dir=""
+lock_acquired=false
 
 log_event() {
   local event=$1 outcome=$2 code=${3:-}
@@ -29,7 +30,10 @@ cleanup() {
   [[ -z "$partial" ]] || rm -f -- "$partial"
   [[ -z "$manifest_partial" ]] || rm -f -- "$manifest_partial"
   [[ -z "$status_partial" ]] || rm -f -- "$status_partial"
-  [[ -z "$lock_dir" ]] || rmdir -- "$lock_dir" 2>/dev/null || true
+  if [[ "$lock_acquired" == true ]]; then
+    rmdir -- "$lock_dir" 2>/dev/null || true
+    lock_acquired=false
+  fi
 }
 
 failed() {
@@ -56,6 +60,7 @@ failure_code=BACKUP_STORAGE_UNAVAILABLE
 [[ "$(tr -d '\r\n' < "$repository/.lyricscloud-backup-storage-id")" == "$storage_id" ]]
 lock_dir="$repository/.backup.lock"
 mkdir "$lock_dir"
+lock_acquired=true
 
 failure_code=BACKUP_SECRET_INVALID
 [[ -s "$recipient_file" && -s "$password_file" ]]
@@ -123,6 +128,7 @@ while IFS= read -r -d '' old_archive; do
 done < <(find "$repository" -maxdepth 1 -type f -name 'lyricscloud-*.dump.age' -mtime "+$retention_days" -print0)
 
 rmdir "$lock_dir"
+lock_acquired=false
 lock_dir=""
 if [[ "$pruned" -gt 0 ]]; then
   printf '{"signal":"log","event":"backup_pruned","operation":"backup","outcome":"success","service":"backup","environment":"%s","version":"%s","buildId":"%s","count":%s,"timestamp":"%s"}\n' \

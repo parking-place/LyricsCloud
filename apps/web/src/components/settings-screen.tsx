@@ -105,7 +105,8 @@ export function SettingsScreen({ initialSettings, ownerId }: { initialSettings: 
   }
 
   async function requestWithdrawal() {
-    if (withdrawalBusy || withdrawalConfirmation !== "탈퇴" || !exportAcknowledged) return;
+    if (withdrawalBusyRef.current || withdrawalBusy || withdrawalConfirmation !== "탈퇴" || !exportAcknowledged) return;
+    withdrawalBusyRef.current = true;
     setWithdrawalBusy(true); setWithdrawalMessage("");
     let completed = false;
     try {
@@ -120,16 +121,17 @@ export function SettingsScreen({ initialSettings, ownerId }: { initialSettings: 
       if (!response.ok) throw new Error("WITHDRAWAL_FAILED");
       completed = true;
     } catch {
-      const session = await fetch("/api/auth/session", { cache: "no-store" }).catch(() => null);
-      completed = session?.status === 401;
-      if (!completed) setWithdrawalMessage("탈퇴 요청을 완료하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.");
+      // A 401 from a separate session probe also means expiration or logout,
+      // not necessarily successful withdrawal. Keep local drafts until confirmed.
+      setWithdrawalMessage("탈퇴 요청 결과를 확인하지 못했습니다. 이 기기의 자료는 삭제하지 않았습니다. 연결과 Google 재인증 후 계정 상태를 확인해 주세요.");
+    } finally {
+      if (!completed) { withdrawalBusyRef.current = false; setWithdrawalBusy(false); }
     }
     if (completed) {
       await Promise.race([clearAccountPrivateData(ownerId).catch(() => undefined), new Promise<void>((resolve) => setTimeout(resolve, 2_000))]);
       window.location.replace("/auth?withdrawal=pending");
       return;
     }
-    setWithdrawalBusy(false);
   }
 
   return <section className="settings-page" aria-labelledby="settings-title">
@@ -150,7 +152,7 @@ export function SettingsScreen({ initialSettings, ownerId }: { initialSettings: 
         <section id="account" className="settings-card account-settings"><h2>계정과 자료</h2><p>탈퇴 전에 서버의 전체 자료를 내보내고, 이 기기의 미전송 초안도 따로 보관하세요.</p>
           <div id="account-export" className="account-export-entry"><div><strong>전체 내보내기</strong><p>한 시점의 곡·가사·라임 노트·프롬프트·템플릿·관계·설정을 UTF-8 TXT/Markdown과 schema-versioned JSON이 든 ZIP으로 받습니다. 이미 완전 삭제된 자료와 인프라 백업은 포함되지 않습니다.</p></div><div className="account-danger-actions"><a className="primary-link" href="/api/export" download>전체 ZIP 내려받기</a><button type="button" className="secondary-button" onClick={() => void downloadDrafts()}>미전송 초안 내려받기</button></div></div>
           <div className="account-danger-zone"><div><strong>회원 탈퇴</strong><p>요청 즉시 모든 기기의 세션과 자료 접근이 차단됩니다. 7일 안에는 Google 재인증 후 명시적으로 철회할 수 있고, 정확히 7일이 지나면 계정과 자료가 완전히 삭제됩니다.</p><p>인프라 백업에는 운영 보존 기간 동안 암호화된 사본이 남을 수 있으며 일반 사용자 화면에서는 복원할 수 없습니다.</p></div><div className="account-danger-actions"><a className="secondary-button" href="/api/auth/login?returnTo=%2Fsettings%3Fwithdrawal%3Dconfirm%23account">Google로 재인증</a><button type="button" className="danger-button" onClick={() => setWithdrawalOpen(true)}>회원 탈퇴 검토</button></div></div>
-          {withdrawalMessage ? <p className="settings-message warning" role="alert">{withdrawalMessage}</p> : null}
+          {!withdrawalOpen && withdrawalMessage ? <p className="settings-message warning" role="alert">{withdrawalMessage}</p> : null}
         </section>
         <section id="keyboard" className="settings-card"><h2>키보드</h2><p>명령과 키를 검색할 수 있습니다. 같은 기능은 화면 버튼과 메뉴에서도 사용할 수 있습니다.</p><ShortcutGuide /></section>
       </div>
@@ -168,6 +170,8 @@ export function SettingsScreen({ initialSettings, ownerId }: { initialSettings: 
         <label className="withdrawal-check"><input type="checkbox" checked={exportAcknowledged} onChange={(event) => setExportAcknowledged(event.target.checked)} /><span>전체 내보내기를 완료했거나, 내보내기 없이 탈퇴하는 결과를 이해했습니다.</span></label>
         <label className="withdrawal-confirmation">계속하려면 <strong>탈퇴</strong>를 입력하세요<input value={withdrawalConfirmation} onChange={(event) => setWithdrawalConfirmation(event.target.value)} autoComplete="off" /></label>
         <p>보안을 위해 최근 10분 안의 Google 재인증 세션에서만 요청할 수 있습니다.</p>
+        {withdrawalMessage ? <p className="settings-message warning" role="alert">{withdrawalMessage}</p> : null}
+        {!withdrawalBusy ? <p><a className="secondary-button" href="/api/auth/login?returnTo=%2Fsettings%3Fwithdrawal%3Dconfirm%23account">Google로 재인증</a></p> : null}
         <div className="trash-dialog-actions"><button type="button" className="secondary-button" onClick={() => setWithdrawalOpen(false)} disabled={withdrawalBusy}>취소</button><button type="button" className="danger-button" onClick={() => void requestWithdrawal()} disabled={withdrawalBusy || !exportAcknowledged || withdrawalConfirmation !== "탈퇴"}>{withdrawalBusy ? "요청 중" : "탈퇴 요청"}</button></div>
       </section>
     </div> : null}

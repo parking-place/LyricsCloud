@@ -102,7 +102,12 @@ select
 SQL
 )
 IFS='|' read -r users resources sessions documents revisions trash withdrawals search_indexes rls_not_forced crdt_orphans <<< "$integrity"
-[[ "$users" -ge 1 && "$resources" -ge 1 && "$search_indexes" == "4" && "$rls_not_forced" == "0" && "$crdt_orphans" == "0" ]]
+# Empty accounts/workspaces are valid backups; fixture population is not integrity.
+for count in "$users" "$resources" "$sessions" "$documents" "$revisions" "$trash" "$withdrawals" \
+  "$search_indexes" "$rls_not_forced" "$crdt_orphans"; do
+  [[ "$count" =~ ^[0-9]+$ ]]
+done
+[[ "$search_indexes" == "4" && "$rls_not_forced" == "0" && "$crdt_orphans" == "0" ]]
 unset PGPASSWORD
 log_event restore_completed success
 printf '{"restoreValidation":"PASS","databaseSchemaVersion":"%s","counts":{"users":%s,"resources":%s,"sessions":%s,"syncDocuments":%s,"revisions":%s,"trash":%s,"withdrawals":%s},"searchIndexes":%s,"forcedRlsViolations":%s,"crdtOrphans":%s}\n' \
