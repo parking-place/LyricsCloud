@@ -6,7 +6,9 @@ export default async function globalSetup(): Promise<void> {
   const databaseName = new URL(databaseUrl).pathname.slice(1);
   if (!databaseName.endsWith("_test")) throw new Error("E2E_DATABASE_URL must name a disposable *_test database");
   await withE2eDatabase(async (pool) => {
-    await pool.query("truncate table oauth_transactions, auth_sessions, auth_identities, user_profiles, app_users cascade");
+    await pool.query(`truncate table beta_redemptions,beta_signup_intents,admission_grants,beta_signup_failure_budgets,
+      beta_code_refreshes,beta_codes,beta_code_batches,beta_code_epochs,
+      oauth_transactions,auth_sessions,auth_identities,user_profiles,app_users cascade`);
     await pool.query(`insert into templates(id,owner_id,type,title,lyric_body,prompt_tokens) values
       ('08000000-0000-4000-8000-000000000001',null,'lyrics','기본 송폼','[Intro]\n\n[Verse]\n\n[Pre-Chorus]\n\n[Chorus]\n\n[Verse]\n\n[Chorus]\n\n[Outro]',null),
       ('08000000-0000-4000-8000-000000000002',null,'lyrics','간결한 Verse · Hook','[Verse]\n\n[Hook]\n\n[Verse]\n\n[Hook]',null),

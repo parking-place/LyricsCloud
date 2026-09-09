@@ -1,6 +1,6 @@
 import { AuthService, cookieNames, GoogleOidcAdapter, readCookie, sessionCookie, tokenHash } from "@lyricscloud/auth";
-import { readAuthConfig, readRuntimeConfig, type AuthConfig } from "@lyricscloud/config";
-import { PostgresAuthStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLifecycleStore, PostgresExportStore, type PendingWithdrawalSession } from "@lyricscloud/database";
+import { readAuthConfig, readBetaSignupConfig, readRuntimeConfig, type AuthConfig } from "@lyricscloud/config";
+import { PostgresAuthStore, PostgresBetaSignupStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLifecycleStore, PostgresExportStore, type PendingWithdrawalSession } from "@lyricscloud/database";
 
 interface AuthContext {
   readonly config: AuthConfig;
@@ -30,13 +30,16 @@ let cached: { key: string; context: AuthContext } | undefined;
 export function getAuthContext(): AuthContext {
   const runtime = readRuntimeConfig(process.env);
   const config = readAuthConfig(process.env);
-  const key = `${runtime.databaseUrl}\u0000${config.appOrigin}\u0000${config.issuer}\u0000${config.clientId}\u0000${config.allowlistFingerprint ?? "static"}`;
+  const betaConfig = readBetaSignupConfig(process.env);
+  const key = `${runtime.databaseUrl}\u0000${config.appOrigin}\u0000${config.issuer}\u0000${config.clientId}\u0000${config.allowlistFingerprint ?? "static"}\u0000${betaConfig.fingerprint}`;
   if (cached?.key === key) return cached.context;
   const liveConfig = config;
   const store = new PostgresAuthStore(runtime.databaseUrl);
+  const betaStore = new PostgresBetaSignupStore(runtime.databaseUrl);
   const context = {
     config: liveConfig,
-    service: new AuthService(liveConfig, store, new GoogleOidcAdapter(liveConfig)),
+    service: new AuthService(liveConfig, store, new GoogleOidcAdapter(liveConfig), undefined,
+      { config: betaConfig, store: betaStore }),
     ownedData: new PostgresOwnedDataStore(runtime.databaseUrl),
     songs: new PostgresSongStore(runtime.databaseUrl),
     lyrics: new PostgresLyricStore(runtime.databaseUrl),

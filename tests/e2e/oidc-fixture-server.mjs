@@ -43,7 +43,8 @@ function authorize(url, response) {
   }
   const actions = [
     issue("허용 계정으로 계속", "allowed", "e2e-allowed-user", "fixture@example.invalid", "통합 테스트 사용자"),
-    issue("미허용 계정으로 계속", "denied", "e2e-outsider", "outsider@example.invalid", "초대받지 않은 사용자")
+    issue("미허용 계정으로 계속", "denied", "e2e-outsider", "outsider@example.invalid", "초대받지 않은 사용자"),
+    issue("신규 계정으로 계속", "signup", "e2e-beta-signup-user", "new-beta@example.invalid", "신규 베타 사용자")
   ];
   const cancel = `${redirectUri}?${new URLSearchParams({ error: "access_denied", state })}`;
   response.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });

@@ -41,6 +41,7 @@
 - [`0.6.0 Phase 1 곡 대시보드 검증`](./0.6.0-phase1-validation.md)
 - [`0.7.0 Phase 1 통합 검색 기반 검증`](./0.7.0-phase1-validation.md)
 - [`0.7.0 Phase 2 검색 화면·딥링크 검증`](./0.7.0-phase2-validation.md)
+- [`1.0.1 Phase 4 베타 가입 인수`](./1.0.1-phase4-beta-signup.md)
 - [`0.7.0 Phase 3 최근 작업·위치 복원 검증`](./0.7.0-phase3-validation.md)
 
 ## 개발 서버 운영

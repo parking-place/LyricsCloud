@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ConfigError, hmacAllowlistDigest, readAuthConfig, readRuntimeConfig } from "./index.js";
+import { ConfigError, hmacAllowlistDigest, readAuthConfig, readBetaSignupConfig, readRuntimeConfig } from "./index.js";
 
 describe("runtime configuration", () => {
   it("accepts a PostgreSQL URL", () => {
@@ -155,5 +155,27 @@ describe("auth configuration", () => {
   it("rejects an application origin with a path and non-test issuer overrides", () => {
     expect(() => readAuthConfig({ ...valid, APP_ORIGIN: "http://localhost:8080/auth" })).toThrow("APP_ORIGIN");
     expect(() => readAuthConfig({ ...valid, NODE_ENV: "development" })).toThrow("GOOGLE_ISSUER");
+  });
+});
+
+describe("beta signup configuration", () => {
+  it("loads only an environment-bound web verification key", () => {
+    const key = Buffer.alloc(32, 5).toString("base64url");
+    const config = readBetaSignupConfig({ BETA_ENVIRONMENT: "development", BETA_CODE_INDEX_KID: "dev-2026-09",
+      BETA_CODE_INDEX_KEY_FILE: "/run/secrets/beta_code_index_key" }, () => `${key}\n`);
+    expect(config).toMatchObject({ environment: "development", indexKid: "dev-2026-09" });
+    expect(config.indexKey).toEqual(Buffer.alloc(32, 5));
+  });
+
+  it("fails closed without echoing a secret path or malformed key", () => {
+    const path = "/private/never-print-beta-key";
+    try {
+      readBetaSignupConfig({ BETA_ENVIRONMENT: "release", BETA_CODE_INDEX_KID: "release-kid",
+        BETA_CODE_INDEX_KEY_FILE: path }, () => "wrong");
+      throw new Error("expected failure");
+    } catch (error) {
+      expect(String(error)).toContain("BETA_CODE_INDEX_KEY_FILE");
+      expect(String(error)).not.toContain(path);
+    }
   });
 });

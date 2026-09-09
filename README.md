@@ -18,7 +18,7 @@ LyricsCloud 1.0은 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트
 ## 상태
 
 - 제품 version: `1.0.0`
-- 현재 작업: [1.0.0 Phase 6 — 사후 안정화·검토](<./0.Plans/1. Dev-phase/1.0.0/6phase.md>)
+- 현재 작업: [1.0.1 Phase 4 — 코드와 메일 가입](<./0.Plans/2.Patch-phase/1.0.1/4phase.md>)
 - 릴리스 인수 기록: [1.0.0 Phase 5 — 최종 릴리스](<./0.Plans/1. Dev-phase/1.0.0/5phase.md>)
 - 상태 단일 원본: [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>)
 - 프로덕션: 승인된 Phase 2 digest와 schema `0802_lifecycle.sql`로 배포·공개 smoke 완료
@@ -62,6 +62,14 @@ production-mode 셀프호스트는 환경 검증, runtime allowlist 권한, HTTP
 | 기여자 | [Agent 지침](./Agent.md), [개발 로드맵](<./0.Plans/1. Dev-phase/README.md>), [ADR 색인](./docs/adr/README.md) |
 | 후속 개발 검토자 | [후속 계획·읽는 순서](./0.Plans/2.Patch-phase/README.md), [추가 후보 129개](./0.Plans/2.Patch-phase/Future_Feature.md), [검수 변경 인수 절차](./0.Plans/2.Patch-phase/FUTURE-INTAKE.md), [계획 인수 검토표](./0.Plans/2.Patch-phase/REVIEW-CHECKLIST.md) |
 
+## 1.0.1 개발 화면 — 초대 코드 가입
+
+기존 사용자 로그인과 신규 가입을 분리했다. 신규 사용자는 초대 코드와 Google 계정 이메일을 입력하고, 같은 계정의 Google 본인 확인이 끝난 뒤에만 코드 소비와 앱 접근권 등록이 함께 완료된다. 아래 화면은 실제 계정·코드가 아닌 합성 오류 상태다.
+
+![1.0.1 초대 코드 가입 PC 화면](./docs/runbooks/evidence/1.0.1-phase4-beta-signup-desktop.png)
+
+![1.0.1 초대 코드 가입 모바일 화면](./docs/runbooks/evidence/1.0.1-phase4-beta-signup-mobile.png)
+
 ## 데이터와 개인정보 경계
 
 애플리케이션 자료는 PostgreSQL에, 편집 중 offline 초안은 계정별 브라우저 저장소에 둔다. 로그·관측에는 제목, 본문, 태그, 프롬프트, 검색어, 이메일, OAuth/session 값과 동적 resource ID를 넣지 않는다. 전체 내보내기는 사용자가 보관할 이동용 사본이며 운영 backup을 대신하지 않는다.
@@ -83,4 +91,4 @@ production-mode 셀프호스트는 환경 검증, runtime allowlist 권한, HTTP
 
 ## 후속 계획과 현재 구현 구분
 
-1.0.1은 10 Phase로 계획하며 긴급 베타 CLI는 P2에 배정했다. 해시 test-user·신규 베타 가입·로고/버전 표시·UI 수정은 실제 인수 전 현재 기능으로 안내하지 않는다. 후속 사전·폰트·다사용자 동시 편집/presence·디자인·다섯 OS 개발안은 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에서 확인한다. 현재 실행 상태는 1.0.0 P6 review이며 이 계획 게시로 제품 버전을 변경하지 않는다.
+1.0.1은 10 Phase로 진행 중이다. P2 베타 CLI와 P3 환경별 HMAC bootstrap은 개발 서버 인수를 마쳤고, P4 신규 가입은 현재 후보 검증 중이다. 로고/버전 표시·IME와 UI 수정은 각각의 후속 Phase 인수 전 현재 릴리스 기능으로 안내하지 않는다. 후속 사전·폰트·다사용자 동시 편집/presence·디자인·다섯 OS 개발안은 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에서 확인한다.

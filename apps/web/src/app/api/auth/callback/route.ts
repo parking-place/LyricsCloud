@@ -41,6 +41,7 @@ export async function GET(request: Request): Promise<Response> {
     const code: ErrorCode = error instanceof AuthError ? error.code : "AUTH_PROVIDER_UNAVAILABLE";
     const target = new URL("/auth", config.appOrigin);
     target.searchParams.set("error", code);
+    if (error instanceof AuthError && error.flow === "signup") target.searchParams.set("flow", "signup");
     const requestId = createRequestId();
     target.searchParams.set("requestId", requestId);
     return new Response(null, {

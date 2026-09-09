@@ -34,6 +34,9 @@ export default defineConfig({
         SESSION_SECRET: "synthetic-e2e-session-secret-at-least-32-bytes",
         AUTH_ALLOWED_EMAILS: "fixture@example.invalid",
         AUTH_ALLOWED_EMAILS_FILE: "",
+        BETA_ENVIRONMENT: "test",
+        BETA_CODE_INDEX_KID: "e2e-test-key",
+        BETA_CODE_INDEX_KEY_FILE: `${process.cwd()}/tests/e2e/beta-index-key.fixture`,
         HOSTNAME: "127.0.0.1",
         PORT: "3000"
       },

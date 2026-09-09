@@ -1,4 +1,5 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
+import { issueBetaCodes } from "@lyricscloud/database";
 import { fixtureTokens, fixtureUsers, hashToken, withE2eDatabase } from "./fixtures.js";
 
 const baseURL = "http://127.0.0.1:3000";
@@ -108,6 +109,55 @@ test.describe("OIDC, session, and logout integration", () => {
       await expect(page).toHaveURL(/\/auth$/);
       await context.close();
     }
+  });
+
+  test("a claimed code is consumed only after the matching verified Google callback", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "one shared disposable-code redemption is sufficient");
+    const indexKey = Buffer.alloc(32, 42);
+    const encryptionKey = Buffer.alloc(32, 24);
+    const codes = await withE2eDatabase(async (pool) => (await issueBetaCodes(pool, {
+      environment: "test", count: 2, keys: { indexKey, encryptionKey, indexKid: "e2e-test-key" }
+    })).map((item) => item.code));
+    await page.goto("/auth");
+    await page.getByRole("textbox", { name: "초대 코드", exact: true }).fill(codes[0]!);
+    await page.getByRole("textbox", { name: "Google 계정 이메일", exact: true }).fill("new-beta@example.invalid");
+    await page.getByRole("button", { name: "가입하고 Google로 확인" }).click();
+    await expect(page.getByRole("heading", { name: "OIDC 테스트 공급자" })).toBeVisible();
+    await page.getByRole("link", { name: "미허용 계정으로 계속", exact: true }).click();
+    await expect(page).toHaveURL(/\/auth\?error=BETA_EMAIL_MISMATCH&flow=signup/);
+    await expect(page.locator(".auth-error")).toContainText("코드는 사용되지 않았습니다");
+    await withE2eDatabase(async (pool) => {
+      expect((await pool.query("select count(*)::int count from beta_codes where consumed_at is not null")).rows[0].count).toBe(0);
+    });
+
+    await page.getByRole("textbox", { name: "초대 코드", exact: true }).fill(codes[1]!);
+    await page.getByRole("textbox", { name: "Google 계정 이메일", exact: true }).fill("new-beta@example.invalid");
+    await page.getByRole("button", { name: "가입하고 Google로 확인" }).click();
+    await expect(page.getByRole("heading", { name: "OIDC 테스트 공급자" })).toBeVisible();
+    await page.getByRole("link", { name: "신규 계정으로 계속", exact: true }).click();
+    await expect(page).toHaveURL(/\/workspace\?auth=success$/);
+    await expect(page.getByRole("heading", { name: "안녕하세요, 신규 베타 사용자님." })).toBeVisible();
+    await withE2eDatabase(async (pool) => {
+      const state = await pool.query(`select
+        (select count(*)::int from beta_codes where consumed_at is not null) consumed,
+        (select count(*)::int from beta_redemptions where subject='e2e-beta-signup-user') receipts,
+        (select count(*)::int from admission_grants where subject='e2e-beta-signup-user' and state='active') grants`);
+      expect(state.rows[0]).toEqual({ consumed: 1, receipts: 1, grants: 1 });
+    });
+  });
+
+  test("signup rejects cross-origin and malformed preflight requests before creating an intent", async ({ request }) => {
+    const before = await withE2eDatabase(async (pool) =>
+      (await pool.query("select count(*)::int count from beta_signup_intents")).rows[0].count as number);
+    const csrf = await request.post("/api/auth/signup", { data: { code: "A1B2C3", email: "new-beta@example.invalid" } });
+    expect(csrf.status()).toBe(403);
+    const invalid = await request.post("/api/auth/signup", {
+      headers: { Origin: baseURL }, data: { code: "bad", email: "not-an-email" }
+    });
+    expect(invalid.status()).toBe(422);
+    await withE2eDatabase(async (pool) => {
+      expect((await pool.query("select count(*)::int count from beta_signup_intents")).rows[0].count).toBe(before);
+    });
   });
 
   test("missing, invalid, and expired session cookies fail closed", async ({ context, page }) => {

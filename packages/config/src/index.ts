@@ -46,6 +46,13 @@ export interface HmacAllowlistKeyring {
   readonly keys: readonly HmacAllowlistKey[];
 }
 
+export interface BetaSignupConfig {
+  readonly environment: AllowlistEnvironment;
+  readonly indexKid: string;
+  readonly indexKey: Buffer;
+  readonly fingerprint: string;
+}
+
 export class ConfigError extends Error {
   readonly code = "CONFIG_INVALID";
   constructor(readonly keys: readonly string[]) { super(`Invalid configuration keys: ${keys.join(", ")}`); }
@@ -146,6 +153,37 @@ export function readAuthConfig(
     allowedEmails,
     allowlistFingerprint,
     secureCookies: origin!.protocol === "https:"
+  };
+}
+
+export function readBetaSignupConfig(
+  env: NodeJS.ProcessEnv,
+  readTextFile: (path: string) => string = (path) => readFileSync(path, "utf8")
+): BetaSignupConfig {
+  const invalid: string[] = [];
+  const environment = env.BETA_ENVIRONMENT;
+  const indexKid = env.BETA_CODE_INDEX_KID;
+  const indexKeyFile = env.BETA_CODE_INDEX_KEY_FILE?.trim();
+  if (!isAllowlistEnvironment(environment)) invalid.push("BETA_ENVIRONMENT");
+  if (!safeKid(indexKid)) invalid.push("BETA_CODE_INDEX_KID");
+  if (!indexKeyFile) invalid.push("BETA_CODE_INDEX_KEY_FILE");
+  let indexKey = Buffer.alloc(0);
+  if (indexKeyFile) {
+    try {
+      const source = readTextFile(indexKeyFile).trim();
+      if (!/^[A-Za-z0-9_-]{43}$/u.test(source)) throw new Error();
+      indexKey = Buffer.from(source, "base64url");
+      if (indexKey.length !== 32) throw new Error();
+    } catch {
+      invalid.push("BETA_CODE_INDEX_KEY_FILE");
+    }
+  }
+  if (invalid.length) throw new ConfigError([...new Set(invalid)]);
+  return {
+    environment: environment as AllowlistEnvironment,
+    indexKid: indexKid!,
+    indexKey,
+    fingerprint: fingerprint(`${environment}\u0000${indexKid}\u0000${indexKey.toString("base64url")}`)
   };
 }
 

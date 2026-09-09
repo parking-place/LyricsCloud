@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { calculatePKCECodeChallenge } from "openid-client";
-import { hmacAllowlistDigest, readAuthConfig, type AuthConfig } from "@lyricscloud/config";
-import type { AuthIdentityInput, AuthStore } from "@lyricscloud/database";
+import { hmacAllowlistDigest, readAuthConfig, type AuthConfig, type BetaSignupConfig } from "@lyricscloud/config";
+import { betaSignupEmailDigest, type AuthIdentityInput, type AuthStore, type BetaSignupIntentInput,
+  type BetaSignupStore, type BetaAdmissionInput, type BetaRedemptionInput } from "@lyricscloud/database";
 import { cookieNames, sessionCookie, transactionCookie } from "./cookies.js";
 import { tokenHash } from "./crypto.js";
 import { OidcCodeRejectedError, type OidcAdapter, type OidcIdentity } from "./oidc.js";
@@ -73,6 +74,45 @@ class FakeOidc implements OidcAdapter {
     return Promise.resolve(this.identity);
   }
 }
+
+class MemoryBetaStore implements BetaSignupStore {
+  intents = new Map<string, BetaSignupIntentInput & { cancelled: boolean }>();
+  admitted = new Set<string>();
+  registerBetaSignupIntent(input: BetaSignupIntentInput) {
+    this.intents.set(input.intentDigest, { ...input, cancelled: false });
+    return Promise.resolve();
+  }
+  cancelBetaSignupIntent(intentDigest: string) {
+    const intent = this.intents.get(intentDigest);
+    if (intent) intent.cancelled = true;
+    return Promise.resolve();
+  }
+  admitIdentity(input: BetaAdmissionInput) {
+    const principal = `${input.identity.issuer}:${input.identity.subject}`;
+    if (!input.bootstrapAllowed && !this.admitted.has(principal)) return Promise.resolve(null);
+    this.admitted.add(principal);
+    return Promise.resolve("00000000-0000-4000-8000-000000000002");
+  }
+  redeemBetaSignup(input: BetaRedemptionInput) {
+    const intent = this.intents.get(input.intentDigest);
+    if (!intent || intent.cancelled) return Promise.reject(new Error("BETA_SIGNUP_REJECTED"));
+    if (intent.emailDigest !== input.verifiedEmailDigest) {
+      intent.cancelled = true;
+      return Promise.reject(new Error("BETA_EMAIL_MISMATCH"));
+    }
+    this.admitted.add(`${input.identity.issuer}:${input.identity.subject}`);
+    return Promise.resolve({ userId: "00000000-0000-4000-8000-000000000002", outcome: "redeemed" as const });
+  }
+  close() { return Promise.resolve(); }
+}
+
+const betaKey = Buffer.alloc(32, 4);
+const betaConfig: BetaSignupConfig = {
+  environment: "test",
+  indexKid: "test-kid",
+  indexKey: betaKey,
+  fingerprint: "synthetic"
+};
 
 const now = new Date("2026-09-04T12:00:00.000Z");
 
@@ -170,6 +210,69 @@ describe("OIDC login boundary", () => {
     expired.store.sessions.get(tokenHash(expiredResult.sessionToken))!.expiresAt = new Date(now.getTime() - 1);
     await expect(expired.service.resolveSession(expiredResult.sessionToken))
       .rejects.toMatchObject({ code: "AUTH_SESSION_EXPIRED" });
+  });
+});
+
+describe("beta signup boundary", () => {
+  it("binds a code and claimed email to the verified callback without exposing either in the redirect", async () => {
+    const store = new MemoryStore();
+    const beta = new MemoryBetaStore();
+    const oidc = new FakeOidc();
+    oidc.identity = { ...oidc.identity, email: "new-user@example.com" };
+    const service = new AuthService(config, store, oidc, { now: () => now }, { config: betaConfig, store: beta });
+    const started = await service.beginBetaSignup({ code: "A1B2C3", email: "New-User@Example.com", returnTo: "/workspace" });
+    expect(started.authorizationUrl.href).not.toContain("A1B2C3");
+    expect(started.authorizationUrl.href).not.toContain("new-user@example.com");
+    expect(started.transaction).not.toContain("A1B2C3");
+    const callback = new URL(`http://localhost:8080/api/auth/callback?code=synthetic-code&state=${oidc.state}`);
+    const result = await service.completeLogin(callback, started.transaction);
+    expect(result.userId).toBe("00000000-0000-4000-8000-000000000002");
+    expect(beta.admitted.has("https://accounts.google.com:google-subject-1")).toBe(true);
+  });
+
+  it("cancels a wrong-account or provider-cancelled intent without creating a session", async () => {
+    const store = new MemoryStore();
+    const beta = new MemoryBetaStore();
+    const oidc = new FakeOidc();
+    oidc.identity = { ...oidc.identity, email: "other@example.com" };
+    const service = new AuthService(config, store, oidc, { now: () => now }, { config: betaConfig, store: beta });
+    const started = await service.beginBetaSignup({ code: "A1B2C3", email: "claimed@example.com", returnTo: "/workspace" });
+    await expect(service.completeLogin(
+      new URL(`http://localhost:8080/api/auth/callback?code=synthetic-code&state=${oidc.state}`), started.transaction
+    )).rejects.toMatchObject({ code: "BETA_EMAIL_MISMATCH", flow: "signup" });
+    expect([...beta.intents.values()][0]?.cancelled).toBe(true);
+    expect(store.sessions.size).toBe(0);
+
+    const cancelledOidc = new FakeOidc();
+    const cancelledBeta = new MemoryBetaStore();
+    const cancelledService = new AuthService(config, new MemoryStore(), cancelledOidc, { now: () => now },
+      { config: betaConfig, store: cancelledBeta });
+    const cancelled = await cancelledService.beginBetaSignup({ code: "Z9Y8X7", email: "new@example.com", returnTo: null });
+    await expect(cancelledService.completeLogin(
+      new URL(`http://localhost:8080/api/auth/callback?error=access_denied&state=${cancelledOidc.state}`), cancelled.transaction
+    )).rejects.toMatchObject({ code: "AUTH_CANCELLED", flow: "signup" });
+    expect([...cancelledBeta.intents.values()][0]?.cancelled).toBe(true);
+  });
+
+  it("lets a prior beta grant use normal login even when it is not on the bootstrap list", async () => {
+    const store = new MemoryStore();
+    const beta = new MemoryBetaStore();
+    const oidc = new FakeOidc();
+    oidc.identity = { ...oidc.identity, email: "granted@example.com" };
+    beta.admitted.add("https://accounts.google.com:google-subject-1");
+    const service = new AuthService(config, store, oidc, { now: () => now }, { config: betaConfig, store: beta });
+    const started = await service.beginLogin("/workspace");
+    const result = await service.completeLogin(
+      new URL(`http://localhost:8080/api/auth/callback?code=synthetic-code&state=${oidc.state}`), started.transaction
+    );
+    expect(result.userId).toBe("00000000-0000-4000-8000-000000000002");
+  });
+
+  it("uses purpose-separated environment-bound email digests", () => {
+    expect(betaSignupEmailDigest(" User@Example.com ", "test", betaKey))
+      .toBe(betaSignupEmailDigest("user@example.com", "test", betaKey));
+    expect(betaSignupEmailDigest("user@example.com", "test", betaKey))
+      .not.toBe(betaSignupEmailDigest("user@example.com", "development", betaKey));
   });
 });
 

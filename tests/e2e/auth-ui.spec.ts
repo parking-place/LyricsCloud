@@ -12,10 +12,13 @@ test("auth UI is responsive, reports failures, and links to real policy pages", 
   }
   await expect(page.locator(".auth-error")).toContainText("아직 초대되지 않은 계정이에요");
   await expect(page.getByRole("link", { name: "Google 계정으로 계속하기" })).toHaveAttribute("href", /\/api\/auth\/login/);
+  await expect(page.getByRole("heading", { name: "초대 코드로 가입" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "초대 코드", exact: true })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Google 계정 이메일", exact: true })).toBeVisible();
   await expect(page.getByText("정책 버전 2026-09-04")).toBeVisible();
   expect(await hasHorizontalOverflow(page)).toBe(false);
-  await expect(page).toHaveScreenshot(`0.1.0-phase5-auth-${testInfo.project.name}.png`, { fullPage: true });
-  await page.screenshot({ path: `docs/runbooks/evidence/0.1.0-phase5-auth-${testInfo.project.name}.png`, fullPage: true });
+  await expect(page).toHaveScreenshot(`1.0.1-phase4-beta-signup-${testInfo.project.name}.png`, { fullPage: true });
+  await page.screenshot({ path: `docs/runbooks/evidence/1.0.1-phase4-beta-signup-${testInfo.project.name}.png`, fullPage: true });
 
   await page.getByRole("link", { name: "이용 안내" }).click();
   await expect(page).toHaveURL(/\/terms$/);
@@ -24,6 +27,18 @@ test("auth UI is responsive, reports failures, and links to real policy pages", 
   await expect(page).toHaveURL(/\/auth$/);
   await page.getByRole("link", { name: "개인정보 안내" }).click();
   await expect(page.getByRole("heading", { name: "개인정보 안내", exact: true })).toBeVisible();
+});
+
+test("signup keeps code and email visible when the preflight request fails", async ({ page }) => {
+  await page.route("**/api/auth/signup", (route) => route.fulfill({ status: 422, contentType: "application/json",
+    body: JSON.stringify({ error: { code: "BETA_SIGNUP_INVALID", requestId: "synthetic" } }) }));
+  await page.goto("/auth");
+  await page.getByRole("textbox", { name: "초대 코드", exact: true }).fill("a1b2c3");
+  await page.getByRole("textbox", { name: "Google 계정 이메일", exact: true }).fill("writer@example.invalid");
+  await page.getByRole("button", { name: "가입하고 Google로 확인" }).click();
+  await expect(page.locator(".beta-signup-error")).toContainText("초대 코드 6자리");
+  await expect(page.getByRole("textbox", { name: "초대 코드", exact: true })).toHaveValue("A1B2C3");
+  await expect(page.getByRole("textbox", { name: "Google 계정 이메일", exact: true })).toHaveValue("writer@example.invalid");
 });
 
 test("login pending state prevents duplicate starts", async ({ page }) => {
@@ -38,7 +53,7 @@ test("login pending state prevents duplicate starts", async ({ page }) => {
   await login.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText("Google 계정을 확인하는 중")).toBeVisible();
-  await expect(page.getByRole("status")).toHaveText("Google 로그인을 시작합니다.");
+  await expect(page.getByRole("status").filter({ hasText: "Google 로그인을 시작합니다." })).toHaveText("Google 로그인을 시작합니다.");
   await page.getByText("Google 계정을 확인하는 중").click({ force: true, noWaitAfter: true });
   await page.waitForTimeout(350);
   expect(starts).toBe(1);

@@ -36,35 +36,43 @@ if [ "$(git rev-parse HEAD)" != "$expected_commit" ]; then
   exit 5
 fi
 allowlist_keyring=.private/keys/auth_allowlist_hmac_keyring
-if [ ! -s .env ] || [ ! -s .test_users ] || [ ! -s "$allowlist_keyring" ]; then
-  printf 'Development .env, HMAC allowlist, or HMAC keyring is missing.\n' >&2
+beta_index_key=.private/runtime/beta_code_index_key
+if [ ! -s .env ] || [ ! -s .test_users ] || [ ! -s "$allowlist_keyring" ] || [ ! -s "$beta_index_key" ]; then
+  printf 'Development .env, HMAC allowlist/keyring, or beta index key is missing.\n' >&2
   exit 6
 fi
-chmod 600 .env .test_users "$allowlist_keyring"
+chmod 600 .env .test_users "$allowlist_keyring" "$beta_index_key"
 
 # Compose implements local file secrets as bind mounts. Keep the source list at
 # mode 600 while staging a nonroot-only runtime copy for the Distroless web UID.
 runtime_secret_directory=.private/runtime
 runtime_secret_file=$runtime_secret_directory/auth_allowed_emails
 runtime_keyring_file=$runtime_secret_directory/auth_allowlist_hmac_keyring
+runtime_beta_index_file=$runtime_secret_directory/web_beta_code_index_key
 install -d -m 700 "$runtime_secret_directory"
 runtime_secret_temporary=$(mktemp "$runtime_secret_directory/auth_allowed_emails.XXXXXX")
 runtime_keyring_temporary=$(mktemp "$runtime_secret_directory/auth_allowlist_hmac_keyring.XXXXXX")
+runtime_beta_index_temporary=$(mktemp "$runtime_secret_directory/web_beta_code_index_key.XXXXXX")
 cleanup_runtime_secret_temporaries() {
   [ -z "${runtime_secret_temporary:-}" ] || unlink "$runtime_secret_temporary" 2>/dev/null || true
   [ -z "${runtime_keyring_temporary:-}" ] || unlink "$runtime_keyring_temporary" 2>/dev/null || true
+  [ -z "${runtime_beta_index_temporary:-}" ] || unlink "$runtime_beta_index_temporary" 2>/dev/null || true
 }
 trap cleanup_runtime_secret_temporaries EXIT
 install -o 65532 -g 65532 -m 400 .test_users "$runtime_secret_temporary"
 install -o 65532 -g 65532 -m 400 "$allowlist_keyring" "$runtime_keyring_temporary"
+install -o 65532 -g 65532 -m 400 "$beta_index_key" "$runtime_beta_index_temporary"
 mv "$runtime_secret_temporary" "$runtime_secret_file"
 mv "$runtime_keyring_temporary" "$runtime_keyring_file"
+mv "$runtime_beta_index_temporary" "$runtime_beta_index_file"
 runtime_secret_temporary=
 runtime_keyring_temporary=
+runtime_beta_index_temporary=
 trap - EXIT
 if [ "$(stat -c '%u:%g:%a' "$runtime_secret_file")" != "65532:65532:400" ] \
-  || [ "$(stat -c '%u:%g:%a' "$runtime_keyring_file")" != "65532:65532:400" ]; then
-  printf 'Development runtime allowlist ownership verification failed.\n' >&2
+  || [ "$(stat -c '%u:%g:%a' "$runtime_keyring_file")" != "65532:65532:400" ] \
+  || [ "$(stat -c '%u:%g:%a' "$runtime_beta_index_file")" != "65532:65532:400" ]; then
+  printf 'Development runtime auth secret ownership verification failed.\n' >&2
   exit 6
 fi
 

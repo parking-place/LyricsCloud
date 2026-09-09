@@ -156,8 +156,9 @@ export async function refreshUnusedBetaCodes(
     const cancelled = await client.query(
       `update beta_signup_intents i set cancelled_at=$2
        where i.environment=$1 and i.completed_at is null and i.cancelled_at is null
-         and exists(select 1 from beta_codes c where c.id=i.code_id
-           and c.environment=$1 and c.consumed_at is null and c.revoked_at is null)
+         and exists(select 1 from beta_codes c
+           where c.environment=$1 and c.consumed_at is null and c.revoked_at is null
+             and (c.id=i.code_id or c.code_digest=i.claimed_code_digest))
        returning intent_digest`,
       [environment, now]
     );
@@ -198,6 +199,30 @@ export function betaCodeDigest(code: string, environment: BetaEnvironment, key: 
   if (key.length !== 32) throw new Error("BETA_INDEX_KEY_INVALID");
   return createHmac("sha256", key)
     .update(`lyricscloud|beta-code-index|v1|${environment}|${normalizeBetaCode(code)}`, "utf8")
+    .digest("hex");
+}
+
+export function betaSignupEmailDigest(email: string, environment: BetaEnvironment, key: Buffer): string {
+  if (key.length !== 32) throw new Error("BETA_INDEX_KEY_INVALID");
+  const normalized = email.trim().normalize("NFKC").toLowerCase();
+  if (!normalized || normalized.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(normalized)) {
+    throw new Error("BETA_EMAIL_INVALID");
+  }
+  return createHmac("sha256", key)
+    .update(`lyricscloud|beta-signup-email|v1|${environment}|nfkc-trim-lower-v1|${normalized}`, "utf8")
+    .digest("hex");
+}
+
+export function betaSignupPrincipalDigest(
+  issuer: string,
+  subject: string,
+  environment: BetaEnvironment,
+  key: Buffer
+): string {
+  if (key.length !== 32) throw new Error("BETA_INDEX_KEY_INVALID");
+  if (!issuer || !subject) throw new Error("BETA_PRINCIPAL_INVALID");
+  return createHmac("sha256", key)
+    .update(`lyricscloud|beta-signup-principal|v1|${environment}|${JSON.stringify([issuer, subject])}`, "utf8")
     .digest("hex");
 }
 
