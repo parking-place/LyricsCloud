@@ -12,7 +12,7 @@ export async function GET() {
       status: "ok",
       service: "web",
       check: "readiness",
-      build: { version: config.appVersion, id: config.buildId },
+      build: { version: config.appVersion, id: config.buildId, channel: config.appChannel, phase: config.appPhase },
       database
     }, { headers: privateResponseHeaders });
   } catch (error) {

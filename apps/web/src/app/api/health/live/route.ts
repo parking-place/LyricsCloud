@@ -9,6 +9,6 @@ export function GET() {
     status: "ok",
     service: "web",
     check: "liveness",
-    build: { version: config.appVersion, id: config.buildId }
+    build: { version: config.appVersion, id: config.buildId, channel: config.appChannel, phase: config.appPhase }
   }, { headers: privateResponseHeaders });
 }

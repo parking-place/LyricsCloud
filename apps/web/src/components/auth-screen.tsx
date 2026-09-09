@@ -22,4 +22,12 @@ export function AuthScreen({ errorCode, requestId, flow }: { errorCode?: string;
   </main>;
 }
 
-export function Brand() { return <div className="brand"><span className="brand-mark" aria-hidden="true">L</span><span>LYRICS CLOUD</span></div>; }
+export function Brand() {
+  return <div className="brand" aria-label="LyricsCloud" aria-describedby="runtime-build-label">
+    <span className="brand-mark" aria-hidden="true">
+      <img className="brand-mark-light" src="/icons/lyricscloud-mark-light.svg" alt="" />
+      <img className="brand-mark-dark" src="/icons/lyricscloud-mark-dark.svg" alt="" />
+    </span>
+    <span className="brand-copy"><span className="brand-name">LYRICS CLOUD</span><small className="brand-build" aria-hidden="true" /></span>
+  </div>;
+}
