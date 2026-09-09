@@ -1,80 +1,102 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="apps/web/public/icons/lyricscloud-mark-dark.svg">
+    <img src="apps/web/public/icons/lyricscloud-mark-light.svg" width="112" height="112" alt="LyricsCloud">
+  </picture>
+</p>
+
 # LyricsCloud
 
-LyricsCloud 1.0은 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 하나의 개인 창작 흐름으로 연결하는 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 빠른 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합과 온라인 우선 PWA를 지원한다.
+[![CI](https://github.com/parking-place/LyricsCloud/actions/workflows/ci.yml/badge.svg)](https://github.com/parking-place/LyricsCloud/actions/workflows/ci.yml)
 
-## 1.0 핵심 기능
+LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 개인 창작용 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합과 온라인 우선 PWA를 지원한다.
+
+현재 소스는 `1.0.1` Private Beta 후보이며 P8까지 개발 인수를 마치고 P9 통합 검증 중이다. 정식 운영 버전은 P10 최종 인수와 릴리스 절차가 끝날 때까지 `1.0.0`으로 유지한다.
+
+## 주요 기능
 
 - 곡 CRUD, 상태·메모·필터·즐겨찾기·핀과 곡 중심 대시보드
-- CodeMirror 한글 가사 편집, 송폼 탐색, 전체·구간 복사, 집중 모드, 수정 기록 비교·비파괴 복원
+- CodeMirror 기반 한글 가사 편집, 송폼 탐색, 전체·구간 복사, 집중 모드, 수정 기록 비교·복원
 - 같은 owner의 브라우저·기기·탭 CRDT 병합, 계정별 offline 초안과 재연결 복구
-- 라임 노트 태그·검색·곡 연결·cursor 삽입, 프롬프트 토큰 자동완성·중복 정리·순서 변경·복사
+- 라임 노트·Suno 프롬프트 작성, 검색, 연결, cursor 삽입과 복사
 - 통합 검색, 최근 작업·위치 복원, 템플릿, 표시 설정과 키보드 명령
-- 정확한 30일 휴지통, 탈퇴 즉시 접근 차단과 7일 철회, TXT/Markdown+JSON 전체 ZIP 내보내기
-- 15개 PC/mobile 화면, 설치형 PWA, 접근성·양 테마·오류/오프라인 상태
-- owner 격리, Google OIDC PKCE, nonce CSP, 요청 제한, non-root read-only production image와 본문 없는 관측
+- 30일 휴지통, 탈퇴 철회, TXT/Markdown+JSON 전체 ZIP 내보내기
+- 설치형 PWA, light/dark 테마, 접근 가능한 PC·모바일 화면
+- Google OIDC와 1회성 초대 코드 기반 Private Beta 가입
 
-여러 사용자 공동 편집, AI 생성과 미디어 업로드는 1.0 범위가 아니다.
+여러 사용자의 공동 편집, AI 생성, 미디어 업로드는 1.0 범위가 아니다.
 
-## 상태
+## 현재 상태
 
-- 제품 version: `1.0.0`
-- 현재 작업: [1.0.1 Phase 4 — 코드와 메일 가입](<./0.Plans/2.Patch-phase/1.0.1/4phase.md>)
-- 릴리스 인수 기록: [1.0.0 Phase 5 — 최종 릴리스](<./0.Plans/1. Dev-phase/1.0.0/5phase.md>)
-- 상태 단일 원본: [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>)
-- 프로덕션: 승인된 Phase 2 digest와 schema `0802_lifecycle.sql`로 배포·공개 smoke 완료
-- 예외: 공식 릴리스 서버의 OAuth/DB 자격 증명은 사용자 승인으로 개발 서버와 같은 값을 사용하며, 외부 암호화 backup·24시간 RPO·복원 훈련은 1.0.1+로 유예됨
+| 항목 | 상태 |
+|---|---|
+| 소스·runtime version | `1.0.1` |
+| 현재 작업 | [1.0.1 Phase 9 — 권한·동시성·복구 통합 인수](<./0.Plans/2.Patch-phase/1.0.1/9phase.md>) |
+| 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
+| 정식 릴리스 | [1.0.0 Phase 5 — 최종 릴리스](<./0.Plans/1. Dev-phase/1.0.0/5phase.md>) |
+| 개발 인수 | P4 실제 Google 가입, P5 Windows Chrome·Edge 한글 저장, P6 양 테마 UI, P7 브랜드·build metadata PASS |
+| 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
-## 요구 조건
+1.0.1은 모든 10개 Phase와 최종 CI·개발 HTTPS 검증이 끝난 뒤에만 `main`, 정식 이미지 태그와 릴리스 서버에 반영한다.
 
-- 로컬 개발: Node.js 24, pnpm 11, Docker Engine와 Compose
-- 셀프호스트: Linux x86-64, Docker Engine 26+, Compose v2.24.4+, PostgreSQL 18 image, HTTPS, Google OAuth Web client
-- 브라우저: Chromium/Firefox 111+, Safari 16.4+, iOS/iPadOS 16.4+ Safari, Android 12+ Chrome
+## 화면
+
+신규 사용자는 초대 코드와 Google 계정 이메일을 입력하고, 같은 계정의 Google 본인 확인을 마쳐야 코드 소비와 접근권 등록이 함께 완료된다. 아래는 실제 계정·코드가 없는 합성 검증 화면이다.
+
+<p align="center">
+  <img src="docs/runbooks/evidence/1.0.1-phase4-beta-signup-desktop.png" width="760" alt="LyricsCloud 1.0.1 초대 코드 가입 PC 화면">
+</p>
+
+<p align="center">
+  <img src="docs/runbooks/evidence/1.0.1-phase4-beta-signup-mobile.png" width="300" alt="LyricsCloud 1.0.1 초대 코드 가입 모바일 화면">
+</p>
 
 ## 빠른 시작
 
-개발 환경은 source bind mount와 개발 server를 사용한다.
+로컬 개발에는 Node.js 24, pnpm 11, Docker Engine와 Compose가 필요하다.
 
 ```bash
 cp .env.example .env
 cp .test_users.example .test_users
-# .env의 모든 CHANGE_ME와 .test_users의 최초 허용 계정을 설정한 뒤
-# docs/runbooks/1.0.1-phase3-hmac-allowlist.md에 따라 HMAC 전환·runtime staging
+# CHANGE_ME 값을 설정하고 HMAC allowlist 전환 절차를 완료한 뒤
 docker compose config --quiet
 docker compose up --build --wait
 curl --fail http://127.0.0.1:8080/api/health/ready
 ```
 
-기본 주소는 `http://localhost:8080`이다. 일반 종료는 `docker compose down`이며 DB volume은 보존된다. `docker compose down --volumes`는 자료를 영구 삭제하므로 초기화가 명시된 disposable 환경 외에는 실행하지 않는다.
+기본 주소는 `http://localhost:8080`이다. 일반 종료는 `docker compose down`이며 DB volume은 보존된다. `docker compose down --volumes`는 자료를 삭제하므로 disposable 초기화 환경 외에는 실행하지 않는다.
 
-production-mode 셀프호스트는 환경 검증, runtime allowlist 권한, HTTPS/OAuth와 backup 위험 확인이 더 필요하다. [셀프호스팅 안내](./docs/self-hosting.md)를 처음부터 따른다.
+운영 설치·HTTPS·OAuth·secret·upgrade 설정은 [셀프호스팅 안내](./docs/self-hosting.md)를 처음부터 따른다.
 
-## 문서 지도
+## Private Beta 운영
+
+P2 관리자 CLI는 초대 코드 발급·조회·전체 교체를 제공한다. 원문 코드와 키를 명령 인수, 로그, Issue 또는 Git에 넣지 않는다.
+
+```bash
+LyricsCloud betacode -n 10
+LyricsCloud betacode ls
+LyricsCloud betacode refresh
+```
+
+정확한 입력·출력·동시성·복구 계약은 [Beta 관리자 runbook](./docs/runbooks/1.0.1-phase2-beta-admin.md), 기존 계정 HMAC 전환은 [allowlist runbook](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md), Google 설정은 [OAuth runbook](./docs/runbooks/google-oauth-setup.md)을 따른다.
+
+## 보안·백업 경계
+
+창작물은 PostgreSQL에, 전송 전 offline 초안은 계정별 브라우저 저장소에 둔다. 로그와 관측에는 제목·본문·태그·프롬프트·검색어·이메일·OAuth/session 값과 동적 resource ID를 넣지 않는다. 전체 내보내기는 이동용 사본이며 운영 backup을 대신하지 않는다.
+
+실제 `.env`, `.test_users`, DB volume, backup archive·identity, export와 창작물은 Git에 넣지 않는다. 현재 공식 릴리스 서버의 외부 backup은 미구축 상태이며 호스트 손실 시 복구 지점을 보장하지 않는다. 구축 전에는 이 위험과 승인 예외를 각 릴리스 기록에 명시한다. 취약점은 공개 Issue가 아닌 [비공개 보안 보고 절차](./SECURITY.md)를 사용한다.
+
+## 문서
 
 | 대상 | 문서 |
 |---|---|
-| 사용자 | [1.0 사용자 안내](./docs/user-guide.md), [지원·알려진 제한](./docs/support.md) |
+| 사용자 | [사용자 안내](./docs/user-guide.md), [지원 환경·알려진 제한](./docs/support.md) |
 | 셀프호스트 운영자 | [설치·설정·health·upgrade](./docs/self-hosting.md), [Docker 구성](./infra/docker/README.md) |
-| 인증 운영자 | [Google OAuth·초대 allowlist·교체](./docs/runbooks/google-oauth-setup.md) |
-| 복구 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md) |
-| 장애 담당자 | [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
-| 보안 보고자 | [Security policy](./SECURITY.md), [보안 감사](./docs/security/0.9.1-security-audit.md) |
-| 검토자 | [1.0.0 release notes](./docs/releases/1.0.0.md), [최종 요구사항 추적](./docs/architecture/1.0.0-FINAL-TRACEABILITY.md), [1.0 release manifest](./config/release-manifest.1.0.0.json), [1.0.1+ backlog](./docs/operations/1.0.1-backlog.md), [CHANGELOG](./CHANGELOG.md) |
-| 기여자 | [Agent 지침](./Agent.md), [개발 로드맵](<./0.Plans/1. Dev-phase/README.md>), [ADR 색인](./docs/adr/README.md) |
-| 후속 개발 검토자 | [후속 계획·읽는 순서](./0.Plans/2.Patch-phase/README.md), [추가 후보 129개](./0.Plans/2.Patch-phase/Future_Feature.md), [검수 변경 인수 절차](./0.Plans/2.Patch-phase/FUTURE-INTAKE.md), [계획 인수 검토표](./0.Plans/2.Patch-phase/REVIEW-CHECKLIST.md) |
-
-## 1.0.1 개발 화면 — 초대 코드 가입
-
-기존 사용자 로그인과 신규 가입을 분리했다. 신규 사용자는 초대 코드와 Google 계정 이메일을 입력하고, 같은 계정의 Google 본인 확인이 끝난 뒤에만 코드 소비와 앱 접근권 등록이 함께 완료된다. 아래 화면은 실제 계정·코드가 아닌 합성 오류 상태다.
-
-![1.0.1 초대 코드 가입 PC 화면](./docs/runbooks/evidence/1.0.1-phase4-beta-signup-desktop.png)
-
-![1.0.1 초대 코드 가입 모바일 화면](./docs/runbooks/evidence/1.0.1-phase4-beta-signup-mobile.png)
-
-## 데이터와 개인정보 경계
-
-애플리케이션 자료는 PostgreSQL에, 편집 중 offline 초안은 계정별 브라우저 저장소에 둔다. 로그·관측에는 제목, 본문, 태그, 프롬프트, 검색어, 이메일, OAuth/session 값과 동적 resource ID를 넣지 않는다. 전체 내보내기는 사용자가 보관할 이동용 사본이며 운영 backup을 대신하지 않는다.
-
-실제 `.env`, `.test_users`, DB volume, backup archive·identity, export와 창작물은 Git에 넣지 않는다. 취약점은 공개 Issue가 아닌 [비공개 보안 보고 절차](./SECURITY.md)를 사용한다.
+| 인증·베타 운영자 | [Google OAuth](./docs/runbooks/google-oauth-setup.md), [초대 코드 CLI](./docs/runbooks/1.0.1-phase2-beta-admin.md), [HMAC allowlist](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md) |
+| 복구·배포 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md), [개발 배포](./docs/runbooks/development-deploy.md), [Docker Hub 발행](./docs/runbooks/dockerhub-publish.md) |
+| 보안·장애 담당자 | [Security policy](./SECURITY.md), [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
+| 릴리스 검토자 | [1.0.0 release notes](./docs/releases/1.0.0.md), [1.0.1 계획](./0.Plans/2.Patch-phase/1.0.1/README.md), [CHANGELOG](./CHANGELOG.md) |
+| 기여자 | [Agent 지침](./Agent.md), [후속 계획](./0.Plans/2.Patch-phase/README.md), [ADR 색인](./docs/adr/README.md) |
 
 ## 저장소 구조
 
@@ -83,12 +105,10 @@ production-mode 셀프호스트는 환경 검증, runtime allowlist 권한, HTTP
 | `apps/` | web, collaboration, worker runtime |
 | `packages/` | auth, database, domain, editor, observability, UI |
 | `tests/` | 통합·E2E·owner 격리·브라우저 회귀 |
-| `infra/` | Docker production image와 backup 도구 |
-| `config/` | 환경·migration·artifact·성능·경보의 machine-readable 계약 |
+| `infra/` | production image와 backup 도구 |
+| `config/` | 환경·migration·artifact·성능·경보 계약 |
 | `docs/` | 사용자·셀프호스트·ADR·보안·운영 runbook |
 | `scripts/` | 검증·migration·배포 보조 명령 |
 | `0.Plans/` | 보호된 기획·목업·기술 결정과 Phase 상태 |
 
-## 후속 계획과 현재 구현 구분
-
-1.0.1은 10 Phase로 진행 중이다. P2 베타 CLI와 P3 환경별 HMAC bootstrap은 개발 서버 인수를 마쳤고, P4 신규 가입은 현재 후보 검증 중이다. 로고/버전 표시·IME와 UI 수정은 각각의 후속 Phase 인수 전 현재 릴리스 기능으로 안내하지 않는다. 후속 사전·폰트·다사용자 동시 편집/presence·디자인·다섯 OS 개발안은 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에서 확인한다.
+1.0.2 이후 사전·폰트·공유·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있으며, 현재 1.0.1 완료를 의미하지 않는다.

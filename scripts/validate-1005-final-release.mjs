@@ -10,6 +10,7 @@ const read = (relative) => readFileSync(path.join(root, relative), "utf8");
 const failures = [];
 const assert = (condition, message) => { if (!condition) failures.push(message); };
 const requireRelease = process.argv.includes("--require-release");
+const currentVersion = read("VERSION").trim();
 
 const phasePaths = [1, 2, 3, 4, 5].map((phase) => `0.Plans/1. Dev-phase/1.0.0/${phase}phase.md`);
 const phases = phasePaths.map(read);
@@ -63,26 +64,27 @@ assert(workflow.includes("inputs.release == true") && workflow.includes("tags: $
   && workflow.includes("flavor: latest=false"), "tested publication plan is not wired into CI");
 const publicationInput = { eventName: "workflow_dispatch", refType: "tag", refName: "v1.0.0", sha: "a".repeat(40), version: "1.0.0", release: true };
 const releaseTags = getImagePublication(publicationInput).tags;
-for (const tag of ["1.0.0", "Release", "latest"]) assert(releaseTags.includes(tag), `release tag missing: ${tag}`);
+for (const tag of ["1.0.0", "Release", "latest", "Release-latest"]) assert(releaseTags.includes(tag), `release tag missing: ${tag}`);
 const candidateTags = getImagePublication({ ...publicationInput, refType: "branch", refName: "phase/1.0.0-p6-stabilization", release: false }).tags;
 for (const tag of ["1.0.0", "Release", "latest", "Dev", "Dev-latest"]) assert(!candidateTags.includes(tag), `P6 candidate moves protected tag: ${tag}`);
 assert(tagScript.includes("release:tag") && tagScript.includes("^v([0-9]+\\.[0-9]+\\.[0-9]+)$"), "release tag guard missing");
 try {
   const phase6Plan = status.includes('current_phase: "1.0.0/6phase.md"') ? read("0.Plans/1. Dev-phase/1.0.0/6phase.md") : "";
-  validateReleasePhase(status, { requireRelease, phase6Plan });
-} catch { failures.push("STATUS must be P5 release or registered P6 review, never P6 release"); }
-for (const marker of ["1.0.0 Phase 5 — 최종 릴리스", "docs/releases/1.0.0.md", "docs/operations/1.0.1-backlog.md"]) {
+  validateReleasePhase(status, { requireRelease, phase6Plan, phaseCount: currentVersion === "1.0.1" ? 10 : 5 });
+} catch { failures.push("STATUS must identify an allowed historical or current release phase"); }
+for (const marker of ["1.0.0 Phase 5 — 최종 릴리스", "1.0.1 계획", "CHANGELOG.md"]) {
   assert(readme.includes(marker), `README release handoff marker missing: ${marker}`);
 }
 assert(runbookIndex.includes("1.0.0-phase5-release.md"), "runbook index missing Phase 5 release handoff");
 
 if (requireRelease) {
   try {
-    const objectType = execFileSync("git", ["cat-file", "-t", "refs/tags/v1.0.0"], { cwd: root, encoding: "utf8" }).trim();
-    const tagCommit = execFileSync("git", ["rev-parse", "v1.0.0^{commit}"], { cwd: root, encoding: "utf8" }).trim();
+    const tagName = `v${currentVersion}`;
+    const objectType = execFileSync("git", ["cat-file", "-t", `refs/tags/${tagName}`], { cwd: root, encoding: "utf8" }).trim();
+    const tagCommit = execFileSync("git", ["rev-parse", `${tagName}^{commit}`], { cwd: root, encoding: "utf8" }).trim();
     const headCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
-    assert(objectType === "tag", "v1.0.0 must be an annotated tag object");
-    assert(tagCommit === headCommit, "v1.0.0 must point to the approval commit");
+    assert(objectType === "tag", `${tagName} must be an annotated tag object`);
+    assert(tagCommit === headCommit, `${tagName} must point to the approval commit`);
   } catch (error) {
     failures.push(`release tag verification failed: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -94,4 +96,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`1.0.0 historical release contract validation PASS (${requirementIds.size} requirements, ${uiIds.size} screens, ${additionIds.size} proposal sources${requireRelease ? ", annotated tag exact" : ""})`);
+console.log(`1.0.0 historical artifacts plus ${currentVersion} release boundary validation PASS (${requirementIds.size} requirements, ${uiIds.size} screens, ${additionIds.size} proposal sources${requireRelease ? ", annotated tag exact" : ""})`);

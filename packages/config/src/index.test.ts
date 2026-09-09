@@ -4,7 +4,7 @@ import { ConfigError, hmacAllowlistDigest, readAuthConfig, readBetaSignupConfig,
 describe("runtime configuration", () => {
   it("accepts a PostgreSQL URL", () => {
     const config = readRuntimeConfig({ NODE_ENV: "test", DATABASE_URL: "postgresql://user:secret@db/app" });
-    expect(config).toMatchObject({ runtime: "test", appVersion: "1.0.0", buildId: "local", appChannel: "release", appPhase: null });
+    expect(config).toMatchObject({ runtime: "test", appVersion: "1.0.1", buildId: "local", appChannel: "release", appPhase: null });
   });
   it("reports key names without their values", () => {
     const secret = "never-print-this";
@@ -24,8 +24,8 @@ describe("runtime configuration", () => {
   it("requires the sealed version and source SHA in production", () => {
     const base = { NODE_ENV: "production", DATABASE_URL: "postgresql://user:test@db/app" };
     expect(() => readRuntimeConfig(base)).toThrow("Invalid configuration keys: APP_VERSION, BUILD_ID");
-    expect(() => readRuntimeConfig({ ...base, APP_VERSION: "0.9.1", BUILD_ID: "a".repeat(40) })).toThrow("APP_VERSION");
-    expect(readRuntimeConfig({ ...base, APP_VERSION: "1.0.0", BUILD_ID: "a".repeat(40) }).buildId).toBe("a".repeat(40));
+    expect(() => readRuntimeConfig({ ...base, APP_VERSION: "1.0.0", BUILD_ID: "a".repeat(40) })).toThrow("APP_VERSION");
+    expect(readRuntimeConfig({ ...base, APP_VERSION: "1.0.1", BUILD_ID: "a".repeat(40) }).buildId).toBe("a".repeat(40));
   });
 
   it("validates explicit release channels and development phase labels", () => {

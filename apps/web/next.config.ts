@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const config: NextConfig = {
   output: "standalone",
-  generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-1.0.0",
+  generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-1.0.1",
   outputFileTracingRoot: new URL("../../", import.meta.url).pathname,
   transpilePackages: ["@lyricscloud/auth", "@lyricscloud/config", "@lyricscloud/database", "@lyricscloud/domain", "@lyricscloud/ui"],
   async rewrites() {

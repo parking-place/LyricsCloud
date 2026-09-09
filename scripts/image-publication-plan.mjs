@@ -2,7 +2,7 @@ import { appendFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-/** P6 candidates stay isolated; unrelated branch/release contracts remain unchanged. */
+/** Candidate, development and release aliases stay disjoint. */
 export function getImagePublication({ eventName, refType, refName, sha, version, release }) {
   if (!['push', 'workflow_dispatch'].includes(eventName)) throw new Error('PUBLICATION_EVENT_INVALID');
   if (typeof version !== 'string' || !/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/u.test(version)) {
@@ -15,14 +15,15 @@ export function getImagePublication({ eventName, refType, refName, sha, version,
     if (eventName !== 'workflow_dispatch' || refType !== 'tag' || refName !== `v${version}`) {
       throw new Error('PUBLICATION_RELEASE_REF_REQUIRED');
     }
-    tags = [version, sha, 'Dev', 'Dev-latest', 'Release', 'latest'];
+    tags = [version, sha, 'Release', 'latest', 'Release-latest'];
   } else {
     if (refType !== 'branch') throw new Error('PUBLICATION_BRANCH_REQUIRED');
     const phaseVersion = /^phase\/([0-9]+\.[0-9]+\.[0-9]+)-/u.exec(refName)?.[1];
     if (phaseVersion && phaseVersion !== version) throw new Error('PUBLICATION_BRANCH_VERSION_MISMATCH');
+    const phase = /^phase\/[0-9]+\.[0-9]+\.[0-9]+-p([1-9][0-9]*)-/u.exec(refName)?.[1];
     tags = /^phase\/1\.0\.0-p6-/u.test(refName)
       ? [sha, `candidate-${version}-${sha}`]
-      : [version, sha, 'Dev', 'Dev-latest'];
+      : [sha, ...(phase ? [`dev-${version}-p${phase}`] : []), 'Dev', 'Dev-latest'];
   }
   if (tags.some(tag => !/^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$/u.test(tag))) throw new Error('PUBLICATION_TAG_INVALID');
   return { channel: release ? 'release' : /^phase\/1\.0\.0-p6-/u.test(refName) ? 'candidate' : 'dev', tags };

@@ -1,6 +1,6 @@
 # 베타 가입·해시 허용 목록·관리 CLI 설계 계약
 
-상태: **세부 기술 선택 Proposed / 1.0.1 P1 승인 후 구현**. 사용자 요구인 6자리·일괄 발급·한 번 사용·미사용 refresh/ls·코드+메일+Google 동선은 필수다. 다음 설계는 그 요구를 데이터 보존과 함께 구현하는 권장안이다. [ADR-NF-001](../../../docs/adr/ADR-NF-001-beta-access.md), [PROD-NF-001](../../../docs/product/PROD-NF-001-beta-onboarding.md)을 함께 읽는다.
+상태: **Accepted / P2~P4 구현·개발 인수 완료**. 사용자 요구인 6자리·일괄 발급·한 번 사용·미사용 refresh/ls·코드+메일+Google 동선은 필수다. 아래 계약은 [ADR-NF-001](../../../docs/adr/ADR-NF-001-beta-access.md), [PROD-NF-001](../../../docs/product/PROD-NF-001-beta-onboarding.md)의 승인 선택을 구체화하며 P9에서 통합 경쟁·복구를 다시 인수한다.
 
 ## A. 세 가지 서로 다른 목록
 

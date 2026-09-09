@@ -14,7 +14,7 @@ const loaded = await import(moduleUrl).catch(error => {
 function plan(input) { assert.ok(loaded, 'publication boundary is not implemented'); return loaded.getImagePublication(input); }
 const sha = 'a'.repeat(40);
 const base = { eventName: 'push', refType: 'branch', refName: 'phase/1.0.0-p6-stabilization', version: '1.0.0', sha, release: false };
-const protectedTags = new Set(['1.0.0', 'Release', 'latest', 'Dev', 'Dev-latest']);
+const protectedTags = new Set(['1.0.0', 'Release', 'latest', 'Release-latest', 'Dev', 'Dev-latest']);
 
 test('P6 candidate publication cannot move any shared or release tag', () => {
   const result = plan(base);
@@ -25,12 +25,22 @@ test('P6 candidate publication cannot move any shared or release tag', () => {
 test('explicit manual candidate publication remains isolated', () => {
   assert.deepEqual(plan({ ...base, eventName: 'workflow_dispatch' }).tags, [sha, `candidate-1.0.0-${sha}`]);
 });
-test('unrelated development branches preserve their existing publication contract', () => {
-  assert.deepEqual(plan({ ...base, refName: 'main' }).tags, ['1.0.0', sha, 'Dev', 'Dev-latest']);
+test('development branches never move a numeric or release alias', () => {
+  assert.deepEqual(plan({ ...base, refName: 'phase/1.0.1-p13-work', version: '1.0.1' }).tags,
+    [sha, 'dev-1.0.1-p13', 'Dev', 'Dev-latest']);
 });
-test('an exact manual release preserves the existing release contract', () => {
-  assert.deepEqual(plan({ ...base, eventName: 'workflow_dispatch', refType: 'tag', refName: 'v1.0.0', release: true }).tags,
-    ['1.0.0', sha, 'Dev', 'Dev-latest', 'Release', 'latest']);
+test('an exact manual release moves only immutable and release aliases', () => {
+  const tags = plan({ ...base, eventName: 'workflow_dispatch', refType: 'tag', refName: 'v1.0.0', release: true }).tags;
+  assert.deepEqual(tags, ['1.0.0', sha, 'Release', 'latest', 'Release-latest']);
+  const simulatedDigestByTag = new Map(tags.map(tag => [tag, 'sha256:release-build']));
+  assert.deepEqual(new Set(simulatedDigestByTag.values()), new Set(['sha256:release-build']));
+});
+test('main development publication has no invented Phase tag', () => {
+  assert.deepEqual(plan({ ...base, refName: 'main', version: '1.0.1' }).tags, [sha, 'Dev', 'Dev-latest']);
+});
+test('multi-digit versions and phases are parsed without reserving them', () => {
+  assert.deepEqual(plan({ ...base, refName: 'phase/1.12.91-p103-work', version: '1.12.91' }).tags,
+    [sha, 'dev-1.12.91-p103', 'Dev', 'Dev-latest']);
 });
 for (const [name, override] of [
   ['PR', { eventName: 'pull_request' }], ['pull_request_target', { eventName: 'pull_request_target' }],

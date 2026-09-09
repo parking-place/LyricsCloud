@@ -41,7 +41,7 @@ services:
     command: ["/app/collaboration.mjs"]
     environment:
       NODE_ENV: production
-      APP_VERSION: ${APP_VERSION:-1.0.0}
+      APP_VERSION: ${APP_VERSION:-1.0.1}
       BUILD_ID: ${BUILD_ID:?BUILD_ID must be the deployed 40-character Git SHA}
       APP_ORIGIN: ${APP_ORIGIN:?APP_ORIGIN must be the public HTTPS origin}
     read_only: true
@@ -59,7 +59,7 @@ services:
     command: ["/app/worker.mjs"]
     environment:
       NODE_ENV: production
-      APP_VERSION: ${APP_VERSION:-1.0.0}
+      APP_VERSION: ${APP_VERSION:-1.0.1}
       BUILD_ID: ${BUILD_ID:?BUILD_ID must be the deployed 40-character Git SHA}
     read_only: true
     tmpfs:
