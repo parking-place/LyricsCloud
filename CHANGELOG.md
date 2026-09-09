@@ -2,6 +2,15 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
+## [1.0.1 P3 candidate] - 2026-09-09
+
+### Security
+
+- 기존 평문 bootstrap 허용 목록을 환경·용도·정규화 버전·key ID에 결합된 HMAC-SHA-256 레코드로 전환
+- HMAC keyring과 allowlist를 분리하고, 최초 이행 전에 AES-256-GCM rollback backup을 만든 뒤 원자 교체
+- old/new key 회전 기간, 만료·환경 불일치·알 수 없는 key·중복 레코드의 fail-closed 검증과 nonroot runtime secret 권한 적용
+- 기존 NFKC·공백 제거·소문자 정규화를 보존하고 Gmail 점·`+` 별칭은 합치지 않음
+
 ## [1.0.1 P2 candidate] - 2026-09-09
 
 ### Added

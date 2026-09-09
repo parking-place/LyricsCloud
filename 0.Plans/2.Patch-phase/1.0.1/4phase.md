@@ -1,6 +1,6 @@
 # 1.0.1 Phase 4 — 코드와 메일 가입·검증된 Google identity 등록
 
-상태: **계획 검토 / 구현 미착수**. 문서 작업만으로 실행 STATUS·runtime version을 바꾸지 않는다.
+상태: **진행 중**. P3 HMAC bootstrap과 `0900` 가입 상태를 소비해 검증된 Google identity의 원자 가입 경로를 구현한다.
 
 ## 목표와 경계
 

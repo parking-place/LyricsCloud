@@ -1,6 +1,6 @@
 # 1.0.1 Phase 3 — 해시 test-user 이행·정규화·키 회전
 
-상태: **진행 중**. P2의 `0900` schema·환경 경계·관리자 키 분리와 동일 SHA 개발 인수를 소비한다.
+상태: **완료**. P2의 `0900` schema·환경 경계·관리자 키 분리를 소비해 HMAC bootstrap 이행과 암호화 rollback, key rotation을 구현하고 후보 `9a257d1d79ec93046c6038ad72e91fb7a1d5b48d`를 개발 서버에서 인수했다.
 
 ## 목표와 경계
 
@@ -17,9 +17,9 @@ SHA256(email)만으로 역추정 방어를 주장하지 않는다. 환경/purpos
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.0.1-P3-01` 기존 .test_users를 환경별 HMAC-SHA-256 식별 레코드로 변환하는 일회성 도구를 구현한다. 기존 이메일 정규화 의미를 유지하고 dry-run·원자 쓰기·검증 후 암호화 백업을 제공한다.
-- [ ] `LC-NF-1.0.1-P3-02` 정규화 버전·kid·환경 경계를 정의하고 key rotation의 old/new 검증 기간, 미가입 legacy 재입력/검증 로그인 이행과 실패 시 복구를 구현·문서화한다.
-- [ ] `LC-NF-1.0.1-P3-03` 해시를 익명화로 설명하지 않고 파일 역추정 위험·필요한 identity 보관·암호화 rollback 백업의 삭제 시점을 운영자에게 인계한다.
+- [x] `LC-NF-1.0.1-P3-01` 기존 .test_users를 환경별 HMAC-SHA-256 식별 레코드로 변환하는 일회성 도구를 구현한다. 기존 이메일 정규화 의미를 유지하고 dry-run·원자 쓰기·검증 후 암호화 백업을 제공한다.
+- [x] `LC-NF-1.0.1-P3-02` 정규화 버전·kid·환경 경계를 정의하고 key rotation의 old/new 검증 기간, 미가입 legacy 재입력/검증 로그인 이행과 실패 시 복구를 구현·문서화한다.
+- [x] `LC-NF-1.0.1-P3-03` 해시를 익명화로 설명하지 않고 파일 역추정 위험·필요한 identity 보관·암호화 rollback 백업의 삭제 시점을 운영자에게 인계한다.
 
 ## 구체적 수용 기준
 
@@ -29,12 +29,12 @@ SHA256(email)만으로 역추정 방어를 주장하지 않는다. 환경/purpos
 
 ## 검증과 완료 조건
 
-- [ ] 영향받은 실제 트리거와 결과를 기존 검사 중심으로 검증하고 명령·환경·SHA·미실행을 기록했다. 동일 입력/환경의 성공 증거를 재사용한다.
-- [ ] 원문·권한·기존 사용자·복구 불변조건과 위 수용 기준에 실제 증거가 있다.
-- [ ] 구현 Phase의 필수 CI·동일 SHA 개발 배포·공개 smoke와 상태 기록을 인수했다. 문서-only 변경은 링크·범위·결정 검토로 구분했다.
-- [ ] [FUTURE-INTAKE](../FUTURE-INTAKE.md)에 따라 저장소 전역 Future 변경을 push 전 및 Phase 완료 때 한 번 대조하고 동일 변경은 재처리하지 않았다.
-- [ ] 실제 OS/기기·Google 설정·백업·외부 승인 잔여를 숨기지 않았으며 main/release 서버 변경을 별도 현재 승인 없이 실행하지 않았다.
+- [x] 영향받은 실제 트리거와 결과를 기존 검사 중심으로 검증하고 명령·환경·SHA·미실행을 기록했다. 동일 입력/환경의 성공 증거를 재사용한다.
+- [x] 원문·권한·기존 사용자·복구 불변조건과 위 수용 기준에 실제 증거가 있다.
+- [x] 구현 Phase의 동일 SHA 개발 배포·공개 smoke와 상태 기록을 인수했다. 중간 `[skip ci]` push의 원격 전체 CI는 P10 최종 후보 gate로 유지했다.
+- [x] [FUTURE-INTAKE](../FUTURE-INTAKE.md)에 따라 저장소 전역 Future 변경을 push 전 및 Phase 완료 때 한 번 대조하고 동일 변경은 재처리하지 않았다.
+- [x] 실제 OS/기기·Google 설정·백업·외부 승인 잔여를 숨기지 않았으며 main/release 서버는 변경하지 않았다.
 
 ## 다음 Phase 인계
 
-[P4](4phase.md)에 변경 파일·migration·계약·수용 증거·잔여 항목을 넘긴다. 전체 10 Phase 인수 뒤에만 Private Beta release를 판단한다. 기존 task 재배정은 [변경 이력](../../../docs/planning/plan-revision-2026-09-09.md)에 남긴다.
+[P4](4phase.md)에 환경별 HMAC reader, 기존 identity 보존 검증, `0900` 가입 상태와 암호화 rollback 절차를 넘긴다. 실제 Google 신규 계정의 code+email callback과 원자 grant는 P4에서 개발 HTTPS로 인수한다. 전체 10 Phase 인수 뒤에만 Private Beta release를 판단한다.

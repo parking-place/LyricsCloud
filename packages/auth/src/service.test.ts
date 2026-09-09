@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { calculatePKCECodeChallenge } from "openid-client";
-import type { AuthConfig } from "@lyricscloud/config";
+import { hmacAllowlistDigest, readAuthConfig, type AuthConfig } from "@lyricscloud/config";
 import type { AuthIdentityInput, AuthStore } from "@lyricscloud/database";
 import { cookieNames, sessionCookie, transactionCookie } from "./cookies.js";
 import { tokenHash } from "./crypto.js";
@@ -76,8 +76,8 @@ class FakeOidc implements OidcAdapter {
 
 const now = new Date("2026-09-04T12:00:00.000Z");
 
-async function login(store = new MemoryStore(), oidc = new FakeOidc()) {
-  const service = new AuthService(config, store, oidc, { now: () => now });
+async function login(store = new MemoryStore(), oidc = new FakeOidc(), authConfig = config) {
+  const service = new AuthService(authConfig, store, oidc, { now: () => now });
   const started = await service.beginLogin("/songs?view=recent");
   const callback = new URL(`http://localhost:8080/api/auth/callback?code=synthetic-code&state=${oidc.state}`);
   return { service, store, oidc, started, callback };
@@ -93,6 +93,30 @@ describe("OIDC login boundary", () => {
     expect(first.returnTo).toBe("/songs?view=recent");
     expect(flow.store.sessions.has(first.sessionToken)).toBe(false);
     expect(flow.store.sessions.has(tokenHash(first.sessionToken))).toBe(true);
+  });
+
+  it("admits a verified existing identity through the environment-bound HMAC bootstrap list", async () => {
+    const key = Buffer.alloc(32, 7);
+    const record = JSON.stringify({ formatVersion: 1, environment: "development", purpose: "auth-bootstrap",
+      normalizationVersion: "nfkc-trim-lower-v1", kid: "development-test",
+      digest: hmacAllowlistDigest("allowed@example.com", "development", key), state: "active" });
+    const keyring = JSON.stringify({ formatVersion: 1, activeKid: "development-test",
+      keys: [{ kid: "development-test", key: key.toString("base64url") }] });
+    const hmacConfig = readAuthConfig({ NODE_ENV: "test", APP_ORIGIN: "http://localhost:8080",
+      GOOGLE_ISSUER: "http://oidc.test", GOOGLE_CLIENT_ID: "synthetic-client.apps.googleusercontent.com",
+      GOOGLE_CLIENT_SECRET: "synthetic-secret", SESSION_SECRET: "synthetic-session-secret-at-least-32-bytes",
+      AUTH_ALLOWED_EMAILS_FILE: "/allowlist", AUTH_ALLOWLIST_FORMAT: "hmac-v1",
+      AUTH_ALLOWLIST_ENVIRONMENT: "development", AUTH_ALLOWLIST_HMAC_KEYRING_FILE: "/keyring" },
+    (path) => path === "/keyring" ? keyring : record);
+    const permitted = await login(new MemoryStore(), new FakeOidc(), hmacConfig);
+    const completed = await permitted.service.completeLogin(permitted.callback, permitted.started.transaction);
+    expect(permitted.store.sessions.has(tokenHash(completed.sessionToken))).toBe(true);
+
+    const outsider = new FakeOidc();
+    outsider.identity = { ...outsider.identity, email: "outsider@example.com" };
+    const denied = await login(new MemoryStore(), outsider, hmacConfig);
+    await expect(denied.service.completeLogin(denied.callback, denied.started.transaction))
+      .rejects.toMatchObject({ code: "AUTH_NOT_ALLOWED" });
   });
 
   it("binds the callback exchange to the generated S256 PKCE verifier and nonce", async () => {
