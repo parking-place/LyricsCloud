@@ -49,7 +49,7 @@
 | 릴리스 UI | `v1.0.1 Release` |
 | 개발 UI | `v1.1.12-p3 dev` |
 | 정식 Git tag | `v1.0.1` — 발행 뒤 불변 |
-| Phase branch | `codex/1.0.10-p3-suno-links` |
+| Phase branch | `phase/1.0.10-p3-suno-links` |
 | 작업 ID | `LC-NF-1.0.10-P3-01` |
 | 설계 ID | `LC-DESIGN-UX-P3-01` |
 | 고정 요구 ID | `NF-REQ-001` |

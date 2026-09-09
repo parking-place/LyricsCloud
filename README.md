@@ -19,6 +19,7 @@ LyricsCloud 1.0은 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트
 
 - 제품 version: `1.0.0`
 - 현재 작업: [1.0.0 Phase 6 — 사후 안정화·검토](<./0.Plans/1. Dev-phase/1.0.0/6phase.md>)
+- 릴리스 인수 기록: [1.0.0 Phase 5 — 최종 릴리스](<./0.Plans/1. Dev-phase/1.0.0/5phase.md>)
 - 상태 단일 원본: [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>)
 - 프로덕션: 승인된 Phase 2 digest와 schema `0802_lifecycle.sql`로 배포·공개 smoke 완료
 - 예외: 공식 릴리스 서버의 OAuth/DB 자격 증명은 사용자 승인으로 개발 서버와 같은 값을 사용하며, 외부 암호화 backup·24시간 RPO·복원 훈련은 1.0.1+로 유예됨
