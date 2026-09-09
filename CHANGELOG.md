@@ -2,6 +2,17 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
+## [1.0.1 P2 candidate] - 2026-09-09
+
+### Added
+
+- 관리자 shell의 `LyricsCloud betacode -n`, `ls`, `refresh`와 Node 도구가 없는 서버용 격리 관리자 컨테이너
+- 환경별 6자리 CSPRNG 코드, 과거 digest tombstone, 미사용 원문 AEAD, epoch 기반 refresh와 active 100·기본 24시간 계약
+- 가입 intent·검증 principal admission grant·소비 receipt·재시작 영속 실패 budget을 분리한 `0900_beta_access.sql`
+- 동시 발급·refresh 직렬화, 잘못된 수량의 batch rollback, 출력 실패 뒤 `ls` 복구, 사용 grant/receipt 보존과 관리자 키 권한 검증
+
+P3 HMAC test-user 이행과 P4 가입 callback 전에는 신규 가입 경로를 열지 않는다.
+
 ## [1.0.0 P6 candidate] - 2026-09-09
 
 ### Fixed

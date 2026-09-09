@@ -31,3 +31,5 @@ readiness는 인증 실패, 시간 초과, 연결 불가, schema 미적용, 기�
 0801은 사용자별 테마·작성 표시 기본값과 선택적인 가사별 표시 오버라이드를 추가합니다. 오버라이드 행을 삭제하면 현재 계정 기본값이 즉시 다시 적용되며, 두 테이블 모두 강제 RLS와 범위/allowlist 제약을 사용합니다. `pnpm test:migration:0801`은 owner 격리, DB 제약, rollback/reapply를 검사합니다.
 
 0802는 자료와 owner 템플릿에 정확한 30일 purge deadline, 계정에 7일 탈퇴 유예 상태, 내용 없는 purge 실행 기록을 추가합니다. 사용자 영구 삭제는 owner 문맥을 재확인하는 함수로만 허용하며 worker purge는 작은 배치로 멱등 실행합니다. `pnpm test:migration:0802`는 시간 제약, rollback/reapply를 검사합니다.
+
+0900은 환경별 베타코드 epoch·발급 batch·과거 digest tombstone, 짧은 가입 intent, 검증 principal admission grant, 원자 소비 receipt와 재시작 후에도 유지되는 실패 budget을 추가합니다. 코드 원문은 관리자 전용 AEAD envelope로 미사용 기간에만 보관하며 사용·폐기·만료 뒤 제거합니다. 일반 앱 role에는 테이블 직접 권한을 주지 않고 P4의 제한된 가입 함수가 별도 migration에서 필요한 동작만 노출합니다. `pnpm test:migration:0900`은 신규/업그레이드·제약·rollback guard를 검사합니다.

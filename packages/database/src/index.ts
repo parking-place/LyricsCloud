@@ -1,8 +1,9 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "0802_lifecycle.sql";
+export const CURRENT_SCHEMA_VERSION = "0900_beta_access.sql";
 
 export * from "./auth.js";
+export * from "./beta-access.js";
 export * from "./owned.js";
 export * from "./schema.js";
 export * from "./songs.js";
