@@ -43,7 +43,7 @@ for (const decision of ["DEC-05-A", "DEC-07-A", "DEC-08-A", "DEC-09-A", "DEC-10-
 }
 
 for (const [relative, markers] of Object.entries({
-  "docs/security/0.9.1-security-audit.md": ["미해결 P0 0건, P1 0건", "60개 Web API", "32개 DB 테이블"],
+  "docs/security/0.9.1-security-audit.md": ["미해결 P0 0건, P1 0건", "61개 Web API", "40개 DB 테이블"],
   "docs/runbooks/0.9.1-phase3-validation.md": ["현재 미해결 성능 P0/P1 0건", "2,500"],
   "docs/runbooks/0.9.1-phase4-validation.md": ["canary 0건", "iOS update PASS, Android update PASS"],
   "docs/runbooks/0.9.1-phase5-validation.md": ["상태: 완료", "새 P0/P1 운영 결함은 0건", "34214593249"],
