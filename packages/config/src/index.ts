@@ -60,9 +60,13 @@ export function readAuthConfig(
   try { issuer = new URL(env.GOOGLE_ISSUER ?? "https://accounts.google.com"); } catch { invalid.push("GOOGLE_ISSUER"); }
   const localTestFixture = env.OIDC_TEST_FIXTURE === "true"
     && isLoopback(origin) && isLoopback(issuer);
+  // Explicit PC-only opt-in for an existing localhost Google OAuth client.
+  // Public/LAN origins and alternate issuers retain the production requirements.
+  const localHttpOAuth = env.LOCAL_HTTP_OAUTH === "true" && isLoopback(origin);
+  if (env.LOCAL_HTTP_OAUTH === "true" && !localHttpOAuth) invalid.push("LOCAL_HTTP_OAUTH");
   if (origin && !["http:", "https:"].includes(origin.protocol)) invalid.push("APP_ORIGIN");
   if (origin && (origin.pathname !== "/" || origin.search || origin.hash || origin.username || origin.password)) invalid.push("APP_ORIGIN");
-  if (origin && runtime === "production" && origin.protocol !== "https:" && !localTestFixture) invalid.push("APP_ORIGIN");
+  if (origin && runtime === "production" && origin.protocol !== "https:" && !localTestFixture && !localHttpOAuth) invalid.push("APP_ORIGIN");
   if (issuer && runtime !== "test" && issuer.href !== "https://accounts.google.com/" && !localTestFixture) invalid.push("GOOGLE_ISSUER");
   if (!env.GOOGLE_CLIENT_ID || env.GOOGLE_CLIENT_ID.startsWith("CHANGE_ME")) invalid.push("GOOGLE_CLIENT_ID");
   if (runtime === "production" && !env.GOOGLE_CLIENT_ID?.endsWith(".apps.googleusercontent.com") && !localTestFixture) invalid.push("GOOGLE_CLIENT_ID");
