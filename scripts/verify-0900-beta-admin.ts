@@ -46,9 +46,9 @@ try {
     await target.query("insert into app_users(id) values($1)", [userId]);
     await target.query(`insert into admission_grants(id,environment,issuer,subject,user_id,source,state,granted_at,updated_at)
       values($1,'test','https://accounts.example.invalid','durable-principal',$2,'beta_code','active',now(),now())`, [grantId, userId]);
-    await target.query(`insert into beta_signup_intents(intent_digest,environment,code_id,code_epoch,email_digest,email_kid,oauth_state_hash,expires_at,completed_at)
-      values($1,'test',$2,$3,$4,'test-kid',$5,now()+interval '10 minutes',now())`,
-      [intentDigest, durable.id, durable.epoch, "c".repeat(64), "d".repeat(64)]);
+    await target.query(`insert into beta_signup_intents(intent_digest,environment,code_id,code_epoch,claimed_code_digest,email_digest,email_kid,oauth_state_hash,expires_at,completed_at)
+      values($1,'test',$2,$3,$4,$5,'test-kid',$6,now()+interval '10 minutes',now())`,
+      [intentDigest, durable.id, durable.epoch, durable.code_digest, "c".repeat(64), "d".repeat(64)]);
     await target.query("update beta_codes set consumed_at=now(),sealed_code=null,seal_nonce=null,seal_tag=null where id=$1", [durable.id]);
     await target.query(`insert into beta_redemptions(environment,intent_digest,code_id,grant_id,issuer,subject,redeemed_at)
       values('test',$1,$2,$3,'https://accounts.example.invalid','durable-principal',now())`, [intentDigest, durable.id, grantId]);

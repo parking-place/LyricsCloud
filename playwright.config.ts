@@ -3,6 +3,9 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: false,
+  // Projects share one disposable database seeded by globalSetup. Serial workers
+  // prevent desktop/mobile runs from deleting each other's owner fixtures.
+  workers: 1,
   globalSetup: "./tests/e2e/global-setup.ts",
   reporter: "line",
   expect: { toHaveScreenshot: { animations: "disabled", maxDiffPixelRatio: 0.06 } },
@@ -28,7 +31,7 @@ export default defineConfig({
         APP_VERSION: "1.0.1",
         BUILD_ID: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
         APP_CHANNEL: "dev",
-        APP_PHASE: "p8",
+        APP_PHASE: "p9",
         APP_ORIGIN: "http://127.0.0.1:3000",
         GOOGLE_ISSUER: "http://127.0.0.1:3100",
         GOOGLE_CLIENT_ID: "synthetic-e2e-client",

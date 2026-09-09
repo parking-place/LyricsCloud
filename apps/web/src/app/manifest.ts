@@ -16,7 +16,9 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["music", "productivity"],
     icons: [
       { src: "/icons/lyricscloud-mark-light.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
-      { src: "/icons/lyricscloud-maskable.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" }
+      { src: "/icons/lyricscloud-maskable.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },
+      { src: "/icons/lyricscloud-192-0903.svg", sizes: "192x192", type: "image/svg+xml", purpose: "any" },
+      { src: "/icons/lyricscloud-512-0903.svg", sizes: "512x512", type: "image/svg+xml", purpose: "maskable" }
     ]
   };
 }

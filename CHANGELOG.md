@@ -2,7 +2,7 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
-## [1.0.1 P8 candidate] - 2026-09-10
+## [1.0.1 P9 candidate] - 2026-09-10
 
 ### Added
 
@@ -17,7 +17,13 @@
 - dev image가 숫자/Release alias를 이동하지 않고 승인된 tag release만 `Release`·`latest`·`Release-latest`를 같은 서비스 digest로 승격하도록 발행 계약 분리
 - 릴리스 Phase 판정을 1.0.1 P1~P10, 추가 Phase, `2.Patch-phase`, 다자리 version/phase에 대응하면서 1.0.0 P5/P6 이력은 보존
 
-이 항목은 P8 개발 후보 기록이다. P9 통합 인수와 P10 최종 CI·main 병합·정식 이미지·릴리스 서버 배포 전에는 1.0.1 정식 릴리스를 의미하지 않는다. 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 여전히 미구축인 Known limitations다.
+### Validation
+
+- 실제 PostgreSQL unit/integration 250건과 desktop/mobile 브라우저 회귀 263건, release browser matrix 10건 통과
+- nonroot·read-only production image, 암호화 backup/restore, 0.9.0→1.0.1 upgrade/application rollback, secret·취약점·관측 검사 통과
+- 과거 CI save 편차 실패를 동일 격리 환경에서 3회 재측정해 원래 성능 예산을 완화하지 않고 통과
+
+이 항목은 P9 개발 후보 기록이다. P10 최종 CI·main 병합·정식 이미지·릴리스 서버 배포 전에는 1.0.1 정식 릴리스를 의미하지 않는다. 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 여전히 미구축인 Known limitations다.
 
 ## [1.0.1 P3 candidate] - 2026-09-09
 

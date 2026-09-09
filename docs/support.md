@@ -16,7 +16,7 @@
 
 | ID | 등급 | 현재 경계 | 후속 |
 |---|---|---|---|
-| `RC-091-001` | P2 기술 위험 | production build의 Yjs duplicate import 경고. 10,000줄·동기화·offline·restore·가속 소크는 오류 없이 통과 | P9에서 현재 후보의 import graph와 무해성을 재판정 |
+| `RC-091-001` | 해소 | 1.0.1 P9에서 Yjs 13.6.32 직접 소비를 단일화했고 production build 경고가 사라짐 | 장문·동기화·offline·restore 회귀를 계속 유지 |
 | `RC-100-001` | P2 운영 제한 | 인증·검색·export rate limiter는 단일 web replica 메모리 경계 | scale-out 전에 공용 limiter 도입 |
 | `RC-091-002` | P3 증거 품질 | 실제 iOS/Android 결과는 PASS지만 상세 기기 정보가 없음 | 다음 실제 기기 인수 때 버전 기록 |
 | `OPS-100-001` | 운영 위험 | 공식 릴리스 서버의 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자의 현재 승인 예외로 미구축이며 호스트 손실 복구 지점을 보장하지 않음 | 후속 운영 작업에서 구축·훈련; 그 전 각 릴리스 기록에 위험 재기재 |

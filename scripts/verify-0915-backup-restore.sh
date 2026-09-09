@@ -11,8 +11,11 @@ repository="$work/repository"
 secrets="$work/secrets"
 mkdir -m 700 "$repository" "$secrets"
 allowlist_file="$work/auth-allowed-emails"
+beta_index_key_file="$work/beta-code-index-key"
 printf 'fixture@example.invalid\n' > "$allowlist_file"
+printf 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n' > "$beta_index_key_file"
 chmod 0444 "$allowlist_file"
+chmod 0444 "$beta_index_key_file"
 host_uid=$(id -u)
 container_uid=$host_uid
 container_gid=$(id -g)
@@ -228,13 +231,16 @@ docker run -d --name "$name-collaboration" --network "$name" --network-alias col
 docker run -d --name "$name-web" --network "$name" --network-alias web \
   --read-only --tmpfs /tmp:size=64m,mode=1777 \
   --mount "type=bind,source=$allowlist_file,target=/run/secrets/auth_allowed_emails,readonly" \
+  --mount "type=bind,source=$beta_index_key_file,target=/run/secrets/beta_code_index_key,readonly" \
   -e DATABASE_URL=postgresql://restore_operator:restore-secret-only@restore-db:5432/lyricscloud_restore \
   -e NODE_ENV=test -e "APP_VERSION=$app_version" -e "BUILD_ID=$revision" -e APP_ORIGIN=http://localhost:8080 \
   -e COLLABORATION_INTERNAL_URL=http://collaboration:3001 -e GOOGLE_ISSUER=http://127.0.0.1:3100 \
   -e OIDC_TEST_FIXTURE=true \
   -e GOOGLE_CLIENT_ID=synthetic-restore-client -e GOOGLE_CLIENT_SECRET=synthetic-restore-secret \
   -e SESSION_SECRET=synthetic-restore-session-secret-at-least-32-bytes \
-  -e AUTH_ALLOWED_EMAILS= -e AUTH_ALLOWED_EMAILS_FILE=/run/secrets/auth_allowed_emails "lyricscloud-web-ci:$revision" >/dev/null
+  -e AUTH_ALLOWED_EMAILS= -e AUTH_ALLOWED_EMAILS_FILE=/run/secrets/auth_allowed_emails \
+  -e BETA_ENVIRONMENT=test -e BETA_CODE_INDEX_KID=backup-smoke-v1 -e BETA_CODE_INDEX_KEY_FILE=/run/secrets/beta_code_index_key \
+  "lyricscloud-web-ci:$revision" >/dev/null
 check_http() {
   local container=$1 url=$2
   for _ in {1..30}; do
