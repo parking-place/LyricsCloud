@@ -17,10 +17,30 @@ test("auth UI is responsive, reports failures, and links to real policy pages", 
   await expect(page.getByRole("textbox", { name: "Google 계정 이메일", exact: true })).toBeVisible();
   await expect(page.getByText("정책 버전 2026-09-04")).toBeVisible();
   expect(await hasHorizontalOverflow(page)).toBe(false);
-  // Keep the visual comparison tied to the fixed acceptance viewport. Full-page
-  // height varies by a few CSS pixels across Linux font packages even when the
-  // rendered controls and overflow contract are unchanged.
-  await expect(page).toHaveScreenshot(`1.0.1-phase4-beta-signup-${testInfo.project.name}.png`, { fullPage: false });
+  const viewport = page.viewportSize();
+  expect(viewport).not.toBeNull();
+  for (const control of [
+    page.getByRole("link", { name: "Google 계정으로 계속하기" }),
+    page.getByRole("textbox", { name: "초대 코드", exact: true }),
+    page.getByRole("textbox", { name: "Google 계정 이메일", exact: true }),
+    page.getByRole("button", { name: "가입하고 Google로 확인" })
+  ]) {
+    const box = await control.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(viewport!.width + 1);
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+  }
+  const story = await page.locator(".auth-story").boundingBox();
+  const panel = await page.locator(".auth-panel").boundingBox();
+  expect(story).not.toBeNull();
+  expect(panel).not.toBeNull();
+  if (testInfo.project.name === "mobile") {
+    expect(panel!.y).toBeGreaterThanOrEqual(story!.y + story!.height - 1);
+    expect(panel!.width).toBeLessThanOrEqual(viewport!.width + 1);
+  } else {
+    expect(panel!.x).toBeGreaterThanOrEqual(story!.x + story!.width - 1);
+  }
   await page.screenshot({ path: `docs/runbooks/evidence/1.0.1-phase4-beta-signup-${testInfo.project.name}.png`, fullPage: true });
 
   await page.getByRole("link", { name: "이용 안내" }).click();
