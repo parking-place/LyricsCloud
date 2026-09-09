@@ -91,6 +91,8 @@
 
 ## 9. 검증과 완료 처리
 
+일상 검증은 사용자 PC의 로컬 명령과 Docker를 기본으로 한다. 문서·중간 작업 push는 로컬 검증 뒤 commit 메시지에 `[skip ci]`를 넣어 push/PR CI가 반복 실행되지 않게 한다. 같은 변경에서 성공한 검증은 재사용하고 문서 변경만으로 앱 전체 테스트나 이미지 빌드를 반복하지 않는다. 원격 필수 CI는 최종 Phase 통합·릴리스에 필요한 최종 후보에서만 수행하며, 중간 push마다 실행하거나 새 근거 없이 재실행하지 않는다. CI 생략·취소는 PASS로 기록하지 않고, 필수 검사나 같은 SHA의 개발 서버 인수 조건은 충족 전까지 남긴다. 기존 workflow·공용 Docker tag·타인의 실행은 이 규칙만으로 변경하지 않는다. [GitHub의 skip 지침](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/skip-workflow-runs)은 push/PR에 적용되며 필수 검사를 대체하지 않는다.
+
 **모든 push 직전과 각 Phase 완료 시** [Future 계획 검수 인수](./0.Plans/2.Patch-phase/FUTURE-INTAKE.md)를 한 번 수행한다. 저장소 전역의 tracked·untracked·hidden Future 문서를 rg/Git으로 발견하고, 이동·새 내용·체크 변경을 마지막 인수 commit/blob과 대조한다. 원본·백업·중복과 현행 입력을 구분하며 비공개/ignored 자료를 자동 공개하거나 강제 add하지 않는다. 상세 배정·충돌·중복 처리 기록은 연결 문서 한 곳에 둔다.
 
 - Phase 문서의 검증 명령과 수용 기준을 모두 통과해야 완료로 표시합니다.

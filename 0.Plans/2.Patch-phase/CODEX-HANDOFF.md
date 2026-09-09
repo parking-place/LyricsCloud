@@ -54,4 +54,6 @@
 
 2026-09-09 부모가 원본 `LyricsCloud_Plans`의 193파일과 Git 제외 `.private/lyricscloud-plans-original-20260909.zip` 내부 모든 SHA256 일치를 확인했다. 사용자 재승인 뒤 안전 경로를 확인한 Remove-Item도 자동 승인 검토에서 `blocked by policy`로 거부됐다. 원본과 ZIP은 그대로 보존하며 삭제/이동 우회하지 않는다. 최종 commit은 원본 번들과 비공개 백업을 제외한다. 문서 담당자는 원본을 읽거나 수정·삭제하지 않았다.
 
-부모 확인 당시 remote P5는 `7c3930b`, main은 `0e7dbf6`이며 `codex/1.0.1-p1-plan-handoff`는 미게시다. 이 값은 확인 시점의 인계이며 이후 Git/PR 상태는 부모가 갱신한다.
+2026-09-09 문서 전용 `codex/1.0.1-p1-plan-handoff`를 P5 대상 [Draft PR #12](https://github.com/parking-place/LyricsCloud/pull/12)에 게시했다. 구현 Phase 브랜치는 기존 `phase/` 관례를 따른다. 확인 당시 remote P5는 `7c3930b`, main은 `0e7dbf6`이며 이번 문서 작업으로 이동하지 않았다. 정확한 최신 문서 SHA는 PR head와 로컬 HEAD를 대조한다.
+
+문서 validator와 링크·ID·요구 매핑·후보 보존 검사는 로컬에서 통과했다. README의 P5 인수 링크를 복구한 뒤 릴리스 문서 검사도 로컬 PASS이며 [최신 CI](https://github.com/parking-place/LyricsCloud/actions/runs/34326031790)에서도 해당 단계가 통과했다. 해당 실행은 이미지 빌드 도중 사용자가 CI 사용량 절약과 PC Docker 검증을 지시하여 취소했다. 전체 CI PASS로 간주하지 않는다. 이후 문서·중간 push에는 `[skip ci]`를 사용하고 성공한 동일 검증을 재사용한다. 현재 PC Docker와 실행 P6 상태는 유지하며 최종 Phase 통합 시 남은 필수 검사를 확인한다.
