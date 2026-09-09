@@ -41,7 +41,14 @@
 - [`0.6.0 Phase 1 곡 대시보드 검증`](./0.6.0-phase1-validation.md)
 - [`0.7.0 Phase 1 통합 검색 기반 검증`](./0.7.0-phase1-validation.md)
 - [`0.7.0 Phase 2 검색 화면·딥링크 검증`](./0.7.0-phase2-validation.md)
+- [`1.0.1 Phase 1 인수·결함 경계`](./1.0.1-phase1-intake.md)
+- [`1.0.1 Phase 2 베타 관리자 CLI`](./1.0.1-phase2-beta-admin.md)
+- [`1.0.1 Phase 3 HMAC allowlist`](./1.0.1-phase3-hmac-allowlist.md)
 - [`1.0.1 Phase 4 베타 가입 인수`](./1.0.1-phase4-beta-signup.md)
+- [`1.0.1 Phase 5 Windows IME`](./1.0.1-phase5-windows-ime.md)
+- [`1.0.1 Phase 6 UI·테마`](./1.0.1-phase6-ui-theme.md)
+- [`1.0.1 Phase 7 브랜드·build metadata`](./1.0.1-phase7-brand-metadata.md)
+- [`1.0.1 Phase 8 문서·버전·릴리스 도구`](./1.0.1-phase8-release-tooling.md)
 - [`0.7.0 Phase 3 최근 작업·위치 복원 검증`](./0.7.0-phase3-validation.md)
 
 ## 개발 서버 운영

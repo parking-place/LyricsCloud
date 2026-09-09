@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.1"
-current_phase: "../2.Patch-phase/1.0.1/8phase.md"
+current_phase: "../2.Patch-phase/1.0.1/9phase.md"
 state: "active"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "P8 README·현재 문서·버전·릴리스 도구를 1.0.1에 맞춘다"
+next_action: "P9 권한·동시성·복구와 잔여 P6 위험을 현재 후보에서 통합 인수한다"
 ```
 
 ## 승인과 기준
@@ -33,14 +33,16 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.1 P5 | complete | Windows Chrome·Edge 실제 IME와 동일 SHA 개발 저장 무손실 인수 완료 |
 | 1.0.1 P6 | complete | 동일 SHA 공개 light/dark·새 가사·연결 관리·모바일/rail 인수 완료 |
 | 1.0.1 P7 | complete | 주 로고·아이콘 자산군과 runtime/health 공통 build metadata 공개 인수 완료 |
-| 1.0.1 P8 | active | README·현재 문서·버전·릴리스 도구 1.0.1 대응 |
-| 1.0.1 P9~P10 | 미착수 | 앞 Phase 인수 뒤 순차 수행 |
+| 1.0.1 P8 | complete | README·현재 문서·1.0.1 runtime·가변 Phase와 dev/release tag 격리의 동일 SHA 개발 인수 완료 |
+| 1.0.1 P9 | active | 권한·동시성·복구·잔여 P6 통합 인수 |
+| 1.0.1 P10 | 미착수 | P9 인수 뒤 최종 후보·릴리스 수행 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.1/P8 | LC-NF-1.0.1-P8-01~04 | README·현재 문서·version·release tooling | P7 공개 brand/build metadata 인수 | 2026-09-10 | active |
+| Codex | 1.0.1/P9 | LC-NF-1.0.1-P9-01~05 | 통합 회귀·DB 경쟁·image/secret·backup/restore·성능 | P8 동일 SHA 개발 인수 | 2026-09-10 | active |
+| Codex | 1.0.1/P8 | LC-NF-1.0.1-P8-01~04 | README·현재 문서·version·release tooling | P7 공개 brand/build metadata 인수 | 2026-09-10 | complete |
 | Codex | 1.0.1/P7 | LC-NF-1.0.1-P7-01~03 | public logo/icon 자산·navigation·build metadata | P6 공개 양 테마 UI 인수 | 2026-09-10 | complete |
 | Codex | 1.0.1/P6 | LC-NF-1.0.1-P6-01~03 | web components·공통 UI·스타일·portal | P5 Windows 실제 IME·공개 개발 HTTPS | 2026-09-10 | complete |
 | Codex | 1.0.1/P5 | LC-NF-1.0.1-P5-01~05 | lyric editor IME·저장 drain·재진입 복구 | P4 실제 Google 가입·기존 P6 회귀 | 2026-09-09 | complete |
@@ -63,3 +65,5 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 로컬은 `lyricscloud-local` 한 그룹의 postgres·web·collaboration·worker가 healthy이고 migrate가 exit 0이다. 임시 컨테이너는 제거했으며 live/ready·인증 화면·정적 asset·Google OAuth 시작을 확인했다. PC도 production 웹 빌드를 사용하며, 기존 HTTP OAuth 주소는 명시적인 loopback 전용 opt-in으로 유지한다. 공용/LAN origin은 여전히 HTTPS가 필수다. 실제 로그인 완료는 사용자가 기존 브라우저에서 확인한다.
 
 P6 push 자동 발행은 차단하며 수동 candidate도 공용 tag를 변경하지 않는다. 기존 `v1.0.0`, release manifest, migration, lockfile은 보존한다. `OPS-100-001` 운영 외부 백업 미구축은 별도 승인·실제 복원 인수까지 계속 열려 있다.
+
+P8 구현 후보 `17aa226abe48acee9642d6c539809b915362a28e`은 원격 PR #20과 개발 서버 checkout·build metadata가 일치한다. 공개 ready는 `1.0.1`, channel `dev`, phase `p8`, schema `0901_beta_signup.sql`을 반환했고 postgres·web·collaboration·worker가 모두 healthy였다. dev 발행에서 숫자·Release 계열을 제외하고 승인 tag release에서만 `Release`·`latest`·`Release-latest`를 같은 서비스 build에 묶는 30개 경계 검사를 통과했다. 필수 원격 통합 CI는 저장소 정책대로 P10 후보에서 실행한다.
