@@ -12,11 +12,18 @@ const owners: string[] = [];
 async function fixture(pending: boolean) {
   const owner = randomUUID(), resource = randomUUID();
   owners.push(owner);
-  await pool!.query("insert into app_users(id,status) values($1,'active')", [owner]);
-  await pool!.query("insert into resources(id,owner_id,type,title) values($1,$2,'rhyme_note','P6 synthetic')", [resource, owner]);
-  await pool!.query("insert into rhyme_notes(resource_id,owner_id,body) values($1,$2,'before-projection')", [resource, owner]);
-  await pool!.query(`insert into sync_documents(resource_id,owner_id,resource_type,snapshot,projection_error_code)
-    values($1,$2,'rhyme_note',decode('0000','hex'),$3)`, [resource, owner, pending ? "SYNC_PROJECTION_FAILED" : null]);
+  const client = await pool!.connect();
+  try {
+    // Parent and subtype foreign keys are deferred until this same connection commits.
+    await client.query("begin");
+    await client.query("insert into app_users(id,status) values($1,'active')", [owner]);
+    await client.query("insert into resources(id,owner_id,type,title) values($1,$2,'rhyme_note','P6 synthetic')", [resource, owner]);
+    await client.query("insert into rhyme_notes(resource_id,owner_id,body) values($1,$2,'before-projection')", [resource, owner]);
+    await client.query(`insert into sync_documents(resource_id,owner_id,resource_type,snapshot,projection_error_code)
+      values($1,$2,'rhyme_note',decode('0000','hex'),$3)`, [resource, owner, pending ? "SYNC_PROJECTION_FAILED" : null]);
+    await client.query("commit");
+  } catch (error) { await client.query("rollback"); throw error; }
+  finally { client.release(); }
   return { owner, resource };
 }
 
@@ -59,9 +66,11 @@ describe.runIf(enabled)("P6 export safety with real PostgreSQL", () => {
 
   it("preserves a real timestamptz deletion date in the readable export", async () => {
     const f = await fixture(false);
-    const deletedAt = new Date("2026-09-09T00:00:00.000Z");
-    await pool!.query(`update resources set deleted_at=$2,purge_at=$2::timestamptz+interval '30 days',deletion_batch_id=$3
-      where id=$1`, [f.resource, deletedAt, randomUUID()]);
+    const deletion = await pool!.query<{ deleted_at: Date }>(`update resources
+      set deleted_at=statement_timestamp(),purge_at=statement_timestamp()+interval '30 days',deletion_batch_id=$2
+      where id=$1 returning deleted_at`, [f.resource, randomUUID()]);
+    const deletedAt = deletion.rows[0]!.deleted_at;
+    expect(deletedAt).toBeInstanceOf(Date);
     const snapshot = await store!.openSnapshot(f.owner);
     try {
       const rows = [];
