@@ -101,6 +101,8 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .auth-error { display: grid; gap: .35rem; margin: 0 0 1rem; padding: .85rem 1rem; border: 1px solid rgb(255 172 158 / 36%); border-radius: .7rem; background: var(--danger-bg); color: var(--danger); line-height: 1.45; }
 .auth-error span { color: #e9c5bf; font-size: .88rem; }
 .auth-error small { color: #bd9690; overflow-wrap: anywhere; }
+.auth-error .auth-error-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.auth-error-actions a { min-height: 2.25rem; display: inline-flex; align-items: center; padding: .35rem .55rem; border: 1px solid currentColor; border-radius: .45rem; color: inherit; font-size: .74rem; font-weight: 750; text-decoration: none; }
 .mobile-sync-copy { display: none; }
 .google-button { width: 100%; min-height: 3.55rem; display: flex; align-items: center; justify-content: center; gap: .72rem; padding: .75rem 1rem; border: 1px solid #f1f1f1; border-radius: .72rem; background: #fff; color: #202124; font-size: .93rem; font-weight: 750; text-decoration: none; cursor: pointer; transition: transform 150ms ease, background 150ms ease, opacity 150ms ease; }
 .google-button:hover { background: #f1f3f4; transform: translateY(-1px); }
@@ -117,7 +119,10 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .beta-signup input:disabled { opacity: .65; cursor: wait; }
 .beta-signup button { min-height: 2.85rem; border: 1px solid var(--acid); border-radius: .6rem; background: var(--acid); color: var(--acid-ink); font-weight: 800; cursor: pointer; }
 .beta-signup button:disabled { opacity: .55; cursor: not-allowed; }
+.beta-signup-recovery { display: grid; gap: .5rem; }
 .beta-signup-error { margin: 0; color: var(--danger); font-size: .76rem; line-height: 1.45; }
+.beta-signup-recovery > div { display: flex; flex-wrap: wrap; gap: .5rem; }
+.beta-signup-recovery a, .beta-signup-recovery button { min-height: 2.5rem; display: inline-flex; align-items: center; justify-content: center; padding: .45rem .65rem; border: 1px solid var(--line); border-radius: .5rem; background: transparent; color: var(--muted); font-size: .72rem; font-weight: 750; text-decoration: none; cursor: pointer; }
 .auth-foot { margin: 1.25rem 0 0; color: var(--muted); font-size: .76rem; line-height: 1.6; text-align: center; }
 .auth-foot a { color: var(--ink); text-underline-offset: .18em; }
 .policy-version { margin: .4rem 0 0; color: var(--subtle); font-size: .68rem; text-align: center; }
@@ -547,7 +552,7 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .save-indicator.is-error { color: var(--danger); }
 .save-indicator.is-error > span { background: var(--danger); }
 .save-indicator button { min-height: 2rem; padding: .3rem .55rem; border: 1px solid currentColor; border-radius: .45rem; background: transparent; color: inherit; cursor: pointer; }
-.local-draft-state { margin: 0; color: var(--muted); font-size: .72rem; white-space: nowrap; }
+.local-draft-state { margin: 0; color: var(--muted); font-size: .72rem; white-space: normal; }
 .local-draft-state.state-offline { color: #f0bd72; }
 .lyric-editor-title { width: min(100%, 54rem); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .8rem; justify-self: center; padding: 1rem 1.5rem .75rem; }
 .lyric-editor-title label { color: var(--subtle); font-size: .68rem; font-weight: 800; }

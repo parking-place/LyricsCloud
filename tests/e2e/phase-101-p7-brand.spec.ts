@@ -17,7 +17,7 @@ test.describe("1.0.1 P7 brand and build metadata", () => {
     const live = await (await page.request.get("/api/health/live")).json() as {
       build: { version: string; channel: string; phase: string | null };
     };
-    expect(`v${live.build.version}-${live.build.phase} ${live.build.channel}`).toBe("v1.0.2-p2 dev");
+    expect(`v${live.build.version}-${live.build.phase} ${live.build.channel}`).toBe("v1.0.2-p3 dev");
 
     await page.emulateMedia({ colorScheme: "light" });
     await page.reload();

@@ -54,6 +54,7 @@
 | 2026-09-10 1.0.2 P1 완료 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `194dc4217e5a45e9e55c82c43e30afffcb5e1984` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 1.0.2 안정화의 가입·저장·PWA 회귀 범위만 고정 | 1.0.1 P10 완료·release 실행 push 전 행 |
 | 2026-09-10 1.0.2 P2 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `0dbcf45ef0f2dd57f6dad4870057d7426ec75f19` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 응답 유실 멱등·volatile 저장 guard·build별 PWA 경계만 구현 | 1.0.2 P1 완료 push 전 행 |
 | 2026-09-10 1.0.2 P2 완료·P3 착수 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `4a8dd97562fe0d1ac400b1799aacbced3285eabf` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P2 동일 SHA 개발 인수 완료, 기존 P3 사용자 복구 흐름만 착수 | 1.0.2 P2 후보 push 전 행 |
+| 2026-09-10 1.0.2 P3 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `a72910ff90144e1bbe51c6791484f3eeeadb515b` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 저장 실패 exact-copy와 가입 실패 복귀·PC/mobile 회귀만 구현 | 1.0.2 P2 완료·P3 착수 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 

@@ -41,7 +41,13 @@ export function BetaSignupForm() {
     }
   }
 
-  return <section className="beta-signup" aria-labelledby="beta-signup-title">
+  function cancelSignup() {
+    setCode("");
+    setEmail("");
+    setMessage("");
+  }
+
+  return <section id="beta-signup" className="beta-signup" aria-labelledby="beta-signup-title">
     <div className="auth-divider"><span>처음 이용하시나요?</span></div>
     <h3 id="beta-signup-title">초대 코드로 가입</h3>
     <p>초대 코드와 Google 계정 이메일을 입력한 뒤 같은 계정으로 본인 확인을 완료해 주세요.</p>
@@ -53,7 +59,10 @@ export function BetaSignupForm() {
       <label><span>Google 계정 이메일</span><input name="email" type="email" autoComplete="email"
         maxLength={320} required disabled={pending} value={email} onChange={(event) => setEmail(event.target.value)}
         placeholder="name@example.com" /></label>
-      {message ? <p className="beta-signup-error" role="alert">{message}</p> : null}
+      {message ? <div className="beta-signup-recovery">
+        <p className="beta-signup-error" role="alert">{message} 입력한 코드는 사용되지 않았습니다.</p>
+        <div><a href="#existing-user-login">기존 사용자 로그인으로 이동</a><button type="button" onClick={cancelSignup}>입력 지우고 취소</button></div>
+      </div> : null}
       <button type="submit" disabled={pending || code.length !== 6 || !email.trim()}>
         {pending ? "Google 계정 확인 준비 중…" : "가입하고 Google로 확인"}
       </button>
