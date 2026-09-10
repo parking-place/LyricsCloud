@@ -1,6 +1,6 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "0901_beta_signup.sql";
+export const CURRENT_SCHEMA_VERSION = "1000_prompt_modes.sql";
 
 export * from "./auth.js";
 export * from "./beta-access.js";
