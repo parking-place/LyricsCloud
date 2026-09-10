@@ -103,10 +103,10 @@ assert(currentManifest.releaseVersion === releasedVersion && currentManifest.dat
 const currentReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${releasedVersion}`,
   sha: "b".repeat(40), version: releasedVersion, release: true }).tags;
 for (const tag of [releasedVersion, "Release", "latest", "Release-latest"]) assert(currentReleaseTags.includes(tag), `sealed release tag missing: ${tag}`);
-const currentDevTags = getImagePublication({ eventName: "push", refType: "branch", refName: "phase/1.0.2-p5-final-acceptance",
+const currentDevTags = getImagePublication({ eventName: "push", refType: "branch", refName: "phase/1.0.3-p5-prompt-mode-release-handoff",
   sha: "b".repeat(40), version: currentVersion, release: false }).tags;
-for (const tag of [currentVersion, releasedVersion, "Release", "latest", "Release-latest"]) assert(!currentDevTags.includes(tag), `P5 dev moves protected tag: ${tag}`);
-for (const marker of ["APP_VERSION: 1.0.2", "APP_PHASE: p5", "test:migration:0900", "test:environment:101"]) {
+for (const tag of [currentVersion, "1.0.2", releasedVersion, "Release", "latest", "Release-latest"]) assert(!currentDevTags.includes(tag), `P5 dev moves protected tag: ${tag}`);
+for (const marker of ["APP_VERSION: 1.0.3", "APP_PHASE: p5", "test:migration:1000", "test:environment:101"]) {
   assert(workflow.includes(marker), `P5 CI marker missing: ${marker}`);
 }
 for (const marker of ["P5", "P0/P1", "OPS-100-001", "동일 SHA 개발 인수"]) {
@@ -121,12 +121,12 @@ for (const marker of ["annotated `v1.0.2`", "publish=true", "release=true", "Rel
 for (const marker of ["main", "annotated `v1.0.2`", "exact digest", "OPS-100-001"]) {
   assert(formalReleaseChecklist.includes(marker), `1.0.2 release checklist marker missing: ${marker}`);
 }
-assert(formalManifest.releaseVersion === currentVersion && formalManifest.releaseChannel === "release"
+assert(formalManifest.releaseVersion === "1.0.2" && formalManifest.releaseChannel === "release"
   && formalManifest.productionAuthorized === true && formalManifest.database.requiredLatestSchema === "0901_beta_signup.sql",
   "1.0.2 formal release manifest boundary invalid");
-const formalReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${currentVersion}`,
-  sha: "c".repeat(40), version: currentVersion, release: true }).tags;
-for (const tag of [currentVersion, "Release", "latest", "Release-latest"]) {
+const formalReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: "v1.0.2",
+  sha: "c".repeat(40), version: "1.0.2", release: true }).tags;
+for (const tag of ["1.0.2", "Release", "latest", "Release-latest"]) {
   assert(formalReleaseTags.includes(tag), `1.0.2 release tag missing: ${tag}`);
 }
 
