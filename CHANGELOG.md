@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.7] - 2026-09-11
+
+### Added
+
+- 곡·라임 노트·프롬프트 목록의 리스트·작은/중간/큰 그리드 선택
+- 계정·자료 유형별 서버 저장, 새 계정 기본 리스트와 독립 CAS
+
+### Fixed
+
+- 보기 전환 중 검색·필터·현재 페이지·순서·scroll 또는 무관한 표시 설정이 바뀔 수 있는 경계
+- 320px·200% 확대·긴 한글 제목에서 목록 액션과 내용이 겹치는 경계
+
+### Validation
+
+- PostgreSQL 18 migration 반복과 unit/integration 283건, Chromium 전체 340건과 5-project 신규 기능 30건 검증
+- 동일 SHA 개발 서버의 owner/type 저장·stale 복구와 서비스 재시작 뒤 지속성 검증
+
+Known limitations: 실제 물리 기기는 이번 후보에서 새로 실행하지 않았고 `OPS-100-001` 외부 backup 예외를 유지한다. Phase 5 전체 CI·동일 SHA 개발 인수 뒤 정식 릴리스한다.
+
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
 ## [1.0.6] - 2026-09-11
