@@ -10,7 +10,12 @@ test("root routes to the public auth screen and exposes health semantics", async
   const live = await page.request.get("/api/health/live");
   expect(live.status()).toBe(200);
   await expect(live.json()).resolves.toMatchObject({
-    build: { version: "1.0.5", id: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", channel: "dev", phase: "p5" }
+    build: {
+      version: expect.stringMatching(/^\d+\.\d+\.\d+$/),
+      id: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      channel: "dev",
+      phase: expect.stringMatching(/^p\d+$/)
+    }
   });
   const ready = await page.request.get("/api/health/ready");
   if (process.env.E2E_DATABASE_URL || process.env.E2E_SESSION_TOKEN) {

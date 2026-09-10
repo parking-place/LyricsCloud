@@ -1185,6 +1185,7 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .prompt-template-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .75rem; }
 .prompt-template-actions button { min-height: 2.75rem; padding: .45rem .55rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--surface); color: var(--ink); font-size: .65rem; cursor: pointer; }
 .prompt-template-actions button:disabled { opacity: .5; cursor: default; }
+.prompt-template-actions .danger-text:disabled { opacity: .8; }
 .prompt-template-dialog { width: min(calc(100vw - 2rem), 38rem); max-height: min(86dvh, 42rem); padding: 1.1rem; border: 1px solid var(--line); border-radius: .9rem; background: var(--surface-raised); overflow-y: auto; }
 .prompt-template-dialog > header { display: flex; align-items: start; gap: 1rem; padding-bottom: .8rem; border-bottom: 1px solid var(--line); }
 .prompt-template-dialog h2, .prompt-template-dialog header p { margin: 0; }
