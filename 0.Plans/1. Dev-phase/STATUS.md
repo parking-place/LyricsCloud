@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.0.2"
-current_phase: "../2.Patch-phase/1.0.2/5phase.md"
+current_version: "1.0.3"
+current_phase: "../2.Patch-phase/1.0.3/1phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "현재 승인에 따라 1.0.2 main·annotated tag·정식 image·릴리스 서버 배포를 실행한 뒤 1.0.3 P1로 이동한다"
+next_action: "1.0.3 P1 설계 인수를 기준으로 P2 core mode/raw schema·store·CRDT를 구현한다"
 ```
 
 ## 승인과 기준
@@ -45,11 +45,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.2 P3 | complete | 저장 실패 exact-copy·가입 로그인/재시도/취소·PC/mobile 50건과 동일 SHA 개발 인수 완료 |
 | 1.0.2 P4 | complete | 네 수용 사례·실제 PostgreSQL·267건 전체 E2E·5-browser·production restart·동일 SHA 개발 인수 완료 |
 | 1.0.2 P5 | complete | Actions 전체 verify·네 dev image·동일 SHA 개발 공개 인수와 후속 연결 완료 |
+| 1.0.3 P1 | complete | mode/raw 저장·구버전 capability·원자 projection·rollback·파일 담당 계약을 설계-only로 확정 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.3/P1 | LC-NF-1.0.3-P1-01~06 | prompt mode/raw 계약·수용 입력·migration/API/CRDT/capability/rollback 경계 | v1.0.2 release `b4cfd665feb72612122253a26f336e5816bfb28c` | 2026-09-10T16:19:00+09:00 | complete |
 | Codex | 1.0.2/P5 | LC-NF-1.0.2-P5-01~06 | 요구 추적·현재 문서·최종 CI·동일 SHA 개발 인수·후속 연결 | P4 동일 SHA 개발 인수 | 2026-09-10T13:07:30+09:00 | complete |
 | Codex | 1.0.2/P4 | LC-NF-1.0.2-P4-01~06 | 가입 응답 유실·저장/PWA·계정·재접속·서버 재시작 교차 회귀 | P3 동일 SHA 개발 인수 | 2026-09-10T12:42:00+09:00 | complete |
 | Codex | 1.0.2/P3 | LC-NF-1.0.2-P3-01~06 | 저장·가입 안내·복구 경로·작은 화면·PC/mobile 회귀 | P2 동일 SHA 개발 인수 | 2026-09-10T12:23:38+09:00 | complete |
