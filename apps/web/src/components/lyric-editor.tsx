@@ -4,7 +4,6 @@ import {
   copySongFormSections,
   capturePortableTextSelection,
   createBrowserLyricSync,
-  copyWholeLyric,
   BufferedPositionSaver,
   createCodeMirrorTextEditor,
   parseSongForm,
@@ -35,6 +34,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createLyricMetadataSaver } from "../lib/lyric-metadata.js";
 import { registerLogoutSave } from "../lib/account-cache.js";
 import { promptCopyView } from "../lib/prompt-copy.js";
+import { lyricCopyView } from "../lib/lyric-copy.js";
 import { DialogFocusBoundary, trapDialogTab } from "../lib/dialog-focus.js";
 import { BEFORE_SHORTCUT_NAVIGATION_EVENT, commandForKeyboardEvent, isEditableShortcutTarget, type ShortcutNavigationDetail } from "../lib/shortcut-runtime.js";
 import { hasVolatilePendingInput } from "../lib/update-safety.js";
@@ -91,6 +91,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const [localSyncState, setLocalSyncState] = useState<LocalSyncState>("loading");
   const [legacyConflict, setLegacyConflict] = useState<{ localBody: string; serverBody: string } | null>(null);
   const [songForm, setSongForm] = useState<SongFormNavigationState>({ sections: parseSongForm(initialLyric.body), activeSectionId: null });
+  const [wholeCopyView, setWholeCopyView] = useState(() => lyricCopyView(initialLyric.body));
   const [mobileSongFormOpen, setMobileSongFormOpen] = useState(false);
   const [desktopResourcesOpen, setDesktopResourcesOpen] = useState(true);
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
@@ -198,6 +199,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       readOnly: true,
       onChange(value) {
         bodyRef.current = value;
+        if (active) setWholeCopyView(lyricCopyView(value));
       },
       onCompositionStart() { localSyncRef.current?.setComposing(true); },
       onCompositionEnd() { localSyncRef.current?.setComposing(false); },
@@ -585,8 +587,9 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   }
 
   function copyWhole() {
-    const text = copyWholeLyric(editorRef.current?.value ?? bodyRef.current);
-    void writeClipboard(text, "가사 전체");
+    const view = lyricCopyView(editorRef.current?.value ?? bodyRef.current);
+    setWholeCopyView(view);
+    void copyFeedback.copyText(view.payload, "가사 전체", view.feedback("가사를 복사했습니다"), view.warningMessage);
   }
 
   function copySelected() {
@@ -697,6 +700,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         <button type="button" onClick={() => setHistoryOpen(true)}>버전 비교</button>
         <button type="button" aria-haspopup="dialog" aria-expanded={displaySettingsOpen} onClick={() => setDisplaySettingsOpen(true)}>표시 설정</button>
         <button type="button" onClick={copyWhole} title="Alt+Shift+C" aria-keyshortcuts="Alt+Shift+C">전체 복사</button>
+        <span className={`lyric-copy-length${wholeCopyView.exceedsRecommendedLimit ? " over" : ""}`}>{wholeCopyView.codePointCount.toLocaleString("ko-KR")}자</span>
         <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} title="Alt+Shift+F" aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 모드 종료" : "집중 모드"}</button>
         <button type="button" disabled={commandBusy} onClick={duplicateCurrent}>복제</button>
         <button type="button" disabled={commandBusy} className="danger-text" onClick={() => setDeleteOpen(true)}>삭제</button>
@@ -728,7 +732,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         <div className="lyric-editor-surface" data-lyric-id={initialLyric.id} ref={mountRef} />
         <footer className="lyric-editor-footer">
           <span>순수 텍스트 · 최대 100,000자</span>
-          <span>본문 자동 동기화</span>
+          <span className={`lyric-copy-length${wholeCopyView.exceedsRecommendedLimit ? " over" : ""}`}>{wholeCopyView.codePointCount.toLocaleString("ko-KR")}자{wholeCopyView.exceedsRecommendedLimit ? " · 3,000자 권장 초과" : " · 본문 자동 동기화"}</span>
         </footer>
       </div>
       <LyricResourcePanel lyricId={initialLyric.id} desktopOpen={desktopResourcesOpen} mobileOpen={mobileResourcesOpen}
@@ -744,7 +748,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     <div className="mobile-editor-dock" role="group" aria-label="가사 편집 도구">
       <button ref={mobileSongFormButtonRef} type="button" aria-haspopup="dialog" aria-expanded={mobileSongFormOpen}
         onClick={() => { restoreSongFormFocusRef.current = false; setMobileSongFormOpen(true); }}>☷ 송폼 <span>{songForm.sections.length}</span></button>
-      <button type="button" onClick={copyWhole} aria-keyshortcuts="Alt+Shift+C">⧉ 전체 복사</button>
+      <button type="button" onClick={copyWhole} aria-keyshortcuts="Alt+Shift+C">⧉ 전체 복사 <small>{wholeCopyView.codePointCount.toLocaleString("ko-KR")}자</small></button>
       <button type="button" aria-haspopup="dialog" aria-expanded={mobileResourcesOpen} onClick={() => setMobileResourcesOpen(true)}>≋ 다른 가사 <span>{songLyrics.length}</span> · 자료</button>
       <button type="button" onClick={() => setHistoryOpen(true)}>기록·비교</button>
       <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 종료" : "집중 모드"}</button>
@@ -850,7 +854,9 @@ function SongFormList({ sections, activeSectionId, selectedSectionIds, onSelect,
           aria-current={section.id === activeSectionId ? "location" : undefined}
           aria-label={`${name} 구간으로 이동`}
           onClick={() => onSelect(section.id)}>
-          <span>{section.label}</span>{section.occurrence > 1 ? <small>#{section.occurrence}</small> : null}
+          <span className="songform-primary-label">{section.label}</span>
+          {section.subtag ? <span className="songform-subtag" aria-hidden="true">{section.subtag}</span> : null}
+          {section.occurrence > 1 ? <small>#{section.occurrence}</small> : null}
         </button>
       </div>;
     })}
