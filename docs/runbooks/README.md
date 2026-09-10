@@ -72,6 +72,11 @@
 - [`1.0.5 Phase 5 최종 후보 인수`](./1.0.5-phase5-final-acceptance.md)
 - [`1.0.5 정식 릴리스 실행`](./1.0.5-release.md)
 - [`1.0.5 정식 릴리스 체크리스트`](./1.0.5-release-checklist.md)
+- [`1.0.6 Phase 1 Extend·송폼 삽입 계약`](./1.0.6-phase1-extend-insert-contract.md)
+- [`1.0.6 Phase 2 Extend·송폼 삽입 기반`](./1.0.6-phase2-extend-insert-foundation.md)
+- [`1.0.6 Phase 3 송폼 삽입 UI`](./1.0.6-phase3-songform-insert-ui.md)
+- [`1.0.6 Phase 4 Extend·송폼 삽입 교차 인수`](./1.0.6-phase4-extend-insert-acceptance.md)
+- [`1.0.6 Phase 5 최종 후보 인수`](./1.0.6-phase5-final-acceptance.md)
 - [`0.7.0 Phase 3 최근 작업·위치 복원 검증`](./0.7.0-phase3-validation.md)
 
 ## 개발 서버 운영

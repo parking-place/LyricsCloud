@@ -2,6 +2,25 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
+## [1.0.6 candidate] - 2026-09-11
+
+### Added
+
+- exact-case Extend 정식 표식을 저장 원문·부분 복사·수정 기록·내보내기에 보존하면서 Suno 전체 복사에서만 해당 표식 줄을 제외
+- `Intro`, `Verse`, `Pre-Chorus`, `Chorus`, `Hook`, `Bridge`, `Outro`를 PC 우클릭·메뉴키/`Shift+F10`·모바일 보이는 버튼의 공통 메뉴로 제공하고 CRDT 상대 caret에 한 transaction으로 삽입
+
+### Fixed
+
+- 이전 버전 문자열을 고정해 다음 patch에서 실패하던 baseline·brand runtime metadata 회귀
+- dark theme에서 비활성 prompt 위험 버튼의 텍스트 대비가 WCAG 기준 아래로 내려가던 표시
+
+### Validation
+
+- PostgreSQL 18 unit/integration 275건, Chromium PC/mobile 전체 292건, Chromium/Firefox/WebKit 신규 기능 행렬 17건 통과
+- 동일 SHA 개발 서버 네 서비스 health, 공개 revision·계정 ZIP exact Extend 원문과 collaboration 재시작·동일 document key 보존 통과
+
+Known limitations: 실제 Windows/iOS/Android 물리 기기는 이번 후보에서 새로 실행하지 않았고 기존 `OPS-100-001` 외부 backup 예외를 유지한다. Phase 5 최종 CI와 같은 SHA 개발 인수 전에는 정식 릴리스로 보지 않는다.
+
 ## [1.0.5] - 2026-09-10
 
 ### Added
