@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.3"
-current_phase: "../2.Patch-phase/1.0.3/4phase.md"
+current_phase: "../2.Patch-phase/1.0.3/5phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "1.0.3 P4 네 수용 사례와 실패·권한·복구·브라우저·서버 재시작 회귀를 교차 검증한다"
+next_action: "1.0.3 P5 요구 추적·현재 문서·환경 schema·최종 CI와 동일 SHA 개발 인수를 완료한다"
 ```
 
 ## 승인과 기준
@@ -48,12 +48,14 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.3 P1 | complete | mode/raw 저장·구버전 capability·원자 projection·rollback·파일 담당 계약을 설계-only로 확정 |
 | 1.0.3 P2 | complete | mode/raw schema·store·CRDT·복제/검색/내보내기·구버전 차단과 동일 SHA 개발 인수 완료 |
 | 1.0.3 P3 | complete | PC·모바일 mode 선택·문장 raw·명시 변환/undo·revision v1/v2와 동일 SHA 개발 인수 완료 |
+| 1.0.3 P4 | complete | 실제 PostgreSQL·Chromium/Firefox/WebKit·offline/두 탭/구버전/권한·collaboration 재시작과 동일 SHA 개발 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.3/P4 | LC-NF-1.0.3-P4-01~06 | prompt mode 수용·권한·offline/reconnect·server restart·지원 브라우저 회귀 | 1.0.3 P3 동일 SHA 개발 인수 `30dfef7` | 2026-09-10T17:45:00+09:00 | in_progress |
+| Codex | 1.0.3/P5 | LC-NF-1.0.3-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅 문서·환경 schema·최종 CI·개발 인수 | 1.0.3 P4 동일 SHA 개발 인수 `611eab0` | 2026-09-10T18:15:00+09:00 | in_progress |
+| Codex | 1.0.3/P4 | LC-NF-1.0.3-P4-01~06 | prompt mode 수용·권한·offline/reconnect·server restart·지원 브라우저 회귀 | 1.0.3 P3 동일 SHA 개발 인수 `30dfef7` | 2026-09-10T17:45:00+09:00 | complete |
 | Codex | 1.0.3/P3 | LC-NF-1.0.3-P3-01~06 | prompt 신규·편집·목록·템플릿 UI, editor draft/CRDT, PC/mobile E2E | 1.0.3 P2 동일 SHA 개발 인수 `62e3d58` | 2026-09-10T17:10:00+09:00 | complete |
 | Codex | 1.0.3/P2 | LC-NF-1.0.3-P2-01~06 | domain·database·editor·collaboration의 prompt mode/raw·migration·검증 | 1.0.3 P1 계약 `698e2d6` | 2026-09-10T17:00:00+09:00 | complete |
 | Codex | 1.0.3/P1 | LC-NF-1.0.3-P1-01~06 | prompt mode/raw 계약·수용 입력·migration/API/CRDT/capability/rollback 경계 | v1.0.2 release `b4cfd665feb72612122253a26f336e5816bfb28c` | 2026-09-10T16:19:00+09:00 | complete |
@@ -103,3 +105,5 @@ P10 후보 `869e32b8a15c2e1e7524a75ab4d8b4428a925c79`는 원격 CI run `34394222
 1.0.2 P4 후보 `f67cc3a22168a3f7adfd774604b7c877c03a85c3`는 PostgreSQL 18 migration 2회·unit/integration 248건·beta 4건·관리 CLI, Chromium desktop/mobile 전체 267건과 의도적 31 skip, Chromium/Firefox/WebKit 5-project 10건을 통과했다. 네 production image에서 DB·collaboration 재시작과 durable pending projection·중복 ACK·복원·owner-only logout이 PASS였다. 원격 PR #26과 개발 서버 checkout/build metadata가 일치했고 공개 version `1.0.2`, channel `dev`, phase `p4`, schema `0901_beta_signup.sql`, 네 서비스 healthy였다.
 
 1.0.2 P5 후보 `8d55ddc2a5b2383bc7388a248bb7d66f13a5bd0b`는 GitHub Actions run `34436900678`의 전체 verify와 web·collaboration·migrate·worker 개발 image 게시를 통과했다. 원격 PR #27과 개발 서버 checkout·환경 `BUILD_ID`·공개 live/ready가 같은 SHA였고 `1.0.2`, channel `dev`, phase `p5`, schema `0901_beta_signup.sql`, 네 서비스 healthy를 확인했다. `/auth`, production 정적 asset, CSP·private no-store·nosniff가 PASS했고 Docker 정리 뒤 volume과 실행 서비스를 보존했다. P1~P5 후보 인수는 완료됐으며 `main`·`v1.0.2`·정식 image 별칭·릴리스 서버는 별도 현재 go/no-go까지 변경하지 않는다.
+
+1.0.3 P4 구현 후보 `611eab02ccd3ba7279a1627e93d92436876657d7`은 실제 PostgreSQL unit/integration 261건, migration 1000, Chromium 전체 306건 중 274 PASS·의도적 31 skip과 발견 후 보정한 접근성 대비 1건의 재감사 PASS를 통과했다. 새 기능은 Chromium PC/mobile 8건, Firefox 4건, WebKit mobile 4건을 통과했다. 원격 PR #32와 개발 서버 checkout/build metadata가 같은 SHA였고 공개 `1.0.3`, channel `dev`, phase `p4`, schema `1000_prompt_modes.sql`, 네 서비스 healthy였다. 실제 collaboration container 재시작 전후 capability 연결·동일 document 재접속·문장 raw 조회/복제를 확인하고 합성 사용자를 제거했다. P5는 문서·환경 schema·최종 CI와 같은 SHA 개발 인수를 담당하며 1.0.3 main·정식 image·릴리스 서버는 변경하지 않는다.
