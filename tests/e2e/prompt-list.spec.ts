@@ -38,6 +38,10 @@ test.describe("prompt list", () => {
       await page.getByRole("button", { name: "다시 시도" }).click();
       await expect(page.getByText("총 14개")).toBeVisible();
       await page.unroute("**/api/prompts?*");
+      if (testInfo.project.name === "desktop") {
+        await page.getByRole("button", { name: "프롬프트 목록 중간 보기" }).click();
+        await expect(page.getByText("중간 보기로 저장했습니다.")).toBeVisible();
+      }
 
       const cards = page.locator(".prompt-card:not(.skeleton)");
       await expect(cards).toHaveCount(12);

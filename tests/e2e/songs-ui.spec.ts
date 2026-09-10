@@ -55,6 +55,10 @@ test.describe("song list UI", () => {
 
       await page.goto("/songs");
       await expect(page.getByText("총 30곡")).toBeVisible();
+      if (testInfo.project.name === "desktop") {
+        await page.getByRole("button", { name: "곡 목록 중간 보기" }).click();
+        await expect(page.getByText("중간 보기로 저장했습니다.")).toBeVisible();
+      }
       await expect(page.locator(".song-card:not(.skeleton)")).toHaveCount(12);
       const cards = page.locator(".song-card:not(.skeleton)");
       const firstBox = await cards.nth(0).boundingBox();
