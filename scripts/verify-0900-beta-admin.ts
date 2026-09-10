@@ -27,6 +27,11 @@ try {
   await admin.query(`create database "${databaseName}"`);
   migrate();
   const target = new Pool({ connectionString: url.href, max: 8 });
+  let targetClosing = false;
+  let unexpectedTargetError: Error | undefined;
+  target.on("error", (error) => {
+    if (!targetClosing) unexpectedTargetError = error;
+  });
   try {
     const issued = cli(["betacode", "-n", "7"]);
     assert.equal(issued.status, 0, issued.stderr);
@@ -91,7 +96,13 @@ try {
     const wrongKeys = { ...keys, encryptionKey: randomBytes(32) };
     await assert.rejects(listUnusedBetaCodes(target, "test", wrongKeys), /BETA_CODE_DECRYPT_FAILED/);
     await refreshUnusedBetaCodes(target, "test");
-  } finally { await target.end(); }
+    if (unexpectedTargetError) throw unexpectedTargetError;
+  } finally {
+    // DROP DATABASE ... WITH (FORCE) may race with pg-pool's final socket close.
+    // Mark teardown before ending the pool so the expected late socket event is handled.
+    targetClosing = true;
+    await target.end();
+  }
   console.log("0900 beta admin CLI issue/list/refresh, concurrency, bounds and output recovery: OK");
 } finally {
   await admin.query(`drop database if exists "${databaseName}" with (force)`).catch(() => undefined);
