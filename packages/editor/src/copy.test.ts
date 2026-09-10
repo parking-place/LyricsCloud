@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { copySongFormSections, copyWholeLyric } from "./copy.js";
+import { buildLyricCopyPayload, copySongFormSections, copyWholeLyric, LYRIC_COPY_WARNING_LIMIT } from "./copy.js";
 import { parseSongForm } from "./songform.js";
 
 describe("lyric copy contract", () => {
@@ -8,9 +8,9 @@ describe("lyric copy contract", () => {
   });
 
   it("copies one exact tag-inclusive section including blank lines", () => {
-    const body = "머리말\n[Verse]\n첫 줄\n\n둘째 줄\n[Hook]\n후렴";
+    const body = "머리말\n[Verse: whisper]\n첫 줄\n\n둘째 줄\n[Hook]\n후렴";
     const sections = parseSongForm(body);
-    expect(copySongFormSections(body, sections, [sections[0]!.id])).toBe("[Verse]\n첫 줄\n\n둘째 줄\n");
+    expect(copySongFormSections(body, sections, [sections[0]!.id])).toBe("[Verse: whisper]\n첫 줄\n\n둘째 줄\n");
     expect(copySongFormSections(body, sections, [sections[1]!.id])).toBe("[Hook]\n후렴");
   });
 
@@ -30,5 +30,17 @@ describe("lyric copy contract", () => {
   it("returns an empty string when no existing section is selected", () => {
     const body = "[Verse]\n본문";
     expect(copySongFormSections(body, parseSongForm(body), ["missing"])).toBe("");
+  });
+
+  it("counts the final LF payload by Unicode code point and warns only above 3000", () => {
+    expect(LYRIC_COPY_WARNING_LIMIT).toBe(3_000);
+    for (const length of [2_999, 3_000, 3_001]) {
+      expect(buildLyricCopyPayload("가".repeat(length))).toEqual({
+        payload: "가".repeat(length), codePointCount: length, exceedsRecommendedLimit: length > 3_000
+      });
+    }
+    expect(buildLyricCopyPayload("🙂\r\ne\u0301")).toEqual({
+      payload: "🙂\ne\u0301", codePointCount: 4, exceedsRecommendedLimit: false
+    });
   });
 });

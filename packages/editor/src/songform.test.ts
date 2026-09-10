@@ -63,4 +63,33 @@ describe("song-form parser", () => {
     expect(index.sections(withBridge)).toEqual(SongFormIndex.create(withBridge).sections(withBridge));
     expect(index.sections(withBridge).map((section) => section.label)).toEqual(["Verse", "Bridge"]);
   });
+
+  it("uses the first colon for a lossless primary label and subtag projection", () => {
+    const source = " [ Verse : whisper ] \nline\n[Verse: a:b]\nnext";
+    const sections = parseSongForm(source);
+    expect(sections.map(({ label, rawLabel, subtag, occurrence }) => ({ label, rawLabel, subtag, occurrence }))).toEqual([
+      { label: "Verse", rawLabel: " Verse : whisper ", subtag: ": whisper ", occurrence: 1 },
+      { label: "Verse", rawLabel: "Verse: a:b", subtag: ": a:b", occurrence: 2 }
+    ]);
+    expect(source.slice(sections[0]!.subtagFrom!, sections[0]!.subtagTo!)).toBe(": whisper ");
+    expect(source.slice(sections[1]!.subtagFrom!, sections[1]!.subtagTo!)).toBe(": a:b");
+  });
+
+  it("keeps legacy empty-primary labels and stable identity across subtag-only edits", () => {
+    const legacy = parseSongForm("[ :legacy]\nline")[0]!;
+    expect(legacy).toMatchObject({ label: " :legacy", rawLabel: " :legacy", subtag: null, subtagFrom: null, subtagTo: null });
+
+    const before = Text.of("[Verse: whisper]\nline\n[Verse: loud]\nnext".split("\n"));
+    const index = SongFormIndex.create(before);
+    const editAt = before.toString().indexOf("whisper");
+    const changes = ChangeSet.of({ from: editAt, to: editAt + "whisper".length, insert: "속삭임" }, before.length);
+    const after = changes.apply(before);
+    const previous = index.sections(before);
+    const updated = index.update(before, after, changes).sections(after);
+    expect(updated.map(({ label, occurrence }) => ({ label, occurrence }))).toEqual([
+      { label: "Verse", occurrence: 1 }, { label: "Verse", occurrence: 2 }
+    ]);
+    expect(updated[0]!.id).toBe(previous[0]!.id);
+    expect(updated[0]!.subtag).toBe(": 속삭임");
+  });
 });
