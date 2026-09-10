@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
+import { LibraryViewModeSelector, useLibraryViewMode } from "./library-view-mode-selector.js";
 
 const SORTS = ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"] as const;
 const COLORS = [null, "red", "yellow", "green", "blue", "gray"] as const;
@@ -33,6 +34,7 @@ const SORT_LABELS: Record<RhymeSort, string> = {
 const COLOR_LABELS: Record<ResourceColor, string> = { red: "빨강", yellow: "노랑", green: "초록", blue: "파랑", gray: "회색" };
 
 export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery }) {
+  const libraryView = useLibraryViewMode("rhymes");
   const [search, setSearch] = useState(initialQuery.search);
   const [appliedSearch, setAppliedSearch] = useState(initialQuery.search.trim());
   const [tag, setTag] = useState(initialQuery.tag);
@@ -174,12 +176,13 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
       <label className="select-field"><span>정렬</span><select aria-label="라임 노트 정렬" value={sort} onChange={(event) => setSort(event.target.value as RhymeSort)}>{SORTS.map((value) => <option value={value} key={value}>{SORT_LABELS[value]}</option>)}</select></label>
     </div>
     <div className="rhyme-tag-scroll" aria-label="태그 빠른 필터"><button className={!tag ? "active" : ""} aria-pressed={!tag} onClick={() => setTag("")}>전체</button>{filters.tags.map((item) => <button key={item.id} className={tag === item.id ? "active" : ""} aria-pressed={tag === item.id} onClick={() => setTag(item.id)}>#{item.label}</button>)}</div>
+    <LibraryViewModeSelector label="라임 노트 목록" state={libraryView} />
     <div className="list-summary" aria-live="polite"><strong>{loading ? "라임 노트를 불러오는 중" : `총 ${totalCount}개`}</strong><span>{filtered ? "현재 검색 조건" : "내 개인 작업 공간"}</span></div>
     {notice ? <p className="copy-toast" role="status">{notice}</p> : null}
     {error ? <div className="list-error" role="alert"><strong>{error}</strong><button type="button" onClick={() => setRetryKey((value) => value + 1)}>다시 시도</button></div> : null}
-    {loading ? <div className="rhyme-grid" aria-label="라임 노트 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="rhyme-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
+    {loading ? <div className={`rhyme-grid library-grid library-view-${libraryView.viewMode}`} aria-label="라임 노트 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="rhyme-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
     {!loading && !error && notes.length === 0 ? <div className="empty-state rhyme-empty"><span aria-hidden="true">{filtered ? "⌕" : "≈"}</span><h2>{filtered ? "조건에 맞는 라임 노트가 없어요" : "아직 라임 노트가 없어요"}</h2><p>{filtered ? "검색어·태그·연결 곡 조건을 바꿔보세요." : "떠오른 단어나 표현을 짧게라도 남겨보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={clearFilters}>검색 조건 지우기</button> : <a className="primary-link" href="/rhymes/new">첫 라임 노트 만들기</a>}</div> : null}
-    {!loading && notes.length ? <div className="rhyme-grid">{notes.map((note) => <RhymeCard key={note.id} note={note} onToggle={toggle} onColor={cycleColor} onCopy={copy} />)}</div> : null}
+    {!loading && notes.length ? <div className={`rhyme-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{notes.map((note) => <RhymeCard key={note.id} note={note} onToggle={toggle} onColor={cycleColor} onCopy={copy} />)}</div> : null}
     {!loading && notes.length ? <div className="load-more-wrap"><button className="secondary-button load-more" type="button" disabled={!nextCursor || loadingMore} onClick={() => void loadMore()}>{loadingMore ? "불러오는 중…" : nextCursor ? "더 불러오기" : "모든 라임 노트를 불러왔습니다"}</button></div> : null}
     <CopyFeedback state={copyFeedback} />
   </section>;
