@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.4"
-current_phase: "../2.Patch-phase/1.0.4/4phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.0.4/5phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "1.0.4 P4 교차 회귀를 기준으로 P5 요구 추적·현재 문서·최종 CI·동일 SHA 개발 인수를 수행한다"
+next_action: "1.0.4 P5 최종 후보를 push하고 GitHub Actions 전체 CI·네 dev image·동일 SHA 개발 인수를 확인한다"
 ```
 
 ## 승인과 기준
@@ -56,11 +56,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.4 P2 | complete | lossless span parser·공통 final-payload code point/1,000자 안내 builder와 단위·장문 회귀 완료 |
 | 1.0.4 P3 | complete | 목록·편집기·자료 패널의 lossless span·공통 길이/비차단 경고와 PC·모바일 Chromium 수용 흐름 완료 |
 | 1.0.4 P4 | complete | 실제 PostgreSQL 263건·Chromium 279건·5-project 기능 10건과 권한·offline·재접속 회귀 완료 |
+| 1.0.4 P5 | in_progress | 요구 추적·현재 문서·P5 metadata 준비 완료, 최종 CI·동일 SHA 개발 인수 대기 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.4/P5 | LC-NF-1.0.4-P5-01~06 | 요구 추적·현재 문서·검증기·최종 CI·개발 인수·1.0.5 인계 | 1.0.4 P4 `3ed2770` | 2026-09-10T21:10:00+09:00 | in_progress |
 | Codex | 1.0.4/P4 | LC-NF-1.0.4-P4-01~06 | 실제 DB·권한·offline/두 탭·지원 브라우저·restart 회귀 | 1.0.4 P3 `7136897` | 2026-09-10T20:50:00+09:00 | complete |
 | Codex | 1.0.4/P3 | LC-NF-1.0.4-P3-01~06 | web prompt 목록·편집기·자료 패널·copy fallback·PC/mobile E2E | 1.0.4 P2 `c8b18f7` | 2026-09-10T20:35:00+09:00 | complete |
 | Codex | 1.0.4/P2 | LC-NF-1.0.4-P2-01~06 | domain lossless span·prompt copy payload/count/warning·단위/장문 회귀 | 1.0.4 P1 `93a0704` | 2026-09-10T20:08:00+09:00 | complete |

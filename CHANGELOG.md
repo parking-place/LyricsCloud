@@ -2,6 +2,24 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
+## [1.0.4 candidate] - 2026-09-10
+
+### Added
+
+- 문장형 프롬프트를 ASCII 마침표까지 포함하는 lossless 구간으로 표시하고 마지막 미완성 구간도 유지
+- 목록·편집기·가사 자료 패널·수동 복사 대안에 최종 payload의 Unicode code point 수와 1,000자 초과 안내 제공
+
+### Fixed
+
+- 릴리스 브라우저 행렬에서 모바일 프로젝트명을 기본 이름 하나로만 판별하던 1.0.4 E2E 경계
+
+### Validation
+
+- PostgreSQL 18 unit/integration 263건, Chromium PC/mobile 전체 279건, Chromium/Firefox/WebKit 기능 행렬 10건 통과
+- 동일 SHA 개발 서버 네 서비스 health와 collaboration 재시작·동일 문서 재연결·CRLF/emoji 원문 보존 통과
+
+Known limitations: 실제 물리 기기는 이번 후보에서 새로 실행하지 않았고 기존 `OPS-100-001` 외부 backup 예외를 유지한다. 1.0.4는 정식 릴리스하지 않고 1.0.5의 선행 개발 기준으로만 사용한다.
+
 ## [1.0.3] - 2026-09-10
 
 ### Added

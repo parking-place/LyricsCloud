@@ -82,7 +82,7 @@ try {
   const phase6Plan = status.includes('current_phase: "1.0.0/6phase.md"') ? read("0.Plans/1. Dev-phase/1.0.0/6phase.md") : "";
   validateReleasePhase(status, { requireRelease, phase6Plan, phaseCount: currentVersion === "1.0.1" ? 10 : 5 });
 } catch { failures.push("STATUS must identify an allowed historical or current release phase"); }
-for (const marker of ["1.0.3 Phase 5", "1.0.2 release notes", "CHANGELOG.md"]) {
+for (const marker of ["1.0.4 Phase 5", "1.0.3 release notes", "CHANGELOG.md"]) {
   assert(readme.includes(marker), `README release handoff marker missing: ${marker}`);
 }
 assert(runbookIndex.includes("1.0.0-phase5-release.md"), "runbook index missing Phase 5 release handoff");
@@ -103,10 +103,10 @@ assert(currentManifest.releaseVersion === releasedVersion && currentManifest.dat
 const currentReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${releasedVersion}`,
   sha: "b".repeat(40), version: releasedVersion, release: true }).tags;
 for (const tag of [releasedVersion, "Release", "latest", "Release-latest"]) assert(currentReleaseTags.includes(tag), `sealed release tag missing: ${tag}`);
-const currentDevTags = getImagePublication({ eventName: "push", refType: "branch", refName: "phase/1.0.3-p5-prompt-mode-release-handoff",
+const currentDevTags = getImagePublication({ eventName: "push", refType: "branch", refName: "phase/1.0.4-p5-prompt-copy-release-handoff",
   sha: "b".repeat(40), version: currentVersion, release: false }).tags;
 for (const tag of [currentVersion, "1.0.2", releasedVersion, "Release", "latest", "Release-latest"]) assert(!currentDevTags.includes(tag), `P5 dev moves protected tag: ${tag}`);
-for (const marker of ["APP_VERSION: 1.0.3", "APP_PHASE: p5", "test:migration:1000", "test:environment:101"]) {
+for (const marker of ["APP_VERSION: 1.0.4", "APP_PHASE: p5", "test:migration:1000", "test:environment:101"]) {
   assert(workflow.includes(marker), `P5 CI marker missing: ${marker}`);
 }
 for (const marker of ["P5", "P0/P1", "OPS-100-001", "동일 SHA 개발 공개 smoke"]) {

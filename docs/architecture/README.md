@@ -26,3 +26,4 @@
 - [`0.7.0 최근 작업·가사 위치 계약`](./0.7.0-RECENT-WORK-CONTRACT.md)
 - [`0.8.0 템플릿 데이터·적용 계약`](./0.8.0-TEMPLATE-CONTRACT.md)
 - [`1.0.3 프롬프트 mode/raw 후보 추적`](./1.0.3-FINAL-TRACEABILITY.md)
+- [`1.0.4 프롬프트 표시·복사 후보 추적`](./1.0.4-FINAL-TRACEABILITY.md)

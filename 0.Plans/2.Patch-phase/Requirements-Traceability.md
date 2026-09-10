@@ -27,8 +27,8 @@
 | `NF-REQ-019` | GitHub README 최신화·미관 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 승인 로고·실제 기능/설치/스크린샷/CI badge·목차 | 1.0.1 완료 |
 | `NF-REQ-020` | 모든 현재 문서·버전 규칙 최신화 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | major1·다자리minor/patch·과거 이력 보존·새 폴더 | 1.0.1 완료 |
 | `NF-REQ-021` | 모든 10 Phase 인수 후 Private Beta release | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | main은 release 시에만·3 aliases·app.example.test 별도 승인 배포 | 1.0.1 완료 |
-| `NF-REQ-022` | 프롬프트 태그형↔문장형 | [1.0.3](1.0.3/README.md), [1.0.4](1.0.4/README.md), [1.0.12](1.0.12/README.md) | 모드 전환·ASCII . 분할 표시·원문/구두점 보존 | 1.0.3 mode/raw 완료, 전체 요구는 계획됨 |
-| `NF-REQ-023` | 프롬프트 최종 copy 1000자 경고 | [1.0.4](1.0.4/README.md), [1.0.12](1.0.12/README.md) | 두 모드 모두 >1000 advisory, 입력/저장/복사 허용 | 계획됨 |
+| `NF-REQ-022` | 프롬프트 태그형↔문장형 | [1.0.3](1.0.3/README.md), [1.0.4](1.0.4/README.md), [1.0.12](1.0.12/README.md) | 모드 전환·ASCII . 분할 표시·원문/구두점 보존 | 1.0.3 mode/raw·1.0.4 표시 담당 완료, 1.0.12 통합 회귀 예정 |
+| `NF-REQ-023` | 프롬프트 최종 copy 1000자 경고 | [1.0.4](1.0.4/README.md), [1.0.12](1.0.12/README.md) | 두 모드 모두 >1000 advisory, 입력/저장/복사 허용 | 1.0.4 기능 담당 완료, 1.0.12 통합 회귀 예정 |
 | `NF-REQ-024` | 가사 최종 copy 3000자 경고 | [1.0.5](1.0.5/README.md), [1.0.12](1.0.12/README.md) | >3000 advisory, 입력/저장/복사 허용 | 계획됨 |
 | `NF-REQ-025` | [TAG:sub tag] 송폼 | [1.0.5](1.0.5/README.md), [1.0.12](1.0.12/README.md) | TAG 탐색·suffix 덜 강조·copy에는 suffix 유지 | 계획됨 |
 | `NF-REQ-026` | [Extend] metadata 제외 copy | [1.0.6](1.0.6/README.md), [1.0.12](1.0.12/README.md) | 원문에 보관, Suno용 전체 copy에서는 marker만 제외 | 계획됨 |
