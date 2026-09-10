@@ -68,6 +68,7 @@
 - [`1.0.4 Phase 3 프롬프트 표시·복사 UI`](./1.0.4-phase3-prompt-copy-ui.md)
 - [`1.0.4 Phase 4 프롬프트 표시·복사 교차 인수`](./1.0.4-phase4-prompt-copy-acceptance.md)
 - [`1.0.4 Phase 5 최종 후보 인수`](./1.0.4-phase5-final-acceptance.md)
+- [`1.0.5 Phase 4 서브 송폼·가사 복사 교차 인수`](./1.0.5-phase4-sub-songform-copy-acceptance.md)
 - [`0.7.0 Phase 3 최근 작업·위치 복원 검증`](./0.7.0-phase3-validation.md)
 
 ## 개발 서버 운영
