@@ -595,6 +595,16 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .lyric-copy-length { align-self: center; color: var(--subtle); font-size: .62rem; white-space: nowrap; }
 .lyric-copy-length.over { color: var(--danger); }
 .mobile-editor-dock button small { color: var(--subtle); font-size: .52rem; font-weight: 650; }
+.songform-insert-menu { position: fixed; z-index: 65; width: min(18.5rem, calc(100vw - 1rem)); display: grid; grid-template-columns: 1fr auto; gap: .65rem; padding: .8rem; border: 1px solid color-mix(in srgb, var(--acid) 28%, var(--line)); border-radius: .75rem; background: var(--surface-raised); color: var(--ink); box-shadow: 0 22px 60px rgb(0 0 0 / 52%); }
+.songform-insert-menu > div:first-child { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; }
+.songform-insert-menu > div:first-child strong { font-size: .78rem; }
+.songform-insert-menu > div:first-child small { color: var(--subtle); font-size: .57rem; text-align: right; }
+.songform-insert-options { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .35rem; }
+.songform-insert-options button, .songform-insert-menu > button { min-width: 0; min-height: 2.35rem; padding: .4rem .5rem; border: 1px solid var(--line); border-radius: .48rem; background: var(--surface); color: var(--muted); font-size: .65rem; font-weight: 750; cursor: pointer; }
+.songform-insert-options button:hover, .songform-insert-options button:focus-visible { border-color: var(--acid); color: var(--acid); }
+.songform-insert-menu > p { grid-column: 1 / -1; margin: 0; color: var(--subtle); font-size: .6rem; line-height: 1.55; }
+.songform-insert-menu > .songform-raw-copy { color: var(--acid); }
+.songform-insert-menu > .songform-insert-close { background: transparent; }
 .other-lyrics-panel { min-width: 0; display: grid; align-content: start; gap: .75rem; overflow-y: auto; }
 .lyric-metadata, .other-lyrics-list { padding: .8rem; border: 1px solid var(--line); border-radius: .8rem; background: var(--panel); }
 .other-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding-bottom: .6rem; border-bottom: 1px solid var(--line); }
@@ -785,7 +795,7 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 @media (min-width: 721px) and (max-width: 960px) {
   .song-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .song-toolbar .search-field { grid-column: 1 / -1; }
-  .mobile-editor-dock { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .2rem; padding: .3rem; border: 1px solid rgb(200 255 61 / 25%); border-radius: .75rem; background: rgb(26 33 23 / 96%); }
+  .mobile-editor-dock { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .2rem; padding: .3rem; border: 1px solid rgb(200 255 61 / 25%); border-radius: .75rem; background: rgb(26 33 23 / 96%); }
   .mobile-editor-dock button { min-width: 0; min-height: 2.75rem; display: inline-flex; align-items: center; justify-content: center; gap: .25rem; padding: .4rem; border: 0; border-radius: .5rem; background: transparent; color: var(--muted); font-size: .66rem; font-weight: 800; cursor: pointer; }
   .mobile-editor-dock button[aria-expanded="true"], .mobile-editor-dock button[aria-pressed="true"] { background: rgb(200 255 61 / 9%); color: var(--acid); }
   .editor-sheet-backdrop { position: fixed; z-index: 30; inset: 0; display: grid; align-items: end; padding-left: 11.5rem; background: rgb(0 0 0 / 58%); }
@@ -943,7 +953,7 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
   .lyric-editor-surface { height: max(24rem, calc(100dvh - 15.5rem)); border-radius: .65rem; }
   .lyric-editor-surface .cm-content { padding-bottom: calc(7rem + var(--lc-safe-bottom)); }
   .lyric-editor-footer { padding-inline: .35rem; }
-  .mobile-editor-dock { position: fixed; z-index: 12; left: max(.75rem, var(--lc-safe-left)); right: max(.75rem, var(--lc-safe-right)); bottom: calc(4.72rem + var(--lc-safe-bottom)); min-height: 3.1rem; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: .28rem; border: 1px solid rgb(200 255 61 / 25%); border-radius: .75rem; background: rgb(26 33 23 / 96%); box-shadow: 0 10px 30px rgb(0 0 0 / 42%); }
+  .mobile-editor-dock { position: fixed; z-index: 12; left: max(.75rem, var(--lc-safe-left)); right: max(.75rem, var(--lc-safe-right)); bottom: calc(4.72rem + var(--lc-safe-bottom)); min-height: 3.1rem; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); padding: .28rem; border: 1px solid rgb(200 255 61 / 25%); border-radius: .75rem; background: rgb(26 33 23 / 96%); box-shadow: 0 10px 30px rgb(0 0 0 / 42%); }
   .mobile-editor-dock button { min-width: 0; min-height: 2.55rem; display: inline-flex; align-items: center; justify-content: center; gap: .3rem; padding: .4rem; border: 0; border-radius: .5rem; background: transparent; color: var(--muted); font-size: .64rem; font-weight: 800; cursor: pointer; }
   .mobile-editor-dock button[aria-expanded="true"], .mobile-editor-dock button[aria-pressed="true"] { background: rgb(200 255 61 / 9%); color: var(--acid); }
   .editor-sheet-backdrop { position: fixed; z-index: 30; inset: 0 0 calc(4.3rem + var(--lc-safe-bottom)); display: grid; align-items: end; background: rgb(0 0 0 / 58%); }
@@ -1075,8 +1085,9 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .history-feedback { padding: .6rem .8rem; border: 1px solid var(--line); border-radius: .5rem; }
 .history-mobile-toggle { display: none; }
 @media (max-width: 720px) {
-  .mobile-editor-dock { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .mobile-editor-dock { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .mobile-editor-dock button { gap: .1rem; padding: .2rem; }
+  .songform-insert-menu.source-mobile { left: max(.75rem, var(--lc-safe-left)) !important; right: max(.75rem, var(--lc-safe-right)); top: auto !important; bottom: calc(8.35rem + var(--lc-safe-bottom)); width: auto; max-height: calc(100dvh - 10rem); overflow-y: auto; }
   .lyric-history-dialog { width: calc(100vw - 1rem); max-height: 94dvh; padding: .8rem; }
   .lyric-history-dialog h2 { font-size: 1rem; }
   .history-layout { grid-template-columns: minmax(0, 1fr); }

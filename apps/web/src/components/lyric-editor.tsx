@@ -1,11 +1,13 @@
 "use client";
 
 import {
+  buildSongFormInsertion,
   copySongFormSections,
   capturePortableTextSelection,
   createBrowserLyricSync,
   BufferedPositionSaver,
   createCodeMirrorTextEditor,
+  DEFAULT_SONG_FORM_MARKERS,
   parseSongForm,
   SerializedSaveController,
   type CodeMirrorTextEditor,
@@ -14,6 +16,8 @@ import {
   type SaveState,
   type SongFormNavigationState,
   type PortableTextSource,
+  type SongFormInsertMenuRequest,
+  type SongFormMarkerLabel,
   type SongFormSection
 } from "@lyricscloud/editor";
 import {
@@ -81,6 +85,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const rhymeSelectionRangeRef = useRef({ anchor: 0, head: 0 });
   const mobileSongFormButtonRef = useRef<HTMLButtonElement>(null);
   const mobileSongFormDialogRef = useRef<HTMLElement>(null);
+  const songFormInsertMenuRef = useRef<HTMLElement>(null);
   const restoreSongFormFocusRef = useRef(false);
   const [title, setTitle] = useState(initialLyric.title);
   const [memo, setMemo] = useState(initialLyric.memo);
@@ -93,6 +98,12 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const [songForm, setSongForm] = useState<SongFormNavigationState>({ sections: parseSongForm(initialLyric.body), activeSectionId: null });
   const [wholeCopyView, setWholeCopyView] = useState(() => lyricCopyView(initialLyric.body));
   const [mobileSongFormOpen, setMobileSongFormOpen] = useState(false);
+  const [songFormInsertMenu, setSongFormInsertMenu] = useState<{
+    target: CrdtTextSelectionReference;
+    source: "pointer" | "keyboard" | "mobile";
+    clientX: number;
+    clientY: number;
+  } | null>(null);
   const [desktopResourcesOpen, setDesktopResourcesOpen] = useState(true);
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
   const [resourcePanelWidth, setResourcePanelWidth] = useState(296);
@@ -143,6 +154,29 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       if (restoreFocus) requestAnimationFrame(() => mobileSongFormButtonRef.current?.focus());
     };
   }, [mobileSongFormOpen]);
+
+  useEffect(() => {
+    if (!songFormInsertMenu) return;
+    const frame = songFormInsertMenu.source === "pointer" ? null : requestAnimationFrame(() => {
+      songFormInsertMenuRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
+    });
+    function keyboard(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setSongFormInsertMenu(null);
+      requestAnimationFrame(() => editorRef.current?.focus());
+    }
+    function pointer(event: PointerEvent) {
+      if (event.target instanceof Node && !songFormInsertMenuRef.current?.contains(event.target)) setSongFormInsertMenu(null);
+    }
+    document.addEventListener("keydown", keyboard);
+    document.addEventListener("pointerdown", pointer);
+    return () => {
+      if (frame !== null) cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", keyboard);
+      document.removeEventListener("pointerdown", pointer);
+    };
+  }, [songFormInsertMenu]);
 
   function draft(overrides: Partial<LyricEditorDraft> = {}): LyricEditorDraft {
     return {
@@ -212,6 +246,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         setSongForm(navigation);
         queuePosition(navigation);
       },
+      onSongFormInsertMenuRequest(request) { requestSongFormInsertMenu(request); },
       onTransaction(transaction) { localSyncRef.current?.applyLocalTransaction(transaction); }
     });
     editorRef.current = editor;
@@ -455,6 +490,72 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     } finally { setCommandBusy(false); }
   }
 
+  function requestSongFormInsertMenu(request: SongFormInsertMenuRequest | { source: "mobile"; clientX: number; clientY: number }) {
+    const editor = editorRef.current;
+    const sync = localSyncRef.current;
+    if (!editor || !sync) {
+      setCommandNotice("송폼을 삽입할 편집기를 아직 준비하고 있습니다. 잠시 후 다시 시도해 주세요.");
+      return;
+    }
+    if (editor.composing) {
+      setSongFormInsertMenu(null);
+      setCommandNotice("한글 조합을 마친 뒤 송폼 삽입을 다시 열어 주세요. 현재 입력은 그대로 보존됩니다.");
+      return;
+    }
+    const target = sync.captureSelection(editor.selection);
+    if (!target) {
+      setSongFormInsertMenu(null);
+      setCommandNotice("현재 삽입 위치를 보존하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.");
+      return;
+    }
+    setCommandNotice("");
+    setSongFormInsertMenu({
+      target,
+      source: request.source,
+      clientX: Math.max(8, Math.min(request.clientX, window.innerWidth - 300)),
+      clientY: Math.max(8, Math.min(request.clientY, window.innerHeight - 360))
+    });
+  }
+
+  function insertSongForm(label: SongFormMarkerLabel) {
+    const menu = songFormInsertMenu;
+    const editor = editorRef.current;
+    const sync = localSyncRef.current;
+    if (!menu || !editor || !sync) return;
+    if (editor.composing) {
+      setSongFormInsertMenu(null);
+      setCommandNotice("한글 조합을 마친 뒤 다시 삽입해 주세요. 현재 입력은 그대로 보존됩니다.");
+      requestAnimationFrame(() => editor.focus());
+      return;
+    }
+    const resolved = sync.resolveSelection(menu.target);
+    if (!resolved) {
+      setSongFormInsertMenu(null);
+      setCommandNotice("원격 변경 뒤 삽입 위치를 찾지 못했습니다. 가사 원문은 변경하지 않았습니다.");
+      requestAnimationFrame(() => editor.focus());
+      return;
+    }
+    try {
+      const change = buildSongFormInsertion(editor.value, resolved.head, label);
+      const next = `${editor.value.slice(0, change.from)}${change.insert}${editor.value.slice(change.to)}`;
+      if ([...next].length > LYRIC_LIMITS.body) {
+        setSongFormInsertMenu(null);
+        setCommandNotice(`가사 본문은 ${LYRIC_LIMITS.body.toLocaleString()}자를 넘을 수 없습니다. 원문은 변경하지 않았습니다.`);
+        requestAnimationFrame(() => editor.focus());
+        return;
+      }
+      editor.replace(change.from, change.to, change.insert, crypto.randomUUID());
+      setSongFormInsertMenu(null);
+      setCommandNotice("");
+      copyFeedback.showToast(`${label} 송폼을 현재 위치에 삽입했습니다`);
+      requestAnimationFrame(() => editor.focus());
+    } catch {
+      setSongFormInsertMenu(null);
+      setCommandNotice("송폼을 삽입하지 못했습니다. 가사 원문은 변경하지 않았습니다.");
+      requestAnimationFrame(() => editor.focus());
+    }
+  }
+
   async function commitRhymeInsertion(source: PortableTextSource, target: CrdtTextSelectionReference, anchor: number, head: number, requestId: string) {
     const from = Math.min(anchor, head);
     const to = Math.max(anchor, head);
@@ -589,7 +690,14 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   function copyWhole() {
     const view = lyricCopyView(editorRef.current?.value ?? bodyRef.current);
     setWholeCopyView(view);
-    void copyFeedback.copyText(view.payload, "가사 전체", view.feedback("가사를 복사했습니다"), view.warningMessage);
+    void copyFeedback.copyText(view.payload, "가사 전체", view.feedback("Suno용 가사를 복사했습니다. Extend 작업 메모는 제외됩니다."), view.warningMessage);
+  }
+
+  function copyRawLyric() {
+    const raw = editorRef.current?.value ?? bodyRef.current;
+    setSongFormInsertMenu(null);
+    void copyFeedback.copyText(raw, "Extend 포함 원문", "Extend 작업 메모를 포함한 현재 원문을 복사했습니다.");
+    requestAnimationFrame(() => editorRef.current?.focus());
   }
 
   function copySelected() {
@@ -699,7 +807,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
           onClick={toggleResourcePanel}>{desktopResourcesOpen ? "자료 패널 접기" : "자료 패널 펼치기"}</button>
         <button type="button" onClick={() => setHistoryOpen(true)}>버전 비교</button>
         <button type="button" aria-haspopup="dialog" aria-expanded={displaySettingsOpen} onClick={() => setDisplaySettingsOpen(true)}>표시 설정</button>
-        <button type="button" onClick={copyWhole} title="Alt+Shift+C" aria-keyshortcuts="Alt+Shift+C">전체 복사</button>
+        <button type="button" onClick={copyWhole} title="Alt+Shift+C" aria-label="전체 복사" aria-keyshortcuts="Alt+Shift+C">Suno용 복사</button>
         <span className={`lyric-copy-length${wholeCopyView.exceedsRecommendedLimit ? " over" : ""}`}>{wholeCopyView.codePointCount.toLocaleString("ko-KR")}자</span>
         <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} title="Alt+Shift+F" aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 모드 종료" : "집중 모드"}</button>
         <button type="button" disabled={commandBusy} onClick={duplicateCurrent}>복제</button>
@@ -746,13 +854,28 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
             onMemoCompositionStart={() => { memoComposingRef.current = true; }} onMemoCompositionEnd={() => { memoComposingRef.current = false; controllerRef.current?.compositionEnd(); }} /></>} />
     </div>
     <div className="mobile-editor-dock" role="group" aria-label="가사 편집 도구">
+      <button type="button" aria-haspopup="menu" aria-expanded={Boolean(songFormInsertMenu)} onClick={() => requestSongFormInsertMenu({
+        source: "mobile", clientX: window.innerWidth / 2, clientY: window.innerHeight - 360
+      })}>＋ 송폼 삽입</button>
       <button ref={mobileSongFormButtonRef} type="button" aria-haspopup="dialog" aria-expanded={mobileSongFormOpen}
         onClick={() => { restoreSongFormFocusRef.current = false; setMobileSongFormOpen(true); }}>☷ 송폼 <span>{songForm.sections.length}</span></button>
-      <button type="button" onClick={copyWhole} aria-label="전체 복사" aria-keyshortcuts="Alt+Shift+C">⧉ 전체 복사 <small aria-hidden="true">{wholeCopyView.codePointCount.toLocaleString("ko-KR")}자</small></button>
+      <button type="button" onClick={copyWhole} aria-label="전체 복사" aria-keyshortcuts="Alt+Shift+C">⧉ Suno용 <small aria-hidden="true">{wholeCopyView.codePointCount.toLocaleString("ko-KR")}자</small></button>
       <button type="button" aria-haspopup="dialog" aria-expanded={mobileResourcesOpen} onClick={() => setMobileResourcesOpen(true)}>≋ 다른 가사 <span>{songLyrics.length}</span> · 자료</button>
       <button type="button" onClick={() => setHistoryOpen(true)}>기록·비교</button>
       <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 종료" : "집중 모드"}</button>
     </div>
+    {songFormInsertMenu ? <section ref={songFormInsertMenuRef} className={`songform-insert-menu source-${songFormInsertMenu.source}`}
+      role="menu" aria-label="송폼 삽입" style={{ left: songFormInsertMenu.clientX, top: songFormInsertMenu.clientY }}>
+      <div role="presentation"><strong>송폼 삽입</strong><small>{songFormInsertMenu.source === "pointer" ? "브라우저 메뉴를 닫은 뒤 선택하세요" : "현재 커서 기준"}</small></div>
+      <div role="presentation" className="songform-insert-options">{DEFAULT_SONG_FORM_MARKERS.map((item) => <button key={item.label} type="button" role="menuitem"
+        onClick={() => insertSongForm(item.label)}>{item.marker}</button>)}</div>
+      <p role="presentation">Suno용 전체 복사는 `[Extend]` 작업 메모만 제외합니다. 저장 원문과 기록은 그대로 유지됩니다.</p>
+      <button type="button" role="menuitem" className="songform-raw-copy" onClick={copyRawLyric}>Extend 포함 원문 복사</button>
+      <button type="button" role="menuitem" className="songform-insert-close" onClick={() => {
+        setSongFormInsertMenu(null);
+        requestAnimationFrame(() => editorRef.current?.focus());
+      }}>닫기</button>
+    </section> : null}
     {mobileSongFormOpen ? <div className="editor-sheet-backdrop" onPointerDown={(event) => {
       if (event.target === event.currentTarget) { restoreSongFormFocusRef.current = true; setMobileSongFormOpen(false); }
     }}>

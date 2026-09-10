@@ -87,6 +87,8 @@
 | 2026-09-11 1.0.6 P1 완료 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `4411bc1eb74c90a6a1c47f7e3315de2d5ff39edb` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; NF-REQ-026/027의 Extend copy·상대 위치 송폼 삽입 계약만 확정 | 1.0.5 P5 완료·정식 릴리스 준비 push 전 행 |
 | 2026-09-11 1.0.6 P2 구현 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `48eb7c3ef17e9f941c9eac122c01a3edbd68df58` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; Extend Suno payload filter·부분 copy 원문 보존·단일 source 상대 위치 삽입 기반만 구현 | 1.0.6 P1 완료 push 전 행 |
 | 2026-09-11 1.0.6 P2 완료·P3 착수 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `7f87b8af1a5118c2d5eda3a07948e89c1696a215` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P2 unit/check/build·동일 SHA 개발 인수 완료, 기존 P3 메뉴 UI만 착수 | 1.0.6 P2 구현 후보 push 전 행 |
+| 2026-09-11 1.0.6 P3 구현 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `d67963c98d9690b7dd51d73f29823a7537444b79` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P3 우클릭·키보드·모바일 송폼 삽입과 Extend copy 안내 UI만 구현 | 1.0.6 P2 완료·P3 착수 push 전 행 |
+| 2026-09-11 1.0.6 P3 완료·P4 착수 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `4ef7d7f48f43e6259705467bdafbaad68935d4d5` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P3 PC/mobile 메뉴·동일 SHA 공개 인수 완료, 기존 P4 교차 회귀만 착수 | 1.0.6 P3 구현 후보 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
