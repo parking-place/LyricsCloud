@@ -748,7 +748,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     <div className="mobile-editor-dock" role="group" aria-label="가사 편집 도구">
       <button ref={mobileSongFormButtonRef} type="button" aria-haspopup="dialog" aria-expanded={mobileSongFormOpen}
         onClick={() => { restoreSongFormFocusRef.current = false; setMobileSongFormOpen(true); }}>☷ 송폼 <span>{songForm.sections.length}</span></button>
-      <button type="button" onClick={copyWhole} aria-keyshortcuts="Alt+Shift+C">⧉ 전체 복사 <small>{wholeCopyView.codePointCount.toLocaleString("ko-KR")}자</small></button>
+      <button type="button" onClick={copyWhole} aria-label="전체 복사" aria-keyshortcuts="Alt+Shift+C">⧉ 전체 복사 <small aria-hidden="true">{wholeCopyView.codePointCount.toLocaleString("ko-KR")}자</small></button>
       <button type="button" aria-haspopup="dialog" aria-expanded={mobileResourcesOpen} onClick={() => setMobileResourcesOpen(true)}>≋ 다른 가사 <span>{songLyrics.length}</span> · 자료</button>
       <button type="button" onClick={() => setHistoryOpen(true)}>기록·비교</button>
       <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 종료" : "집중 모드"}</button>

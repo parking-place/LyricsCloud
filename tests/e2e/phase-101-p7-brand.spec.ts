@@ -6,9 +6,9 @@ test.describe("1.0.1 P7 brand and build metadata", () => {
     const brand = page.locator(".auth-story .brand");
     await expect(brand).toBeVisible();
     await expect(brand).toHaveAttribute("aria-label", "LyricsCloud");
-    await expect(page.locator("#runtime-build-label")).toHaveText("v1.0.4-p5 dev");
+    await expect(page.locator("#runtime-build-label")).toHaveText("v1.0.5-p4 dev");
     expect(await brand.locator(".brand-build").evaluate((element) => getComputedStyle(element, "::after").content))
-      .toBe('"v1.0.4-p5 dev"');
+      .toBe('"v1.0.5-p4 dev"');
     await expect(brand.locator(".brand-mark-dark")).toBeVisible();
     await expect(brand.locator(".brand-mark-light")).toBeHidden();
     if (testInfo.project.name === "mobile") await expect(page.locator(".auth-card .brand-mark-dark")).toBeHidden();
@@ -17,7 +17,7 @@ test.describe("1.0.1 P7 brand and build metadata", () => {
     const live = await (await page.request.get("/api/health/live")).json() as {
       build: { version: string; channel: string; phase: string | null };
     };
-    expect(`v${live.build.version}-${live.build.phase} ${live.build.channel}`).toBe("v1.0.4-p5 dev");
+    expect(`v${live.build.version}-${live.build.phase} ${live.build.channel}`).toBe("v1.0.5-p4 dev");
 
     await page.emulateMedia({ colorScheme: "light" });
     await page.reload();

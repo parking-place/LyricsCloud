@@ -79,6 +79,39 @@ test.describe("1.0.5 sub-songform and lyric copy guidance", () => {
       await expect(manual.getByRole("textbox", { name: "수동 복사할 가사" })).toHaveValue(body);
     } finally { await removeAccount(owner); }
   });
+
+  test("defers a remote edit during Korean subtag composition and converges without corrupting navigation", async ({ browser, context, page }, info) => {
+    test.skip(!["desktop", "chromium-desktop"].includes(info.project.name), "Chromium desktop composition event coverage");
+    const other = await browser.newContext({ baseURL: origin });
+    const owner = await account([context, other]);
+    const initial = "[Verse: 시작]\n서버 기준";
+    const songId = await createSong(page, "1.0.5 조합 송폼 곡");
+    const lyricId = await createLyric(page, songId, "조합 송폼 가사", initial);
+    const second = await other.newPage();
+    try {
+      await Promise.all([page.goto(`/lyrics/${lyricId}`), second.goto(`/lyrics/${lyricId}`)]);
+      await Promise.all([page.getByText("방금 저장됨", { exact: true }).waitFor(), second.getByText("방금 저장됨", { exact: true }).waitFor()]);
+      const editor = page.locator(".cm-content");
+      await editor.dispatchEvent("compositionstart", { data: "ㅅ" });
+      await editor.fill("[Verse: ㅎ]\n서버 기준");
+      await page.waitForTimeout(150);
+      expect((await (await page.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body).toBe(initial);
+
+      await second.locator(".cm-content").press("Control+End");
+      await second.keyboard.insertText("\n원격 입력");
+      await expect.poll(async () => (await (await second.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body).toContain("원격 입력");
+      await expect(editor).not.toContainText("원격 입력");
+
+      await editor.fill("[Verse: 완성 한글]\n서버 기준");
+      await editor.dispatchEvent("compositionend", { data: "한글" });
+      await expect(editor).toContainText("원격 입력");
+      await expect(second.locator(".cm-content")).toContainText("완성 한글");
+      await expect(page.locator(".cm-songform-subtag")).toHaveText(": 완성 한글");
+      await expect(page.getByRole("complementary", { name: "송폼 목차" }).getByRole("button", { name: "Verse 구간으로 이동" })).toContainText(": 완성 한글");
+      await expect.poll(async () => (await (await page.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body)
+        .toBe("[Verse: 완성 한글]\n서버 기준\n원격 입력");
+    } finally { await other.close(); await removeAccount(owner); }
+  });
 });
 
 async function songFormOutline(page: Page, mobile: boolean) {
@@ -102,14 +135,18 @@ async function copied(page: Page) {
   return page.evaluate(() => (window as typeof window & { copied?: string }).copied ?? "");
 }
 
-async function account(context: BrowserContext): Promise<string> {
+async function account(contextOrContexts: BrowserContext | readonly BrowserContext[]): Promise<string> {
+  const contexts = Array.isArray(contextOrContexts) ? contextOrContexts : [contextOrContexts];
   const userId = randomUUID(); const token = `lyrics-105-${randomUUID()}`;
   await withE2eDatabase(async (pool) => {
     await pool.query("insert into app_users(id,status) values($1,'active')", [userId]);
     await pool.query("insert into user_profiles(owner_id,display_name) values($1,'1.0.5 가사 사용자')", [userId]);
-    await pool.query("insert into auth_sessions(token_hash,user_id,expires_at,absolute_expires_at) values($1,$2,now()+interval '1 hour',now()+interval '2 hours')", [hashToken(token), userId]);
+    for (let index = 0; index < contexts.length; index += 1) {
+      const sessionToken = index === 0 ? token : `${token}-${index}`;
+      await pool.query("insert into auth_sessions(token_hash,user_id,expires_at,absolute_expires_at) values($1,$2,now()+interval '1 hour',now()+interval '2 hours')", [hashToken(sessionToken), userId]);
+      await contexts[index]!.addCookies([{ name: "lc_session", value: sessionToken, url: origin, httpOnly: true, sameSite: "Lax" }]);
+    }
   });
-  await context.addCookies([{ name: "lc_session", value: token, url: origin, httpOnly: true, sameSite: "Lax" }]);
   return userId;
 }
 
