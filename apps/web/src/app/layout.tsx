@@ -25,7 +25,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const runtime = readRuntimeConfig(process.env);
   const buildLabel = formatBuildLabel({ version: runtime.appVersion, channel: runtime.appChannel, phase: runtime.appPhase });
   return <html lang="ko" data-theme-preference={themePreference} style={{ "--lc-build-label": `"${buildLabel}"` } as CSSProperties} suppressHydrationWarning>
-    <head><script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeBootstrap }} /></head>
+    <head><meta name="lyricscloud-build-id" content={runtime.buildId} /><script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeBootstrap }} /></head>
     <body><span id="runtime-build-label" className="sr-only">{buildLabel}</span>{children}</body>
   </html>;
 }

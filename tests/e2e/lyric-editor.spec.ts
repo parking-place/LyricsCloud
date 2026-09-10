@@ -82,9 +82,16 @@ test.describe("CodeMirror lyric editor", () => {
       await page.keyboard.press("ArrowLeft");
       const cursorBeforeRetry = await page.evaluate(() => document.getSelection()?.anchorOffset ?? -1);
       await expect(page.getByText("저장하지 못했습니다")).toBeVisible();
+      await expect(page.locator(".lyric-editor-page")).toHaveAttribute("data-pending-input", "true");
+      expect(await page.evaluate(() => {
+        const event = new Event("beforeunload", { cancelable: true });
+        window.dispatchEvent(event);
+        return event.defaultPrevented;
+      })).toBe(true);
       await expect(editor).toContainText("실패해도 보존할 현재 입력");
       await page.getByRole("button", { name: "다시 시도" }).click();
       await expect(page.getByText("방금 저장됨")).toBeVisible();
+      await expect(page.locator(".lyric-editor-page")).not.toHaveAttribute("data-pending-input", "true");
       await editor.focus();
       expect(await page.evaluate(() => document.getSelection()?.anchorOffset ?? -1)).toBe(cursorBeforeRetry);
       await expect.poll(async () => (await (await page.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body)

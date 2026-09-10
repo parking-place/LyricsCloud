@@ -6,11 +6,15 @@ const root = new URL("../", import.meta.url);
 const sourceWorker = await readFile(new URL("apps/web/public/sw.js", root), "utf8");
 const builtWorker = await readFile(new URL("apps/web/.next/standalone/apps/web/public/sw.js", root), "utf8");
 assert.equal(builtWorker, sourceWorker, "standalone service worker must match the reviewed source");
+assert.match(sourceWorker, /new URL\(self\.location\.href\).*searchParams\.get\("build"\)/s,
+  "service worker cache namespace must read its registered build id");
+assert.doesNotMatch(sourceWorker, /lyricscloud-shell-0\.9\.0-p5-1/,
+  "service worker cache namespace must not stay pinned to an old release");
 
 const listeners = new Map();
 const sandbox = {
   self: {
-    location: { origin: "https://lyrics.example" },
+    location: { origin: "https://lyrics.example", href: "https://lyrics.example/sw.js?build=0123456789abcdef" },
     addEventListener(type, listener) { listeners.set(type, listener); },
     clients: { claim: async () => undefined },
     skipWaiting: async () => undefined

@@ -59,6 +59,15 @@ test.describe("0.9.0 installable online-first PWA", () => {
         await navigator.serviceWorker.ready;
         if (!navigator.serviceWorker.controller) await new Promise<void>((resolve) => navigator.serviceWorker.addEventListener("controllerchange", () => resolve(), { once: true }));
       });
+      const workerBuild = await page.evaluate(async () => {
+        const registration = await navigator.serviceWorker.ready;
+        const script = new URL((registration.active ?? registration.waiting ?? registration.installing)!.scriptURL);
+        return {
+          registered: script.searchParams.get("build"),
+          rendered: document.querySelector<HTMLMetaElement>('meta[name="lyricscloud-build-id"]')?.content ?? null
+        };
+      });
+      expect(workerBuild.registered).toBe(workerBuild.rendered);
       await expect.poll(() => page.evaluate(async ({ databaseName }) => {
         return await new Promise<{ version: number; documents: number; updates: number; schema: number | null }>((resolve, reject) => {
           const open = indexedDB.open(databaseName);

@@ -2,6 +2,7 @@
 
 import { hasOwnerPendingDrafts, migrateOwnerLocalDrafts } from "@lyricscloud/editor";
 import { useEffect, useRef, useState } from "react";
+import { serviceWorkerScriptUrl } from "../lib/update-safety.js";
 
 interface InstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -31,11 +32,18 @@ export function PwaManager({ ownerId }: { ownerId: string }) {
   useEffect(() => {
     const start = () => { composing.current = true; };
     const end = () => { composing.current = false; };
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      if (!memoryPending()) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
     window.addEventListener("compositionstart", start, true);
     window.addEventListener("compositionend", end, true);
+    window.addEventListener("beforeunload", beforeUnload);
     return () => {
       window.removeEventListener("compositionstart", start, true);
       window.removeEventListener("compositionend", end, true);
+      window.removeEventListener("beforeunload", beforeUnload);
     };
   }, []);
 
@@ -78,7 +86,8 @@ export function PwaManager({ ownerId }: { ownerId: string }) {
     };
     navigator.serviceWorker.addEventListener("controllerchange", controllerChanged);
     void migrateOwnerLocalDrafts(ownerId).catch(() => setMessage("로컬 초안 저장소를 준비하지 못했습니다."));
-    void navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" }).then((registration) => {
+    const buildId = document.querySelector<HTMLMetaElement>('meta[name="lyricscloud-build-id"]')?.content || "local";
+    void navigator.serviceWorker.register(serviceWorkerScriptUrl(buildId), { scope: "/", updateViaCache: "none" }).then((registration) => {
       if (!active) return;
       setWaiting(registration.waiting);
       sendStaticAssets(registration.active ?? registration.installing);
