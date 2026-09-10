@@ -12,7 +12,7 @@
 | `PROD-NF-001` | 가입·일회용 코드 동선 | 1.0.1 P1 | Accepted | [결정](../../docs/product/PROD-NF-001-beta-onboarding.md) |
 | `PROD-NF-002` | 원문·mode·송폼·복사 경고 | 1.0.3 P1; 1.0.4~1.0.6 확장 | Accepted through 1.0.6 | [결정](../../docs/product/PROD-NF-002-editor-output.md) |
 | `OPS-NF-001` | 번호·main·정식 별칭 | 1.0.1 P1 | Accepted | [결정](../../docs/operations/OPS-NF-001-version-release.md) |
-| `PROD-NF-003` | 개인 순서·목록 보기 | 1.0.7 P1, 1.0.8 P1, 1.0.9 소비 | Proposed | [결정](../../docs/product/PROD-NF-003-library-order-views.md) |
+| `PROD-NF-003` | 개인 순서·목록 보기 | 1.0.7 P1, 1.0.8 P1, 1.0.9 소비 | Accepted for 1.0.7 views; ordering Proposed | [결정](../../docs/product/PROD-NF-003-library-order-views.md) |
 | `PROD-NF-004` | 모델 표기·복수 작업 링크 | 1.0.10 P1, 1.0.11 소비 | Proposed | [결정](../../docs/product/PROD-NF-004-suno-work-links.md) |
 | `PROD-NF-005` | 공유 수신자와 공개 필드 | 1.1.0 P1, 1.1.1~1.1.3 확장 승인 | Proposed | [결정](../../docs/product/PROD-NF-005-sharing-scope.md) |
 | `PROD-NF-006` | 디자인 승인·점진 적용 | UX P5, 1.1.5~1.1.6 소비 | Proposed | [결정](../../docs/product/PROD-NF-006-ui-transition.md) |
