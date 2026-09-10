@@ -1,6 +1,6 @@
 # 사용자 요구사항 추적표
 
-원래 NF-REQ-001~041을 유지하고 최신 필수 요구를 NF-REQ-042~048로 보강했다. 1.0.1의 NF-REQ-001~020은 [최종 요구 추적](../../docs/architecture/1.0.1-FINAL-TRACEABILITY.md)과 P1~P9 개발 인수로 완료했고, NF-REQ-021은 P10 정식 릴리스 gate를 진행 중이다. 이후 요구는 계획 상태이며 여러 패치가 배정된 요구는 모든 담당 범위가 끝나야 전체 완료로 표시한다.
+원래 NF-REQ-001~041을 유지하고 최신 필수 요구를 NF-REQ-042~048로 보강했다. 1.0.1의 NF-REQ-001~021은 [최종 요구 추적](../../docs/architecture/1.0.1-FINAL-TRACEABILITY.md), P1~P10 개발 인수와 `v1.0.1` 릴리스로 완료했다. 이후 요구는 계획 상태이며 여러 패치가 배정된 요구는 모든 담당 범위가 끝나야 전체 완료로 표시한다.
 
 | ID | 요구 | 담당 버전·설계 | 대표 수용 결과 | 상태 |
 |---|---|---|---|---|
@@ -24,7 +24,7 @@
 | `NF-REQ-018` | 라임/prompt 버튼 옆 버전 제거 | [1.0.1](1.0.1/README.md) | 해당 navigation의 중복/하드코딩 버전 0 | 1.0.1 완료 |
 | `NF-REQ-019` | GitHub README 최신화·미관 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | 승인 로고·실제 기능/설치/스크린샷/CI badge·목차 | 1.0.1 완료 |
 | `NF-REQ-020` | 모든 현재 문서·버전 규칙 최신화 | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | major1·다자리minor/patch·과거 이력 보존·새 폴더 | 1.0.1 완료 |
-| `NF-REQ-021` | 모든 10 Phase 인수 후 Private Beta release | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | main은 release 시에만·3 aliases·app.example.test 별도 승인 배포 | P10 인수 중 |
+| `NF-REQ-021` | 모든 10 Phase 인수 후 Private Beta release | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | main은 release 시에만·3 aliases·app.example.test 별도 승인 배포 | 1.0.1 완료 |
 | `NF-REQ-022` | 프롬프트 태그형↔문장형 | [1.0.3](1.0.3/README.md), [1.0.4](1.0.4/README.md), [1.0.12](1.0.12/README.md) | 모드 전환·ASCII . 분할 표시·원문/구두점 보존 | 계획됨 |
 | `NF-REQ-023` | 프롬프트 최종 copy 1000자 경고 | [1.0.4](1.0.4/README.md), [1.0.12](1.0.12/README.md) | 두 모드 모두 >1000 advisory, 입력/저장/복사 허용 | 계획됨 |
 | `NF-REQ-024` | 가사 최종 copy 3000자 경고 | [1.0.5](1.0.5/README.md), [1.0.12](1.0.12/README.md) | >3000 advisory, 입력/저장/복사 허용 | 계획됨 |
