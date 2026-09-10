@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.6"
-current_phase: "../2.Patch-phase/1.0.6/3phase.md"
+current_phase: "../2.Patch-phase/1.0.6/4phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-11"
-next_action: "1.0.6 P3 우클릭·키보드·모바일 송폼 삽입 UI와 안내를 구현한다"
+next_action: "1.0.6 P4 실제 DB·권한·복구·지원 브라우저 회귀를 수행한다"
 ```
 
 ## 승인과 기준
@@ -68,13 +68,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.5 P5 | complete | Actions `34487251707` 전체 verify·네 dev image·동일 SHA 개발 공개 기능·collaboration 재시작 인수 완료 |
 | 1.0.6 P1 | complete | Extend 원문/전체 copy 분리·상대 위치 송폼 삽입·IME/undo·담당/rollback 계약 확정 |
 | 1.0.6 P2 | complete | Extend Suno payload filter·부분 copy 원문·단일 source marker·CRDT 상대 위치 삽입 기반과 동일 SHA 개발 인수 완료 |
-| 1.0.6 P3 | in progress | 우클릭·키보드·모바일 삽입 메뉴·IME/Escape/undo 사용자 흐름 구현 중 |
+| 1.0.6 P3 | complete | 우클릭·키보드·모바일 삽입 메뉴·Extend 안내/원문 copy·IME/Escape/undo와 동일 SHA 공개 개발 인수 완료 |
+| 1.0.6 P4 | in progress | 실제 DB·권한·export/revision·offline/reconnect·지원 브라우저·restart 회귀 수행 중 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.6/P3 | LC-NF-1.0.6-P3-01~06 | CodeMirror context/key hook·lyric editor PC/mobile 메뉴·안내·E2E | 1.0.6 P2 `7f87b8a` | 2026-09-11T01:00:00+09:00 | in_progress |
+| Codex | 1.0.6/P4 | LC-NF-1.0.6-P4-01~06 | 실제 DB·권한·export/revision·offline/reconnect·지원 브라우저·restart 회귀 | 1.0.6 P3 `4ef7d7f` | 2026-09-11T02:05:00+09:00 | in_progress |
+| Codex | 1.0.6/P3 | LC-NF-1.0.6-P3-01~06 | CodeMirror context/key hook·lyric editor PC/mobile 메뉴·안내·E2E | 1.0.6 P2 `7f87b8a` | 2026-09-11T01:00:00+09:00 | complete |
 | Codex | 1.0.6/P2 | LC-NF-1.0.6-P2-01~06 | editor copy·marker source·CRDT 상대 삽입·단위 회귀 | 1.0.6 P1 / v1.0.5 `4411bc1` | 2026-09-11T00:15:00+09:00 | complete |
 | Codex | 1.0.6/P1 | LC-NF-1.0.6-P1-01~06 | Extend/copy·송폼 삽입 계약·실패 입력·editor/UI/E2E 담당·호환/rollback 경계 | v1.0.5 release `4411bc1` | 2026-09-11T00:00:00+09:00 | complete |
 | Codex | 1.0.5/P5 | LC-NF-1.0.5-P5-01~06 | 요구 추적·현재 문서·환경 schema·검증기·최종 CI·개발/정식 인수 | 1.0.5 P4 `d0ad04d` | 2026-09-10T23:10:00+09:00 | complete |
@@ -154,6 +156,8 @@ P10 후보 `869e32b8a15c2e1e7524a75ab4d8b4428a925c79`는 원격 CI run `34394222
 1.0.5 P2 후보 `6dce2e363155ebd0da578a30c9c8185bf12564d5`는 첫 콜론 주 이름과 lossless suffix/range, 빈 주 이름의 기존 인식, suffix-only 편집의 occurrence/id 안정성, CRLF를 LF로 직렬화한 최종 payload의 Unicode code point 2999/3000/3001 경계를 구현했다. 관련 29건과 전체 unit 186건이 PASS했고 DB 필요 84건은 격리 PostgreSQL 검증으로 분리했다. check·production build·migration 2회가 PASS했으며 원격 PR #40, 개발 서버 checkout/build metadata가 같은 SHA였다. 공개 live/ready는 `1.0.5`, channel `dev`, phase `p2`, schema `1000_prompt_modes.sql`과 네 서비스 healthy를 반환했다. 실제 물리 기기·UI 교차 브라우저는 P3/P4에서 수행한다.
 
 1.0.6 P2 후보 `7f87b8af1a5118c2d5eda3a07948e89c1696a215`는 exact-case Extend 정식 marker 줄만 Suno 전체 payload에서 제외하고 부분/송폼 copy·raw 저장 경로를 분리했다. 기본 송폼 단일 source와 독립 줄 change builder, remote prefix 뒤 Yjs 상대 caret·한 transaction/undo·invalid 무변경을 추가했다. 구현 전 copy 2건과 누락 module suite 실패를 확인한 뒤 관련 19건과 전체 unit 195건이 PASS했고 DB 필요 84건은 후속 실제 PostgreSQL 검증으로 분리했다. boundaries·typecheck·production build가 PASS했으며 원격 PR #45와 개발 서버 checkout/build metadata가 같은 SHA였다. 공개 live/ready는 `1.0.6`, channel `dev`, phase `p2`, schema `1000_prompt_modes.sql`과 네 서비스 healthy를 반환했다. UI·지원 브라우저·실제 IME는 P3/P4에서 수행한다.
+
+1.0.6 P3 후보 `4ef7d7f48f43e6259705467bdafbaad68935d4d5`는 CodeMirror 우클릭·메뉴키/`Shift+F10` 요청과 lyric editor의 공통 상대 selection 삽입 명령, 모바일 보이는 버튼, 양 theme 메뉴, Suno/원문 copy 안내를 연결했다. typecheck·production build·Chromium PC/mobile 신규 흐름 7건이 PASS했고 조건별 3건은 의도적으로 skip됐다. 정상·빈 상태·10만 자 실패·비인증·로딩·remote prefix·IME·Escape·단일 undo·서버 reload를 확인했다. 원격 PR #46과 개발 서버 checkout/build metadata가 같은 SHA였고 공개 다크 PC·라이트 모바일 기능 smoke 뒤 합성 자료를 제거했다. 공개 live/ready는 `1.0.6`, `dev`, `p3`, schema `1000_prompt_modes.sql`, 네 서비스 healthy였다. 전체 DB/export/revision/offline/지원 엔진/restart는 P4에서 수행한다.
 
 1.0.5 P3 후보 `3649d014163c91b8f74d5b30d0460757bc97ab1c`는 CodeMirror 콜론 이후 범위와 desktop/mobile 목차의 suffix를 저강조하고 주 이름의 접근 가능한 탐색·occurrence를 유지했다. 공통 lyric copy view가 최종 LF payload의 3,001자 안내를 자동·단축키·저장 복구·수동 dialog에 연결했다. 관련 unit 16건, check·production build, Chromium PC/mobile 4건이 PASS했고 suffix 편집/undo/reload, 구간·전체 exact copy, clipboard 거부와 비인증 권한 경계를 확인했다. 원격 PR #41과 개발 서버 checkout/build metadata가 같은 SHA였고 공개 합성 smoke에서 suffix 표시·주 이름 탐색·3,001자 exact copy/비차단 경고가 PASS한 뒤 자료를 제거했다. 공개 live/ready는 `1.0.5`, `dev`, `p3`, schema `1000_prompt_modes.sql`, 네 서비스 healthy였다.
 
