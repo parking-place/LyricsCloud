@@ -1,10 +1,15 @@
 "use client";
 
-import { REVISION_REASON_LABELS, type LyricRevision, type RestoreRevisionInput, type RevisionHistory } from "@lyricscloud/domain";
+import { REVISION_REASON_LABELS, type LyricRevision, type PromptMode, type RestoreRevisionInput, type RevisionHistory } from "@lyricscloud/domain";
 import { useEffect, useState } from "react";
 import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 
-interface PromptRevisionValue { readonly title: string; readonly tokens: readonly { readonly displayValue: string }[] }
+interface PromptRevisionValue {
+  readonly title: string;
+  readonly mode: PromptMode;
+  readonly tokens: readonly { readonly displayValue: string }[];
+  readonly sentenceText: string;
+}
 
 export function PromptHistory(props: {
   readonly onClose: () => void;
@@ -39,7 +44,8 @@ export function PromptHistory(props: {
     setBusy(true); setError(""); setNotice("");
     try {
       await props.restore(selection.id, { requestId: crypto.randomUUID(), expectedHash: history.current.hash });
-      const next = await props.readHistory(); setHistory(next); setNotice("제목과 태그를 복원했습니다.");
+      const next = await props.readHistory(); setHistory(next);
+      setNotice(selection.value.mode === "tags" ? "제목과 태그를 복원했습니다." : "제목과 문장 원문을 복원했습니다.");
     } catch { setError("현재 내용이 바뀌었거나 연결할 수 없어 복원하지 못했습니다."); }
     finally { setBusy(false); }
   }
@@ -67,17 +73,20 @@ export function PromptHistory(props: {
 }
 
 function RevisionPane({ title, value }: { title: string; value: PromptRevisionValue | null }) {
-  return <section><h3>{title}</h3>{value ? <><strong>{value.title || "제목 없음"}</strong><p>{value.tokens.map(({ displayValue }) => displayValue).join(", ") || "태그 없음"}</p></> : <p>기록을 선택해 주세요.</p>}</section>;
+  return <section><h3>{title}</h3>{value ? <><strong>{value.title || "제목 없음"} · {value.mode === "tags" ? "태그형" : "문장형"}</strong>
+    <p>{value.mode === "tags" ? value.tokens.map(({ displayValue }) => displayValue).join(", ") || "태그 없음" : value.sentenceText || "문장 없음"}</p></> : <p>기록을 선택해 주세요.</p>}</section>;
 }
 
 function parsePromptRevision(value: string): PromptRevisionValue {
-  const parsed = JSON.parse(value) as { version?: unknown; title?: unknown; tokens?: unknown };
-  if (parsed.version !== 1 || typeof parsed.title !== "string" || !Array.isArray(parsed.tokens)) throw new Error("PROMPT_REVISION_INVALID");
+  const parsed = JSON.parse(value) as { version?: unknown; title?: unknown; mode?: unknown; tokens?: unknown; sentenceText?: unknown };
+  if ((parsed.version !== 1 && parsed.version !== 2) || typeof parsed.title !== "string" || !Array.isArray(parsed.tokens)) throw new Error("PROMPT_REVISION_INVALID");
   const tokens = parsed.tokens.map((item) => {
     if (!item || typeof item !== "object" || typeof (item as { displayValue?: unknown }).displayValue !== "string") throw new Error("PROMPT_REVISION_INVALID");
     return { displayValue: (item as { displayValue: string }).displayValue };
   });
-  return { title: parsed.title, tokens };
+  if (parsed.version === 1) return { title: parsed.title, mode: "tags", tokens, sentenceText: "" };
+  if ((parsed.mode !== "tags" && parsed.mode !== "sentence") || typeof parsed.sentenceText !== "string") throw new Error("PROMPT_REVISION_INVALID");
+  return { title: parsed.title, mode: parsed.mode, tokens, sentenceText: parsed.sentenceText };
 }
 
 function formatDate(value: string) {

@@ -17,7 +17,7 @@ export interface PromptListQuery {
 interface PromptToken { readonly displayValue: string; readonly normalizedValue: string }
 interface LinkedSong { readonly id: string; readonly title: string }
 interface PromptItem {
-  readonly id: string; readonly title: string; readonly tokens: readonly PromptToken[]; readonly plainText: string;
+  readonly id: string; readonly title: string; readonly mode: "tags" | "sentence"; readonly tokens: readonly PromptToken[]; readonly plainText: string;
   readonly isFavorite: boolean; readonly isPinned: boolean; readonly pinOrder: number | null; readonly rowVersion: number;
   readonly linkedSongs: readonly LinkedSong[]; readonly useCount: number; readonly lastUsedAt: string | null;
   readonly createdAt: string; readonly updatedAt: string;
@@ -194,7 +194,7 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   return <section className="prompts-page" aria-labelledby="prompts-title">
     <header className="prompts-heading"><div><p className="eyebrow">Prompt library · Private beta</p><h1 id="prompts-title" tabIndex={-1} data-login-focus>프롬프트</h1><p>자주 쓰는 스타일 조합을 저장하고 Suno에 바로 옮기세요.</p></div><a className="primary-link new-prompt-link" href="/prompts/new">＋ 새 프롬프트</a></header>
     <div className="prompt-toolbar">
-      <label className="search-field"><span className="sr-only">프롬프트 검색</span><span aria-hidden="true">⌕</span><input value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} placeholder="제목, 토큰 또는 연결 곡 검색" type="search" /></label>
+      <label className="search-field"><span className="sr-only">프롬프트 검색</span><span aria-hidden="true">⌕</span><input value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} placeholder="제목, 태그·문장 또는 연결 곡 검색" type="search" /></label>
       <label className="select-field"><span>연결 곡</span><select aria-label="프롬프트 연결 곡 필터" value={song} onChange={(event) => setSong(event.target.value)}><option value="">모든 곡</option>{filters.songs.map((item) => <option value={item.id} key={item.id}>{item.title}</option>)}</select></label>
       <label className="select-field"><span>정렬</span><select aria-label="프롬프트 정렬" value={sort} onChange={(event) => setSort(event.target.value as PromptSort)}>{SORTS.map((value) => <option value={value} key={value}>{SORT_LABELS[value]}</option>)}</select></label>
     </div>
@@ -243,7 +243,7 @@ function PromptCard({ prompt, duplicating, onToggle, onCopy, onDuplicate }: {
       event.preventDefault(); event.stopPropagation();
     }}>
     <a className="prompt-card-hit" href={`/prompts/${prompt.id}`} aria-label={`${prompt.title} 프롬프트 열기`}><span className="sr-only">{prompt.title}</span></a>
-    <div className="prompt-card-top"><h2>{prompt.title}</h2><span className="prompt-card-actions"><button type="button" className={prompt.isPinned ? "is-on" : ""} aria-label={`${prompt.title} ${prompt.isPinned ? "고정 해제" : "고정"}`} aria-pressed={prompt.isPinned} onClick={() => void onToggle(prompt, "isPinned")}>⌁</button><button type="button" className={prompt.isFavorite ? "is-on" : ""} aria-label={`${prompt.title} ${prompt.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"}`} aria-pressed={prompt.isFavorite} onClick={() => void onToggle(prompt, "isFavorite")}>★</button></span></div>
+    <div className="prompt-card-top"><div><span className="prompt-mode-badge">{prompt.mode === "tags" ? "태그형" : "문장형"}</span><h2>{prompt.title}</h2></div><span className="prompt-card-actions"><button type="button" className={prompt.isPinned ? "is-on" : ""} aria-label={`${prompt.title} ${prompt.isPinned ? "고정 해제" : "고정"}`} aria-pressed={prompt.isPinned} onClick={() => void onToggle(prompt, "isPinned")}>⌁</button><button type="button" className={prompt.isFavorite ? "is-on" : ""} aria-label={`${prompt.title} ${prompt.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"}`} aria-pressed={prompt.isFavorite} onClick={() => void onToggle(prompt, "isFavorite")}>★</button></span></div>
     <TokenPreview prompt={prompt} />
     <p className="prompt-copy-hint">모바일에서는 카드를 길게 눌러도 복사할 수 있습니다.</p>
     <div className="prompt-card-buttons"><button type="button" onClick={() => void onCopy(prompt)}>⧉ 복사</button><button type="button" disabled={duplicating} onClick={() => void onDuplicate(prompt)}>{duplicating ? "복제 중…" : "복제"}</button></div>
@@ -252,6 +252,7 @@ function PromptCard({ prompt, duplicating, onToggle, onCopy, onDuplicate }: {
 }
 
 function TokenPreview({ prompt }: { prompt: PromptItem }) {
+  if (prompt.mode === "sentence") return <div className="prompt-token-preview prompt-sentence-preview" aria-label={`${prompt.title} 문장형 원문`}><p>{prompt.plainText || "문장 원문 없음"}</p></div>;
   return <div className="prompt-token-preview">
     <ul className="prompt-tokens desktop-tokens" aria-label={`${prompt.title} 핵심 토큰`}>{prompt.tokens.slice(0, 5).map((token) => <li key={token.normalizedValue}>{token.displayValue}</li>)}{prompt.tokens.length > 5 ? <li>+{prompt.tokens.length - 5}</li> : null}{prompt.tokens.length === 0 ? <li className="is-empty">토큰 없음</li> : null}</ul>
     <ul className="prompt-tokens mobile-tokens" aria-label={`${prompt.title} 핵심 토큰`}>{prompt.tokens.slice(0, 3).map((token) => <li key={token.normalizedValue}>{token.displayValue}</li>)}{prompt.tokens.length > 3 ? <li>+{prompt.tokens.length - 3}</li> : null}{prompt.tokens.length === 0 ? <li className="is-empty">토큰 없음</li> : null}</ul>

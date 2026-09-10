@@ -3,7 +3,7 @@
 import {
   createBrowserPromptSync, type BrowserPromptSync, type LocalSyncState, type PromptEditorSnapshot
 } from "@lyricscloud/editor";
-import { PROMPT_LIMITS, type PromptRecord, type TemplateRecord } from "@lyricscloud/domain";
+import { parsePromptText, PROMPT_LIMITS, type PromptMode, type PromptRecord, type TemplateRecord } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
@@ -13,6 +13,8 @@ import { PromptTokenBuilder } from "./prompt-token-builder.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 
 interface SongCandidate { readonly id: string; readonly title: string; readonly isLinked: boolean }
+interface PromptConversion { readonly target: PromptMode; readonly sourceMode: PromptMode; readonly sourceText: string; readonly preview: string; readonly tokens: readonly string[] }
+interface PromptUndo { readonly mode: PromptMode; readonly tokens: readonly string[]; readonly sentenceText: string }
 
 export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: { ownerId: string; initialPrompt: PromptRecord; returnTo?: string }) {
   const [snapshot, setSnapshot] = useState<PromptEditorSnapshot>({
@@ -24,6 +26,9 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
   const [syncState, setSyncState] = useState<LocalSyncState>("loading");
   const [editable, setEditable] = useState(false);
   const [notice, setNotice] = useState("");
+  const [conversion, setConversion] = useState<PromptConversion | null>(null);
+  const [conversionBusy, setConversionBusy] = useState(false);
+  const [conversionUndo, setConversionUndo] = useState<PromptUndo | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(initialPrompt.isFavorite);
   const [isPinned, setIsPinned] = useState(initialPrompt.isPinned);
@@ -46,6 +51,7 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
   const snapshotRef = useRef(snapshot);
   const syncRef = useRef<BrowserPromptSync | null>(null);
   const composing = useRef(false);
+  const sentenceComposing = useRef(false);
   const duplicateRequest = useRef<string | null>(null);
   const copyFeedback = useCopyFeedback();
   const router = useRouter();
@@ -89,6 +95,7 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
     let sync: BrowserPromptSync | null = null;
     const unregister = registerLogoutSave(async () => {
       finishPromptTitle(sync);
+      finishPromptSentence(sync);
       return sync?.flush() ?? true;
     }, () => ({
       resourceId: initialPrompt.id, title: snapshotRef.current.title, body: snapshotRef.current.plainText
@@ -99,11 +106,11 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
       onStateChange(value) { if (active) setSyncState(value); },
       onEditableChange(value) { if (active) setEditable(value); }
     }).then((created) => { if (!active) void created.destroy(); else { sync = created; syncRef.current = created; } });
-    const onPageHide = () => { finishPromptTitle(sync); void sync?.flush(); sync?.leave(); };
+    const onPageHide = () => { finishPromptTitle(sync); finishPromptSentence(sync); void sync?.flush(); sync?.leave(); };
     window.addEventListener("pagehide", onPageHide);
     return () => {
       active = false; unregister(); window.removeEventListener("pagehide", onPageHide);
-      finishPromptTitle(sync); syncRef.current = null; void sync?.destroy();
+      finishPromptTitle(sync); finishPromptSentence(sync); syncRef.current = null; void sync?.destroy();
     };
   }, [initialPrompt.id, ownerId]);
 
@@ -125,6 +132,7 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
   async function flushBeforeLeave() {
     const sync = syncRef.current;
     finishPromptTitle(sync);
+    finishPromptSentence(sync);
     if (!sync || !await sync.flush()) { setNotice("현재 변경 내용을 먼저 동기화해야 합니다. 연결을 확인해 주세요."); return false; }
     if (!await sync.checkpoint("leave")) { setNotice("이동 전 수정 기록을 저장하지 못했습니다. 연결을 확인해 주세요."); return false; }
     return true;
@@ -154,14 +162,83 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
     if (!composing.current) return;
     const value = snapshotRef.current.title;
     composing.current = false;
-    sync?.setComposing(false);
+    sync?.setComposing(sentenceComposing.current);
     sync?.setTitle(value);
+  }
+
+  function changeSentence(value: string) {
+    const current = snapshotRef.current;
+    const next = { ...current, sentenceText: value, plainText: current.mode === "sentence" ? value : current.plainText };
+    snapshotRef.current = next; setSnapshot(next);
+    if (!sentenceComposing.current) syncRef.current?.setSentenceText(value);
+  }
+
+  function finishPromptSentence(sync = syncRef.current) {
+    if (!sentenceComposing.current) return;
+    const value = snapshotRef.current.sentenceText;
+    sentenceComposing.current = false;
+    sync?.setComposing(composing.current);
+    sync?.setSentenceText(value);
+  }
+
+  function requestMode(target: PromptMode) {
+    if (!editable || target === snapshotRef.current.mode) return;
+    const current = snapshotRef.current;
+    const targetHasContent = target === "tags" ? current.items.length > 0 : current.sentenceText.length > 0;
+    if (targetHasContent || !current.plainText) {
+      syncRef.current?.setMode(target);
+      setConversionUndo(null);
+      setNotice(`${target === "tags" ? "태그형" : "문장형"} 보기를 선택했습니다. 두 원문은 그대로 보존됩니다.`);
+      return;
+    }
+    if (target === "sentence") {
+      setConversion({ target, sourceMode: current.mode, sourceText: current.plainText, preview: current.tagText, tokens: current.items.map(({ displayValue }) => displayValue) });
+      return;
+    }
+    try {
+      const tokens = parsePromptText(current.sentenceText).map(({ displayValue }) => displayValue);
+      setConversion({ target, sourceMode: current.mode, sourceText: current.plainText, preview: tokens.join(", "), tokens });
+    } catch { setNotice("문장을 태그로 변환할 수 없습니다. 각 태그가 200자 이하인지 확인해 주세요."); }
+  }
+
+  async function confirmConversion() {
+    const sync = syncRef.current;
+    const pending = conversion;
+    if (!sync || !pending || conversionBusy) return;
+    setConversionBusy(true); setNotice("");
+    try {
+      if (snapshotRef.current.mode !== pending.sourceMode || snapshotRef.current.plainText !== pending.sourceText) {
+        setConversion(null); setNotice("미리보기 뒤 다른 변경이 반영되어 변환을 취소했습니다. 최신 내용을 다시 확인해 주세요."); return;
+      }
+      if (!await sync.checkpoint("large_paste")) throw new Error();
+      const current = snapshotRef.current;
+      setConversionUndo({ mode: current.mode, tokens: current.items.map(({ displayValue }) => displayValue), sentenceText: current.sentenceText });
+      sync.replaceContent(pending.target,
+        pending.target === "tags" ? pending.tokens : current.items.map(({ displayValue }) => displayValue),
+        pending.target === "sentence" ? pending.preview : current.sentenceText);
+      setConversion(null);
+      setNotice(`${pending.target === "tags" ? "태그형" : "문장형"}으로 변환했습니다. 이전 상태로 되돌릴 수 있습니다.`);
+    } catch { setNotice("변환 전 수정 기록을 저장하지 못했습니다. 원문은 변경하지 않았습니다."); }
+    finally { setConversionBusy(false); }
+  }
+
+  async function undoConversion() {
+    const sync = syncRef.current;
+    const previous = conversionUndo;
+    if (!sync || !previous || conversionBusy) return;
+    setConversionBusy(true);
+    try {
+      if (!await sync.checkpoint("large_paste")) throw new Error();
+      sync.replaceContent(previous.mode, previous.tokens, previous.sentenceText);
+      setConversionUndo(null); setNotice("형식 변환을 취소하고 이전 원문을 복원했습니다.");
+    } catch { setNotice("변환 취소 전 수정 기록을 저장하지 못했습니다. 현재 내용은 유지됩니다."); }
+    finally { setConversionBusy(false); }
   }
 
   async function copyPrompt() {
     const value = snapshotRef.current.plainText;
-    if (!value) { setNotice("복사할 태그를 먼저 추가해 주세요."); return; }
-    if (await copyFeedback.copyText(value, "프롬프트", "쉼표로 정리한 프롬프트를 복사했습니다.") === "manual") return;
+    if (!value) { setNotice(`복사할 ${snapshotRef.current.mode === "tags" ? "태그" : "문장"}를 먼저 입력해 주세요.`); return; }
+    if (await copyFeedback.copyText(value, "프롬프트", snapshotRef.current.mode === "tags" ? "쉼표로 정리한 프롬프트를 복사했습니다." : "문장 원문을 복사했습니다.") === "manual") return;
     try {
       const response = await fetch(`/api/prompts/${initialPrompt.id}/use`, { method: "POST" });
       if (!response.ok) throw new Error();
@@ -170,7 +247,7 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
 
   async function completeManualCopy() {
     try { await fetch(`/api/prompts/${initialPrompt.id}/use`, { method: "POST" }); } catch { /* selection remains the recovery path */ }
-    setNotice("수동으로 복사할 쉼표 문자열을 확인했습니다.");
+    setNotice(snapshotRef.current.mode === "tags" ? "수동으로 복사할 쉼표 문자열을 확인했습니다." : "수동으로 복사할 문장 원문을 확인했습니다.");
   }
 
   async function duplicatePrompt() {
@@ -204,15 +281,24 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
     const sync = syncRef.current;
     if (!sync || !editable) return;
     setTemplateError("");
-    if (snapshotRef.current.items.length + template.tokens.length > PROMPT_LIMITS.tokensPerPrompt) {
+    if (template.promptMode !== snapshotRef.current.mode) {
+      setTemplateError(`이 템플릿은 ${template.promptMode === "tags" ? "태그형" : "문장형"}입니다. 편집기 형식을 먼저 바꾼 뒤 다시 선택해 주세요.`);
+      return;
+    }
+    if (template.promptMode === "tags" && snapshotRef.current.items.length + template.tokens.length > PROMPT_LIMITS.tokensPerPrompt) {
       setTemplateError(`이 템플릿을 추가하면 태그 ${PROMPT_LIMITS.tokensPerPrompt}개 제한을 넘습니다. 일부 태그를 지운 뒤 다시 시도해 주세요.`);
       return;
     }
     try {
       if (!await sync.checkpoint("large_paste")) throw new Error();
-      sync.insertTokens(template.tokens.map(({ displayValue }) => displayValue));
+      if (template.promptMode === "tags") sync.insertTokens(template.tokens.map(({ displayValue }) => displayValue));
+      else {
+        const incoming = template.promptText ?? "";
+        const current = snapshotRef.current.sentenceText;
+        sync.setSentenceText(current && incoming ? `${current}\n${incoming}` : current + incoming);
+      }
       setTemplateOpen(false);
-      setNotice(`‘${template.title}’ 템플릿을 현재 태그 뒤에 추가했습니다. 기존 내용은 보존했습니다.`);
+      setNotice(`‘${template.title}’ 템플릿을 현재 ${template.promptMode === "tags" ? "태그" : "문장"} 뒤에 추가했습니다. 기존 내용은 보존했습니다.`);
     } catch { setTemplateError("템플릿 적용 전 수정 기록을 저장하지 못했습니다. 현재 내용은 변경하지 않았습니다."); }
   }
 
@@ -278,7 +364,7 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
         <button type="button" className="prompt-copy-button" disabled={!editable} onClick={() => void copyPrompt()}>전체 복사</button></div>
       <SyncIndicator state={syncState} onRetry={() => syncRef.current?.retry()} />
     </header>
-    {notice ? <p className="editor-command-notice" role="status">{notice}</p> : null}
+    {notice ? <p className="editor-command-notice" role="status">{notice}{conversionUndo ? <> <button type="button" disabled={conversionBusy || !editable} onClick={() => void undoConversion()}>변환 취소</button></> : null}</p> : null}
     <div className="prompt-editor-title"><label id="prompt-title-label" htmlFor="prompt-title">프롬프트 제목</label>
       <input id="prompt-title" value={snapshot.title} disabled={!editable} aria-invalid={Boolean(titleError)}
         onChange={(event) => changeTitle(event.target.value)}
@@ -287,13 +373,23 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
       <span className={titleLength > PROMPT_LIMITS.title ? "over" : ""}>{titleLength} / {PROMPT_LIMITS.title}</span>
       {titleError ? <small role="alert">{titleError}</small> : null}
     </div>
+    <fieldset className="prompt-mode-selector" disabled={!editable || conversionBusy}><legend>현재 프롬프트 형식</legend>
+      <label><input type="radio" name="prompt-mode" value="tags" checked={snapshot.mode === "tags"} onChange={() => requestMode("tags")} /><span><strong>태그형</strong><small>태그를 쉼표 문자열로 복사</small></span></label>
+      <label><input type="radio" name="prompt-mode" value="sentence" checked={snapshot.mode === "sentence"} onChange={() => requestMode("sentence")} /><span><strong>문장형</strong><small>문장 원문을 그대로 복사</small></span></label>
+    </fieldset>
     <div className="prompt-editor-workspace">
-      <PromptTokenBuilder idPrefix="prompt" items={snapshot.items} disabled={!editable}
+      {snapshot.mode === "tags" ? <PromptTokenBuilder idPrefix="prompt" items={snapshot.items} disabled={!editable}
         onAdd={addTokens} onMove={(id, index) => syncRef.current?.moveToken(id, index)}
-        onRemove={(id) => syncRef.current?.removeToken(id)} onCleanup={cleanup} />
+        onRemove={(id) => syncRef.current?.removeToken(id)} onCleanup={cleanup} /> : <section className="prompt-sentence-card"><header><div><p className="eyebrow">Sentence prompt</p><h2>문장 원문</h2></div><span className={[...snapshot.sentenceText].length > PROMPT_LIMITS.serialized ? "over" : ""}>{[...snapshot.sentenceText].length} / {PROMPT_LIMITS.serialized}</span></header>
+        <label className="sr-only" htmlFor="prompt-sentence">문장형 프롬프트 원문</label><textarea id="prompt-sentence" rows={12} value={snapshot.sentenceText} disabled={!editable}
+          aria-invalid={[...snapshot.sentenceText].length > PROMPT_LIMITS.serialized}
+          onChange={(event) => changeSentence(event.target.value)}
+          onCompositionStart={() => { sentenceComposing.current = true; syncRef.current?.setComposing(true); }}
+          onCompositionEnd={() => finishPromptSentence()} />
+        <p>쉼표·마침표·공백·줄바꿈을 태그로 나누거나 정규화하지 않고 그대로 저장합니다.</p></section>}
       <aside className="prompt-editor-info" aria-label="프롬프트 정보">
-        <section><h2>복사될 내용</h2><p className="prompt-copy-preview">{snapshot.plainText || "태그를 추가하면 쉼표 문자열을 미리 볼 수 있습니다."}</p></section>
-        <section><h2>태그 수</h2><strong>{snapshot.tokens.length}개</strong><p>중복 제외 · {snapshot.readTokens.length}개</p></section>
+        <section><h2>복사될 내용 · {snapshot.mode === "tags" ? "태그형" : "문장형"}</h2><p className="prompt-copy-preview">{snapshot.plainText || (snapshot.mode === "tags" ? "태그를 추가하면 쉼표 문자열을 미리 볼 수 있습니다." : "문장을 입력하면 보이는 원문 그대로 복사됩니다.")}</p></section>
+        <section><h2>{snapshot.mode === "tags" ? "태그 수" : "문장 원문"}</h2>{snapshot.mode === "tags" ? <><strong>{snapshot.tokens.length}개</strong><p>중복 제외 · {snapshot.readTokens.length}개</p></> : <><strong>{[...snapshot.sentenceText].length}자</strong><p>공백·줄바꿈 포함 · 원문 보존</p></>}</section>
         <section className="prompt-song-links"><div className="other-panel-heading"><strong>연결 곡</strong><span>{linkedSongIds.size}개</span></div>
           <label htmlFor="prompt-song-search">곡 검색</label><input id="prompt-song-search" type="search" maxLength={200} value={songSearch} placeholder="곡 제목 검색" onChange={(event) => setSongSearch(event.target.value)} />
           {songLoading ? <p role="status">곡 후보를 불러오는 중…</p> : null}
@@ -303,10 +399,18 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
             <button type="button" aria-pressed={song.isLinked} disabled={songBusyId !== null}
               onClick={() => song.isLinked ? setUnlinkCandidate(song) : void changeSong(song)}>{songBusyId === song.id ? "처리 중…" : song.isLinked ? "연결 해제" : "연결"}</button></li>)}</ul> : null}
         </section>
-        <section className="prompt-template-handoff"><h2>템플릿과 삭제</h2><p>템플릿 태그는 현재 내용 뒤에 추가되며 기존 태그는 보존됩니다. 삭제한 프롬프트는 휴지통에서 복원할 수 있습니다.</p><div className="prompt-template-actions"><button ref={templateButtonRef} type="button" disabled={!editable} onClick={() => void openTemplates()}>템플릿 불러오기</button><button ref={deleteButtonRef} type="button" className="danger-text" disabled={!editable || deleting} onClick={() => setDeleteOpen(true)}>프롬프트 삭제</button></div></section>
-        <section><h2>자동 저장</h2><p>제목과 태그 순서는 이 기기에 먼저 보관되고 같은 계정의 탭·기기에 병합됩니다.</p></section>
+        <section className="prompt-template-handoff"><h2>템플릿과 삭제</h2><p>같은 형식의 템플릿만 현재 내용 뒤에 추가합니다. 삭제한 프롬프트는 휴지통에서 복원할 수 있습니다.</p><div className="prompt-template-actions"><button ref={templateButtonRef} type="button" disabled={!editable} onClick={() => void openTemplates()}>템플릿 불러오기</button><button ref={deleteButtonRef} type="button" className="danger-text" disabled={!editable || deleting} onClick={() => setDeleteOpen(true)}>프롬프트 삭제</button></div></section>
+        <section><h2>자동 저장</h2><p>제목과 {snapshot.mode === "tags" ? "태그 순서" : "문장 원문"}는 이 기기에 먼저 보관되고 같은 계정의 탭·기기에 병합됩니다.</p></section>
       </aside>
     </div>
+    {conversion ? <div className="dialog-backdrop"><section className="delete-dialog prompt-conversion-dialog" role="dialog" aria-modal="true" aria-labelledby="prompt-conversion-title">
+      <DialogFocusBoundary selector=".prompt-conversion-dialog" onClose={() => setConversion(null)} blocked={conversionBusy} />
+      <p className="eyebrow">Explicit conversion</p><h2 id="prompt-conversion-title">{conversion.target === "tags" ? "문장을 태그형으로" : "태그를 문장형으로"} 변환할까요?</h2>
+      <p>현재 원문은 수정 기록과 반대 형식 저장소에 보존됩니다. 아래 미리보기를 확인한 뒤에만 새 형식을 만듭니다.</p>
+      <div className="prompt-conversion-source"><strong>현재 원문</strong><pre>{conversion.sourceText}</pre></div>
+      <div className="prompt-conversion-preview"><strong>변환 미리보기</strong><pre>{conversion.preview}</pre></div>
+      <div><button type="button" className="secondary-button" disabled={conversionBusy} onClick={() => setConversion(null)}>원문 유지</button><button type="button" className="primary-link" disabled={conversionBusy} onClick={() => void confirmConversion()}>{conversionBusy ? "변환 준비 중…" : "확인하고 변환"}</button></div>
+    </section></div> : null}
     {historyOpen ? <PromptHistory onClose={() => setHistoryOpen(false)}
       readHistory={async () => { const sync = syncRef.current; if (!sync || !await sync.flush()) throw new Error(); return sync.listRevisions(); }}
       readRevision={async (id) => { if (!syncRef.current) throw new Error(); return syncRef.current.getRevision(id); }}
@@ -319,10 +423,10 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
     </section></div> : null}
     {templateOpen ? <div className="dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) setTemplateOpen(false); }}><section ref={templateDialogRef} className="prompt-template-dialog" role="dialog" aria-modal="true" aria-labelledby="prompt-template-title">
       <header><div><p className="eyebrow">Append safely</p><h2 id="prompt-template-title">프롬프트 템플릿 불러오기</h2></div><button type="button" onClick={() => setTemplateOpen(false)}>닫기</button></header>
-      <p>선택한 템플릿의 태그를 현재 프롬프트 뒤에 추가합니다. 중복은 표시한 뒤 직접 정리할 수 있습니다.</p>
+      <p>현재 프롬프트와 같은 형식의 템플릿을 뒤에 추가합니다. 다른 형식은 먼저 명시적으로 전환해 주세요.</p>
       {templateLoading ? <p role="status">템플릿을 불러오는 중…</p> : null}
       {templateError ? <p role="alert">{templateError} <button type="button" onClick={() => void openTemplates()}>다시 시도</button></p> : null}
-      {!templateLoading && !templateError && templates.length ? <ul>{templates.map((template) => <li key={template.id}><button type="button" onClick={() => void appendTemplate(template)}><span><strong>{template.title}</strong><small>{template.source === "default" ? "기본 템플릿" : "내 템플릿"} · {template.tokens.length}개 태그</small></span><span aria-hidden="true">＋</span></button></li>)}</ul> : null}
+      {!templateLoading && !templateError && templates.length ? <ul>{templates.map((template) => <li key={template.id}><button type="button" onClick={() => void appendTemplate(template)}><span><strong>{template.title}</strong><small>{template.source === "default" ? "기본 템플릿" : "내 템플릿"} · {template.promptMode === "tags" ? `${template.tokens.length}개 태그` : "문장형 원문"}</small></span><span aria-hidden="true">＋</span></button></li>)}</ul> : null}
       {!templateLoading && !templateError && !templates.length ? <p>사용할 수 있는 프롬프트 템플릿이 없습니다. <a href="/templates?type=prompt">템플릿 관리 열기</a></p> : null}
     </section></div> : null}
     {deleteOpen ? <div className="dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget && !deleting) setDeleteOpen(false); }}><section ref={deleteDialogRef} className="delete-dialog prompt-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="prompt-delete-title">

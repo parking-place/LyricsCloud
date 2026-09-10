@@ -4,7 +4,7 @@ import {
   clearPromptCreationDraft, openPromptCreationDraft, writePromptCreationDraft,
   type CreationDraftLease, type CreationSubmission, type PromptCreationDraft
 } from "@lyricscloud/editor";
-import { findPromptDuplicates, normalizePromptToken, PROMPT_LIMITS, type PromptRecord, type TemplateRecord } from "@lyricscloud/domain";
+import { findPromptDuplicates, normalizePromptToken, PROMPT_LIMITS, type PromptMode, type PromptRecord, type TemplateRecord } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
@@ -14,6 +14,8 @@ import { PromptTokenBuilder, type PromptBuilderItem } from "./prompt-token-build
 export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; templateId?: string }) {
   const [title, setTitle] = useState("");
   const [items, setItems] = useState<readonly PromptBuilderItem[]>([]);
+  const [promptMode, setPromptMode] = useState<PromptMode>("tags");
+  const [sentenceText, setSentenceText] = useState("");
   const [ready, setReady] = useState(false);
   const [online, setOnline] = useState(true);
   const [state, setState] = useState<"local" | "saving" | "creating" | "error">("local");
@@ -28,6 +30,8 @@ export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; temp
   const writes = useRef<Promise<void>>(Promise.resolve());
   const titleRef = useRef("");
   const itemsRef = useRef<readonly PromptBuilderItem[]>([]);
+  const modeRef = useRef<PromptMode>("tags");
+  const sentenceRef = useRef("");
   const dirtySince = useRef<number | null>(null);
   const selectedTemplate = useRef<string | null>(templateId ?? null);
   const leaseRef = useRef<CreationDraftLease<PromptCreationDraft> | null>(null);
@@ -36,13 +40,14 @@ export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; temp
   const activeRef = useRef(true);
   const abortRef = useRef<AbortController | null>(null);
   const router = useRouter();
-  const duplicates = useMemo(() => findPromptDuplicates(items.map(({ displayValue }) => normalizePromptToken(displayValue))), [items]);
+  const duplicates = useMemo(() => promptMode === "tags" ? findPromptDuplicates(items.map(({ displayValue }) => normalizePromptToken(displayValue))) : [], [items, promptMode]);
 
   function isValid() {
     const titleLength = [...titleRef.current.trim()].length;
     return titleLength > 0 && titleLength <= PROMPT_LIMITS.title
-      && itemsRef.current.length <= PROMPT_LIMITS.tokensPerPrompt
-      && findPromptDuplicates(itemsRef.current.map(({ displayValue }) => normalizePromptToken(displayValue))).length === 0;
+      && (modeRef.current === "sentence" ? [...sentenceRef.current].length <= PROMPT_LIMITS.serialized
+        : itemsRef.current.length <= PROMPT_LIMITS.tokensPerPrompt
+          && findPromptDuplicates(itemsRef.current.map(({ displayValue }) => normalizePromptToken(displayValue))).length === 0);
   }
 
   async function createNow(): Promise<boolean> {
@@ -53,11 +58,16 @@ export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; temp
     const pending = (async () => {
       setState("creating");
       try {
+        const promptBody = modeRef.current === "sentence"
+          ? { requestId: requestId.current, title: titleRef.current, mode: modeRef.current, sentenceText: sentenceRef.current,
+              isFavorite: false, isPinned: false, pinOrder: null, color: null }
+          : { requestId: requestId.current, title: titleRef.current, mode: modeRef.current,
+              tokens: itemsRef.current.map(({ displayValue }) => displayValue),
+              isFavorite: false, isPinned: false, pinOrder: null, color: null };
         submissionRef.current ??= {
           url: selectedTemplate.current ? `/api/templates/${selectedTemplate.current}/apply` : "/api/prompts",
           body: JSON.stringify(selectedTemplate.current ? { requestId: requestId.current, targetType: "prompt", title: titleRef.current }
-            : { requestId: requestId.current, title: titleRef.current,
-              tokens: itemsRef.current.map(({ displayValue }) => displayValue), isFavorite: false, isPinned: false, pinOrder: null, color: null })
+            : promptBody)
         };
         await persistDraft();
         if (abandonedRef.current || !activeRef.current) return false;
@@ -96,22 +106,26 @@ export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; temp
       requestId.current = draft?.requestId ?? crypto.randomUUID();
       titleRef.current = draft?.title ?? "";
       itemsRef.current = (draft?.tokens ?? []).map((displayValue) => ({ occurrenceId: crypto.randomUUID(), displayValue }));
+      modeRef.current = draft?.mode ?? "tags";
+      sentenceRef.current = draft?.sentenceText ?? "";
       if (templateId && !draft) {
         const response = await fetch(`/api/templates/${templateId}`, { cache: "no-store" });
         const result = await response.json().catch(() => ({})) as { template?: TemplateRecord };
         if (!response.ok || result.template?.type !== "prompt") throw new Error("TEMPLATE_UNAVAILABLE");
         titleRef.current ||= `${result.template.title} 작업`;
         itemsRef.current = result.template.tokens.map(({ displayValue }) => ({ occurrenceId: crypto.randomUUID(), displayValue }));
+        modeRef.current = result.template.promptMode;
+        sentenceRef.current = result.template.promptText ?? "";
       }
       if (!active) return;
-      if (titleRef.current || itemsRef.current.length) dirtySince.current = Date.now();
-      setTitle(titleRef.current); setItems(itemsRef.current); setReady(true);
+      if (titleRef.current || itemsRef.current.length || sentenceRef.current || modeRef.current !== "tags") dirtySince.current = Date.now();
+      setTitle(titleRef.current); setItems(itemsRef.current); setPromptMode(modeRef.current); setSentenceText(sentenceRef.current); setReady(true);
     }).catch(() => { if (active) {
       // A failed lookup must not overwrite a durable draft with initial state.
       setState("error");
     } });
     const unregister = registerLogoutSave(createNow, () => ({ resourceId: requestId.current || "new-prompt", title: titleRef.current,
-      body: itemsRef.current.map(({ displayValue }) => displayValue).join(", ") }));
+      body: modeRef.current === "sentence" ? sentenceRef.current : itemsRef.current.map(({ displayValue }) => displayValue).join(", ") }));
     setOnline(navigator.onLine);
     const onOnline = () => { setOnline(true); if (isValid()) void createNow(); };
     const onOffline = () => setOnline(false);
@@ -132,12 +146,13 @@ export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; temp
     const since = dirtySince.current ?? Date.now(); dirtySince.current = since;
     const timer = window.setTimeout(() => void createNow(), Math.min(900, Math.max(0, 5_000 - (Date.now() - since))));
     return () => window.clearTimeout(timer);
-  }, [items, ownerId, ready, title, cancelOpen, composing]);
+  }, [items, ownerId, promptMode, ready, sentenceText, title, cancelOpen, composing]);
 
   function persistDraft() {
     const key = leaseRef.current?.key;
     if (!key) return Promise.reject(new Error("DRAFT_NOT_READY"));
-    const draft = { requestId: requestId.current, title: titleRef.current, tokens: itemsRef.current.map(({ displayValue }) => displayValue),
+    const draft = { requestId: requestId.current, title: titleRef.current, mode: modeRef.current, sentenceText: sentenceRef.current,
+      tokens: itemsRef.current.map(({ displayValue }) => displayValue),
       sourceTemplateId: templateId, selectedTemplateId: selectedTemplate.current, submission: submissionRef.current, updatedAt: new Date().toISOString() };
     const pending = writes.current.catch(() => undefined).then(() => {
       if (!abandonedRef.current) return writePromptCreationDraft(ownerId, draft, key);
@@ -148,6 +163,13 @@ export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; temp
 
   function updateTitle(value: string) { dirtySince.current ??= Date.now(); setState("saving"); titleRef.current = value; setTitle(value); }
   function updateItems(next: readonly PromptBuilderItem[]) { dirtySince.current ??= Date.now(); selectedTemplate.current = null; setState("saving"); itemsRef.current = next; setItems(next); }
+  function updateMode(value: PromptMode) { dirtySince.current ??= Date.now(); selectedTemplate.current = null; submissionRef.current = undefined; modeRef.current = value; setPromptMode(value); setState("saving"); }
+  function updateSentence(value: string, confirmed = !composingRef.current) {
+    setSentenceText(value);
+    if (!confirmed) return;
+    dirtySince.current ??= Date.now(); selectedTemplate.current = null; submissionRef.current = undefined;
+    sentenceRef.current = value; setState("saving");
+  }
   async function discard() {
     abandonedRef.current = true; abortRef.current?.abort();
     await writes.current.catch(() => undefined);
@@ -155,7 +177,7 @@ export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; temp
     catch { abandonedRef.current = false; setState("error"); setCancelOpen(false); return; }
     router.push("/prompts");
   }
-  function cancel() { if (titleRef.current || itemsRef.current.length) setCancelOpen(true); else void discard(); }
+  function cancel() { if (titleRef.current || itemsRef.current.length || sentenceRef.current || modeRef.current !== "tags") setCancelOpen(true); else void discard(); }
 
   const titleLength = [...title.trim()].length;
   const titleError = ready && !title.trim() ? "제목을 입력하면 프롬프트가 자동으로 생성됩니다."
@@ -165,7 +187,8 @@ export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; temp
     : !online ? "오프라인 · 이 기기에 임시 저장됨" : duplicates.length ? "중복 정리 전 이 기기에 임시 저장됨"
     : "이 기기에 임시 저장됨 · 유효한 제목을 입력하면 자동 저장됩니다";
 
-  return <section className="prompt-editor-page" aria-labelledby="new-prompt-title" data-pending-input={Boolean(title || items.length)}
+  const sentenceLength = [...sentenceText].length;
+  return <section className="prompt-editor-page" aria-labelledby="new-prompt-title" data-pending-input={Boolean(title || items.length || sentenceText)}
     onCompositionStart={() => { composingRef.current = true; setComposing(true); }} onCompositionEnd={() => { composingRef.current = false; setComposing(false); }}>
     <header className="prompt-editor-header"><div><button type="button" className="back-button" onClick={cancel}>← 프롬프트</button><p className="eyebrow">{templateId ? "New prompt · Template copy" : "New prompt"}</p></div>
       <button type="button" className="secondary-button" onClick={cancel}>취소</button>
@@ -179,8 +202,12 @@ export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; temp
       <span className={titleLength > PROMPT_LIMITS.title ? "over" : ""}>{titleLength} / {PROMPT_LIMITS.title}</span>
       {titleError ? <small role={titleLength > PROMPT_LIMITS.title ? "alert" : "status"}>{titleError}</small> : null}
     </div>
+    <fieldset className="prompt-mode-selector" disabled={!ready || state === "creating" || Boolean(submissionRef.current)}><legend>프롬프트 형식</legend>
+      <label><input type="radio" name="new-prompt-mode" value="tags" checked={promptMode === "tags"} onChange={() => updateMode("tags")} /><span><strong>태그형</strong><small>장르·분위기를 태그로 정리</small></span></label>
+      <label><input type="radio" name="new-prompt-mode" value="sentence" checked={promptMode === "sentence"} onChange={() => updateMode("sentence")} /><span><strong>문장형</strong><small>쉼표와 줄바꿈을 원문 그대로 저장</small></span></label>
+    </fieldset>
     <div className="prompt-editor-workspace">
-      <PromptTokenBuilder idPrefix="new-prompt" items={items} disabled={!ready || state === "creating" || Boolean(submissionRef.current)}
+      {promptMode === "tags" ? <PromptTokenBuilder idPrefix="new-prompt" items={items} disabled={!ready || state === "creating" || Boolean(submissionRef.current)}
         onAdd={(values) => updateItems([...itemsRef.current, ...values.map((displayValue) => ({ occurrenceId: crypto.randomUUID(), displayValue }))])}
         onMove={(id, targetIndex) => {
           const next = [...itemsRef.current]; const currentIndex = next.findIndex(({ occurrenceId }) => occurrenceId === id);
@@ -190,15 +217,23 @@ export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; temp
         onRemove={(id) => updateItems(itemsRef.current.filter(({ occurrenceId }) => occurrenceId !== id))}
         onCleanup={() => { const seen = new Set<string>(); updateItems(itemsRef.current.filter(({ displayValue }) => {
           const key = normalizePromptToken(displayValue).normalizedValue; if (seen.has(key)) return false; seen.add(key); return true;
-        })); }} />
+        })); }} /> : <section className="prompt-sentence-card"><header><div><p className="eyebrow">Sentence prompt</p><h2>문장 원문</h2></div><span className={sentenceLength > PROMPT_LIMITS.serialized ? "over" : ""}>{sentenceLength} / {PROMPT_LIMITS.serialized}</span></header>
+        <label className="sr-only" htmlFor="new-prompt-sentence">문장형 프롬프트 원문</label><textarea id="new-prompt-sentence" rows={12}
+          disabled={!ready || state === "creating" || Boolean(submissionRef.current)} value={sentenceText}
+          placeholder="예: A warm, cinematic track with a restrained verse.\nKeep the chorus wide and emotional."
+          aria-invalid={sentenceLength > PROMPT_LIMITS.serialized}
+          onChange={(event) => updateSentence(event.target.value)}
+          onCompositionStart={() => { composingRef.current = true; setComposing(true); }}
+          onCompositionEnd={(event) => { sentenceRef.current = event.currentTarget.value; dirtySince.current ??= Date.now(); selectedTemplate.current = null; setState("saving"); composingRef.current = false; setComposing(false); }} />
+        <p>쉼표, 마침표, 공백과 줄바꿈을 태그로 분해하거나 다듬지 않습니다.</p></section>}
       <aside className="prompt-editor-info" aria-label="새 프롬프트 안내"><h2>자동 저장</h2>
-        <p>제목과 태그 초안은 계정별로 이 기기에 먼저 보관됩니다. 중복이 없고 제목이 유효하면 서버 문서로 전환됩니다.</p>
-        <h2>태그 순서</h2><p>현재 보이는 순서가 최종 쉼표 문자열의 순서입니다. 손잡이를 끌거나 선택한 태그의 앞으로·뒤로 버튼과 방향키로 이동할 수 있습니다.</p>
+        <p>제목과 {promptMode === "tags" ? "태그" : "문장 원문"} 초안은 계정별로 이 기기에 먼저 보관됩니다. 제목이 유효하면 서버 문서로 전환됩니다.</p>
+        <h2>{promptMode === "tags" ? "태그 순서" : "원문 보존"}</h2><p>{promptMode === "tags" ? "현재 보이는 순서가 최종 쉼표 문자열의 순서입니다. 손잡이나 키보드로 순서를 바꿀 수 있습니다." : "문장형은 보이는 원문을 그대로 저장하고 복사합니다. 형식을 바꾸는 동작은 생성 후 편집 화면에서 따로 확인합니다."}</p>
       </aside>
     </div>
     {cancelOpen ? <div className="dialog-backdrop"><section className="delete-dialog new-prompt-cancel-dialog" role="dialog" aria-modal="true" aria-labelledby="new-prompt-cancel-title">
       <DialogFocusBoundary selector=".new-prompt-cancel-dialog" onClose={() => setCancelOpen(false)} />
-      <h2 id="new-prompt-cancel-title">새 프롬프트 작성을 취소할까요?</h2><p>이 기기에 저장된 제목과 태그 초안도 함께 지워집니다.</p><div>
+      <h2 id="new-prompt-cancel-title">새 프롬프트 작성을 취소할까요?</h2><p>이 기기에 저장된 제목과 {promptMode === "tags" ? "태그" : "문장 원문"} 초안도 함께 지워집니다.</p><div>
         <button type="button" className="secondary-button" onClick={() => setCancelOpen(false)}>계속 작성</button>
         <button type="button" className="danger-button" onClick={() => void discard()}>초안 삭제 후 나가기</button>
       </div></section></div> : null}
