@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.7"
-current_phase: "../2.Patch-phase/1.0.7/1phase.md"
+current_phase: "../2.Patch-phase/1.0.7/2phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-11"
-next_action: "1.0.7 P1 계약을 소비해 P2의 별도 보기 설정 저장소·API와 실패 우선 검증을 구현한다"
+next_action: "1.0.7 P2 완료 SHA를 동일 개발 환경에 인수한 뒤 P3 목록 UI를 구현한다"
 ```
 
 ## 승인과 기준
@@ -72,11 +72,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.6 P4 | complete | PostgreSQL 275건·Chromium 292건·5-project 신규 17건과 exact export/revision·권한·offline·재시작 동일 SHA 개발 인수 완료 |
 | 1.0.6 P5 | complete | Actions `34511266182` 전체 verify·네 dev image·동일 SHA 공개 revision/export/restart 인수 완료 |
 | 1.0.7 P1 | complete | owner+자료유형 별도 보기 설정·독립 CAS·필터/순서 불변·좁은 화면 접근성 계약 확정 |
+| 1.0.7 P2 | complete | 단위 200건·실제 PostgreSQL 5건·1001 migration/RLS/rollback·동일 SHA 공개 설정 API 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.7/P2 | LC-NF-1.0.7-P2-01~06 | domain contract·1001 migration/RLS·store/API·runtime metadata·DB/단위 회귀 | 1.0.7 P1 `ff25d13` | 2026-09-11T05:24:00+09:00 | complete |
 | Codex | 1.0.7/P1 | LC-NF-1.0.7-P1-01~06 | 보기 설정 계약·실패 입력·domain/database/web 담당·호환/rollback 경계 | v1.0.6 release `f314768` | 2026-09-11T05:21:03+09:00 | complete |
 | Codex | 1.0.6/P5 | LC-NF-1.0.6-P5-01~06 | 요구 추적·현재 문서·환경 schema·검증기·최종 CI·개발/정식 인수 | 1.0.6 P4 `0d19330` | 2026-09-11T02:43:00+09:00 | complete |
 | Codex | 1.0.6/P4 | LC-NF-1.0.6-P4-01~06 | 실제 DB·권한·export/revision·offline/reconnect·지원 브라우저·restart 회귀 | 1.0.6 P3 `4ef7d7f` | 2026-09-11T02:05:00+09:00 | complete |

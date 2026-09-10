@@ -16,6 +16,7 @@ export * from "./recent-work-contract.js";
 export * from "./saved-resource-contract.js";
 export * from "./template-contract.js";
 export * from "./display-settings-contract.js";
+export * from "./library-view-settings-contract.js";
 export * from "./shortcut-contract.js";
 export * from "./lifecycle-contract.js";
 export * from "./export-contract.js";

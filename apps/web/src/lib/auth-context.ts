@@ -1,6 +1,6 @@
 import { AuthService, cookieNames, GoogleOidcAdapter, readCookie, sessionCookie, tokenHash } from "@lyricscloud/auth";
 import { readAuthConfig, readBetaSignupConfig, readRuntimeConfig, type AuthConfig } from "@lyricscloud/config";
-import { PostgresAuthStore, PostgresBetaSignupStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLifecycleStore, PostgresExportStore, type PendingWithdrawalSession } from "@lyricscloud/database";
+import { PostgresAuthStore, PostgresBetaSignupStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLibraryViewSettingsStore, PostgresLifecycleStore, PostgresExportStore, type PendingWithdrawalSession } from "@lyricscloud/database";
 
 interface AuthContext {
   readonly config: AuthConfig;
@@ -16,6 +16,7 @@ interface AuthContext {
   readonly savedResources: PostgresSavedResourceStore;
   readonly templates: PostgresTemplateStore;
   readonly displaySettings: PostgresDisplaySettingsStore;
+  readonly libraryViewSettings: PostgresLibraryViewSettingsStore;
   readonly lifecycle: PostgresLifecycleStore;
   readonly exports: PostgresExportStore;
 }
@@ -51,6 +52,7 @@ export function getAuthContext(): AuthContext {
     savedResources: new PostgresSavedResourceStore(runtime.databaseUrl),
     templates: new PostgresTemplateStore(runtime.databaseUrl),
     displaySettings: new PostgresDisplaySettingsStore(runtime.databaseUrl),
+    libraryViewSettings: new PostgresLibraryViewSettingsStore(runtime.databaseUrl),
     lifecycle: new PostgresLifecycleStore(runtime.databaseUrl),
     exports: new PostgresExportStore(runtime.databaseUrl)
   };

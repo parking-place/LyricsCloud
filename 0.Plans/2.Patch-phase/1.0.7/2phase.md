@@ -1,6 +1,6 @@
 # 1.0.7 Phase 2 — 핵심 기반·저장과 서버
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`, 2026-09-11)
 - 단계 목적: 목록 보기 선택·밀도 설정의 핵심 기반·저장과 서버을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -39,12 +39,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.0.7-P2-01` 구현 전 `1.0.7` 수용 사례의 실패 테스트를 작성한다. 제안 위치는 `tests/new-feature/1.0.7.contract.test.ts`이며 runner 포함 여부를 확인한 뒤 실패 이유를 기록한다.
-- [ ] `LC-NF-1.0.7-P2-02` 서버 설정 또는 승인된 계정 저장소에 viewMode/density와 기본값을 저장한다.
-- [ ] `LC-NF-1.0.7-P2-03` 설정 버전 충돌 시 다른 기기의 무관한 설정을 덮어쓰지 않는다.
-- [ ] `LC-NF-1.0.7-P2-04` 페이징·검색 query는 그대로 유지하며 보기 전환 때문에 결과를 재정렬하지 않는다.
-- [ ] `LC-NF-1.0.7-P2-05` 카드 key/자료 ID를 안정화해 보기 전환으로 편집 초안·선택 상태가 초기화되지 않게 한다.
-- [ ] `LC-NF-1.0.7-P2-06` 추가 schema가 있으면 실제 테스트 DB의 빈 설치·이전 schema 업그레이드·권한·되돌림을 검사한다. 원인 수정 후 동일 실패 테스트와 기존 관련 회귀를 다시 실행한다.
+- [x] `LC-NF-1.0.7-P2-01` `tests/new-feature/1.0.7.contract.test.ts`와 runner include를 추가하고 미구현 함수로 3건 실패를 확인한 뒤 구현 후 PASS했다.
+- [x] `LC-NF-1.0.7-P2-02` 별도 `library_view_settings`에 owner+유형별 mode/default/row version을 저장하고 인증 GET/PUT을 구현했다.
+- [x] `LC-NF-1.0.7-P2-03` 보기 CAS를 `user_settings`와 분리하고 실제 PostgreSQL 및 공개 API에서 글꼴 동시 저장과 stale 409를 확인했다.
+- [x] `LC-NF-1.0.7-P2-04` `withLibraryViewMode`가 item/query identity와 cursor/선택/scroll을 유지하고 mode만 바꾸는 단위 fixture를 통과했다.
+- [x] `LC-NF-1.0.7-P2-05` P3가 mode state만 변경하고 기존 자료 ID key/배열을 그대로 소비할 수 있는 불변 contract를 고정했다. 실제 목록 UI 재마운트 검증은 P3/P4 책임으로 남겼다.
+- [x] `LC-NF-1.0.7-P2-06` PostgreSQL 18에서 1001 빈 설치·반복·제약·강제 RLS·rollback 후 재적용과 owner/CAS integration을 통과했다.
 
 ## 구체적 검증
 
@@ -63,12 +63,12 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드·실행 증거와 후보 SHA `b37f3101551fc2147698aa064f7bd3bd831bbf64`가 [P2 인수 기록](../../../docs/runbooks/1.0.7-phase2-library-view-store.md)에 연결되어 있다.
+- [x] 자료 원문 불변·owner/RLS·CAS 복구·400/403/409 오류를 정상 저장과 함께 검증했다.
+- [x] 미실행 목록 UI/browser/실기기 검증과 중간 CI `[skip ci]`를 숨김없이 기록했다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 로컬/DB 검증, 원격 branch/PR, 후보와 동일 SHA 개발 migration·공개 API 인수를 갖췄다. 최종 P2 문서 SHA 인수는 이 commit push 후 갱신한다.
+- [x] P2에서 main·Release·릴리스 서버를 변경하지 않았다.
 
 ## 산출물
 
@@ -79,3 +79,5 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 ## 다음 Phase 인계
 
 [1.0.7 P3](3phase.md)에 입력·실행 결과·호환 및 중단 조건을 넘긴다. 다음 단계의 승인이 없거나 선행 증거가 부족하면 자동 진행하지 않는다. 문서 작성으로 runtime version을 바꾸지 않는다.
+
+P3는 공통 mode selector/client hook을 만들어 songs/rhymes/prompts의 기존 item ID key와 query/load-more 상태를 유지한 채 class만 전환한다. 저장 실패 rollback·409 최신값 재조회·양 테마·PC/mobile 접근성을 browser에서 확인한다.
