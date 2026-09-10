@@ -7,10 +7,12 @@ state: "complete"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "별도 1.0.3 release go/no-go 전까지 main·tag·정식 image·릴리스 서버를 변경하지 않는다"
+next_action: "승인된 1.0.3 정식 릴리스를 완료한 뒤 의존 순서대로 1.0.4 P1~P5와 1.0.5 P1~P5·정식 릴리스를 실행한다"
 ```
 
 ## 승인과 기준
+
+2026-09-10 사용자가 선행 릴리스와 1.0.5 Phase 5까지의 실행 및 후속 정식 릴리스를 명시적으로 승인했다. 현재 선행 릴리스는 완료된 1.0.3 P1~P5를 main·annotated tag·정식 image·릴리스 서버에 반영하는 범위이며, 이후 1.0.5의 명시적 의존성인 1.0.4 P1~P5를 먼저 완료하고 1.0.5 P1~P5와 최종 릴리스를 수행한다. 기존 DB volume·secret과 `OPS-100-001` 위험 예외를 보존한다.
 
 2026-09-10 사용자가 1.0.2 정식 릴리스 배포와 그 완료 뒤 1.0.3 P1~P5 실행을 명시적으로 승인했다. 1.0.2의 현재 승인 범위는 main 병합·annotated tag·정식 Docker image·릴리스 서버 migrate/배포/공개 smoke이며, 기존 DB volume·secret과 `OPS-100-001` 위험 예외를 보존한다.
 

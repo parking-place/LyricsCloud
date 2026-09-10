@@ -11,7 +11,7 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 개인 창작용 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합과 온라인 우선 PWA를 지원한다.
 
-현재 소스는 `1.0.3` 프롬프트 모드 후보이며 P1~P5 전체 CI·동일 SHA 개발 인수를 완료했다. 현재 정식 운영 버전은 `v1.0.2`다.
+현재 소스는 `1.0.3` 프롬프트 표현 모드이며 P1~P5 전체 CI·동일 SHA 개발 인수를 완료했고 정식 릴리스 실행이 승인됐다. 현재 운영 버전은 배포 완료 전까지 `v1.0.2`다.
 
 ## 주요 기능
 
@@ -31,13 +31,13 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 | 항목 | 상태 |
 |---|---|
 | 소스·runtime version | `1.0.3` |
-| 현재 작업 | [1.0.3 Phase 5 — 문서·개발 인수·후속 연결](<./0.Plans/2.Patch-phase/1.0.3/5phase.md>) |
+| 현재 작업 | [1.0.3 Phase 5 — 정식 릴리스 실행](<./0.Plans/2.Patch-phase/1.0.3/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
-| 정식 릴리스 | 현재 `v1.0.2` ([1.0.2 release notes](./docs/releases/1.0.2.md)) |
+| 정식 릴리스 | `v1.0.3` 승인·실행 중 ([1.0.3 release notes](./docs/releases/1.0.3.md)); 배포 완료 전 운영은 `v1.0.2` |
 | 개발 인수 | 1.0.3 mode/raw·원자 변환·구버전 차단·복구 P1~P5, 전체 CI·네 dev image·동일 SHA 공개 HTTPS PASS |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
-1.0.2 Phase 5 후보는 가입 응답 유실·저장/PWA 복구를 포함한 전체 CI·동일 SHA 개발 인수 뒤 정식 릴리스됐다. 1.0.3은 개발 후보이며 P5 완료만으로 main·tag·정식 image 별칭·릴리스 서버를 변경하지 않는다.
+1.0.2 Phase 5 후보는 가입 응답 유실·저장/PWA 복구를 포함한 전체 CI·동일 SHA 개발 인수 뒤 정식 릴리스됐다. 1.0.3 Phase 5 후보도 원문 보존·capability 차단을 검증했고, 현재 사용자 승인에 따라 main·annotated tag·정식 image·릴리스 서버 반영을 순서대로 실행한다.
 
 ## 화면
 
@@ -95,7 +95,7 @@ LyricsCloud betacode refresh
 | 인증·베타 운영자 | [Google OAuth](./docs/runbooks/google-oauth-setup.md), [초대 코드 CLI](./docs/runbooks/1.0.1-phase2-beta-admin.md), [HMAC allowlist](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md) |
 | 복구·배포 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md), [개발 배포](./docs/runbooks/development-deploy.md), [Docker Hub 발행](./docs/runbooks/dockerhub-publish.md) |
 | 보안·장애 담당자 | [Security policy](./SECURITY.md), [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
-| 릴리스 검토자 | [1.0.1 release notes](./docs/releases/1.0.1.md), [1.0.2 release notes](./docs/releases/1.0.2.md), [1.0.3 후보 추적](./docs/architecture/1.0.3-FINAL-TRACEABILITY.md), [CHANGELOG](./CHANGELOG.md) |
+| 릴리스 검토자 | [1.0.2 release notes](./docs/releases/1.0.2.md), [1.0.3 release notes](./docs/releases/1.0.3.md), [1.0.3 추적](./docs/architecture/1.0.3-FINAL-TRACEABILITY.md), [CHANGELOG](./CHANGELOG.md) |
 | 기여자 | [Agent 지침](./Agent.md), [후속 계획](./0.Plans/2.Patch-phase/README.md), [ADR 색인](./docs/adr/README.md) |
 
 ## 저장소 구조

@@ -2,7 +2,7 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
-## [1.0.3 candidate] - 2026-09-10
+## [1.0.3] - 2026-09-10
 
 ### Added
 
@@ -22,7 +22,7 @@
 - 동일 SHA 개발 서버의 네 서비스 health, 공개 HTTPS, 실제 collaboration 재시작 전후 raw 조회·복제·재연결 통과
 - GitHub Actions 전체 migration·unit/integration·production image·backup/restore·취약점/secret·브라우저 행렬과 네 개발 image 게시/서명 통과
 
-Phase 5 최종 CI와 같은 SHA 개발 인수를 통과했다. 별도 승인 없는 1.0.3 main·tag·정식 image·릴리스 서버 배포는 수행하지 않는다. `OPS-100-001` 외부 backup 예외는 계속 유지한다.
+Phase 5 최종 CI와 같은 SHA 개발 인수를 통과했고 사용자가 정식 릴리스를 승인했다. 정식 main·image·릴리스 서버 결과는 annotated tag와 GitHub Release에 고정한다. `OPS-100-001` 외부 backup 예외는 계속 유지한다.
 
 ## [1.0.2] - 2026-09-10
 
