@@ -51,6 +51,7 @@
 | 2026-09-10 1.0.1 P10 브라우저 메타데이터 보완 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `c018a52c4c323cde7095dd2693ee87086c5bc902` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P10 runtime phase 기대값과 고정 viewport 시각 기준만 보완 | 1.0.1 P10 후보 push 전 행 |
 | 2026-09-10 1.0.1 P10 모바일 레이아웃 게이트 보완 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `61beea9aecd2d09bd560f415a5e258ce8f25772f` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; Linux 글꼴 비결정 픽셀 비교를 컨트롤 경계·세로 배치·overflow 검증으로 대체 | 1.0.1 P10 브라우저 메타데이터 보완 push 전 행 |
 | 2026-09-10 1.0.1 P10 완료·release 실행 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `869e32b8a15c2e1e7524a75ab4d8b4428a925c79` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P10 전체 CI·동일 SHA 개발 공개 인수 완료, 승인된 main/tag/운영 release 실행만 진행 | 1.0.1 P10 모바일 레이아웃 게이트 보완 push 전 행 |
+| 2026-09-10 1.0.2 P1 완료 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `194dc4217e5a45e9e55c82c43e30afffcb5e1984` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 1.0.2 안정화의 가입·저장·PWA 회귀 범위만 고정 | 1.0.1 P10 완료·release 실행 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
