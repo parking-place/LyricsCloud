@@ -98,7 +98,9 @@ export const rhymeNoteCreateRequests = pgTable("rhyme_note_create_requests", {
 export const prompts = pgTable("prompts", {
   resourceId: uuid("resource_id").primaryKey(),
   ownerId: uuid("owner_id").notNull(),
+  mode: text("mode").$type<"tags" | "sentence">().notNull().default("tags"),
   plainText: text("plain_text").notNull().default(""),
+  sentenceText: text("sentence_text"),
   searchText: text("search_text")
 });
 
@@ -189,6 +191,8 @@ export const templates = pgTable("templates", {
   title: text("title").notNull(),
   lyricBody: text("lyric_body"),
   promptTokens: text("prompt_tokens").array(),
+  promptMode: text("prompt_mode").$type<"tags" | "sentence">().notNull().default("tags"),
+  promptText: text("prompt_text"),
   rowVersion: bigint("row_version", { mode: "number" }).notNull().default(1),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

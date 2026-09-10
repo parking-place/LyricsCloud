@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.3"
-current_phase: "../2.Patch-phase/1.0.3/1phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.0.3/2phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "1.0.3 P1 설계 인수를 기준으로 P2 core mode/raw schema·store·CRDT를 구현한다"
+next_action: "1.0.3 P2 mode/raw schema·store·CRDT와 실제 PostgreSQL 회귀를 완료한다"
 ```
 
 ## 승인과 기준
@@ -51,6 +51,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.3/P2 | LC-NF-1.0.3-P2-01~06 | domain·database·editor·collaboration의 prompt mode/raw·migration·검증 | 1.0.3 P1 계약 `698e2d6` | 2026-09-10T17:00:00+09:00 | in_progress |
 | Codex | 1.0.3/P1 | LC-NF-1.0.3-P1-01~06 | prompt mode/raw 계약·수용 입력·migration/API/CRDT/capability/rollback 경계 | v1.0.2 release `b4cfd665feb72612122253a26f336e5816bfb28c` | 2026-09-10T16:19:00+09:00 | complete |
 | Codex | 1.0.2/P5 | LC-NF-1.0.2-P5-01~06 | 요구 추적·현재 문서·최종 CI·동일 SHA 개발 인수·후속 연결 | P4 동일 SHA 개발 인수 | 2026-09-10T13:07:30+09:00 | complete |
 | Codex | 1.0.2/P4 | LC-NF-1.0.2-P4-01~06 | 가입 응답 유실·저장/PWA·계정·재접속·서버 재시작 교차 회귀 | P3 동일 SHA 개발 인수 | 2026-09-10T12:42:00+09:00 | complete |

@@ -54,6 +54,15 @@ describe.runIf(enabled)("unified private search", () => {
     }
   });
 
+  it("searches a sentence representation while returning its active raw preview", async () => {
+    const [alice] = users as [string, string];
+    const raw = "  Cinematic, not tags.\r\n한  문장 needle 🙂  ";
+    const id = await seedPrompt(alice, "문장 검색", "dormant tag", raw);
+    expect((await store!.search(alice, input("한 문장 needle", "prompt"))).items).toContainEqual(expect.objectContaining({
+      id, matchField: "body", preview: " Cinematic, not tags. 한 문장 needle 🙂 "
+    }));
+  });
+
   it("excludes deleted resources through title, tag and body paths", async () => {
     const [alice] = users as [string, string];
     const parent = await seedSong(alice, "삭제 검색 부모");
@@ -168,13 +177,14 @@ async function seedRhyme(ownerId: string, title: string, body: string, tag?: str
   finally { client.release(); }
 }
 
-async function seedPrompt(ownerId: string, title: string, plainText: string): Promise<string> {
+async function seedPrompt(ownerId: string, title: string, plainText: string, sentenceText?: string): Promise<string> {
   const id = randomUUID();
   const client = await rootPool!.connect();
   try {
     await client.query("begin");
     await client.query("insert into resources(id,owner_id,type,title) values($1,$2,'prompt',$3)", [id, ownerId, title]);
-    await client.query("insert into prompts(resource_id,owner_id,plain_text) values($1,$2,$3)", [id, ownerId, plainText]);
+    await client.query("insert into prompts(resource_id,owner_id,mode,plain_text,sentence_text) values($1,$2,$3,$4,$5)",
+      [id, ownerId, sentenceText === undefined ? "tags" : "sentence", plainText, sentenceText ?? null]);
     await client.query("commit");
     return id;
   } catch (error) { await client.query("rollback"); throw error; }

@@ -5,8 +5,11 @@ const id = "11111111-1111-4111-8111-111111111111";
 
 describe("template contract", () => {
   it("preserves lyric text and ordered unique prompt display tokens", () => {
-    expect(parseCreateTemplateInput({ requestId: id, type: "lyrics", title: " 구조 ", lyricBody: "<b>[Hook]</b>\n그대로" })).toMatchObject({ title: "구조", lyricBody: "<b>[Hook]</b>\n그대로", tokens: [] });
-    expect(parseCreateTemplateInput({ requestId: id, type: "prompt", title: "태그", tokens: ["Dream Pop", "ＤＲＥＡＭ pop", "Female Vocal"] })).toMatchObject({ lyricBody: null, tokens: [{ displayValue: "Dream Pop" }, { displayValue: "Female Vocal" }] });
+    expect(parseCreateTemplateInput({ requestId: id, type: "lyrics", title: " 구조 ", lyricBody: "<b>[Hook]</b>\n그대로" })).toMatchObject({ title: "구조", lyricBody: "<b>[Hook]</b>\n그대로", promptMode: "tags", promptText: null, tokens: [] });
+    expect(parseCreateTemplateInput({ requestId: id, type: "prompt", title: "태그", tokens: ["Dream Pop", "ＤＲＥＡＭ pop", "Female Vocal"] })).toMatchObject({ lyricBody: null, promptMode: "tags", promptText: null, tokens: [{ displayValue: "Dream Pop" }, { displayValue: "Female Vocal" }] });
+    const raw = "  cinematic, with commas.\r\n한  문장  ";
+    expect(parseCreateTemplateInput({ requestId: id, type: "prompt", title: "문장", promptMode: "sentence", promptText: raw }))
+      .toMatchObject({ lyricBody: null, promptMode: "sentence", promptText: raw, tokens: [] });
   });
 
   it("rejects crossed payloads and crossed apply types", () => {

@@ -10,6 +10,9 @@ export const PROMPT_LIMITS = {
   serialized: 40_398
 } as const;
 
+export const PROMPT_MODES = ["tags", "sentence"] as const;
+export type PromptMode = (typeof PROMPT_MODES)[number];
+
 export const PROMPT_SORTS = ["favorite_first", "recent_used", "updated_desc", "created_desc", "created_asc", "title_asc"] as const;
 export type PromptSort = (typeof PROMPT_SORTS)[number];
 export const PROMPT_LIST_LIMITS = { default: 20, maximum: 50 } as const;
@@ -49,6 +52,12 @@ export interface PromptRecord {
   readonly id: string;
   readonly title: string;
   readonly tokens: readonly PromptTokenValue[];
+  readonly mode: PromptMode;
+  /** The preserved tag representation, regardless of the active mode. */
+  readonly tagText: string;
+  /** The preserved sentence representation. Raw whitespace and punctuation are significant. */
+  readonly sentenceText: string | null;
+  /** The active representation used by copy/export/list previews. */
   readonly plainText: string;
   readonly isFavorite: boolean;
   readonly isPinned: boolean;
@@ -65,7 +74,9 @@ export interface PromptRecord {
 export interface CreatePromptInput {
   readonly requestId: string;
   readonly title: string;
+  readonly mode: PromptMode;
   readonly tokens: readonly PromptTokenValue[];
+  readonly sentenceText: string | null;
   readonly isFavorite: boolean;
   readonly isPinned: boolean;
   readonly pinOrder: number | null;
@@ -76,7 +87,9 @@ export interface UpdatePromptInput {
   readonly requestId: string;
   readonly rowVersion: number;
   readonly title?: string;
+  readonly mode?: PromptMode;
   readonly tokens?: readonly PromptTokenValue[];
+  readonly sentenceText?: string;
   readonly isFavorite?: boolean;
   readonly isPinned?: boolean;
   readonly pinOrder?: number | null;
@@ -91,7 +104,7 @@ export class PromptValidationError extends Error {
 }
 
 export class PromptConflictError extends Error {
-  constructor(readonly code: "VERSION_CONFLICT" | "REQUEST_REUSED" = "VERSION_CONFLICT") {
+  constructor(readonly code: "VERSION_CONFLICT" | "REQUEST_REUSED" | "MODE_CONFLICT" = "VERSION_CONFLICT") {
     super(code);
     this.name = "PromptConflictError";
   }
@@ -120,6 +133,23 @@ export function serializePromptTokens(tokens: readonly Pick<PromptTokenValue, "d
   const serialized = validated.map((token) => token.displayValue).join(", ");
   if ([...serialized].length > PROMPT_LIMITS.serialized) fail("tokens", "too_long");
   return serialized;
+}
+
+/** Validates sentence content without normalizing, trimming, parsing, or changing line endings. */
+export function validatePromptSentenceText(value: unknown): string {
+  if (typeof value !== "string") fail("sentenceText", "string_required");
+  if (value.includes("\u0000") || hasUnpairedSurrogate(value)) fail("sentenceText", "invalid_text");
+  if ([...value].length > PROMPT_LIMITS.serialized) fail("sentenceText", "too_long");
+  return value;
+}
+
+export function serializePromptContent(
+  mode: PromptMode,
+  tokens: readonly Pick<PromptTokenValue, "displayValue">[],
+  sentenceText: string | null
+): string {
+  if (mode === "tags") return serializePromptTokens(tokens);
+  return validatePromptSentenceText(sentenceText);
 }
 
 export function findPromptDuplicates(tokens: readonly PromptTokenValue[]): readonly PromptDuplicate[] {
@@ -153,11 +183,17 @@ export function projectUniquePromptTokens(tokens: readonly PromptTokenValue[]): 
 export function parseCreatePromptInput(value: unknown): CreatePromptInput {
   const input = object(value);
   if (!isResourceId(input.requestId)) fail("requestId", "uuid_required");
+  const mode = promptMode(input.mode ?? "tags");
+  if (mode === "tags" && "sentenceText" in input && input.sentenceText !== null) fail("sentenceText", "payload_mismatch");
+  if (mode === "sentence" && "tokens" in input && (!Array.isArray(input.tokens) || input.tokens.length > 0)) fail("tokens", "payload_mismatch");
+  if (mode === "sentence" && !("sentenceText" in input)) fail("sentenceText", "required");
   const pinned = booleanValue(input.isPinned ?? false, "isPinned");
   return {
     requestId: input.requestId as string,
     title: title(input.title),
-    tokens: tokens(input.tokens ?? []),
+    mode,
+    tokens: mode === "tags" ? tokens(input.tokens ?? []) : [],
+    sentenceText: mode === "sentence" ? validatePromptSentenceText(input.sentenceText) : null,
     isFavorite: booleanValue(input.isFavorite ?? false, "isFavorite"),
     isPinned: pinned,
     pinOrder: parsePinOrder(input.pinOrder, pinned),
@@ -169,12 +205,14 @@ export function parseUpdatePromptInput(value: unknown): UpdatePromptInput {
   const input = object(value);
   if (!isResourceId(input.requestId)) fail("requestId", "uuid_required");
   if (!Number.isSafeInteger(input.rowVersion) || Number(input.rowVersion) < 1) fail("rowVersion", "positive_integer_required");
-  const result: { requestId: string; rowVersion: number; title?: string; tokens?: readonly PromptTokenValue[];
+  const result: { requestId: string; rowVersion: number; title?: string; mode?: PromptMode; tokens?: readonly PromptTokenValue[]; sentenceText?: string;
     isFavorite?: boolean; isPinned?: boolean; pinOrder?: number | null; color?: ResourceColor | null } = {
     requestId: input.requestId as string, rowVersion: Number(input.rowVersion)
   };
   if ("title" in input) result.title = title(input.title);
+  if ("mode" in input) result.mode = promptMode(input.mode);
   if ("tokens" in input) result.tokens = tokens(input.tokens);
+  if ("sentenceText" in input) result.sentenceText = validatePromptSentenceText(input.sentenceText);
   if ("isFavorite" in input) result.isFavorite = booleanValue(input.isFavorite, "isFavorite");
   if ("color" in input) result.color = parseColor(input.color);
   if ("isPinned" in input) {
@@ -183,6 +221,11 @@ export function parseUpdatePromptInput(value: unknown): UpdatePromptInput {
   } else if ("pinOrder" in input) fail("isPinned", "required");
   if (Object.keys(result).length === 2) fail("body", "at_least_one_field");
   return result;
+}
+
+function promptMode(value: unknown): PromptMode {
+  if (!PROMPT_MODES.includes(value as PromptMode)) fail("mode", "unsupported_value");
+  return value as PromptMode;
 }
 
 export function parsePromptRequestId(value: unknown): string {

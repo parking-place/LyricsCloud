@@ -3,13 +3,13 @@ import {
   isResourceId, normalizePromptToken, parseCreatePromptInput, parseUpdatePromptInput,
   projectUniquePromptTokens, serializePromptTokens, PromptConflictError,
   type CreatePromptInput, type PromptListInput, type PromptRecord, type PromptSort,
-  type PromptTokenValue, type ResourceColor, type UpdatePromptInput
+  type PromptMode, type PromptTokenValue, type ResourceColor, type UpdatePromptInput
 } from "@lyricscloud/domain";
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { createDatabasePool } from "./pool.js";
 
 interface PromptRow extends QueryResultRow {
-  id: string; title: string; plain_text: string; is_favorite: boolean; is_pinned: boolean;
+  id: string; title: string; mode: PromptMode; plain_text: string; sentence_text: string | null; is_favorite: boolean; is_pinned: boolean;
   pin_order: number | null; color: PromptRecord["color"]; row_version: string;
   use_count: string; last_used_at: Date | null; created_at: Date; updated_at: Date;
 }
@@ -53,7 +53,7 @@ export interface PromptSongCandidate {
 
 export type WrittenPrompt = { readonly prompt: PromptRecord; readonly replayed: boolean };
 
-const PROMPT_SELECT = `select r.id,r.title,p.plain_text,r.is_favorite,r.is_pinned,r.pin_order,r.color,p.use_count::text,p.last_used_at,
+const PROMPT_SELECT = `select r.id,r.title,p.mode,p.plain_text,p.sentence_text,r.is_favorite,r.is_pinned,r.pin_order,r.color,p.use_count::text,p.last_used_at,
   r.row_version::text,r.created_at,r.updated_at
   from resources r join prompts p on p.resource_id=r.id and p.owner_id=r.owner_id
   where r.type='prompt' and r.deleted_at is null`;
@@ -72,8 +72,8 @@ export class PostgresPromptStore {
       const resourceId = randomUUID();
       await client.query(`insert into resources(id,owner_id,type,title,is_favorite,is_pinned,pin_order,color)
         values($1,$2,'prompt',$3,$4,$5,$6,$7)`, [resourceId, ownerId, input.title, input.isFavorite, input.isPinned, input.pinOrder, input.color]);
-      await client.query("insert into prompts(resource_id,owner_id,plain_text) values($1,$2,$3)",
-        [resourceId, ownerId, serializePromptTokens(projectUniquePromptTokens(input.tokens))]);
+      await client.query("insert into prompts(resource_id,owner_id,mode,plain_text,sentence_text) values($1,$2,$3,$4,$5)",
+        [resourceId, ownerId, input.mode, serializePromptTokens(projectUniquePromptTokens(input.tokens)), input.sentenceText]);
       await writeTokenProjection(client, ownerId, resourceId, input.tokens, new Set());
       const prompt = await selectPrompt(client, ownerId, resourceId);
       if (!prompt) throw new Error("PROMPT_CREATE_FAILED");
@@ -94,7 +94,7 @@ export class PostgresPromptStore {
       if (input.search) {
         values.push(input.search);
         conditions.push(`(strpos(lower(r.title),lower($${values.length}))>0
-          or strpos(lower(p.plain_text),lower($${values.length}))>0
+          or strpos(p.search_text,search_normalize($${values.length}))>0
           or exists(select 1 from song_resource_links ssl join resources ss on ss.id=ssl.song_resource_id and ss.owner_id=ssl.owner_id
             where ssl.owner_id=r.owner_id and ssl.linked_resource_id=r.id and ssl.linked_resource_type='prompt'
               and ss.type='song' and ss.deleted_at is null and strpos(lower(ss.title),lower($${values.length}))>0))`);
@@ -112,7 +112,7 @@ export class PostgresPromptStore {
         join prompts p on p.resource_id=r.id and p.owner_id=r.owner_id where ${where}`, values)).rows[0]?.count ?? 0);
       const offset = input.cursor ? decodePromptCursor(input.cursor, input).offset : 0;
       values.push(input.limit + 1, offset);
-      const rows = await client.query<PromptListRow>(`select r.id,r.title,p.plain_text,r.is_favorite,r.is_pinned,r.pin_order,r.color,
+      const rows = await client.query<PromptListRow>(`select r.id,r.title,p.mode,p.plain_text,p.sentence_text,r.is_favorite,r.is_pinned,r.pin_order,r.color,
         r.row_version::text,p.use_count::text,p.last_used_at,r.created_at,r.updated_at,
         coalesce((select jsonb_agg(jsonb_build_object('displayValue',pt.display_value,'normalizedValue',pt.normalized_value) order by pt.ordinal)
           from prompt_tokens pt where pt.owner_id=r.owner_id and pt.prompt_resource_id=r.id),'[]'::jsonb) tokens,
@@ -148,12 +148,21 @@ export class PostgresPromptStore {
       const current = await lockPrompt(client, ownerId, resourceId);
       if (!current) return null;
       if (current.rowVersion !== input.rowVersion) throw new PromptConflictError();
+      if (input.tokens !== undefined && current.mode !== "tags" && input.mode === undefined) throw new PromptConflictError("MODE_CONFLICT");
+      if (input.sentenceText !== undefined && current.mode !== "sentence" && input.mode === undefined) throw new PromptConflictError("MODE_CONFLICT");
+      const nextMode = input.mode ?? current.mode;
+      if (nextMode === "sentence" && input.sentenceText === undefined && current.sentenceText === null) throw new PromptConflictError("MODE_CONFLICT");
       const oldNormalized = new Set(current.tokens.map((token) => token.normalizedValue));
       if (input.tokens !== undefined) {
         const projected = projectUniquePromptTokens(input.tokens);
         await writeTokenProjection(client, ownerId, resourceId, projected, oldNormalized);
-        await client.query("update prompts set plain_text=$3 where resource_id=$1 and owner_id=$2", [resourceId, ownerId, serializePromptTokens(projected)]);
       }
+      const promptChanges: string[] = [];
+      const promptValues: unknown[] = [resourceId, ownerId];
+      if (input.mode !== undefined) { promptValues.push(input.mode); promptChanges.push(`mode=$${promptValues.length}`); }
+      if (input.tokens !== undefined) { promptValues.push(serializePromptTokens(projectUniquePromptTokens(input.tokens))); promptChanges.push(`plain_text=$${promptValues.length}`); }
+      if (input.sentenceText !== undefined) { promptValues.push(input.sentenceText); promptChanges.push(`sentence_text=$${promptValues.length}`); }
+      if (promptChanges.length) await client.query(`update prompts set ${promptChanges.join(",")} where resource_id=$1 and owner_id=$2`, promptValues);
       const changes: string[] = [];
       const values: unknown[] = [resourceId, ownerId];
       for (const [field, column] of [["title","title"],["isFavorite","is_favorite"],["isPinned","is_pinned"],["pinOrder","pin_order"],["color","color"]] as const) {
@@ -180,7 +189,8 @@ export class PostgresPromptStore {
       const copyTitle = `${[...source.title].slice(0, 196).join("")} 복사본`;
       await client.query(`insert into resources(id,owner_id,type,title,is_favorite,is_pinned,pin_order,color)
         values($1,$2,'prompt',$3,$4,false,null,$5)`, [copyId, ownerId, copyTitle, source.isFavorite, source.color]);
-      await client.query("insert into prompts(resource_id,owner_id,plain_text) values($1,$2,$3)", [copyId, ownerId, source.plainText]);
+      await client.query("insert into prompts(resource_id,owner_id,mode,plain_text,sentence_text) values($1,$2,$3,$4,$5)",
+        [copyId, ownerId, source.mode, source.tagText, source.sentenceText]);
       await writeTokenProjection(client, ownerId, copyId, source.tokens, new Set());
       const prompt = await selectPrompt(client, ownerId, copyId);
       if (!prompt) throw new Error("PROMPT_DUPLICATE_FAILED");
@@ -329,7 +339,9 @@ async function selectPrompt(client: PoolClient, ownerId: string, resourceId: str
   return {
     id: row.id, title: row.title,
     tokens: tokens.rows.map((token) => ({ displayValue: token.display_value, normalizedValue: token.normalized_value })),
-    plainText: row.plain_text, isFavorite: row.is_favorite, isPinned: row.is_pinned,
+    mode: row.mode, tagText: row.plain_text, sentenceText: row.sentence_text,
+    plainText: row.mode === "sentence" ? row.sentence_text ?? "" : row.plain_text,
+    isFavorite: row.is_favorite, isPinned: row.is_pinned,
     pinOrder: row.pin_order, color: row.color, rowVersion: Number(row.row_version),
     linkedSongIds: links.rows.map((link) => link.song_resource_id),
     useCount: Number(row.use_count), lastUsedAt: row.last_used_at?.toISOString() ?? null,
@@ -370,7 +382,8 @@ function mapPromptListItem(row: PromptListRow): PromptListItem {
   const tokens = Array.isArray(row.tokens) ? row.tokens as PromptTokenValue[] : [];
   const linkedSongs = Array.isArray(row.linked_songs) ? row.linked_songs as { id: string; title: string }[] : [];
   return {
-    id: row.id, title: row.title, tokens, plainText: row.plain_text,
+    id: row.id, title: row.title, tokens, mode: row.mode, tagText: row.plain_text, sentenceText: row.sentence_text,
+    plainText: row.mode === "sentence" ? row.sentence_text ?? "" : row.plain_text,
     isFavorite: row.is_favorite, isPinned: row.is_pinned, pinOrder: row.pin_order, color: row.color,
     rowVersion: Number(row.row_version), linkedSongIds: linkedSongs.map(({ id }) => id), linkedSongs,
     useCount: Number(row.use_count), lastUsedAt: row.last_used_at?.toISOString() ?? null,

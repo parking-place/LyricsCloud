@@ -79,6 +79,19 @@ describe.runIf(enabled)("template PostgreSQL contract", () => {
     const prompt = await templates!.applyTemplate(alice, promptTemplate.id, parseApplyTemplateInput({ requestId, targetType: "prompt", title: "새 프롬프트" }));
     expect((await pool!.query<{ plain_text: string }>("select plain_text from prompts where resource_id=$1", [prompt!.resource.id])).rows[0]!.plain_text).toBe("First, Second");
     expect(await templates!.applyTemplate(alice, promptTemplate.id, parseApplyTemplateInput({ requestId, targetType: "prompt", title: "새 프롬프트" }))).toMatchObject({ replayed: true, resource: { id: prompt!.resource.id } });
+
+    const raw = "  orchestral, yet one sentence.\r\n공백  보존  ";
+    const sentenceTemplate = (await templates!.createTemplate(alice, {
+      requestId: randomUUID(), type: "prompt", title: "Sentence", promptMode: "sentence", promptText: raw
+    })).template;
+    expect(sentenceTemplate).toMatchObject({ promptMode: "sentence", promptText: raw, tokens: [] });
+    const sentenceCopy = await templates!.duplicateTemplate(alice, sentenceTemplate.id, randomUUID());
+    expect(sentenceCopy?.template).toMatchObject({ promptMode: "sentence", promptText: raw, tokens: [] });
+    const sentencePrompt = await templates!.applyTemplate(alice, sentenceTemplate.id,
+      parseApplyTemplateInput({ requestId: randomUUID(), targetType: "prompt", title: "문장 프롬프트" }));
+    expect((await pool!.query<{ mode: string; plain_text: string; sentence_text: string }>(
+      "select mode,plain_text,sentence_text from prompts where resource_id=$1", [sentencePrompt!.resource.id])).rows[0])
+      .toEqual({ mode: "sentence", plain_text: "", sentence_text: raw });
   });
 });
 

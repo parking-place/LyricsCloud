@@ -196,9 +196,9 @@ with candidates as (
 
   union all
   select r.id,'prompt'::text,r.title,
-    case when r.search_title like $3 escape '\\' then 'title' else 'tag' end,
+    case when r.search_title like $3 escape '\\' then 'title' when p.mode='sentence' then 'body' else 'tag' end,
     case when r.search_title like $3 escape '\\' then r.title
-      else left(regexp_replace(p.plain_text,'[[:space:]]+',' ','g'),240) end,
+      else left(regexp_replace(case when p.mode='sentence' then p.sentence_text else p.plain_text end,'[[:space:]]+',' ','g'),240) end,
     coalesce((select array_agg(link.song_resource_id order by link.song_resource_id)
       from song_resource_links link join resources linked_song
         on linked_song.id=link.song_resource_id and linked_song.owner_id=link.owner_id

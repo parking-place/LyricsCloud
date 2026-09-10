@@ -2,10 +2,10 @@ import { Dexie } from "dexie";
 import * as Y from "yjs";
 import {
   normalizePromptToken, parsePublicErrorCode, PROMPT_LIMITS, type CheckpointReason, type LyricRevision, type PromptDuplicate,
-  type PromptTokenValue, type RestoreRevisionInput, type RevisionHistory
+  type PromptMode, type PromptTokenValue, type RestoreRevisionInput, type RevisionHistory
 } from "@lyricscloud/domain";
 import {
-  createPromptDocument, insertPromptToken, projectPrompt,
+  createPromptDocument, insertPromptToken, projectPrompt, replacePromptSentence, setPromptMode,
   movePromptToken, promptTitle, promptTokenSequence, removePromptToken, type PromptSequenceItem
 } from "./crdt.js";
 import type { LocalSyncState } from "./browser-sync.js";
@@ -13,15 +13,20 @@ import { SyncStorage, type QueuedUpdate } from "./sync-storage.js";
 
 export interface PromptEditorSnapshot {
   readonly title: string;
+  readonly mode: PromptMode;
   readonly items: readonly PromptSequenceItem[];
   readonly tokens: readonly PromptTokenValue[];
   readonly readTokens: readonly PromptTokenValue[];
+  readonly tagText: string;
+  readonly sentenceText: string;
   readonly plainText: string;
   readonly duplicates: readonly PromptDuplicate[];
 }
 
 export interface BrowserPromptSync {
   setTitle(value: string): void;
+  setMode(mode: PromptMode, sentenceText?: string): void;
+  setSentenceText(value: string): void;
   insertTokens(values: readonly string[], index?: number): void;
   moveToken(occurrenceId: string, targetIndex: number): void;
   removeToken(occurrenceId: string): void;
@@ -184,6 +189,7 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
     try {
       const response = await fetch(`/collaboration/documents/${options.resourceId}`, {
         method: "POST", credentials: "same-origin", cache: "no-store",
+        headers: { "X-LyricsCloud-Prompt-Capability": "prompt-mode-v1" },
         signal: AbortSignal.any([abort.signal, AbortSignal.timeout(10_000)])
       });
       if (destroyed) return;
@@ -200,6 +206,7 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
         };
       }
       const url = new URL(`/collaboration/sync/${documentKey}`, location.origin);
+      url.searchParams.set("capability", "prompt-mode-v1");
       url.protocol = location.protocol === "https:" ? "wss:" : "ws:";
       const current = new WebSocket(url);
       socket = current;
@@ -273,6 +280,14 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
       const title = promptTitle(document);
       if (title.toString() === value) return;
       document.transact(() => { title.delete(0, title.length); if (value) title.insert(0, value); }, localOrigin);
+    },
+    setMode(mode, sentenceText) {
+      if (!initialized || halted) return;
+      document.transact(() => setPromptMode(document, mode, sentenceText), localOrigin);
+    },
+    setSentenceText(value) {
+      if (!initialized || halted) return;
+      document.transact(() => replacePromptSentence(document, value), localOrigin);
     },
     insertTokens(values, index = promptTokenSequence(document).length) {
       if (!initialized || halted || !values.length) return;

@@ -44,10 +44,10 @@ jobs:
       NODE_ENV: test
       DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
       AUTH_DATABASE_INTEGRATION: "true"
-      APP_VERSION: 1.0.2
+      APP_VERSION: 1.0.3
       BUILD_ID: ${{ github.sha }}
       APP_CHANNEL: dev
-      APP_PHASE: p5
+      APP_PHASE: p2
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -103,6 +103,8 @@ jobs:
         run: pnpm test:migration:0802
       - name: Verify 1.0.1 beta migration and administrator contracts
         run: pnpm test:migration:0900 && pnpm test:migration:0901 && pnpm test:beta-admin:0900 && pnpm test:beta-signup:0901
+      - name: Verify 1.0.3 prompt mode migration recovery
+        run: pnpm test:migration:1000
       - name: Verify 0.7.0 fresh and 0.6.0 upgrade release paths
         run: pnpm test:migration:0700-release
       - name: Measure 0.7.0 navigation release baseline
