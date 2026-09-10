@@ -23,6 +23,12 @@ export interface EditorDocumentTransaction {
   readonly requestId?: string;
 }
 
+export interface SongFormInsertMenuRequest {
+  readonly source: "pointer" | "keyboard";
+  readonly clientX: number;
+  readonly clientY: number;
+}
+
 export interface CodeMirrorTextEditorOptions {
   readonly parent: HTMLElement;
   readonly initialValue: string;
@@ -33,6 +39,7 @@ export interface CodeMirrorTextEditorOptions {
   readonly beforeLargePaste?: () => Promise<boolean>;
   readonly readOnly?: boolean;
   readonly onSongFormNavigationChange?: (state: SongFormNavigationState) => void;
+  readonly onSongFormInsertMenuRequest?: (request: SongFormInsertMenuRequest) => void;
   readonly onTransaction?: (transaction: EditorDocumentTransaction) => void;
 }
 
@@ -155,6 +162,25 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
         }
       }),
       EditorView.domEventHandlers({
+        contextmenu(event) {
+          if (!requestedEditable || pastePending || !options.onSongFormInsertMenuRequest) return false;
+          options.onSongFormInsertMenuRequest({ source: "pointer", clientX: event.clientX, clientY: event.clientY });
+          // Preserve the native browser context menu. The prepared application
+          // menu remains available after the native menu is dismissed.
+          return false;
+        },
+        keydown(event) {
+          if (!requestedEditable || pastePending || !options.onSongFormInsertMenuRequest) return false;
+          if (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10")) return false;
+          event.preventDefault();
+          const coordinates = view.coordsAtPos(view.state.selection.main.head);
+          options.onSongFormInsertMenuRequest({
+            source: "keyboard",
+            clientX: coordinates?.left ?? view.dom.getBoundingClientRect().left,
+            clientY: coordinates?.bottom ?? view.dom.getBoundingClientRect().top
+          });
+          return true;
+        },
         paste(event) {
           const input = event.clipboardData?.getData("text/plain");
           if (!options.beforeLargePaste || !input || [...input].length < REVISION_POLICY.largePasteCharacters) return false;
