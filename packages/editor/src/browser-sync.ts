@@ -319,6 +319,13 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
     applyLocalTransaction(transaction) {
       if (!initialized || halted || transaction.origin !== "user" || transaction.composing || !transaction.changes.length) return;
       const queuedDuringComposition = composing ? remoteQueue.splice(0) : [];
+      const relativeChanges = queuedDuringComposition.length ? transaction.changes.map((change) => ({
+        from: Y.createRelativePositionFromTypeIndex(text, change.from, 0),
+        to: change.to === change.from
+          ? Y.createRelativePositionFromTypeIndex(text, change.from, 0)
+          : Y.createRelativePositionFromTypeIndex(text, change.to, -1),
+        insert: change.insert
+      })) : null;
       if (queuedDuringComposition.length) reconcilingComposition = true;
       try {
         // Apply updates that arrived during IME preedit against the shared base
@@ -326,8 +333,13 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
         // anchored to text replaced by the IME can be ordered before the new
         // first line depending on Yjs client IDs.
         for (const update of queuedDuringComposition) Y.applyUpdate(document, update, remoteOrigin);
+        const changes = relativeChanges?.map((change) => {
+          const from = Y.createAbsolutePositionFromRelativePosition(change.from, document)?.index;
+          const to = Y.createAbsolutePositionFromRelativePosition(change.to, document)?.index;
+          return from === undefined || to === undefined ? null : { from, to, insert: change.insert };
+        }).filter((change): change is EditorTextChange => change !== null) ?? transaction.changes;
         document.transact(() => {
-          for (const change of [...transaction.changes].sort((left, right) => right.from - left.from)) {
+          for (const change of [...changes].sort((left, right) => right.from - left.from)) {
             if (change.to > change.from) text.delete(change.from, change.to - change.from);
             if (change.insert) text.insert(change.from, change.insert);
           }
