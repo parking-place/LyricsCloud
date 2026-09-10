@@ -1,4 +1,4 @@
-# LyricsCloud 1.0.3 정식·1.0.4 후보 지원 정책
+# LyricsCloud 1.0.3 정식·1.0.5 후보 지원 정책
 
 ## 지원 환경
 
@@ -26,6 +26,8 @@
 1.0.3은 태그형/문장형 mode·raw 분리와 명시 변환·복원·구버전 capability 차단을 포함한 현재 정식 버전이다. 가입·저장·PWA 복구 순서는 [1.0.2 복구 안내](./runbooks/1.0.2-user-recovery.md)에 있다.
 
 1.0.4 후보는 문장형 프롬프트를 ASCII 마침표 포함 lossless 구간으로 표시하고, 모든 최종 복사 경로에서 Unicode code point 1,000자 초과를 안내하되 복사를 막지 않는다. 실제 PostgreSQL, Chromium desktop/mobile 전수와 Chromium/Firefox/WebKit 기능 행렬, 동일 SHA 개발 collaboration 재시작을 통과했다. P5 전체 CI 전에는 정식 지원 버전이나 릴리스 서버 배포로 보지 않는다.
+
+1.0.5 후보는 `[TAG:sub tag]`의 첫 콜론 앞 주 이름으로 탐색하고 suffix 원문을 보존하며 가사 최종 LF payload가 3,000 Unicode code point를 넘을 때만 안내한다. 실제 PostgreSQL, Chromium desktop/mobile 전수, Firefox/WebKit 표시·복사와 동일 SHA 개발 collaboration 재시작을 통과했다. 실제 물리 IME는 새로 실행하지 않았으며 P5 전체 CI 전에는 정식 지원 버전이나 릴리스 서버 배포로 보지 않는다.
 
 미해결 P0/P1은 0건이다. 저장 수렴 실패, 다른 사용자의 자료 노출, 인증 우회, 핵심 모바일 불능, 복구 불가능 증거가 생기면 즉시 P0/P1으로 재분류하고 배포를 중단한다.
 

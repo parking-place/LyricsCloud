@@ -10,18 +10,18 @@ const assertIncludes = (value, expected, message) => assert(value.includes(expec
 
 const version = (await read("VERSION")).trim();
 const formalVersion = "1.0.3";
-assert(version === "1.0.4", "VERSION must be the current 1.0.4 candidate source");
+assert(version === "1.0.5", "VERSION must be the current 1.0.5 candidate source");
 const packages = ["package.json", "apps/web/package.json", "apps/collaboration/package.json", "apps/worker/package.json",
   "packages/auth/package.json", "packages/config/package.json", "packages/database/package.json", "packages/domain/package.json",
   "packages/editor/package.json", "packages/observability/package.json", "packages/ui/package.json"];
 for (const path of packages) assert((await json(path)).version === version, `${path} version must equal VERSION`);
 
 const status = await read("0.Plans/1. Dev-phase/STATUS.md");
-assertIncludes(status, 'current_version: "1.0.4"', "STATUS current version does not match VERSION");
+assertIncludes(status, 'current_version: "1.0.5"', "STATUS current version does not match VERSION");
 const runtime = await read("packages/config/src/index.ts");
-assertIncludes(runtime, 'appVersion: env.APP_VERSION ?? "1.0.4"', "runtime default version is not current");
-assertIncludes(await read("apps/web/next.config.ts"), 'generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-1.0.4"', "deterministic Next build ID missing");
-for (const path of ["compose.yaml", "compose.backup.yaml", ".env.example"]) assertIncludes(await read(path), "1.0.4", `${path} lacks 1.0.4`);
+assertIncludes(runtime, 'appVersion: env.APP_VERSION ?? "1.0.5"', "runtime default version is not current");
+assertIncludes(await read("apps/web/next.config.ts"), 'generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-1.0.5"', "deterministic Next build ID missing");
+for (const path of ["compose.yaml", "compose.backup.yaml", ".env.example"]) assertIncludes(await read(path), "1.0.5", `${path} lacks 1.0.5`);
 
 const lockfile = await read("pnpm-lock.yaml");
 const environment = await read("config/environment-schema.1.0.0.json");
@@ -164,4 +164,4 @@ for (const service of ["web", "collaboration", "worker", "migrate"]) {
   assert(formalManifest.images[service].digest === `$${service.toUpperCase()}_DIGEST`, `${service} 1.0.3 digest placeholder invalid`);
 }
 
-console.log(`1.0.4 candidate plus approved 1.0.3 and sealed 1.0.1/1.0.0 contracts: ${packages.length} package versions, ${migrationFiles.length} migrations, 4 digest-only signed images verified`);
+console.log(`1.0.5 candidate plus approved 1.0.3 and sealed 1.0.1/1.0.0 contracts: ${packages.length} package versions, ${migrationFiles.length} migrations, 4 digest-only signed images verified`);
