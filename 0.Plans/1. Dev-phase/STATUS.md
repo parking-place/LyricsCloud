@@ -74,11 +74,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.7 P1 | complete | owner+자료유형 별도 보기 설정·독립 CAS·필터/순서 불변·좁은 화면 접근성 계약 확정 |
 | 1.0.7 P2 | complete | 단위 200건·실제 PostgreSQL 5건·1001 migration/RLS/rollback·동일 SHA 공개 설정 API 인수 완료 |
 | 1.0.7 P3 | complete | 세 목록 네 보기·개인/유형 저장·실패 원복·320px/200%와 PC/mobile 10건·저장/IME 30건·동일 SHA 공개 UI 인수 완료 |
+| 1.0.7 P4 | complete | PostgreSQL 283건·Chromium 전체 340건·5-project 신규 30건·stale/offline/재시작 동일 SHA 개발 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.7/P4 | LC-NF-1.0.7-P4-01~06 | stale/실패·기존 목록 layout 회귀·실제 DB·지원 browser·개발 서비스 재시작 | 1.0.7 P3 `6f0a556` | 2026-09-11T06:00:00+09:00 | complete |
 | Codex | 1.0.7/P3 | LC-NF-1.0.7-P3-01~06 | 공통 보기 selector/hook·세 목록 grid/CSS·PC/mobile E2E·runtime metadata | 1.0.7 P2 `eef83ec` | 2026-09-11T05:40:00+09:00 | complete |
 | Codex | 1.0.7/P2 | LC-NF-1.0.7-P2-01~06 | domain contract·1001 migration/RLS·store/API·runtime metadata·DB/단위 회귀 | 1.0.7 P1 `ff25d13` | 2026-09-11T05:24:00+09:00 | complete |
 | Codex | 1.0.7/P1 | LC-NF-1.0.7-P1-01~06 | 보기 설정 계약·실패 입력·domain/database/web 담당·호환/rollback 경계 | v1.0.6 release `f314768` | 2026-09-11T05:21:03+09:00 | complete |

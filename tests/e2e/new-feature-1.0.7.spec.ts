@@ -98,6 +98,25 @@ test.describe("1.0.7 personal library view modes", () => {
     } finally { await removeAccount(userId); }
   });
 
+  test("reloads the latest server mode after a stale two-tab change", async ({ context, page }) => {
+    const userId = await account(context);
+    try {
+      await createSong(page, "보기 충돌 복구");
+      await page.goto("/songs");
+      const group = page.getByRole("group", { name: "곡 목록 보기 방식" });
+      await expect(group).toHaveAttribute("aria-busy", "false");
+      const external = await page.request.put("/api/library-view-settings/songs", {
+        headers, data: { viewMode: "grid-small", rowVersion: 0 }
+      });
+      expect(external.status()).toBe(200);
+
+      await group.getByRole("button", { name: "곡 목록 크게 보기" }).click();
+      await expect(page.getByText("다른 화면에서 보기 설정이 변경되어 최신 설정을 불러왔습니다.")).toBeVisible();
+      await expect(page.locator(".song-grid")).toHaveAttribute("data-view-mode", "grid-small");
+      await expect(group.getByRole("button", { name: "곡 목록 작게 보기" })).toHaveAttribute("aria-pressed", "true");
+    } finally { await removeAccount(userId); }
+  });
+
   test("keeps long Korean content and controls usable at 320px with 200 percent text", async ({ context, page }) => {
     const userId = await account(context);
     try {
