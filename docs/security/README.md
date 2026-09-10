@@ -9,3 +9,5 @@
 1.0.4의 마침표 구간 표시와 1,000자 안내는 저장·권한·로그 경계를 바꾸지 않는 클라이언트 projection이다. 길이는 최종 payload의 Unicode code point 수만 계산하고 원문을 서버나 외부 서비스에 추가 전송하지 않는다. 목록·편집기·가사 자료 패널은 같은 owner-only API 결과를 사용하며 경고 때문에 저장·복사를 차단하지 않는다.
 
 1.0.5의 송폼 suffix 표시와 가사 3,000자 안내도 기존 owner-only lyric API·CRDT 원문·revision·검색·내보내기를 바꾸지 않는 클라이언트 projection이다. 첫 콜론은 탐색 이름 경계로만 사용하고 suffix를 삭제·정규화하지 않는다. 길이 안내는 최종 LF payload를 로컬에서 Unicode code point로 세며 본문을 로그·관측·외부 서비스에 추가 전송하지 않고 저장·복사를 차단하지 않는다.
+
+1.0.6의 Extend 필터는 Suno 전체 복사 payload에서 exact-case 정식 표식 줄만 제외하는 로컬 projection이며 raw CRDT·revision·검색·내보내기·부분 복사를 바꾸지 않는다. 송폼 삽입은 이미 인증·소유권 검사를 통과한 문서의 CRDT 상대 위치와 한 transaction만 사용하고, 해석 실패·100,000자 초과·IME 조합 중에는 원문을 변경하지 않는다. 본문·caret·선택 내용은 로그나 외부 서비스에 추가 전송하지 않는다.

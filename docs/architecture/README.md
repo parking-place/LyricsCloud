@@ -28,3 +28,4 @@
 - [`1.0.3 프롬프트 mode/raw 후보 추적`](./1.0.3-FINAL-TRACEABILITY.md)
 - [`1.0.4 프롬프트 표시·복사 후보 추적`](./1.0.4-FINAL-TRACEABILITY.md)
 - [`1.0.5 서브 송폼·가사 복사 후보 추적`](./1.0.5-FINAL-TRACEABILITY.md)
+- [`1.0.6 Extend·송폼 삽입 최종 추적`](./1.0.6-FINAL-TRACEABILITY.md)

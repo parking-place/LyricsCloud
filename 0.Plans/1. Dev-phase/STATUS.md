@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.0.6"
 current_phase: "../2.Patch-phase/1.0.6/5phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-11"
-next_action: "1.0.6 P5 문서·최종 CI·동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 수행한다"
+next_action: "승인된 1.0.6 정식 main 병합·annotated tag·image·릴리스 서버 배포를 수행한다"
 ```
 
 ## 승인과 기준
@@ -70,13 +70,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.6 P2 | complete | Extend Suno payload filter·부분 copy 원문·단일 source marker·CRDT 상대 위치 삽입 기반과 동일 SHA 개발 인수 완료 |
 | 1.0.6 P3 | complete | 우클릭·키보드·모바일 삽입 메뉴·Extend 안내/원문 copy·IME/Escape/undo와 동일 SHA 공개 개발 인수 완료 |
 | 1.0.6 P4 | complete | PostgreSQL 275건·Chromium 292건·5-project 신규 17건과 exact export/revision·권한·offline·재시작 동일 SHA 개발 인수 완료 |
-| 1.0.6 P5 | in progress | 요구 추적·현재 문서·환경 schema·검증기·최종 CI·개발/정식 인수 수행 중 |
+| 1.0.6 P5 | complete | Actions `34511266182` 전체 verify·네 dev image·동일 SHA 공개 revision/export/restart 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.6/P5 | LC-NF-1.0.6-P5-01~06 | 요구 추적·현재 문서·환경 schema·검증기·최종 CI·개발/정식 인수 | 1.0.6 P4 `0d19330` | 2026-09-11T02:43:00+09:00 | in_progress |
+| Codex | 1.0.6/P5 | LC-NF-1.0.6-P5-01~06 | 요구 추적·현재 문서·환경 schema·검증기·최종 CI·개발/정식 인수 | 1.0.6 P4 `0d19330` | 2026-09-11T02:43:00+09:00 | complete |
 | Codex | 1.0.6/P4 | LC-NF-1.0.6-P4-01~06 | 실제 DB·권한·export/revision·offline/reconnect·지원 브라우저·restart 회귀 | 1.0.6 P3 `4ef7d7f` | 2026-09-11T02:05:00+09:00 | complete |
 | Codex | 1.0.6/P3 | LC-NF-1.0.6-P3-01~06 | CodeMirror context/key hook·lyric editor PC/mobile 메뉴·안내·E2E | 1.0.6 P2 `7f87b8a` | 2026-09-11T01:00:00+09:00 | complete |
 | Codex | 1.0.6/P2 | LC-NF-1.0.6-P2-01~06 | editor copy·marker source·CRDT 상대 삽입·단위 회귀 | 1.0.6 P1 / v1.0.5 `4411bc1` | 2026-09-11T00:15:00+09:00 | complete |
@@ -162,6 +162,8 @@ P10 후보 `869e32b8a15c2e1e7524a75ab4d8b4428a925c79`는 원격 CI run `34394222
 1.0.6 P3 후보 `4ef7d7f48f43e6259705467bdafbaad68935d4d5`는 CodeMirror 우클릭·메뉴키/`Shift+F10` 요청과 lyric editor의 공통 상대 selection 삽입 명령, 모바일 보이는 버튼, 양 theme 메뉴, Suno/원문 copy 안내를 연결했다. typecheck·production build·Chromium PC/mobile 신규 흐름 7건이 PASS했고 조건별 3건은 의도적으로 skip됐다. 정상·빈 상태·10만 자 실패·비인증·로딩·remote prefix·IME·Escape·단일 undo·서버 reload를 확인했다. 원격 PR #46과 개발 서버 checkout/build metadata가 같은 SHA였고 공개 다크 PC·라이트 모바일 기능 smoke 뒤 합성 자료를 제거했다. 공개 live/ready는 `1.0.6`, `dev`, `p3`, schema `1000_prompt_modes.sql`, 네 서비스 healthy였다. 전체 DB/export/revision/offline/지원 엔진/restart는 P4에서 수행한다.
 
 1.0.6 P4 후보 `0d19330f9c8ba800e89b275a22fedf1b9e955693`은 격리 PostgreSQL 18 migration 반복과 unit/integration 275건을 통과했고 별도 beta signup 4건만 조건상 skip했다. Chromium PC/mobile 전체 328건 중 292 PASS·조건부 36 skip, Chromium/Firefox/WebKit 5-project 신규 기능 17 PASS·조건부 13 skip, 접근성 재검증 3건을 통과했다. 이전 metadata 고정 기대값 4건과 dark disabled danger 대비를 최소 수정한 뒤 최종 전체 회귀를 다시 통과했으며 중단한 실행은 PASS로 기록하지 않았다. 원격 PR #47과 개발 서버 checkout/build metadata가 같은 SHA였고 공개 revision·ZIP export exact Extend 원문과 collaboration 재시작 전후 동일 document key·원문을 확인한 뒤 합성 자료를 제거했다. 공개 live/ready는 `1.0.6`, `dev`, `p4`, schema `1000_prompt_modes.sql`, 네 서비스 healthy였다. 실제 물리 기기는 새로 실행하지 않았고 최종 원격 CI·dev image는 P5에서 수행한다.
+
+1.0.6 P5 후보 `a37a41dde72974fb37e025788ace768f9d5b6b04`는 GitHub Actions run `34511266182`의 전체 verify와 네 dev image 게시·서명을 통과했다. 개발 서버 checkout·환경 `BUILD_ID`·공개 live/ready가 같은 SHA였고 `1.0.6`, channel `dev`, phase `p5`, schema `1000_prompt_modes.sql`, 네 서비스 healthy를 확인했다. 공개 revision·ZIP JSON/TXT의 exact Extend 원문과 collaboration 재시작 전후 같은 document key·원문 보존이 PASS했고 합성 자료를 제거했다. 신규 P0/P1·원문 유실·인증 우회·교차 owner 노출·무음 저장 실패는 0건이며, 실제 물리 기기 미실행과 `OPS-100-001` 예외를 유지한 채 승인된 정식 릴리스로 이동한다.
 
 1.0.5 P3 후보 `3649d014163c91b8f74d5b30d0460757bc97ab1c`는 CodeMirror 콜론 이후 범위와 desktop/mobile 목차의 suffix를 저강조하고 주 이름의 접근 가능한 탐색·occurrence를 유지했다. 공통 lyric copy view가 최종 LF payload의 3,001자 안내를 자동·단축키·저장 복구·수동 dialog에 연결했다. 관련 unit 16건, check·production build, Chromium PC/mobile 4건이 PASS했고 suffix 편집/undo/reload, 구간·전체 exact copy, clipboard 거부와 비인증 권한 경계를 확인했다. 원격 PR #41과 개발 서버 checkout/build metadata가 같은 SHA였고 공개 합성 smoke에서 suffix 표시·주 이름 탐색·3,001자 exact copy/비차단 경고가 PASS한 뒤 자료를 제거했다. 공개 live/ready는 `1.0.5`, `dev`, `p3`, schema `1000_prompt_modes.sql`, 네 서비스 healthy였다.
 
