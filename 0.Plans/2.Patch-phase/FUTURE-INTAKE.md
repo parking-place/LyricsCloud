@@ -85,6 +85,7 @@
 | 2026-09-10 1.0.5 P5 최종 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `9e75356e1655eaa207e44c89e140dfcd0467cd80` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P5 요구 추적·현재 문서·후보 검증기·최종 CI·동일 SHA 개발 인수만 수행 | 1.0.5 P4 완료·P5 착수 push 전 행 |
 | 2026-09-10 1.0.5 P5 완료·정식 릴리스 준비 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `78b3f1bc4c240bbceaddcab33e56af1ae0048aae` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P5 전체 CI·네 dev image·동일 SHA 개발 인수 완료, 승인된 main/tag/image/운영 릴리스만 수행 | 1.0.5 P5 최종 후보 push 전 행 |
 | 2026-09-11 1.0.6 P1 완료 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `4411bc1eb74c90a6a1c47f7e3315de2d5ff39edb` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; NF-REQ-026/027의 Extend copy·상대 위치 송폼 삽입 계약만 확정 | 1.0.5 P5 완료·정식 릴리스 준비 push 전 행 |
+| 2026-09-11 1.0.6 P2 구현 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `48eb7c3ef17e9f941c9eac122c01a3edbd68df58` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; Extend Suno payload filter·부분 copy 원문 보존·단일 source 상대 위치 삽입 기반만 구현 | 1.0.6 P1 완료 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
