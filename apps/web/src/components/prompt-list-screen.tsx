@@ -4,6 +4,7 @@ import { splitPromptSentenceDisplay } from "@lyricscloud/domain";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { promptCopyView } from "../lib/prompt-copy.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
+import { LibraryViewModeSelector, useLibraryViewMode } from "./library-view-mode-selector.js";
 
 const SORTS = ["favorite_first", "recent_used", "updated_desc", "created_desc", "created_asc", "title_asc"] as const;
 type PromptSort = (typeof SORTS)[number];
@@ -36,6 +37,7 @@ const SORT_LABELS: Record<PromptSort, string> = {
 };
 
 export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQuery }) {
+  const libraryView = useLibraryViewMode("prompts");
   const [search, setSearch] = useState(initialQuery.search);
   const [appliedSearch, setAppliedSearch] = useState(initialQuery.search.trim());
   const [song, setSong] = useState(initialQuery.song);
@@ -206,12 +208,13 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
       <button type="button" className={favorite ? "active" : ""} aria-pressed={favorite} onClick={() => setFavorite((value) => !value)}>★ 즐겨찾기</button>
       <button type="button" className={recent ? "active" : ""} aria-pressed={recent} onClick={() => setRecent((value) => !value)}>◷ 최근 사용</button>
     </div>
+    <LibraryViewModeSelector label="프롬프트 목록" state={libraryView} />
     <div className="list-summary" aria-live="polite"><strong>{loading ? "프롬프트를 불러오는 중" : `총 ${totalCount}개`}</strong><span>{filtered ? "현재 검색 조건" : "내 개인 프롬프트 보관함"}</span></div>
     {notice ? <p className="copy-toast" role="status">{notice}</p> : null}
     {error ? <div className="list-error" role="alert"><strong>{error}</strong><button type="button" onClick={() => setRetryKey((value) => value + 1)}>다시 시도</button></div> : null}
-    {loading ? <div className="prompt-grid" aria-label="프롬프트 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="prompt-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
+    {loading ? <div className={`prompt-grid library-grid library-view-${libraryView.viewMode}`} aria-label="프롬프트 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="prompt-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
     {!loading && !error && items.length === 0 ? <div className="empty-state prompt-empty"><span aria-hidden="true">{filtered ? "⌕" : "✦"}</span><h2>{filtered ? "조건에 맞는 프롬프트가 없어요" : "자주 쓰는 스타일 조합을 만들어보세요"}</h2><p>{filtered ? "검색어·즐겨찾기·최근 사용·연결 곡 조건을 바꿔보세요." : "장르, 보컬, 분위기와 악기를 토큰으로 모아 빠르게 재사용할 수 있어요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={clearFilters}>검색 조건 지우기</button> : <a className="primary-link" href="/prompts/new">첫 프롬프트 만들기</a>}</div> : null}
-    {!loading && items.length ? <div className="prompt-grid">{items.map((prompt) => <PromptCard key={prompt.id} prompt={prompt} duplicating={duplicating === prompt.id} onToggle={toggle} onCopy={copy} onDuplicate={duplicate} />)}</div> : null}
+    {!loading && items.length ? <div className={`prompt-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{items.map((prompt) => <PromptCard key={prompt.id} prompt={prompt} duplicating={duplicating === prompt.id} onToggle={toggle} onCopy={copy} onDuplicate={duplicate} />)}</div> : null}
     {!loading && items.length ? <div className="load-more-wrap"><button className="secondary-button load-more" type="button" disabled={!nextCursor || loadingMore} onClick={() => void loadMore()}>{loadingMore ? "불러오는 중…" : nextCursor ? "더 불러오기" : "모든 프롬프트를 불러왔습니다"}</button></div> : null}
     <CopyFeedback state={copyFeedback} onManualComplete={manualUsagePrompt ? () => completeManualCopy(manualUsagePrompt) : undefined} />
   </section>;

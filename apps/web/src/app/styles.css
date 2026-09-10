@@ -328,6 +328,34 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .prompt-card.skeleton { min-height: 15.5rem; border-top-color: var(--line); background: linear-gradient(100deg, var(--surface) 20%, var(--surface-raised) 38%, var(--surface) 56%); background-size: 200% 100%; animation: skeleton 1.4s ease infinite; }
 .prompt-empty { width: 100%; max-width: none; min-height: 18rem; place-content: center; justify-items: center; margin-top: 0; text-align: center; }
 
+/* 1.0.7 per-library view mode */
+.library-view-control { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; margin-top: .85rem; }
+.library-view-selector { min-width: 0; display: inline-flex; flex-wrap: wrap; align-items: center; gap: .3rem; padding: .3rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--surface); }
+.library-view-label { padding: 0 .35rem; color: var(--subtle); font-size: .68rem; font-weight: 800; }
+.library-view-selector button { min-height: 2.25rem; padding: .4rem .65rem; border: 1px solid transparent; border-radius: .48rem; background: transparent; color: var(--muted); font: inherit; font-size: .7rem; font-weight: 750; cursor: pointer; }
+.library-view-selector button:hover { border-color: var(--line); color: var(--ink); }
+.library-view-selector button.active { border-color: rgb(200 255 61 / 38%); background: rgb(200 255 61 / 9%); color: var(--acid); }
+.library-view-selector button:disabled { cursor: wait; opacity: .62; }
+.library-view-notice { min-width: min(100%, 18rem); margin: 0; color: var(--muted); font-size: .68rem; line-height: 1.5; }
+.library-grid.library-view-list { grid-template-columns: minmax(0, 1fr); }
+.library-grid.library-view-grid-small { grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); }
+.library-grid.library-view-grid-medium { grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+.library-grid.library-view-grid-large { grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); }
+.library-view-list .song-card { min-height: 9.5rem; }
+.library-view-list .rhyme-card, .library-view-list .prompt-card { min-height: 11rem; }
+.library-view-list .song-note, .library-view-list .rhyme-body,
+.library-view-list .prompt-sentence-preview p { -webkit-line-clamp: 2; }
+.library-view-grid-small .song-card, .library-view-grid-small .rhyme-card, .library-view-grid-small .prompt-card { min-height: 11rem; padding: .85rem; }
+.library-view-grid-small .song-note, .library-view-grid-small .rhyme-body,
+.library-view-grid-small .prompt-copy-hint { display: none; }
+.library-view-grid-small .prompt-token-preview { min-height: 2.5rem; }
+.library-view-grid-small .prompt-sentence-preview p { -webkit-line-clamp: 2; }
+.library-view-grid-medium .song-card { min-height: 13rem; }
+.library-view-grid-medium .rhyme-card, .library-view-grid-medium .prompt-card { min-height: 14rem; }
+.library-view-grid-large .song-card { min-height: 15rem; }
+.library-view-grid-large .rhyme-card, .library-view-grid-large .prompt-card { min-height: 17rem; }
+.library-grid .song-card h2, .library-grid .rhyme-card h2, .library-grid .prompt-card h2 { overflow-wrap: anywhere; }
+
 /* Song create and edit form */
 .song-form-page { min-width: 0; width: 100%; padding: clamp(1.5rem, 3.4vw, 3.4rem); overflow: auto; }
 .form-heading { max-width: 57rem; }

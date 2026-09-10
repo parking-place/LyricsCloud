@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { LibraryViewModeSelector, useLibraryViewMode } from "./library-view-mode-selector.js";
 
 const STATUSES = ["idea", "writing_lyrics", "revising", "suno_generating", "mixing", "completed", "on_hold"] as const;
 const SORTS = ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"] as const;
@@ -62,6 +63,7 @@ const WORK_FILTER_LABELS: Record<SongWorkFilter, string> = {
 };
 
 export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }) {
+  const libraryView = useLibraryViewMode("songs");
   const [search, setSearch] = useState(initialQuery.search);
   const [appliedSearch, setAppliedSearch] = useState(initialQuery.search.trim());
   const [status, setStatus] = useState<SongStatus | "">(initialQuery.status);
@@ -215,14 +217,15 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
       <label className="select-field"><span>정렬</span><select aria-label="곡 정렬" value={sort} onChange={(event) => setSort(event.target.value as SongSort)}>{SORTS.map((value) => <option key={value} value={value}>{SORT_LABELS[value]}</option>)}</select></label>
     </div>
     <div className="status-chips" aria-label="곡 상태 빠른 필터"><button className={!status ? "active" : ""} aria-pressed={!status} onClick={() => setStatus("")}>전체</button>{STATUSES.map((value) => <button key={value} className={status === value ? "active" : ""} aria-pressed={status === value} onClick={() => setStatus(value)}>{STATUS_LABELS[value]}</button>)}</div>
+    <LibraryViewModeSelector label="곡 목록" state={libraryView} />
 
     <div className="list-summary" aria-live="polite"><strong>{loading ? "곡을 불러오는 중" : `총 ${totalCount}곡`}</strong>{filtered ? <span>현재 검색 조건</span> : <span>내 개인 작업 공간</span>}</div>
     {notice ? <p className="sr-only" role="status">{notice}</p> : null}
     {error ? <div className="list-error" role="alert"><strong>{error}</strong><button type="button" onClick={() => setRetryKey((value) => value + 1)}>다시 시도</button></div> : null}
 
-    {loading ? <div className="song-grid" aria-label="곡 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="song-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
+    {loading ? <div className={`song-grid library-grid library-view-${libraryView.viewMode}`} aria-label="곡 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="song-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
     {!loading && !error && songs.length === 0 ? <div className="empty-state song-empty"><span aria-hidden="true">{filtered ? "⌕" : "♪"}</span><h2>{filtered ? "조건에 맞는 곡이 없어요" : "아직 만든 곡이 없어요"}</h2><p>{filtered ? "검색어나 필터를 바꾸면 다른 곡을 찾을 수 있어요." : "떠오른 아이디어를 첫 곡으로 기록해보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={() => { setSearch(""); setStatus(""); setWork("all"); }}>검색 조건 지우기</button> : <a className="primary-link" href={newSongHref}>첫 곡 만들기</a>}</div> : null}
-    {!loading && songs.length > 0 ? <div className="song-grid">{songs.map((song) => <SongCard song={song} returnTo={returnTo} key={song.id} onOpen={rememberScroll} onToggle={toggle} />)}</div> : null}
+    {!loading && songs.length > 0 ? <div className={`song-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{songs.map((song) => <SongCard song={song} returnTo={returnTo} key={song.id} onOpen={rememberScroll} onToggle={toggle} />)}</div> : null}
     {!loading && songs.length > 0 ? <div className="load-more-wrap"><button ref={loadButton} className="secondary-button load-more" type="button" disabled={!nextCursor || loadingMore} onClick={() => void loadMore()}>{loadingMore ? "불러오는 중…" : nextCursor ? "더 불러오기" : "모든 곡을 불러왔습니다"}</button></div> : null}
   </section>;
 }
