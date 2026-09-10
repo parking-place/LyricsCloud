@@ -2,6 +2,28 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
+## [1.0.5] - 2026-09-10
+
+### Added
+
+- `[TAG:sub tag]`에서 첫 콜론 앞 주 이름으로 송폼을 탐색하고 suffix를 낮은 강조로 표시하되 원문 전체를 보존
+- 가사 최종 LF 복사 payload의 Unicode code point 수와 3,000자 초과 비차단 안내를 자동·단축키·수동 복사 경로에 제공
+
+### Fixed
+
+- 모바일 복사 버튼의 문자 수가 접근 이름에 합쳐져 기존 복구 흐름에서 버튼을 찾지 못하던 회귀
+- 같은 브라우저 저장소를 공유해 독립 탭 동기화를 잘못 검증하던 신규 composition 시험 경계
+
+### Validation
+
+- PostgreSQL 18 unit/integration 270건, Chromium PC/mobile 전체 284건, Chromium/Firefox/WebKit 신규 기능 행렬 11건 통과
+- 동일 SHA 개발 서버 네 서비스 health, 공개 suffix·주 이름 탐색·3,001자 exact copy와 collaboration 재시작·원문 보존 통과
+- GitHub Actions run `34487251707` 전체 verify와 네 개발 image 게시·서명 통과
+
+Known limitations: 실제 Windows/iOS/Android 물리 기기는 이번 후보에서 새로 실행하지 않았고 기존 `OPS-100-001` 외부 backup 예외를 유지한다.
+
+Phase 5 후보 CI와 같은 SHA 개발 인수를 통과했고 사용자가 정식 릴리스를 승인했다. 정식 main·image·릴리스 서버 결과는 annotated tag와 GitHub Release에 고정한다.
+
 ## [1.0.4 candidate] - 2026-09-10
 
 ### Added

@@ -1,6 +1,6 @@
 # 1.0.5 — 서브 송폼·가사 3,000자 경고
 
-상태: **P1~P4 완료 / P5 최종 후보 인수 착수**. 번호는 작업 배정이며 Phase별 검증 전 완료를 뜻하지 않는다.
+상태: **P1~P5 완료 / 정식 릴리스 승인·실행 중**. 번호는 작업 배정이며 Phase별 검증 전 완료를 뜻하지 않는다.
 
 ## 목표
 
@@ -43,4 +43,4 @@
 
 ## 계약과 인수
 
-[세부 계약](../contracts/EDITOR-COPY.md) · [품질 게이트](../QUALITY-GATES.md) · [버전 규칙](../VERSIONING.md) · [릴리스 정책](../RELEASE-POLICY.md). 코드가 바뀌지 않은 연구/검증만으로 제품 tag를 발행하지 않는다. P5는 후보 인수이며 정식 main/Release/운영 변경은 별도 현재 승인 뒤 실행한다.
+[세부 계약](../contracts/EDITOR-COPY.md) · [품질 게이트](../QUALITY-GATES.md) · [버전 규칙](../VERSIONING.md) · [릴리스 정책](../RELEASE-POLICY.md). P5 후보 CI·동일 SHA 개발 인수를 완료했고 사용자가 정식 main/Release/운영 변경을 승인했다. 최종 tag·digest·릴리스 서버 결과는 [정식 릴리스 실행](../../../docs/runbooks/1.0.5-release.md)에 고정한다.
