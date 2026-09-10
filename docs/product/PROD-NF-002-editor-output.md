@@ -1,9 +1,9 @@
 # PROD-NF-002 — prompt 모드·송폼 부태그·copy advisory
 
-- 상태: **Proposed**
+- 상태: **Accepted through 1.0.5 / 1.0.6 clauses remain Proposed**
 - 작성일: 2026-09-09
 - 결정 Phase: 1.0.3 P1, 1.0.4~1.0.6 확장
-- 승인자/시각: **미승인 — 해당 Phase에서 사용자/지정 결정권자의 승인을 기록한다.**
+- 승인자/시각: 사용자 실행 승인, 2026-09-10. 1.0.3 mode/raw, 1.0.4 prompt 표시·경고, 1.0.5 subtag·가사 경고까지만 승인하며 1.0.6 Extend·추천 삽입은 후속 Phase 전까지 Proposed로 유지한다.
 - 범위 원본: 사용자의 1.0.1 필수 및 후속 1.x 계획 요청.
 
 ## 해결할 질문

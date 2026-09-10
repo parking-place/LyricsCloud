@@ -1,6 +1,6 @@
 # 입력·프롬프트·송폼·복사 출력 계약
 
-상태: **Proposed**, 1.0.1의 입력 안전성과 1.0.3~1.0.6의 기능 계약. 기존 원본 저장 규칙과 충돌하면 원문 유실을 허용하지 말고 새 결정에 기록한다.
+상태: **1.0.3~1.0.5 범위 Accepted / 1.0.6 범위 Proposed**. 1.0.1의 입력 안전성과 기존 원본 저장 규칙을 유지하며, 충돌하면 원문 유실을 허용하지 말고 새 결정에 기록한다.
 
 ## 1. 원문과 출력의 분리
 
@@ -32,7 +32,7 @@ mode+body/occurrence의 조합은 원자 command 또는 승인된 CRDT transacti
 
 ## 4. 송폼 sub tag
 
-줄 단위 송폼의 대괄호 안 **첫 `:`**를 base와 suffix의 경계로 본다. `[Verse: soft voice]`는 목차의 기본 이름 `Verse`로 인식하고 반복 번호는 기존 계약을 유지한다. `: soft voice`는 원문과 Suno용 copy에 그대로 남으며 editor에서는 덜 강조된 decoration으로 표현한다. 낮은 강조는 읽을 수 없는 대비나 selection 범위 변경을 뜻하지 않는다. suffix에 추가 `:`가 있어도 자의적으로 분해/정규화하지 않는다.
+줄 단위 송폼의 대괄호 안 **첫 `:`**를 base와 suffix의 경계로 본다. 콜론 앞 base의 앞뒤 공백을 제외한 값이 탐색용 주 이름이며, `[Verse: soft voice]`는 `Verse`로 탐색하고 반복 번호도 주 이름을 기준으로 센다. 콜론부터 닫는 대괄호 직전까지의 `: soft voice`는 원문과 Suno용 copy에 그대로 남으며 editor에서는 덜 강조된 decoration으로 표현한다. suffix에 추가 `:`가 있어도 자의적으로 분해·trim·정규화하지 않는다. 콜론 앞 base가 공백뿐이면 기존 문법과의 호환을 위해 전체 대괄호 내부 값을 기존 단일 label로 취급하고 subtag decoration을 만들지 않는다.
 
 정확한 bracket/indentation/case/공백/빈 base/닫히지 않은 tag는 P1의 fixture로 고정한다. 계약 기본안은 줄 전체가 기존 송폼 인식 규칙을 만족할 때만 확장한다. 임의 본문 속 `[TAG:...]`를 숨기지 않는다.
 

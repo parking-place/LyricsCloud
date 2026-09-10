@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.0.4"
-current_phase: "../2.Patch-phase/1.0.4/5phase.md"
+current_version: "1.0.5"
+current_phase: "../2.Patch-phase/1.0.5/1phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "1.0.5 P1 계약·실패 사례·담당 경계를 착수한다"
+next_action: "1.0.5 P2 실패 fixture와 subtag parser·가사 copy builder를 구현한다"
 ```
 
 ## 승인과 기준
@@ -57,11 +57,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.4 P3 | complete | 목록·편집기·자료 패널의 lossless span·공통 길이/비차단 경고와 PC·모바일 Chromium 수용 흐름 완료 |
 | 1.0.4 P4 | complete | 실제 PostgreSQL 263건·Chromium 279건·5-project 기능 10건과 권한·offline·재접속 회귀 완료 |
 | 1.0.4 P5 | complete | Actions `34476629460` 전체 verify·네 dev image·동일 SHA 개발 공개 인수와 1.0.5 연결 완료 |
+| 1.0.5 P1 | complete | 첫 콜론 주 이름·lossless suffix·최종 LF payload 3,000 code point 경고·호환/rollback 계약 확정 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.5/P1 | LC-NF-1.0.5-P1-01~06 | songform/copy 계약·실패 입력·editor/UI/E2E 담당·호환/rollback 경계 | 1.0.4 P5 `508833e` | 2026-09-10T21:52:00+09:00 | complete |
 | Codex | 1.0.4/P5 | LC-NF-1.0.4-P5-01~06 | 요구 추적·현재 문서·검증기·최종 CI·개발 인수·1.0.5 인계 | 1.0.4 P4 `3ed2770` | 2026-09-10T21:10:00+09:00 | complete |
 | Codex | 1.0.4/P4 | LC-NF-1.0.4-P4-01~06 | 실제 DB·권한·offline/두 탭·지원 브라우저·restart 회귀 | 1.0.4 P3 `7136897` | 2026-09-10T20:50:00+09:00 | complete |
 | Codex | 1.0.4/P3 | LC-NF-1.0.4-P3-01~06 | web prompt 목록·편집기·자료 패널·copy fallback·PC/mobile E2E | 1.0.4 P2 `c8b18f7` | 2026-09-10T20:35:00+09:00 | complete |
@@ -128,3 +130,5 @@ P10 후보 `869e32b8a15c2e1e7524a75ab4d8b4428a925c79`는 원격 CI run `34394222
 1.0.4 P4 후보 `dd638e70051acd74486b4056d66503caffe26311`은 깨끗한 격리 PostgreSQL 18에서 migration 반복과 unit/integration 263건을 통과했고 기존 별도 beta signup 4건만 의도적으로 skip했다. Chromium PC/mobile 전체 310건 중 279 PASS·환경 조건 31 skip, 새 기능 Chromium/Firefox/WebKit 5-project 10건을 통과했다. 첫 교차 실행에서 릴리스 모바일 프로젝트명을 기본 `mobile`로만 판별한 test harness 결함을 찾아 `*-mobile`로 보정했으며 제품 동작이나 assertion은 완화하지 않았다. 실제 물리 기기는 새로 수행하지 않았다.
 
 1.0.4 P5 후보 `6c0aedca7d01270293d14e90dd6912cffe937cff`은 GitHub Actions run `34476629460`의 전체 verify와 네 dev image 게시·서명을 통과했다. 개발 서버 checkout·환경 `BUILD_ID`·공개 live/ready가 같은 SHA였고 `1.0.4`, channel `dev`, phase `p5`, schema `1000_prompt_modes.sql`, 네 서비스 healthy를 확인했다. collaboration 재시작 전후 같은 문서 재접속과 CRLF·emoji raw 일치가 PASS했고 합성 자료를 제거했다. 최초 CI의 임시 DB 강제 삭제 정리 경쟁은 일반 drop 재시도로 수정해 로컬 3회와 최종 CI에서 닫았다. 1.0.4 P1~P5는 별도 정식 tag 없이 1.0.5의 선행 기준으로 인수한다.
+
+1.0.5 P1은 출발 SHA `508833e5aee43ebcc9d7aecaae1592b655a5460a`에서 기존 line parser·incremental index·CodeMirror decoration·목차/resume·전체/구간 copy·feedback 경로를 조사했다. 첫 콜론 앞의 trimmed 주 이름, 콜론부터 닫는 대괄호 전까지 lossless suffix, 빈 주 이름의 기존 label 호환, occurrence와 resume의 주 이름 사용, LF 직렬화 뒤 최종 payload Unicode code point `> 3000` 비차단 경고를 승인했다. DB/API/CRDT/schema는 바꾸지 않으며 P2가 순수 parser/copy builder 실패 fixture와 구현을 담당한다.
