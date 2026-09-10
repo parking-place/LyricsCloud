@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.2"
-current_phase: "../2.Patch-phase/1.0.2/3phase.md"
+current_phase: "../2.Patch-phase/1.0.2/4phase.md"
 state: "active"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "1.0.2 P3에서 저장 실패 안내·가입 복귀·작은 화면·복구 문서와 PC/mobile 사용자 흐름을 검증한다"
+next_action: "1.0.2 P4에서 네 수용 사례와 직전 버전·계정 격리·오프라인·재접속·서버 재시작·지원 브라우저 회귀를 실행한다"
 ```
 
 ## 승인과 기준
@@ -40,12 +40,14 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.1 P10 | complete | 최종 후보 전체 CI·네 dev image·동일 SHA 개발 공개 인수 완료, 승인된 release 실행 gate 개방 |
 | 1.0.2 P1 | complete | v1.0.1 source 조사·수용 입력표·호환/rollback·파일 담당 경계를 설계-only로 고정 |
 | 1.0.2 P2 | complete | 가입 응답 유실 멱등·volatile 저장 이탈 guard·build별 PWA 경계와 동일 SHA 개발 인수 완료 |
+| 1.0.2 P3 | complete | 저장 실패 exact-copy·가입 로그인/재시도/취소·PC/mobile 50건과 동일 SHA 개발 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.2/P3 | LC-NF-1.0.2-P3-01~06 | 저장·가입 안내·복구 경로·작은 화면·PC/mobile 회귀 | P2 동일 SHA 개발 인수 | 2026-09-10T12:23:38+09:00 | active |
+| Codex | 1.0.2/P4 | LC-NF-1.0.2-P4-01~06 | 가입 응답 유실·저장/PWA·계정·재접속·서버 재시작 교차 회귀 | P3 동일 SHA 개발 인수 | 2026-09-10T12:42:00+09:00 | active |
+| Codex | 1.0.2/P3 | LC-NF-1.0.2-P3-01~06 | 저장·가입 안내·복구 경로·작은 화면·PC/mobile 회귀 | P2 동일 SHA 개발 인수 | 2026-09-10T12:23:38+09:00 | complete |
 | Codex | 1.0.2/P2 | LC-NF-1.0.2-P2-01~06 | 실패 fixture·가입 멱등·저장 guard·build별 PWA·CLI/schema 회귀 | P1 설계-only 계약 | 2026-09-10T12:03:37+09:00 | complete |
 | Codex | 1.0.2/P1 | LC-NF-1.0.2-P1-01~06 | 안정화 계약·관련 구현/테스트 조사·담당 경계·인수 문서 | v1.0.1 main/release `194dc4217e5a45e9e55c82c43e30afffcb5e1984` | 2026-09-10T11:57:03+09:00 | complete |
 | Codex | 1.0.1/P10 | LC-NF-1.0.1-P10-01~06 | 요구 추적·최종 CI·release manifest·main/image/운영 배포 | P9 동일 SHA 개발 인수 | 2026-09-10 | complete |
@@ -81,3 +83,5 @@ P9 구현 후보 `565ed50335197855b7d3c14f3ea9e5519e1f838f`는 unit·실제 Post
 P10 후보 `869e32b8a15c2e1e7524a75ab4d8b4428a925c79`는 원격 CI run `34394222604`의 전체 verify와 네 dev image 발행을 통과했다. 개발 서버 checkout/build metadata가 같은 SHA였고 `1.0.1`, channel `dev`, phase `p10`, schema `0901_beta_signup.sql`, 네 서비스 healthy를 확인했다. 공개 합성 smoke에서 가사·라임·프롬프트 즉시 이탈·재진입 저장, light/dark의 `＋ 새 가사`·`연결 관리`, 테마 저장, 키보드/focus, 320/390px 모바일, CSP·CSS·service worker가 PASS였고 합성 자료를 제거했다. 사용자 확인 `P4 Google signup PASS`, `P5 Windows Chrome PASS, Edge PASS`, `iOS update PASS, Android update PASS`를 실제 환경 증거로 동결했다. P10은 완료됐으며 사용자가 승인한 main·정식 image·릴리스 서버 실행으로 이동한다. `OPS-100-001`은 명시적 예외로 계속 열려 있다.
 
 1.0.2 P2 구현 후보 `4a8dd97562fe0d1ac400b1799aacbced3285eabf`는 Node 24 unit/typecheck/build, PostgreSQL 18 가입 멱등·관리 CLI·fresh/repeat migration, desktop/mobile Chromium 38건을 통과했다. 원격 PR #24와 개발 서버 checkout/build metadata가 일치했고 공개 live·ready·auth HTTP 200, version `1.0.2`, channel `dev`, phase `p2`, schema `0901_beta_signup.sql`, 네 서비스 healthy를 확인했다. 완료 문서 자체를 포함한 최종 commit은 동일 절차로 재배포하고 정확한 SHA를 비공개 서버 인벤토리에 남긴다. 중간 원격 CI는 정책대로 생략했으며 필수 전체 CI는 P5 최종 후보에서 실행한다.
+
+1.0.2 P3 후보 `8d01441b6043898ef83745b307fc7f4e814c2a72`는 Node 24 check·production build와 desktop/mobile Chromium의 새 수용 4건·인증/가사/라임 46건을 통과했다. 원격 PR #25와 개발 서버 checkout/build metadata가 일치했고 공개 live·ready·auth·정적 경로, version `1.0.2`, channel `dev`, phase `p3`, schema `0901_beta_signup.sql`, 네 서비스 healthy를 확인했다. 공개 가입 오류 복귀 동선도 합성 query로 확인했으며 실제 사용자 자료는 사용하지 않았다.

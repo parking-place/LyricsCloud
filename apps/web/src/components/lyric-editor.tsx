@@ -697,8 +697,8 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         <button type="button" disabled={commandBusy} onClick={duplicateCurrent}>복제</button>
         <button type="button" disabled={commandBusy} className="danger-text" onClick={() => setDeleteOpen(true)}>삭제</button>
       </div>
-      <SaveIndicator state={saveState} syncState={localSyncState} onRetry={() => { void controllerRef.current?.retry(); }} />
-      <LocalDraftIndicator state={localSyncState} onRetry={() => localSyncRef.current?.retry()} />
+      <SaveIndicator state={saveState} syncState={localSyncState} onRetry={() => { void controllerRef.current?.retry(); }} onCopy={copyWhole} />
+      <LocalDraftIndicator state={localSyncState} onRetry={() => localSyncRef.current?.retry()} onCopy={copyWhole} />
     </header>
     {commandNotice ? <p className="editor-command-notice" role="status">{commandNotice}</p> : null}
     {legacyConflict ? <details className="editor-command-notice" open>
@@ -861,26 +861,27 @@ function CopySelectionActions({ selectedCount, onClear, onCopy }: { selectedCoun
   </div>;
 }
 
-function SaveIndicator({ state, syncState, onRetry }: { state: SaveState; syncState: LocalSyncState; onRetry: () => void }) {
+function SaveIndicator({ state, syncState, onRetry, onCopy }: { state: SaveState; syncState: LocalSyncState; onRetry: () => void; onCopy: () => void }) {
   if (state.status === "saved" && syncState !== "ready") return null;
   const label = state.status === "dirty" ? "변경 내용 있음" : state.status === "saving" ? "변경 내용을 저장하는 중…" : state.status === "error" ? "저장하지 못했습니다" : "방금 저장됨";
   return <div className={`save-indicator is-${state.status}`} role="status" aria-live="polite">
     <span aria-hidden="true" />{label}
-    {state.status === "error" ? <button type="button" onClick={onRetry}>다시 시도</button> : null}
+    {state.status === "error" ? <><button type="button" onClick={onRetry}>다시 시도</button><button type="button" onClick={onCopy}>현재 입력 복사</button></> : null}
   </div>;
 }
 
-function LocalDraftIndicator({ state, onRetry }: { state: LocalSyncState; onRetry: () => void }) {
+function LocalDraftIndicator({ state, onRetry, onCopy }: { state: LocalSyncState; onRetry: () => void; onCopy: () => void }) {
   if (state === "ready") return null;
   const labels: Record<Exclude<LocalSyncState, "ready">, string> = {
     loading: "초안과 서버 연결 확인 중…", "saving-local": "이 기기에 저장하는 중…",
     local: "이 기기에 임시 저장됨 · 서버 연결 대기", syncing: "이 기기에 임시 저장됨 · 서버 동기화 중…",
     projection: "서버에 저장됨 · 검색 반영 중…", offline: "오프라인 · 이 기기에 임시 저장됨",
-    error: "동기화를 완료하지 못했습니다. 현재 입력을 복사해 보관해 주세요.",
-    unavailable: "로그인 또는 문서 접근을 확인해 주세요. 현재 입력은 보존됩니다.",
+    error: "이 기기 초안 또는 서버 저장을 완료하지 못했습니다. 현재 입력은 화면에 남아 있습니다.",
+    unavailable: "서버에 저장할 수 없습니다. 로그인·문서 접근을 확인하고 이탈 전 현재 입력을 복사해 주세요.",
     conflict: "초안을 자동으로 합칠 수 없어 동기화를 멈췄습니다."
   };
   return <p className={`local-draft-state state-${state}`} role="status">{labels[state]}
     {state === "error" || state === "local" || state === "unavailable" ? <button type="button" onClick={onRetry}>동기화 다시 시도</button> : null}
+    {state === "error" || state === "unavailable" ? <button type="button" onClick={onCopy}>현재 입력 복사</button> : null}
   </p>;
 }
