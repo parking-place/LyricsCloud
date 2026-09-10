@@ -106,6 +106,8 @@ test.describe("1.0.5 sub-songform and lyric copy guidance", () => {
       await editor.dispatchEvent("compositionend", { data: "한글" });
       await expect(editor).toContainText("원격 입력");
       await expect(second.locator(".cm-content")).toContainText("완성 한글");
+      await expect.poll(() => editor.evaluate((node) => (node as HTMLElement).innerText))
+        .toBe("[Verse: 완성 한글]\n서버 기준\n원격 입력");
       await expect(page.locator(".cm-songform-subtag")).toHaveText(": 완성 한글");
       await expect(page.getByRole("complementary", { name: "송폼 목차" }).getByRole("button", { name: "Verse 구간으로 이동" })).toContainText(": 완성 한글");
       await expect.poll(async () => (await (await page.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body)

@@ -77,6 +77,7 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
   let connected = false;
   let destroyed = false;
   let composing = false;
+  let reconcilingComposition = false;
   let pumping = false;
   let pumpAgain = false;
   let connecting = false;
@@ -130,7 +131,7 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
     void writes.then(() => pump()).catch(() => fail("error"));
   }
   text.observe((event, transaction) => {
-    if (initialized && !isLocalOrigin(transaction.origin)) {
+    if (initialized && !isLocalOrigin(transaction.origin) && !reconcilingComposition) {
       let offset = 0;
       const changes: EditorTextChange[] = [];
       for (const delta of event.delta) {
@@ -317,12 +318,24 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
   return {
     applyLocalTransaction(transaction) {
       if (!initialized || halted || transaction.origin !== "user" || transaction.composing || !transaction.changes.length) return;
-      document.transact(() => {
-        for (const change of [...transaction.changes].sort((left, right) => right.from - left.from)) {
-          if (change.to > change.from) text.delete(change.from, change.to - change.from);
-          if (change.insert) text.insert(change.from, change.insert);
-        }
-      }, transaction.requestId ? { local: localOrigin, requestId: transaction.requestId } : localOrigin);
+      const queuedDuringComposition = composing ? remoteQueue.splice(0) : [];
+      if (queuedDuringComposition.length) reconcilingComposition = true;
+      try {
+        // Apply updates that arrived during IME preedit against the shared base
+        // before committing the local composition. Otherwise a remote append
+        // anchored to text replaced by the IME can be ordered before the new
+        // first line depending on Yjs client IDs.
+        for (const update of queuedDuringComposition) Y.applyUpdate(document, update, remoteOrigin);
+        document.transact(() => {
+          for (const change of [...transaction.changes].sort((left, right) => right.from - left.from)) {
+            if (change.to > change.from) text.delete(change.from, change.to - change.from);
+            if (change.insert) text.insert(change.from, change.insert);
+          }
+        }, transaction.requestId ? { local: localOrigin, requestId: transaction.requestId } : localOrigin);
+      } finally {
+        reconcilingComposition = false;
+      }
+      if (queuedDuringComposition.length) options.onRemoteBody(text.toString());
     },
     captureSelection(selection) {
       if (!initialized || !documentKey || halted || destroyed) return null;
