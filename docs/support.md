@@ -25,7 +25,7 @@
 
 1.0.2는 가입 성공 응답 유실의 멱등 회수, 로컬 저장 실패 원문 복사, 미전송 입력 이탈 guard와 build별 PWA cache 경계를 포함한 현재 정식 버전이다. 사용자 복구 순서는 [1.0.2 복구 안내](./runbooks/1.0.2-user-recovery.md)에 있다.
 
-1.0.3 후보는 프롬프트 태그형/문장형 mode와 문장 raw를 분리 저장하고, 명시 변환 preview·확인·undo, revision v1/v2 복원, 구버전 capability 409 차단을 제공한다. 실제 PostgreSQL, Chromium desktop/mobile, Firefox desktop, WebKit mobile과 개발 collaboration 재시작을 통과했다. P5 전체 CI와 같은 SHA 개발 인수 전에는 후보이며 정식 지원 버전이나 릴리스 서버 배포로 보지 않는다.
+1.0.3 후보는 프롬프트 태그형/문장형 mode와 문장 raw를 분리 저장하고, 명시 변환 preview·확인·undo, revision v1/v2 복원, 구버전 capability 409 차단을 제공한다. 실제 PostgreSQL, Chromium desktop/mobile, Firefox desktop, WebKit mobile, 전체 CI와 동일 SHA 개발 collaboration 재시작을 통과했다. P5 인수는 완료됐지만 별도 release go/no-go 전에는 정식 지원 버전이나 릴리스 서버 배포로 보지 않는다.
 
 미해결 P0/P1은 0건이다. 저장 수렴 실패, 다른 사용자의 자료 노출, 인증 우회, 핵심 모바일 불능, 복구 불가능 증거가 생기면 즉시 P0/P1으로 재분류하고 배포를 중단한다.
 

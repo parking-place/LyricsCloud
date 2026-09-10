@@ -20,8 +20,9 @@
 - PostgreSQL unit/integration 261건과 migration `1000_prompt_modes.sql` fresh/repeat, typecheck·production build 통과
 - Chromium desktop/mobile 전체 306건 중 274 PASS·조건부 31 skip, 새 기능 Chromium 8건·Firefox 4건·WebKit mobile 4건 통과
 - 동일 SHA 개발 서버의 네 서비스 health, 공개 HTTPS, 실제 collaboration 재시작 전후 raw 조회·복제·재연결 통과
+- GitHub Actions 전체 migration·unit/integration·production image·backup/restore·취약점/secret·브라우저 행렬과 네 개발 image 게시/서명 통과
 
-Phase 5 최종 CI와 같은 SHA 개발 인수를 통과하기 전까지 후보이며, 완료 뒤에도 별도 승인 없는 1.0.3 main·tag·정식 image·릴리스 서버 배포는 수행하지 않는다. `OPS-100-001` 외부 backup 예외는 계속 유지한다.
+Phase 5 최종 CI와 같은 SHA 개발 인수를 통과했다. 별도 승인 없는 1.0.3 main·tag·정식 image·릴리스 서버 배포는 수행하지 않는다. `OPS-100-001` 외부 backup 예외는 계속 유지한다.
 
 ## [1.0.2] - 2026-09-10
 
