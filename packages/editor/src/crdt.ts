@@ -100,6 +100,13 @@ export function replacePromptSentence(document: Y.Doc, value: string): void {
   if (raw) sentence.insert(0, raw);
 }
 
+export function replacePromptTokens(document: Y.Doc, items: readonly PromptSequenceItem[]): void {
+  const sequence = promptTokenSequence(document);
+  const validated = items.map(validateSequenceItem);
+  sequence.delete(0, sequence.length);
+  if (validated.length) sequence.insert(0, validated);
+}
+
 export function insertPromptToken(document: Y.Doc, index: number, item: PromptSequenceItem): void {
   const sequence = promptTokenSequence(document);
   if (!Number.isInteger(index) || index < 0 || index > sequence.length) throw new RangeError("PROMPT_POSITION_OUT_OF_RANGE");

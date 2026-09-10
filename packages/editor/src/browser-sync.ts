@@ -1,8 +1,8 @@
 import { Dexie } from "dexie";
 import * as Y from "yjs";
-import { parsePublicErrorCode, type CheckpointReason, type CrdtTextSelectionReference, type LyricRevision, type RestoreRevisionInput, type RevisionHistory } from "@lyricscloud/domain";
+import { parsePublicErrorCode, type CheckpointReason, type CrdtTextSelectionReference, type LyricRevision, type PromptMode, type RestoreRevisionInput, type RevisionHistory } from "@lyricscloud/domain";
 import type { EditorDocumentTransaction, EditorTextChange } from "./codemirror.js";
-import { createLyricDocument, encodeTextRelativePosition, lyricBody, resolveTextRelativePosition } from "./crdt.js";
+import { createLyricDocument, encodeTextRelativePosition, lyricBody, projectPrompt, resolveTextRelativePosition } from "./crdt.js";
 import { SyncStorage, type QueuedUpdate } from "./sync-storage.js";
 
 export type LocalSyncState = "loading" | "saving-local" | "ready" | "local" | "syncing" | "projection" | "offline" | "error" | "unavailable" | "conflict";
@@ -33,6 +33,8 @@ export interface PromptCreationDraft {
   readonly requestId: string;
   readonly title: string;
   readonly tokens: readonly string[];
+  readonly mode?: PromptMode;
+  readonly sentenceText?: string;
   readonly updatedAt: string;
   readonly sourceTemplateId?: string;
   readonly selectedTemplateId?: string | null;
@@ -493,7 +495,7 @@ export async function hasOwnerPendingDrafts(ownerId: string): Promise<boolean> {
   const promptCreations = await creationDrafts<PromptCreationDraft>(await promptCreationStorage(ownerId));
   const quickCreation = await readQuickCreationDraft(ownerId);
   return Boolean(creations.some(creation => creation.title || creation.body || creation.submission)
-    || promptCreations.some(creation => creation.title || creation.tokens.length || creation.submission)
+    || promptCreations.some(creation => creation.title || creation.tokens.length || creation.sentenceText || creation.submission)
     || (quickCreation && (quickCreation.title || quickCreation.body)));
 }
 export async function migrateOwnerLocalDrafts(ownerId: string): Promise<void> {
@@ -517,11 +519,9 @@ export async function readOwnerPendingDrafts(ownerId: string): Promise<Array<{ r
         const document = new Y.Doc();
         try {
           Y.applyUpdate(document, cached.snapshot);
-          if (document.share.has("prompt-title") || document.share.has("prompt-tokens")) {
-            const title = document.getText("prompt-title").toString();
-            const body = document.getArray<{ displayValue?: unknown }>("prompt-tokens").toArray()
-              .map((item) => typeof item?.displayValue === "string" ? item.displayValue : "").filter(Boolean).join(", ");
-            return { resourceId: cached.resourceId, title, body };
+          if (document.share.has("prompt-title") || document.share.has("prompt-tokens") || document.share.has("prompt-sentence")) {
+            const prompt = projectPrompt(document);
+            return { resourceId: cached.resourceId, title: prompt.title, body: prompt.plainText };
           }
           return { resourceId: cached.resourceId, body: lyricBody(document).toString() };
         }
@@ -534,7 +534,8 @@ export async function readOwnerPendingDrafts(ownerId: string): Promise<Array<{ r
     if (creation.title || creation.body) drafts.push({ resourceId: creation.requestId, title: creation.title, body: creation.body });
   }
   for (const creation of await creationDrafts<PromptCreationDraft>(await promptCreationStorage(ownerId))) {
-    if (creation.title || creation.tokens.length) drafts.push({ resourceId: creation.requestId, title: creation.title, body: creation.tokens.join(", ") });
+    if (creation.title || creation.tokens.length || creation.sentenceText) drafts.push({ resourceId: creation.requestId, title: creation.title,
+      body: creation.mode === "sentence" ? creation.sentenceText ?? "" : creation.tokens.join(", ") });
   }
   const quickCreation = await readQuickCreationDraft(ownerId);
   if (quickCreation && (quickCreation.title || quickCreation.body)) {

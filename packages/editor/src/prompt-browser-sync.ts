@@ -5,7 +5,7 @@ import {
   type PromptMode, type PromptTokenValue, type RestoreRevisionInput, type RevisionHistory
 } from "@lyricscloud/domain";
 import {
-  createPromptDocument, insertPromptToken, projectPrompt, replacePromptSentence, setPromptMode,
+  createPromptDocument, insertPromptToken, projectPrompt, replacePromptSentence, replacePromptTokens, setPromptMode,
   movePromptToken, promptTitle, promptTokenSequence, removePromptToken, type PromptSequenceItem
 } from "./crdt.js";
 import type { LocalSyncState } from "./browser-sync.js";
@@ -26,6 +26,7 @@ export interface PromptEditorSnapshot {
 export interface BrowserPromptSync {
   setTitle(value: string): void;
   setMode(mode: PromptMode, sentenceText?: string): void;
+  replaceContent(mode: PromptMode, tokens: readonly string[], sentenceText: string): void;
   setSentenceText(value: string): void;
   insertTokens(values: readonly string[], index?: number): void;
   moveToken(occurrenceId: string, targetIndex: number): void;
@@ -288,6 +289,16 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
     setSentenceText(value) {
       if (!initialized || halted) return;
       document.transact(() => replacePromptSentence(document, value), localOrigin);
+    },
+    replaceContent(mode, tokens, sentenceText) {
+      if (!initialized || halted) return;
+      if (tokens.length > PROMPT_LIMITS.tokensPerPrompt) throw new RangeError("PROMPT_TOKEN_LIMIT");
+      const items = tokens.map((value) => ({ occurrenceId: crypto.randomUUID(), displayValue: normalizePromptToken(value).displayValue }));
+      document.transact(() => {
+        replacePromptTokens(document, items);
+        replacePromptSentence(document, sentenceText);
+        setPromptMode(document, mode);
+      }, localOrigin);
     },
     insertTokens(values, index = promptTokenSequence(document).length) {
       if (!initialized || halted || !values.length) return;

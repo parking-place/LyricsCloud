@@ -1,6 +1,6 @@
 "use client";
 
-import { parsePromptText, serializePromptTokens, type TemplateListInput, type TemplateRecord } from "@lyricscloud/domain";
+import { parsePromptText, type PromptMode, type TemplateListInput, type TemplateRecord } from "@lyricscloud/domain";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type Mode = "view" | "create" | "edit";
@@ -14,6 +14,7 @@ export function TemplateScreen({ initialQuery }: { initialQuery: TemplateListInp
   const [mode, setMode] = useState<Mode>("view");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [promptMode, setPromptMode] = useState<PromptMode>("tags");
   const [saving, setSaving] = useState(false);
   const submission = useRef<{ url: string; method: string; body: string } | null>(null);
   const active = useRef(true);
@@ -38,10 +39,13 @@ export function TemplateScreen({ initialQuery }: { initialQuery: TemplateListInp
     const params = new URLSearchParams({ type: query.type, source: query.source, sort: query.sort }); window.history.replaceState(null, "", `/templates?${params}`);
   }, [query]);
 
-  function beginCreate() { setTitle(""); setContent(""); setMode("create"); setNotice(""); }
+  function beginCreate() { setTitle(""); setContent(""); setPromptMode("tags"); setMode("create"); setNotice(""); }
   function beginEdit() {
     if (!selected || selected.source === "default") return;
-    setTitle(selected.title); setContent(selected.type === "lyrics" ? selected.lyricBody ?? "" : selected.tokens.map((token) => token.displayValue).join(", ")); setMode("edit"); setNotice("");
+    setTitle(selected.title); setPromptMode(selected.promptMode);
+    setContent(selected.type === "lyrics" ? selected.lyricBody ?? "" : selected.promptMode === "sentence"
+      ? selected.promptText ?? "" : selected.tokens.map((token) => token.displayValue).join(", "));
+    setMode("edit"); setNotice("");
   }
 
   async function save(event: React.FormEvent) {
@@ -50,7 +54,9 @@ export function TemplateScreen({ initialQuery }: { initialQuery: TemplateListInp
     setSaving(true);
     try {
       const type = mode === "edit" ? selected!.type : query.type;
-      const payload = type === "lyrics" ? { lyricBody: content } : { tokens: parsePromptText(content).map((token) => token.displayValue) };
+      const payload = type === "lyrics" ? { lyricBody: content } : promptMode === "sentence"
+        ? { promptMode, promptText: content, tokens: [] }
+        : { promptMode, tokens: parsePromptText(content).map((token) => token.displayValue) };
       submission.current ??= mode === "create"
         ? { url: "/api/templates", method: "POST", body: JSON.stringify({ requestId: crypto.randomUUID(), type, title, ...payload }) }
         : { url: `/api/templates/${selected!.id}`, method: "PUT", body: JSON.stringify({ rowVersion: selected!.rowVersion, title, ...payload }) };
@@ -95,8 +101,8 @@ export function TemplateScreen({ initialQuery }: { initialQuery: TemplateListInp
     <div className="templates-layout">
       <aside className="template-list" aria-label="템플릿 목록">{loading ? <p>템플릿을 불러오는 중…</p> : items.length ? items.map((item) => <button disabled={locked} key={item.id} className={selected?.id === item.id ? "selected" : ""} onClick={() => { setSelectedId(item.id); setMode("view"); }}><span><strong>{item.title}</strong><small>{item.source === "default" ? "기본 · 읽기 전용" : "내 템플릿"}</small></span><span aria-label={item.isFavorite ? "즐겨찾기" : undefined}>{item.isFavorite ? "★" : ""}</span></button>) : <div className="template-empty"><strong>내 템플릿이 없습니다</strong><p>새 템플릿을 만들거나 기본 템플릿을 복제해 시작하세요.</p><button type="button" disabled={locked} onClick={beginCreate}>첫 템플릿 만들기</button></div>}</aside>
       <article className="template-preview">
-        {mode !== "view" ? <form onSubmit={save}><p className="eyebrow">{mode === "create" ? "New template" : "Edit template"}</p><label>템플릿 제목<input autoFocus disabled={locked} value={title} maxLength={200} onChange={(event) => setTitle(event.target.value)} /></label><label>{(mode === "edit" ? selected?.type : query.type) === "lyrics" ? "가사 구조 원문" : "쉼표로 구분한 프롬프트 토큰"}<textarea disabled={locked} value={content} rows={14} onChange={(event) => setContent(event.target.value)} /></label><footer><button type="button" className="secondary-button" disabled={locked} onClick={() => setMode("view")}>취소</button><button className="primary-link" type="submit" disabled={saving}>저장</button></footer></form>
-          : selected ? <><header><div><span className="template-source">{selected.source === "default" ? "기본 템플릿" : "내 템플릿"}</span><h2>{selected.title}</h2><small>{selected.lastUsedAt ? `최근 사용 ${new Date(selected.lastUsedAt).toLocaleDateString("ko-KR")}` : "아직 사용하지 않음"}</small></div><button type="button" className="template-favorite" aria-label={selected.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"} aria-pressed={selected.isFavorite} onClick={() => void favorite()}>{selected.isFavorite ? "★ 즐겨찾기" : "☆ 즐겨찾기"}</button></header><div className="template-content" aria-label="템플릿 내용 미리보기">{selected.type === "lyrics" ? <pre>{selected.lyricBody}</pre> : <ol>{selected.tokens.map((token, index) => <li key={`${token.normalizedValue}-${index}`}>{token.displayValue}</li>)}</ol>}</div><footer className="template-actions"><a className="primary-link" href={selected.type === "lyrics" ? `/lyrics/new?template=${selected.id}` : `/prompts/new?template=${selected.id}`}>이 템플릿으로 시작</a><button className="secondary-button" type="button" onClick={() => void duplicate()}>복제</button>{selected.source === "user" ? <><button className="secondary-button" type="button" onClick={beginEdit}>수정</button><button className="danger-button" type="button" onClick={() => void remove()}>삭제</button></> : null}</footer></> : <div className="template-empty"><strong>미리 볼 템플릿을 선택하세요</strong></div>}
+        {mode !== "view" ? <form onSubmit={save}><p className="eyebrow">{mode === "create" ? "New template" : "Edit template"}</p><label>템플릿 제목<input autoFocus disabled={locked} value={title} maxLength={200} onChange={(event) => setTitle(event.target.value)} /></label>{(mode === "edit" ? selected?.type : query.type) === "prompt" ? <fieldset className="template-prompt-mode"><legend>프롬프트 형식</legend><label><input type="radio" name="template-prompt-mode" checked={promptMode === "tags"} onChange={() => { setPromptMode("tags"); setContent(""); }} />태그형</label><label><input type="radio" name="template-prompt-mode" checked={promptMode === "sentence"} onChange={() => { setPromptMode("sentence"); setContent(""); }} />문장형</label></fieldset> : null}<label>{(mode === "edit" ? selected?.type : query.type) === "lyrics" ? "가사 구조 원문" : promptMode === "tags" ? "쉼표로 구분한 프롬프트 태그" : "프롬프트 문장 원문"}<textarea disabled={locked} value={content} rows={14} onChange={(event) => setContent(event.target.value)} /></label><footer><button type="button" className="secondary-button" disabled={locked} onClick={() => setMode("view")}>취소</button><button className="primary-link" type="submit" disabled={saving}>저장</button></footer></form>
+          : selected ? <><header><div><span className="template-source">{selected.source === "default" ? "기본 템플릿" : "내 템플릿"}{selected.type === "prompt" ? ` · ${selected.promptMode === "tags" ? "태그형" : "문장형"}` : ""}</span><h2>{selected.title}</h2><small>{selected.lastUsedAt ? `최근 사용 ${new Date(selected.lastUsedAt).toLocaleDateString("ko-KR")}` : "아직 사용하지 않음"}</small></div><button type="button" className="template-favorite" aria-label={selected.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"} aria-pressed={selected.isFavorite} onClick={() => void favorite()}>{selected.isFavorite ? "★ 즐겨찾기" : "☆ 즐겨찾기"}</button></header><div className="template-content" aria-label="템플릿 내용 미리보기">{selected.type === "lyrics" ? <pre>{selected.lyricBody}</pre> : selected.promptMode === "sentence" ? <pre>{selected.promptText}</pre> : <ol>{selected.tokens.map((token, index) => <li key={`${token.normalizedValue}-${index}`}>{token.displayValue}</li>)}</ol>}</div><footer className="template-actions"><a className="primary-link" href={selected.type === "lyrics" ? `/lyrics/new?template=${selected.id}` : `/prompts/new?template=${selected.id}`}>이 템플릿으로 시작</a><button className="secondary-button" type="button" onClick={() => void duplicate()}>복제</button>{selected.source === "user" ? <><button className="secondary-button" type="button" onClick={beginEdit}>수정</button><button className="danger-button" type="button" onClick={() => void remove()}>삭제</button></> : null}</footer></> : <div className="template-empty"><strong>미리 볼 템플릿을 선택하세요</strong></div>}
       </article>
     </div>
   </section>;

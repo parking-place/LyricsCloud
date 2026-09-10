@@ -1,6 +1,6 @@
 import * as Y from "yjs";
 import { describe, expect, it } from "vitest";
-import { applyLyricUpdate, applyPromptUpdate, createLyricDocument, createPromptDocument, createRhymeDocument, encodeLyricSnapshot, encodePromptSnapshot, encodeTextRelativePosition, insertPromptToken, lyricBody, movePromptToken, projectLyric, projectPrompt, projectRhyme, removePromptToken, replacePromptSentence, resolveTextRelativePosition, rhymeBody, setPromptMode } from "./crdt.js";
+import { applyLyricUpdate, applyPromptUpdate, createLyricDocument, createPromptDocument, createRhymeDocument, encodeLyricSnapshot, encodePromptSnapshot, encodeTextRelativePosition, insertPromptToken, lyricBody, movePromptToken, projectLyric, projectPrompt, projectRhyme, removePromptToken, replacePromptSentence, replacePromptTokens, resolveTextRelativePosition, rhymeBody, setPromptMode } from "./crdt.js";
 
 describe("lyric CRDT contract", () => {
   it("converges with reversed and duplicate delivery", () => {
@@ -127,6 +127,23 @@ it("stores a raw sentence and its mode in one transaction without mixing a concu
   replacePromptSentence(modeSide, "  다음, 문장.  ");
   expect(projectPrompt(modeSide).plainText).toBe("  다음, 문장.  ");
   baseline.destroy(); modeSide.destroy(); staleTagSide.destroy();
+});
+
+it("replaces both prompt representations atomically for conversion and undo", () => {
+  const document = createPromptDocument("변환", [{ occurrenceId: "old", displayValue: "old tag" }], "sentence", "원문, 유지");
+  const updates: Uint8Array[] = [];
+  document.on("update", (update) => updates.push(update));
+  document.transact(() => {
+    replacePromptTokens(document, [
+      { occurrenceId: "new-one", displayValue: "원문" },
+      { occurrenceId: "new-two", displayValue: "유지" }
+    ]);
+    replacePromptSentence(document, "원문, 유지");
+    setPromptMode(document, "tags");
+  });
+  expect(updates).toHaveLength(1);
+  expect(projectPrompt(document)).toMatchObject({ mode: "tags", tagText: "원문, 유지", sentenceText: "원문, 유지", plainText: "원문, 유지" });
+  document.destroy();
 });
 
 function createFrom(update: Uint8Array) {
