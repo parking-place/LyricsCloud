@@ -11,7 +11,7 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 개인 창작용 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합과 온라인 우선 PWA를 지원한다.
 
-현재 소스는 `1.0.1` Private Beta 후보이며 P9까지 개발 인수를 마치고 P10 최종 후보·릴리스 절차를 진행 중이다. 정식 운영 버전은 P10 릴리스가 끝날 때까지 `1.0.0`으로 유지한다.
+현재 소스는 `1.0.2` Private Beta 안정화 후보이며 P1~P5 전체 CI와 동일 SHA 개발 인수를 마쳤다. 현재 정식 운영 버전은 `1.0.1`이고, 사용자가 승인한 1.0.2 정식 릴리스 절차를 진행한다.
 
 ## 주요 기능
 
@@ -30,14 +30,14 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 
 | 항목 | 상태 |
 |---|---|
-| 소스·runtime version | `1.0.1` |
-| 현재 작업 | [1.0.1 Phase 10 — 최종 후보·Private Beta 릴리스](<./0.Plans/2.Patch-phase/1.0.1/10phase.md>) |
+| 소스·runtime version | `1.0.2` |
+| 현재 작업 | [1.0.2 Phase 5 — 문서·개발 인수·후속 연결](<./0.Plans/2.Patch-phase/1.0.2/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
-| 정식 릴리스 | [1.0.0 Phase 5 — 최종 릴리스](<./0.Plans/1. Dev-phase/1.0.0/5phase.md>) |
-| 개발 인수 | P4 Google 가입, P5 Windows Chrome·Edge 한글 저장, P6 양 테마 UI, P7 브랜드, P8 릴리스 도구, P9 전체 통합 PASS |
+| 정식 릴리스 | 현재 `v1.0.1`; 승인된 `v1.0.2` 실행 준비 ([1.0.2 release notes](./docs/releases/1.0.2.md)) |
+| 개발 인수 | 1.0.2 가입 응답 유실·저장/PWA 경계 P1~P5, 최종 Actions verify·네 dev image·동일 SHA 공개 HTTPS PASS |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
-1.0.1은 모든 10개 Phase와 최종 CI·개발 HTTPS 검증이 끝난 뒤에만 `main`, 정식 이미지 태그와 릴리스 서버에 반영한다.
+1.0.2 Phase 5 후보는 전체 CI와 동일 SHA 개발 HTTPS 검증을 마쳤고 현재 요청의 go/no-go 승인을 받았다. 정식 실행은 [1.0.2 릴리스 runbook](./docs/runbooks/1.0.2-release.md)의 exact-SHA/digest 순서를 따른다.
 
 ## 화면
 
@@ -95,7 +95,7 @@ LyricsCloud betacode refresh
 | 인증·베타 운영자 | [Google OAuth](./docs/runbooks/google-oauth-setup.md), [초대 코드 CLI](./docs/runbooks/1.0.1-phase2-beta-admin.md), [HMAC allowlist](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md) |
 | 복구·배포 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md), [개발 배포](./docs/runbooks/development-deploy.md), [Docker Hub 발행](./docs/runbooks/dockerhub-publish.md) |
 | 보안·장애 담당자 | [Security policy](./SECURITY.md), [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
-| 릴리스 검토자 | [1.0.0 release notes](./docs/releases/1.0.0.md), [1.0.1 계획](./0.Plans/2.Patch-phase/1.0.1/README.md), [CHANGELOG](./CHANGELOG.md) |
+| 릴리스 검토자 | [1.0.1 release notes](./docs/releases/1.0.1.md), [1.0.2 안정화 계획](./0.Plans/2.Patch-phase/1.0.2/README.md), [CHANGELOG](./CHANGELOG.md) |
 | 기여자 | [Agent 지침](./Agent.md), [후속 계획](./0.Plans/2.Patch-phase/README.md), [ADR 색인](./docs/adr/README.md) |
 
 ## 저장소 구조
@@ -111,4 +111,4 @@ LyricsCloud betacode refresh
 | `scripts/` | 검증·migration·배포 보조 명령 |
 | `0.Plans/` | 보호된 기획·목업·기술 결정과 Phase 상태 |
 
-1.0.2 이후 사전·폰트·공유·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있으며, 현재 1.0.1 완료를 의미하지 않는다.
+1.0.3 이후 프롬프트·사전·폰트·공유·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있으며, 현재 1.0.2 후보 인수와는 별도다.

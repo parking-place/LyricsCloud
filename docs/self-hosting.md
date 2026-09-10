@@ -1,4 +1,4 @@
-# LyricsCloud 1.0.1 셀프호스팅
+# LyricsCloud 1.0.1 정식·1.0.2 후보 셀프호스팅
 
 이 문서는 새 Linux 호스트 한 대에 단일 web replica, PostgreSQL 18, collaboration, worker를 Docker Compose로 실행하는 1.0 지원 경로다. 다중 web replica는 현재 메모리 기반 rate limiter를 공유하지 않으므로 지원 범위가 아니다.
 
@@ -11,7 +11,7 @@
 
 ## 1. 고정 source와 환경 준비
 
-현재 정식 설치 기준은 `v1.0.0`이다. 1.0.1 정식 발행 뒤에는 불변 `v1.0.1` tag를 사용하며, 출시 전 후보 검토는 승인된 전체 40자리 commit SHA만 사용한다. moving alias나 branch 이름을 운영 checkout 기준으로 쓰지 않는다.
+현재 정식 설치 기준은 불변 `v1.0.1` tag다. 1.0.2 출시 전 후보 검토는 승인된 전체 40자리 commit SHA만 사용한다. moving alias나 branch 이름을 운영 checkout 기준으로 쓰지 않는다.
 
 ```bash
 git clone https://github.com/parking-place/LyricsCloud.git
@@ -44,7 +44,7 @@ git check-ignore -v .env .test_users .private/runtime/auth_allowed_emails .priva
 
 환경별 keyring은 공유하지 않는다. HMAC은 익명화가 아니며 rollback backup은 기존 계정 로그인과 복원을 검증한 뒤 정한 보존 기한까지 별도 보호한다. 자세한 회전·복원 절차는 [P3 운영 인수](./runbooks/1.0.1-phase3-hmac-allowlist.md)를 따른다.
 
-환경 이름·형식의 기준은 [1.0.1 environment schema](../config/environment-schema.1.0.1.json)다. Google 설정은 아래 OAuth 절차를 먼저 마친다. 릴리스 적용 전에는 `node scripts/check-environment.mjs <service>`로 web·collaboration·worker·migrate·admin 설정을 각각 검사한다.
+정식 환경 이름·형식의 기준은 봉인된 [1.0.1 environment schema](../config/environment-schema.1.0.1.json)다. 1.0.2 후보는 `APP_VERSION=1.0.2`, `APP_CHANNEL=dev`, `APP_PHASE=p5`, `BUILD_ID=<후보 SHA>`로만 검증하고 release 설정·별칭으로 승격하지 않는다. Google 설정은 아래 OAuth 절차를 먼저 마친다. 릴리스 적용 전에는 `node scripts/check-environment.mjs <service>`로 web·collaboration·worker·migrate·admin 설정을 각각 검사한다.
 
 ## 2. 구성 검사, 기동과 health
 

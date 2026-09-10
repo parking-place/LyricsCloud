@@ -11,6 +11,7 @@ const failures = [];
 const assert = (condition, message) => { if (!condition) failures.push(message); };
 const requireRelease = process.argv.includes("--require-release");
 const currentVersion = read("VERSION").trim();
+const releasedVersion = "1.0.1";
 
 const phasePaths = [1, 2, 3, 4, 5].map((phase) => `0.Plans/1. Dev-phase/1.0.0/${phase}phase.md`);
 const phases = phasePaths.map(read);
@@ -50,6 +51,11 @@ const currentTraceability = read("docs/architecture/1.0.1-FINAL-TRACEABILITY.md"
 const currentReleaseNotes = read("docs/releases/1.0.1.md");
 const currentReleaseRunbook = read("docs/runbooks/1.0.1-phase10-private-beta-release.md");
 const currentManifest = JSON.parse(read("config/release-manifest.1.0.1.json"));
+const formalTraceability = read("docs/architecture/1.0.2-FINAL-TRACEABILITY.md");
+const formalReleaseNotes = read("docs/releases/1.0.2.md");
+const formalReleaseRunbook = read("docs/runbooks/1.0.2-release.md");
+const formalReleaseChecklist = read("docs/runbooks/1.0.2-release-checklist.md");
+const formalManifest = JSON.parse(read("config/release-manifest.1.0.2.json"));
 
 for (const marker of ["주요 기능", "설치와 업그레이드", "알려진 제한과 운영 위험", "지원과 보안", "iOS update PASS, Android update PASS", "미해결 P0/P1은 0건"]) {
   assert(releaseNotes.includes(marker), `release notes marker missing: ${marker}`);
@@ -76,7 +82,7 @@ try {
   const phase6Plan = status.includes('current_phase: "1.0.0/6phase.md"') ? read("0.Plans/1. Dev-phase/1.0.0/6phase.md") : "";
   validateReleasePhase(status, { requireRelease, phase6Plan, phaseCount: currentVersion === "1.0.1" ? 10 : 5 });
 } catch { failures.push("STATUS must identify an allowed historical or current release phase"); }
-for (const marker of ["1.0.0 Phase 5 — 최종 릴리스", "1.0.1 계획", "CHANGELOG.md"]) {
+for (const marker of ["1.0.2 Phase 5", "1.0.1 release notes", "CHANGELOG.md"]) {
   assert(readme.includes(marker), `README release handoff marker missing: ${marker}`);
 }
 assert(runbookIndex.includes("1.0.0-phase5-release.md"), "runbook index missing Phase 5 release handoff");
@@ -92,16 +98,36 @@ for (const marker of ["Private Beta", "Windows Chrome·Edge", "알려진 제한"
 for (const marker of ["annotated `v1.0.1`", "publish=true", "release=true", "Release-latest", "application-first rollback"]) {
   assert(currentReleaseRunbook.includes(marker), `1.0.1 release runbook marker missing: ${marker}`);
 }
-assert(currentManifest.releaseVersion === currentVersion && currentManifest.database.requiredLatestSchema === "0901_beta_signup.sql",
-  "1.0.1 release manifest boundary invalid");
-const currentReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${currentVersion}`,
-  sha: "b".repeat(40), version: currentVersion, release: true }).tags;
-for (const tag of [currentVersion, "Release", "latest", "Release-latest"]) assert(currentReleaseTags.includes(tag), `current release tag missing: ${tag}`);
-const currentDevTags = getImagePublication({ eventName: "push", refType: "branch", refName: "phase/1.0.1-p10-private-beta-release",
+assert(currentManifest.releaseVersion === releasedVersion && currentManifest.database.requiredLatestSchema === "0901_beta_signup.sql",
+  "sealed 1.0.1 release manifest boundary invalid");
+const currentReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${releasedVersion}`,
+  sha: "b".repeat(40), version: releasedVersion, release: true }).tags;
+for (const tag of [releasedVersion, "Release", "latest", "Release-latest"]) assert(currentReleaseTags.includes(tag), `sealed release tag missing: ${tag}`);
+const currentDevTags = getImagePublication({ eventName: "push", refType: "branch", refName: "phase/1.0.2-p5-final-acceptance",
   sha: "b".repeat(40), version: currentVersion, release: false }).tags;
-for (const tag of ["1.0.1", "Release", "latest", "Release-latest"]) assert(!currentDevTags.includes(tag), `P10 dev moves protected tag: ${tag}`);
-for (const marker of ["APP_VERSION: 1.0.1", "APP_PHASE: p10", "test:migration:0900", "test:environment:101"]) {
-  assert(workflow.includes(marker), `P10 CI marker missing: ${marker}`);
+for (const tag of [currentVersion, releasedVersion, "Release", "latest", "Release-latest"]) assert(!currentDevTags.includes(tag), `P5 dev moves protected tag: ${tag}`);
+for (const marker of ["APP_VERSION: 1.0.2", "APP_PHASE: p5", "test:migration:0900", "test:environment:101"]) {
+  assert(workflow.includes(marker), `P5 CI marker missing: ${marker}`);
+}
+for (const marker of ["P5", "P0/P1", "OPS-100-001", "동일 SHA 개발 인수"]) {
+  assert(formalTraceability.includes(marker), `1.0.2 traceability marker missing: ${marker}`);
+}
+for (const marker of ["Private Beta 안정화", "응답", "exact-copy", "알려진 제한", "OPS-100-001"]) {
+  assert(formalReleaseNotes.includes(marker), `1.0.2 release notes marker missing: ${marker}`);
+}
+for (const marker of ["annotated `v1.0.2`", "publish=true", "release=true", "Release-latest", "application-first rollback"]) {
+  assert(formalReleaseRunbook.includes(marker), `1.0.2 release runbook marker missing: ${marker}`);
+}
+for (const marker of ["main", "annotated `v1.0.2`", "exact digest", "OPS-100-001"]) {
+  assert(formalReleaseChecklist.includes(marker), `1.0.2 release checklist marker missing: ${marker}`);
+}
+assert(formalManifest.releaseVersion === currentVersion && formalManifest.releaseChannel === "release"
+  && formalManifest.productionAuthorized === true && formalManifest.database.requiredLatestSchema === "0901_beta_signup.sql",
+  "1.0.2 formal release manifest boundary invalid");
+const formalReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${currentVersion}`,
+  sha: "c".repeat(40), version: currentVersion, release: true }).tags;
+for (const tag of [currentVersion, "Release", "latest", "Release-latest"]) {
+  assert(formalReleaseTags.includes(tag), `1.0.2 release tag missing: ${tag}`);
 }
 
 if (requireRelease) {
