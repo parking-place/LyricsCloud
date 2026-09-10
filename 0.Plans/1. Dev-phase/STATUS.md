@@ -1,16 +1,20 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.0.5"
-current_phase: "../2.Patch-phase/1.0.5/5phase.md"
-state: "complete"
+current_version: "1.0.6"
+current_phase: "../2.Patch-phase/1.0.6/2phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-09"
-updated_at: "2026-09-10"
-next_action: "승인된 1.0.5 정식 main 병합·annotated tag·image·릴리스 서버 배포를 수행한다"
+updated_at: "2026-09-11"
+next_action: "1.0.6 P2 Extend copy·상대 위치 삽입 기반의 실패 테스트와 구현을 수행한다"
 ```
 
 ## 승인과 기준
+
+2026-09-11 사용자가 1.0.14까지 모든 버전을 실행하고 각 버전을 개별 정식 릴리스하도록 명시적으로 승인했다. 현재 실행 범위는 1.0.6부터 1.0.14까지 각 버전의 계획된 Phase, Phase별 개발 서버 인수, 버전별 main 병합·annotated tag·정식 image·릴리스 서버 migrate/배포/공개 smoke다. 각 P1의 기존 권장안은 최초 소비 전에 범위·실패·복구 경계를 문서로 확정하며, 외부 제공 조건이 충족되지 않는 기능은 우회 구현하거나 완료로 가장하지 않는다. 기존 DB volume·secret과 사용자가 승인한 `OPS-100-001` 위험 예외를 보존한다.
+
+1.0.5는 main/tag SHA `4411bc1eb74c90a6a1c47f7e3315de2d5ff39edb`, annotated tag `v1.0.5`, 정식 image와 릴리스 서버 동일 SHA 배포·공개 smoke까지 완료됐다.
 
 2026-09-10 사용자가 선행 릴리스와 1.0.5 Phase 5까지의 실행 및 후속 정식 릴리스를 명시적으로 승인했다. 현재 선행 릴리스는 완료된 1.0.3 P1~P5를 main·annotated tag·정식 image·릴리스 서버에 반영하는 범위이며, 이후 1.0.5의 명시적 의존성인 1.0.4 P1~P5를 먼저 완료하고 1.0.5 P1~P5와 최종 릴리스를 수행한다. 기존 DB volume·secret과 `OPS-100-001` 위험 예외를 보존한다.
 
@@ -62,11 +66,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.5 P3 | complete | 편집기/목차 suffix 저강조·전체 copy 3,000자 비차단 경고·PC/mobile와 동일 SHA 공개 개발 인수 완료 |
 | 1.0.5 P4 | complete | PostgreSQL 270건·Chromium 284건·5-project 신규 기능 11건과 권한·offline·IME·재시작 동일 SHA 개발 인수 완료 |
 | 1.0.5 P5 | complete | Actions `34487251707` 전체 verify·네 dev image·동일 SHA 개발 공개 기능·collaboration 재시작 인수 완료 |
+| 1.0.6 P1 | complete | Extend 원문/전체 copy 분리·상대 위치 송폼 삽입·IME/undo·담당/rollback 계약 확정 |
+| 1.0.6 P2 | in progress | Extend Suno payload filter·단일 source marker·CRDT 상대 위치 삽입 기반 구현 중 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.6/P2 | LC-NF-1.0.6-P2-01~06 | editor copy·marker source·CRDT 상대 삽입·단위 회귀 | 1.0.6 P1 / v1.0.5 `4411bc1` | 2026-09-11T00:15:00+09:00 | in_progress |
+| Codex | 1.0.6/P1 | LC-NF-1.0.6-P1-01~06 | Extend/copy·송폼 삽입 계약·실패 입력·editor/UI/E2E 담당·호환/rollback 경계 | v1.0.5 release `4411bc1` | 2026-09-11T00:00:00+09:00 | complete |
 | Codex | 1.0.5/P5 | LC-NF-1.0.5-P5-01~06 | 요구 추적·현재 문서·환경 schema·검증기·최종 CI·개발/정식 인수 | 1.0.5 P4 `d0ad04d` | 2026-09-10T23:10:00+09:00 | complete |
 | Codex | 1.0.5/P4 | LC-NF-1.0.5-P4-01~06 | 실제 DB·권한·offline/재접속·IME·지원 브라우저·restart 회귀 | 1.0.5 P3 `c010d3f` | 2026-09-10T22:30:00+09:00 | complete |
 | Codex | 1.0.5/P3 | LC-NF-1.0.5-P3-01~06 | CodeMirror decoration·lyric editor/list/copy feedback·PC/mobile E2E | 1.0.5 P2 `3b12d0a` | 2026-09-10T22:15:00+09:00 | complete |

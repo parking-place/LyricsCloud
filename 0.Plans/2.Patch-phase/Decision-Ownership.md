@@ -10,7 +10,7 @@
 | `ADR-NF-004` | Windows 기술·인증·편집 | 1.1.8 P1; 편집 인수 1.1.9 | Proposed | [결정](../../docs/adr/ADR-NF-004-windows-native.md) |
 | `ADR-NF-005` | Android 기술·수명주기 | 1.1.10 P1; 편집 인수 1.1.11 | Proposed | [결정](../../docs/adr/ADR-NF-005-android-native.md) |
 | `PROD-NF-001` | 가입·일회용 코드 동선 | 1.0.1 P1 | Accepted | [결정](../../docs/product/PROD-NF-001-beta-onboarding.md) |
-| `PROD-NF-002` | 원문·mode·송폼·복사 경고 | 1.0.3 P1; 1.0.4~1.0.6 확장 | Accepted through 1.0.5; 1.0.6 pending | [결정](../../docs/product/PROD-NF-002-editor-output.md) |
+| `PROD-NF-002` | 원문·mode·송폼·복사 경고 | 1.0.3 P1; 1.0.4~1.0.6 확장 | Accepted through 1.0.6 | [결정](../../docs/product/PROD-NF-002-editor-output.md) |
 | `OPS-NF-001` | 번호·main·정식 별칭 | 1.0.1 P1 | Accepted | [결정](../../docs/operations/OPS-NF-001-version-release.md) |
 | `PROD-NF-003` | 개인 순서·목록 보기 | 1.0.7 P1, 1.0.8 P1, 1.0.9 소비 | Proposed | [결정](../../docs/product/PROD-NF-003-library-order-views.md) |
 | `PROD-NF-004` | 모델 표기·복수 작업 링크 | 1.0.10 P1, 1.0.11 소비 | Proposed | [결정](../../docs/product/PROD-NF-004-suno-work-links.md) |
