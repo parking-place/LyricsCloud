@@ -29,8 +29,8 @@
 | `NF-REQ-021` | 모든 10 Phase 인수 후 Private Beta release | [1.0.1](1.0.1/README.md), [1.0.2](1.0.2/README.md) | main은 release 시에만·3 aliases·app.example.test 별도 승인 배포 | 1.0.1 완료 |
 | `NF-REQ-022` | 프롬프트 태그형↔문장형 | [1.0.3](1.0.3/README.md), [1.0.4](1.0.4/README.md), [1.0.12](1.0.12/README.md) | 모드 전환·ASCII . 분할 표시·원문/구두점 보존 | 1.0.3 mode/raw·1.0.4 표시 담당 완료, 1.0.12 통합 회귀 예정 |
 | `NF-REQ-023` | 프롬프트 최종 copy 1000자 경고 | [1.0.4](1.0.4/README.md), [1.0.12](1.0.12/README.md) | 두 모드 모두 >1000 advisory, 입력/저장/복사 허용 | 1.0.4 기능 담당 완료, 1.0.12 통합 회귀 예정 |
-| `NF-REQ-024` | 가사 최종 copy 3000자 경고 | [1.0.5](1.0.5/README.md), [1.0.12](1.0.12/README.md) | >3000 advisory, 입력/저장/복사 허용 | 계획됨 |
-| `NF-REQ-025` | [TAG:sub tag] 송폼 | [1.0.5](1.0.5/README.md), [1.0.12](1.0.12/README.md) | TAG 탐색·suffix 덜 강조·copy에는 suffix 유지 | 계획됨 |
+| `NF-REQ-024` | 가사 최종 copy 3000자 경고 | [1.0.5](1.0.5/README.md), [1.0.12](1.0.12/README.md) | >3000 advisory, 입력/저장/복사 허용 | 1.0.5 P1 계약 완료, 구현·통합 회귀 대기 |
+| `NF-REQ-025` | [TAG:sub tag] 송폼 | [1.0.5](1.0.5/README.md), [1.0.12](1.0.12/README.md) | TAG 탐색·suffix 덜 강조·copy에는 suffix 유지 | 1.0.5 P1 계약 완료, 구현·통합 회귀 대기 |
 | `NF-REQ-026` | [Extend] metadata 제외 copy | [1.0.6](1.0.6/README.md), [1.0.12](1.0.12/README.md) | 원문에 보관, Suno용 전체 copy에서는 marker만 제외 | 계획됨 |
 | `NF-REQ-027` | 가사 우클릭 송폼 추천 | [1.0.6](1.0.6/README.md), [1.0.12](1.0.12/README.md) | 기본 송폼 삽입·키보드/모바일 대안·IME/undo 보존 | 계획됨 |
 | `NF-REQ-028` | 곡/라임/prompt 사용자 드래그 순서 | [1.0.8](1.0.8/README.md), [1.0.9](1.0.9/README.md), [1.0.12](1.0.12/README.md) | custom sort 자동 전환·필터/페이지/핀·동시 이동·영속 | 계획됨 |
