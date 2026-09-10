@@ -34,6 +34,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createLyricMetadataSaver } from "../lib/lyric-metadata.js";
 import { registerLogoutSave } from "../lib/account-cache.js";
+import { promptCopyView } from "../lib/prompt-copy.js";
 import { DialogFocusBoundary, trapDialogTab } from "../lib/dialog-focus.js";
 import { BEFORE_SHORTCUT_NAVIGATION_EVENT, commandForKeyboardEvent, isEditableShortcutTarget, type ShortcutNavigationDetail } from "../lib/shortcut-runtime.js";
 import { hasVolatilePendingInput } from "../lib/update-safety.js";
@@ -402,7 +403,10 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       setCommandNotice("");
       const target = item.kind === "rhyme_note" ? "라임 원문" : "프롬프트";
       const message = item.kind === "rhyme_note" ? "라임 원문을 복사했습니다" : "프롬프트를 복사했습니다";
-      await copyFeedback.copyText(text, target, message);
+      if (item.kind === "prompt") {
+        const view = promptCopyView(text);
+        await copyFeedback.copyText(view.text, target, view.feedback(message), view.warningMessage);
+      } else await copyFeedback.copyText(text, target, message);
       return "copied";
     } catch {
       setCommandNotice("복사할 원문을 불러오지 못했습니다. 현재 가사와 입력은 그대로 유지됩니다.");

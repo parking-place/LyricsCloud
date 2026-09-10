@@ -1,6 +1,8 @@
 "use client";
 
+import { splitPromptSentenceDisplay } from "@lyricscloud/domain";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { promptCopyView } from "../lib/prompt-copy.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 
 const SORTS = ["favorite_first", "recent_used", "updated_desc", "created_desc", "created_asc", "title_asc"] as const;
@@ -158,7 +160,8 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   }
 
   async function copy(prompt: PromptItem) {
-    if (await copyFeedback.copyText(prompt.plainText, `${prompt.title} 프롬프트`, `${prompt.title} 프롬프트를 복사했습니다.`) === "manual") {
+    const view = promptCopyView(prompt.plainText);
+    if (await copyFeedback.copyText(view.text, `${prompt.title} 프롬프트`, view.feedback(`${prompt.title} 프롬프트를 복사했습니다.`), view.warningMessage) === "manual") {
       setManualUsagePrompt(prompt); return;
     }
     try { await recordUse(prompt); }
@@ -219,6 +222,7 @@ function PromptCard({ prompt, duplicating, onToggle, onCopy, onDuplicate }: {
   onToggle: (prompt: PromptItem, field: "isFavorite" | "isPinned") => void;
   onCopy: (prompt: PromptItem) => void; onDuplicate: (prompt: PromptItem) => void;
 }) {
+  const copy = promptCopyView(prompt.plainText);
   const timer = useRef<number | null>(null);
   const start = useRef<{ x: number; y: number } | null>(null);
   const longPressed = useRef(false);
@@ -245,6 +249,7 @@ function PromptCard({ prompt, duplicating, onToggle, onCopy, onDuplicate }: {
     <a className="prompt-card-hit" href={`/prompts/${prompt.id}`} aria-label={`${prompt.title} 프롬프트 열기`}><span className="sr-only">{prompt.title}</span></a>
     <div className="prompt-card-top"><div><span className="prompt-mode-badge">{prompt.mode === "tags" ? "태그형" : "문장형"}</span><h2>{prompt.title}</h2></div><span className="prompt-card-actions"><button type="button" className={prompt.isPinned ? "is-on" : ""} aria-label={`${prompt.title} ${prompt.isPinned ? "고정 해제" : "고정"}`} aria-pressed={prompt.isPinned} onClick={() => void onToggle(prompt, "isPinned")}>⌁</button><button type="button" className={prompt.isFavorite ? "is-on" : ""} aria-label={`${prompt.title} ${prompt.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"}`} aria-pressed={prompt.isFavorite} onClick={() => void onToggle(prompt, "isFavorite")}>★</button></span></div>
     <TokenPreview prompt={prompt} />
+    <p className={`prompt-copy-length${copy.exceedsRecommendedLimit ? " over" : ""}`}>{copy.codePointCount.toLocaleString("ko-KR")}자{copy.exceedsRecommendedLimit ? " · 1,000자 권장 초과" : ""}</p>
     <p className="prompt-copy-hint">모바일에서는 카드를 길게 눌러도 복사할 수 있습니다.</p>
     <div className="prompt-card-buttons"><button type="button" onClick={() => void onCopy(prompt)}>⧉ 복사</button><button type="button" disabled={duplicating} onClick={() => void onDuplicate(prompt)}>{duplicating ? "복제 중…" : "복제"}</button></div>
     <footer><span>{prompt.linkedSongs.length ? prompt.linkedSongs.map(({ title }) => title).join(", ") : "연결 곡 없음"}</span><time dateTime={prompt.lastUsedAt ?? prompt.updatedAt}>{prompt.lastUsedAt ? `${relativeDate(prompt.lastUsedAt)} 사용` : `${relativeDate(prompt.updatedAt)} 수정`}</time></footer>
@@ -252,7 +257,12 @@ function PromptCard({ prompt, duplicating, onToggle, onCopy, onDuplicate }: {
 }
 
 function TokenPreview({ prompt }: { prompt: PromptItem }) {
-  if (prompt.mode === "sentence") return <div className="prompt-token-preview prompt-sentence-preview" aria-label={`${prompt.title} 문장형 원문`}><p>{prompt.plainText || "문장 원문 없음"}</p></div>;
+  if (prompt.mode === "sentence") {
+    const spans = splitPromptSentenceDisplay(prompt.plainText);
+    return <div className="prompt-token-preview prompt-sentence-preview" aria-label={`${prompt.title} 문장형 원문`}><p>{spans.length
+      ? spans.map((span) => <span className={span.terminated ? "sentence-span" : "sentence-span unfinished"} key={span.start}>{span.text}</span>)
+      : "문장 원문 없음"}</p></div>;
+  }
   return <div className="prompt-token-preview">
     <ul className="prompt-tokens desktop-tokens" aria-label={`${prompt.title} 핵심 토큰`}>{prompt.tokens.slice(0, 5).map((token) => <li key={token.normalizedValue}>{token.displayValue}</li>)}{prompt.tokens.length > 5 ? <li>+{prompt.tokens.length - 5}</li> : null}{prompt.tokens.length === 0 ? <li className="is-empty">토큰 없음</li> : null}</ul>
     <ul className="prompt-tokens mobile-tokens" aria-label={`${prompt.title} 핵심 토큰`}>{prompt.tokens.slice(0, 3).map((token) => <li key={token.normalizedValue}>{token.displayValue}</li>)}{prompt.tokens.length > 3 ? <li>+{prompt.tokens.length - 3}</li> : null}{prompt.tokens.length === 0 ? <li className="is-empty">토큰 없음</li> : null}</ul>
