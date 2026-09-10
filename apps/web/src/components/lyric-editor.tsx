@@ -36,6 +36,7 @@ import { createLyricMetadataSaver } from "../lib/lyric-metadata.js";
 import { registerLogoutSave } from "../lib/account-cache.js";
 import { DialogFocusBoundary, trapDialogTab } from "../lib/dialog-focus.js";
 import { BEFORE_SHORTCUT_NAVIGATION_EVENT, commandForKeyboardEvent, isEditableShortcutTarget, type ShortcutNavigationDetail } from "../lib/shortcut-runtime.js";
+import { hasVolatilePendingInput } from "../lib/update-safety.js";
 import { LyricHistory } from "./lyric-history.js";
 import { LyricResourcePanel } from "./lyric-resource-panel.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
@@ -670,7 +671,8 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     "--lyric-letter-spacing": `${displaySettings.effective.letterSpacing}em`
   } as CSSProperties;
 
-  return <section className={`lyric-editor-page${focusMode ? " is-focus-mode" : ""}`} aria-labelledby="lyric-editor-heading" style={writingVariables}>
+  return <section className={`lyric-editor-page${focusMode ? " is-focus-mode" : ""}`} aria-labelledby="lyric-editor-heading" style={writingVariables}
+    data-pending-input={hasVolatilePendingInput(saveState.status, localSyncState) || undefined}>
     <h1 className="sr-only" id="lyric-editor-heading">가사 편집: {title || "제목 없음"}</h1>
     <header className="lyric-editor-header">
       <div className="lyric-editor-context">

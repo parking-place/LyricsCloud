@@ -30,6 +30,12 @@ describe.runIf(enabled)("PostgreSQL beta signup", () => {
       .rejects.toThrow("BETA_SIGNUP_REJECTED");
     const result = await store!.redeemBetaSignup(redemption(intentDigest, identity, now));
     expect(result.outcome).toBe("redeemed");
+    // Simulate a response/session-cookie loss: the user starts signup again with
+    // the same consumed code and the same verified principal.
+    const retryIntent = digest("intent-winner-retry");
+    await register(retryIntent, code, identity.email, new Date(now.getTime() + 1_000));
+    const retry = await store!.redeemBetaSignup(redemption(retryIntent, identity, new Date(now.getTime() + 1_000)));
+    expect(retry).toEqual({ userId: result.userId, outcome: "already_granted" });
     const state = await pool!.query(`select
       (select count(*)::int from beta_codes where consumed_at is not null) consumed,
       (select count(*)::int from beta_redemptions) receipts,
