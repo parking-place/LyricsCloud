@@ -1,6 +1,6 @@
 # 목록·개인 순서·Suno 작업 자료 계약
 
-상태: **Proposed**, 1.0.8/1.0.11 P1에서 구현 전 확정한다. 이미 구현된 핀/필터/자료 관계를 임의로 단순화하지 않는다.
+상태: **1.0.7 보기 계약 Accepted**, 순서·Suno 계약은 각 1.0.8/1.0.11 P1에서 구현 전 확정한다. 이미 구현된 핀/필터/자료 관계를 임의로 단순화하지 않는다.
 
 ## 목록 사용자정렬
 
@@ -15,6 +15,12 @@
 ## 네 가지 보기
 
 리스트, small/medium/large grid를 모든 곡·라임·prompt 목록에 제공한다. 뷰 설정은 owner+유형 범위로 저장하고 기기간 복원한다. 공통 기본값과 viewport 유효 열 수는 분리한다. 작은 화면에서 큰 카드 선택은 1열로 안전하게 표시하고 강제 축소로 핵심 action을 숨기지 않는다. 정렬·filter·URL·scroll·cursor는 보기 전환 때 보존한다.
+
+1.0.7의 저장 단위는 `owner_id + resource_type`이고 resource type은 `songs`, `rhymes`, `prompts`, mode는 `list`, `grid-small`, `grid-medium`, `grid-large`만 허용한다. 계정 화면 설정 `user_settings`와 별도 `library_view_settings` 행 및 독립 `row_version`을 사용한다. 조회 시 행이 없으면 `list`, `rowVersion: 0`, `updatedAt: null`을 반환하며 읽기만으로 행을 만들지 않는다. 쓰기는 현재 owner를 서버 인증 문맥에서만 사용하고 body의 owner는 받지 않는다. `expected rowVersion` 0은 최초 insert, 양수는 CAS update이며 충돌은 409와 최신값 재조회 경로를 제공한다.
+
+API는 보기 mode만 변경한다. 검색어·필터·정렬·cursor·page·scroll, 자료 행과 pin/manual order는 요청/DB update 대상이 아니다. UI는 전환 즉시 같은 메모리 item 배열을 유지하고 저장 실패 시 이전 mode로 되돌린 뒤 재시도 가능한 문장을 알린다. 다른 탭의 같은 유형 충돌은 최신 서버 값을 다시 읽고 안내하며, 다른 유형이나 글꼴 설정의 동시 갱신은 서로 다른 행이라 충돌하거나 덮어쓰지 않는다. 구버전 client는 새 테이블을 알지 못해도 기존 목록/설정을 계속 사용한다.
+
+그리드 열 수는 mode의 저장 의미가 아니라 CSS의 viewport 결과다. 320px·200% 확대에서는 모든 grid mode가 최소 1열이며 카드 본문과 보이는 action을 축소·겹침으로 숨기지 않는다. 긴 제목은 시각적 줄바꿈/말줄임 여부와 무관하게 링크의 접근 가능한 전체 이름을 유지한다. 네 mode 선택기는 native button, 현재값 `aria-pressed`, 그룹 label, 논리적 tab 순서를 제공한다.
 
 ## Suno 모델명
 
