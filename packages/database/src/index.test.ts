@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { classifyDatabaseError, CURRENT_SCHEMA_VERSION, DatabaseHealthError } from "./index.js";
 
 describe("database health diagnostics", () => {
-  it("requires the 1.0.3 prompt mode migration", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("1000_prompt_modes.sql");
+  it("requires the 1.0.7 library view settings migration", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe("1001_library_view_settings.sql");
   });
 
   it.each([

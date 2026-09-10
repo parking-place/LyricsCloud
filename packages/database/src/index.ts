@@ -1,6 +1,6 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "1000_prompt_modes.sql";
+export const CURRENT_SCHEMA_VERSION = "1001_library_view_settings.sql";
 
 export * from "./auth.js";
 export * from "./beta-access.js";
@@ -17,6 +17,7 @@ export * from "./recent-work.js";
 export * from "./saved-resources.js";
 export * from "./templates.js";
 export * from "./display-settings.js";
+export * from "./library-view-settings.js";
 export * from "./lifecycle.js";
 export * from "./export.js";
 export * from "./pool.js";

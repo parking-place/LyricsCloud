@@ -1,4 +1,4 @@
-import type { LyricStatus, ResourceColor, ResourceType, SongStatus, TemplateType } from "@lyricscloud/domain";
+import type { LibraryViewMode, LibraryViewResourceType, LyricStatus, ResourceColor, ResourceType, SongStatus, TemplateType } from "@lyricscloud/domain";
 import { bigint, boolean, doublePrecision, integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const appUsers = pgTable("app_users", {
@@ -229,6 +229,14 @@ export const userSettings = pgTable("user_settings", {
   rowVersion: bigint("row_version", { mode: "number" }).notNull().default(1),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
 });
+
+export const libraryViewSettings = pgTable("library_view_settings", {
+  ownerId: uuid("owner_id").notNull(),
+  resourceType: text("resource_type").$type<LibraryViewResourceType>().notNull(),
+  viewMode: text("view_mode").$type<LibraryViewMode>().notNull().default("list"),
+  rowVersion: bigint("row_version", { mode: "number" }).notNull().default(1),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.resourceType] })]);
 
 export const lyricDisplaySettings = pgTable("lyric_display_settings", {
   lyricId: uuid("lyric_id").primaryKey(),
