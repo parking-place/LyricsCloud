@@ -11,7 +11,7 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 개인 창작용 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합과 온라인 우선 PWA를 지원한다.
 
-현재 소스는 `1.0.2` Private Beta 안정화 후보이며 P4까지 개발 인수를 마치고 Phase 5 최종 후보를 검증 중이다. 현재 정식 운영 버전은 `1.0.1`이며, 1.0.2의 main·정식 이미지·릴리스 서버 반영은 별도 go/no-go 뒤에만 수행한다.
+현재 소스는 `1.0.2` Private Beta 안정화 후보이며 P1~P5 전체 CI와 동일 SHA 개발 인수를 마쳤다. 현재 정식 운영 버전은 `1.0.1`이며, 1.0.2의 main·정식 이미지·릴리스 서버 반영은 별도 go/no-go 뒤에만 수행한다.
 
 ## 주요 기능
 
@@ -34,10 +34,10 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 | 현재 작업 | [1.0.2 Phase 5 — 문서·개발 인수·후속 연결](<./0.Plans/2.Patch-phase/1.0.2/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.0.1` ([release notes](./docs/releases/1.0.1.md)) |
-| 개발 인수 | 1.0.2 P2 응답 유실·저장/PWA 경계, P3 복구 UI, P4 PostgreSQL·전체 브라우저·production image 회귀 PASS |
+| 개발 인수 | 1.0.2 가입 응답 유실·저장/PWA 경계 P1~P5, 최종 Actions verify·네 dev image·동일 SHA 공개 HTTPS PASS |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
-1.0.2 Phase 5 후보는 전체 CI와 동일 SHA 개발 HTTPS 검증까지 마쳐야 한다. 그 뒤에도 `main`, 정식 이미지 태그와 릴리스 서버 반영은 현재 요청에서 별도로 승인된 경우에만 진행한다.
+1.0.2 Phase 5 후보는 전체 CI와 동일 SHA 개발 HTTPS 검증을 마쳤다. `main`, 정식 이미지 태그와 릴리스 서버 반영은 별도 현재 go/no-go가 있을 때만 진행한다.
 
 ## 화면
 

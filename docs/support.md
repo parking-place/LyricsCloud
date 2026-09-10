@@ -23,7 +23,7 @@
 
 1.0.1 P4 실제 Google 신규 가입, P5 Windows Chrome·Edge 한글 IME 저장·재진입, P6 light/dark 핵심 action, P7 로고·runtime metadata 인수는 완료됐다. 자동 브라우저와 사용자 실기기 결과는 서로 구분해 보존한다.
 
-1.0.2 후보는 가입 성공 응답 유실의 멱등 회수, 로컬 저장 실패 원문 복사, 미전송 입력 이탈 guard와 build별 PWA cache 경계를 추가했다. P4에서 실제 PostgreSQL과 desktop/mobile 브라우저, production image 재시작 회귀를 통과했으며 P5 전체 CI·동일 SHA 개발 인수 전에는 정식 지원 버전으로 보지 않는다. 사용자 복구 순서는 [1.0.2 복구 안내](./runbooks/1.0.2-user-recovery.md)에 있다.
+1.0.2 후보는 가입 성공 응답 유실의 멱등 회수, 로컬 저장 실패 원문 복사, 미전송 입력 이탈 guard와 build별 PWA cache 경계를 추가했다. 실제 PostgreSQL과 desktop/mobile 브라우저, production image 재시작 회귀, P5 전체 CI와 동일 SHA 개발 인수를 통과했지만 별도 go/no-go 전에는 정식 지원 버전으로 보지 않는다. 사용자 복구 순서는 [1.0.2 복구 안내](./runbooks/1.0.2-user-recovery.md)에 있다.
 
 미해결 P0/P1은 0건이다. 저장 수렴 실패, 다른 사용자의 자료 노출, 인증 우회, 핵심 모바일 불능, 복구 불가능 증거가 생기면 즉시 P0/P1으로 재분류하고 배포를 중단한다.
 
