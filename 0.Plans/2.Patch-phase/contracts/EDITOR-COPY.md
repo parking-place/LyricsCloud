@@ -1,6 +1,6 @@
 # 입력·프롬프트·송폼·복사 출력 계약
 
-상태: **1.0.3~1.0.5 범위 Accepted / 1.0.6 범위 Proposed**. 1.0.1의 입력 안전성과 기존 원본 저장 규칙을 유지하며, 충돌하면 원문 유실을 허용하지 말고 새 결정에 기록한다.
+상태: **1.0.3~1.0.6 범위 Accepted**. 1.0.1의 입력 안전성과 기존 원본 저장 규칙을 유지하며, 충돌하면 원문 유실을 허용하지 말고 새 결정에 기록한다.
 
 ## 1. 원문과 출력의 분리
 
@@ -38,7 +38,7 @@ mode+body/occurrence의 조합은 원자 command 또는 승인된 CRDT transacti
 
 ## 5. Extend
 
-기본 이름이 `Extend`인 정식 줄 marker `[Extend]`, `[Extend: 3:00:24]`는 **작업 메타데이터**다. `3:00:24`를 시분초인지 프레임인지 추정하지 않고 불투명 문자열로 보관한다. 송폼 탐색의 새 음악 구간으로 사용하지 않는다.
+기본 이름이 대소문자까지 정확히 `Extend`인 정식 줄 marker `[Extend]`, `[Extend: 3:00:24]`는 **작업 메타데이터**다. `[extend]`, 본문 속 inline literal, 닫히지 않은 bracket는 대상이 아니다. `3:00:24`를 시분초인지 프레임인지 추정하지 않고 불투명 문자열로 보관한다. 송폼 탐색의 새 음악 구간으로 사용하지 않는다.
 
 Suno용 전체 copy에서는 그 marker 줄의 텍스트와 그 줄에 속한 하나의 줄바꿈만 제외한다. 주변 음악 본문의 줄바꿈·빈 줄·태그·suffix를 추가로 trim하지 않는다. 파일 끝에 marker만 있으면 해당 텍스트만 제거한다. inline literal/손상된 bracket/조합 중간 상태는 자동 삭제 대상이 아니다. 전체 copy에서만 제외한다. 부분구간 copy에는 marker를 보존하며 제외 범위를 확장하려면 별도 사용자 요구가 필요하다. **원문 복사·revision·JSON/TXT/Markdown recovery export·인프라 백업에는 Extend를 보존한다.**
 
@@ -46,7 +46,7 @@ UI에는 Suno용 copy와 원문 copy를 분명히 구분한다. 앞선 export �
 
 ## 6. 추천 삽입
 
-우클릭 추천은 현재 위치에서 기본 송폼을 선택하는 기능이다. 시스템 clipboard/context 기능을 모두 제거하지 않으며 keyboard 메뉴키/Shift+F10과 모바일 보이는 삽입 메뉴를 병행한다. 클릭 시점 상대 위치·선택을 캡처하고 remote update 후에도 올바른 곳에 한 transaction/undo로 삽입한다. 조합 중에는 조합 확정과 충돌하지 않는 예약/취소 안내를 제공한다. 입력 막힘·초안 소실·중복 삽입이 있으면 기능 완료로 처리하지 않는다.
+우클릭 추천은 현재 위치에서 기본 송폼을 선택하는 기능이다. 단일 source의 기본 목록은 `Intro`, `Verse`, `Pre-Chorus`, `Chorus`, `Hook`, `Bridge`, `Outro`이고 삽입 문자열은 각각 `[이름]`이다. 시스템 clipboard/context 기능을 강제로 제거하지 않으며 keyboard 메뉴키/Shift+F10과 모바일 보이는 삽입 메뉴를 병행한다. 클릭 시점의 collapsed/non-collapsed 선택에서 **head caret**을 CRDT 상대 위치로 캡처하고 선택 본문은 삭제하지 않는다. 실행 시점에 상대 위치를 해석해 marker 앞뒤에 필요한 LF만 보충하여 한 CRDT transaction/undo로 한 번 삽입한다. 위치 해석 실패나 composition 중 호출은 원문을 바꾸지 않고 다시 시도할 수 있는 안내를 제공한다. Escape는 메뉴만 닫고 원문·조합을 보존한다. 입력 막힘·초안 소실·중복 삽입이 있으면 기능 완료로 처리하지 않는다.
 
 ## 7. 호환/성능
 

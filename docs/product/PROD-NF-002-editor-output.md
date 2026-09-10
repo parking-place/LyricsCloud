@@ -1,9 +1,9 @@
 # PROD-NF-002 — prompt 모드·송폼 부태그·copy advisory
 
-- 상태: **Accepted through 1.0.5 / 1.0.6 clauses remain Proposed**
+- 상태: **Accepted through 1.0.6**
 - 작성일: 2026-09-09
 - 결정 Phase: 1.0.3 P1, 1.0.4~1.0.6 확장
-- 승인자/시각: 사용자 실행 승인, 2026-09-10. 1.0.3 mode/raw, 1.0.4 prompt 표시·경고, 1.0.5 subtag·가사 경고까지만 승인하며 1.0.6 Extend·추천 삽입은 후속 Phase 전까지 Proposed로 유지한다.
+- 승인자/시각: 사용자 실행 승인, 2026-09-10(1.0.3~1.0.5), 2026-09-11(1.0.6). 1.0.6은 exact-case `Extend` full-line marker의 Suno 전체 copy 제외와 원문 보존, 단일 source 기본 송폼, CRDT 상대 head caret·한 transaction/undo·IME/실패 무변경 계약을 승인한다.
 - 범위 원본: 사용자의 1.0.1 필수 및 후속 1.x 계획 요청.
 
 ## 해결할 질문
@@ -43,6 +43,8 @@ mode roundtrip·구두점/emoji/분해한글·1000/3000 경계·Extend 원문/cl
 ## 범위 밖과 관련 결정
 
 이 문서 생성은 구현/배포 또는 과거 결정의 자동 폐기 승인이 아니다. 원문/기존 사용자·이력·major1 정책을 보존한다. 기존 ADR/PROD/OPS의 해당 범위만 새 Accepted 기록으로 대체한다.
+
+1.0.6은 저장 schema·API·권한 모델을 바꾸지 않는다. 복사 filter 또는 삽입 UI를 되돌려도 raw CRDT·revision·recovery export는 그대로 남는다. 우클릭은 브라우저 기본 context를 강제로 차단하지 않으며 키보드·모바일 대안을 같은 명령에 연결한다.
 
 - [세부 계약](../../0.Plans/2.Patch-phase/contracts/EDITOR-COPY.md)
 - [결정 권한과 소비 시점](../../0.Plans/2.Patch-phase/Decision-Ownership.md)
