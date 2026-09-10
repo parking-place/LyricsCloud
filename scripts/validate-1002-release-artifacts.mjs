@@ -9,18 +9,18 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 const assertIncludes = (value, expected, message) => assert(value.includes(expected), message);
 
 const version = (await read("VERSION")).trim();
-assert(version === "1.0.1", "VERSION must be the active 1.0.1 patch");
+assert(version === "1.0.2", "VERSION must be the active 1.0.2 patch candidate");
 const packages = ["package.json", "apps/web/package.json", "apps/collaboration/package.json", "apps/worker/package.json",
   "packages/auth/package.json", "packages/config/package.json", "packages/database/package.json", "packages/domain/package.json",
   "packages/editor/package.json", "packages/observability/package.json", "packages/ui/package.json"];
 for (const path of packages) assert((await json(path)).version === version, `${path} version must equal VERSION`);
 
 const status = await read("0.Plans/1. Dev-phase/STATUS.md");
-assertIncludes(status, 'current_version: "1.0.1"', "STATUS current version does not match VERSION");
+assertIncludes(status, 'current_version: "1.0.2"', "STATUS current version does not match VERSION");
 const runtime = await read("packages/config/src/index.ts");
-assertIncludes(runtime, 'appVersion: env.APP_VERSION ?? "1.0.1"', "runtime default version is not current");
-assertIncludes(await read("apps/web/next.config.ts"), 'generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-1.0.1"', "deterministic Next build ID missing");
-for (const path of ["compose.yaml", "compose.backup.yaml", ".env.example"]) assertIncludes(await read(path), "1.0.1", `${path} lacks 1.0.1`);
+assertIncludes(runtime, 'appVersion: env.APP_VERSION ?? "1.0.2"', "runtime default version is not current");
+assertIncludes(await read("apps/web/next.config.ts"), 'generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-1.0.2"', "deterministic Next build ID missing");
+for (const path of ["compose.yaml", "compose.backup.yaml", ".env.example"]) assertIncludes(await read(path), "1.0.2", `${path} lacks 1.0.2`);
 
 const lockfile = await read("pnpm-lock.yaml");
 const environment = await read("config/environment-schema.1.0.0.json");
@@ -100,6 +100,7 @@ for (const path of ["scripts/check-environment-1002.mjs", "scripts/generate-1002
   "scripts/docker-image-tag.sh", "scripts/verify-image-artifact.sh", "scripts/scan-container-vulnerabilities.sh", "scripts/scan-container-secrets.sh",
   "scripts/verify-production-images.sh", "scripts/verify-0915-upgrade-rollback.sh"]) await read(path);
 
+const releaseVersion = "1.0.1";
 const currentEnvironmentText = await read("config/environment-schema.1.0.1.json");
 const currentMigrationsText = await read("config/migrations.1.0.1.json");
 const currentLicensesText = await read("config/licenses.1.0.1.json");
@@ -107,18 +108,18 @@ const currentEnvironment = JSON.parse(currentEnvironmentText);
 const currentMigrations = JSON.parse(currentMigrationsText);
 const currentLicenses = JSON.parse(currentLicensesText);
 const currentManifest = await json("config/release-manifest.1.0.1.json");
-assert(currentEnvironment.properties.APP_VERSION.const === version, "current environment version differs");
+assert(currentEnvironment.properties.APP_VERSION.const === releaseVersion, "sealed release environment version differs");
 assert(currentEnvironment.properties.APP_CHANNEL.const === "release", "current environment release channel missing");
-assert(currentMigrations.productVersion === version && currentMigrations.latestSchema === "0901_beta_signup.sql", "current migration boundary differs");
+assert(currentMigrations.productVersion === releaseVersion && currentMigrations.latestSchema === "0901_beta_signup.sql", "sealed release migration boundary differs");
 assert(currentMigrations.applyOrder.length === migrationFiles.length, "current migration manifest is incomplete");
 for (const entry of currentMigrations.applyOrder) {
   assert(migrationFiles.includes(entry.name), `${entry.name} is missing from current migration history`);
   assert(hash(await read(`packages/database/migrations/${entry.name}`)) === entry.sha256, `${entry.name} current checksum changed`);
 }
-assert(currentLicenses.productVersion === version && currentLicenses.lockfileSha256 === hash(lockfile), "current license inventory differs");
+assert(currentLicenses.productVersion === releaseVersion && currentLicenses.lockfileSha256 === hash(lockfile), "sealed release license inventory differs");
 assert(Object.values(currentLicenses.licenses).flat().length === currentLicenses.totalPackages, "current license inventory count changed");
 assert(currentLicenses.review.unknownLicenses.length === 0 && currentLicenses.review.blockedLicenses.length === 0, "current license review has blockers");
-assert(currentManifest.releaseVersion === version && currentManifest.releaseChannel === "release", "current release template boundary invalid");
+assert(currentManifest.releaseVersion === releaseVersion && currentManifest.releaseChannel === "release", "sealed release template boundary invalid");
 assert(currentManifest.source.commit === "$GIT_SHA" && currentManifest.source.lockfileSha256 === hash(lockfile), "current release source placeholders differ");
 assert(currentManifest.database.manifestSha256 === hash(currentMigrationsText), "current migration manifest checksum differs");
 assert(currentManifest.environment.schemaSha256 === hash(currentEnvironmentText), "current environment schema checksum differs");
@@ -129,4 +130,4 @@ for (const service of ["web", "collaboration", "worker", "migrate"]) {
   assert(currentManifest.images[service].digest === `$${service.toUpperCase()}_DIGEST`, `${service} current digest placeholder invalid`);
 }
 
-console.log(`1.0.1 runtime and release artifacts plus sealed 1.0.0 contract: ${packages.length} package versions, ${migrationFiles.length} current migrations, 4 digest-only signed images verified`);
+console.log(`1.0.2 candidate runtime plus sealed 1.0.1 and 1.0.0 release contracts: ${packages.length} package versions, ${migrationFiles.length} migrations, 4 digest-only signed images verified`);

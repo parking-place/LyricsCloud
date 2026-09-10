@@ -2,7 +2,29 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
-## [1.0.1 P9 candidate] - 2026-09-10
+## [1.0.2 P5 candidate] - 2026-09-10
+
+### Added
+
+- 서버에서 가입이 완료된 직후 브라우저 응답이 유실돼도 같은 요청을 안전하게 회수하는 멱등 가입 검증
+- 로컬 저장 실패 시 현재 입력을 정확히 복사할 수 있는 복구 동작과 기존 계정 로그인·가입 재시도·취소 안내
+- build별 service worker cache 경계와 미전송 입력이 남은 화면의 이탈·업데이트 차단
+
+### Fixed
+
+- 로컬 저장소 쓰기 실패나 종료 직전 입력이 서버에 저장된 것처럼 보이던 상태 안내
+- 가입 성공 응답 유실 뒤 재시도에서 계정·grant·초대 소비가 중복될 수 있는 경계
+- 이전 PWA가 새 배포의 정적 자산과 섞이거나 확정되지 않은 입력을 둔 채 갱신될 수 있는 경계
+
+### Validation
+
+- PostgreSQL migration 2회, unit/integration 248건, beta 가입 4건과 관리자 CLI 통과
+- Chromium desktop/mobile 전체 267건과 의도적 31건 제외, Chromium·Firefox·WebKit 5-project 10건 통과
+- 네 production image의 DB·collaboration 재시작, durable pending projection, 중복 ACK, revision restore와 owner-only logout 통과
+
+Phase 5 전체 CI와 동일 SHA 개발 서버 인수 뒤에만 이 후보를 완료한다. `main`·정식 이미지·릴리스 서버는 별도 go/no-go 전까지 변경하지 않는다. 외부 암호화 backup·24시간 RPO·복원 훈련 미구축은 기존 Known limitations로 유지한다.
+
+## [1.0.1] - 2026-09-10
 
 ### Added
 
@@ -23,7 +45,7 @@
 - nonroot·read-only production image, 암호화 backup/restore, 0.9.0→1.0.1 upgrade/application rollback, secret·취약점·관측 검사 통과
 - 과거 CI save 편차 실패를 동일 격리 환경에서 3회 재측정해 원래 성능 예산을 완화하지 않고 통과
 
-이 항목은 P9 개발 후보 기록이다. P10 최종 CI·main 병합·정식 이미지·릴리스 서버 배포 전에는 1.0.1 정식 릴리스를 의미하지 않는다. 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 여전히 미구축인 Known limitations다.
+이 항목은 P9 개발 후보에서 시작해 P10 전체 CI·동일 SHA 개발 인수를 거쳐 정식 `v1.0.1`로 발행됐다. 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 여전히 미구축인 Known limitations다.
 
 ## [1.0.1 P3 candidate] - 2026-09-09
 
