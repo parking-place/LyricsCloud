@@ -3,14 +3,16 @@
 ```yaml
 current_version: "1.0.2"
 current_phase: "../2.Patch-phase/1.0.2/5phase.md"
-state: "review"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "1.0.2 P1~P5 후보 인수 완료. 별도 현재 release go/no-go 승인 전까지 main·정식 image·릴리스 서버를 변경하지 않는다"
+next_action: "현재 승인에 따라 1.0.2 main·annotated tag·정식 image·릴리스 서버 배포를 실행한 뒤 1.0.3 P1로 이동한다"
 ```
 
 ## 승인과 기준
+
+2026-09-10 사용자가 1.0.2 정식 릴리스 배포와 그 완료 뒤 1.0.3 P1~P5 실행을 명시적으로 승인했다. 1.0.2의 현재 승인 범위는 main 병합·annotated tag·정식 Docker image·릴리스 서버 migrate/배포/공개 smoke이며, 기존 DB volume·secret과 `OPS-100-001` 위험 예외를 보존한다.
 
 2026-09-10 사용자가 다음 버전의 마지막 Phase까지 실행하도록 지시했다. 현재 범위는 1.0.2 P1~P5와 Phase별 개발 서버 인수이며, 계획에 명시된 별도 gate에 따라 main 병합·정식 Release 별칭·릴리스 서버 변경은 포함하지 않는다.
 

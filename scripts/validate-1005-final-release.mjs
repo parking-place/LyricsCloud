@@ -51,6 +51,11 @@ const currentTraceability = read("docs/architecture/1.0.1-FINAL-TRACEABILITY.md"
 const currentReleaseNotes = read("docs/releases/1.0.1.md");
 const currentReleaseRunbook = read("docs/runbooks/1.0.1-phase10-private-beta-release.md");
 const currentManifest = JSON.parse(read("config/release-manifest.1.0.1.json"));
+const formalTraceability = read("docs/architecture/1.0.2-FINAL-TRACEABILITY.md");
+const formalReleaseNotes = read("docs/releases/1.0.2.md");
+const formalReleaseRunbook = read("docs/runbooks/1.0.2-release.md");
+const formalReleaseChecklist = read("docs/runbooks/1.0.2-release-checklist.md");
+const formalManifest = JSON.parse(read("config/release-manifest.1.0.2.json"));
 
 for (const marker of ["주요 기능", "설치와 업그레이드", "알려진 제한과 운영 위험", "지원과 보안", "iOS update PASS, Android update PASS", "미해결 P0/P1은 0건"]) {
   assert(releaseNotes.includes(marker), `release notes marker missing: ${marker}`);
@@ -103,6 +108,26 @@ const currentDevTags = getImagePublication({ eventName: "push", refType: "branch
 for (const tag of [currentVersion, releasedVersion, "Release", "latest", "Release-latest"]) assert(!currentDevTags.includes(tag), `P5 dev moves protected tag: ${tag}`);
 for (const marker of ["APP_VERSION: 1.0.2", "APP_PHASE: p5", "test:migration:0900", "test:environment:101"]) {
   assert(workflow.includes(marker), `P5 CI marker missing: ${marker}`);
+}
+for (const marker of ["P5", "P0/P1", "OPS-100-001", "동일 SHA 개발 인수"]) {
+  assert(formalTraceability.includes(marker), `1.0.2 traceability marker missing: ${marker}`);
+}
+for (const marker of ["Private Beta 안정화", "응답", "exact-copy", "알려진 제한", "OPS-100-001"]) {
+  assert(formalReleaseNotes.includes(marker), `1.0.2 release notes marker missing: ${marker}`);
+}
+for (const marker of ["annotated `v1.0.2`", "publish=true", "release=true", "Release-latest", "application-first rollback"]) {
+  assert(formalReleaseRunbook.includes(marker), `1.0.2 release runbook marker missing: ${marker}`);
+}
+for (const marker of ["main", "annotated `v1.0.2`", "exact digest", "OPS-100-001"]) {
+  assert(formalReleaseChecklist.includes(marker), `1.0.2 release checklist marker missing: ${marker}`);
+}
+assert(formalManifest.releaseVersion === currentVersion && formalManifest.releaseChannel === "release"
+  && formalManifest.productionAuthorized === true && formalManifest.database.requiredLatestSchema === "0901_beta_signup.sql",
+  "1.0.2 formal release manifest boundary invalid");
+const formalReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${currentVersion}`,
+  sha: "c".repeat(40), version: currentVersion, release: true }).tags;
+for (const tag of [currentVersion, "Release", "latest", "Release-latest"]) {
+  assert(formalReleaseTags.includes(tag), `1.0.2 release tag missing: ${tag}`);
 }
 
 if (requireRelease) {

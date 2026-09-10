@@ -130,4 +130,37 @@ for (const service of ["web", "collaboration", "worker", "migrate"]) {
   assert(currentManifest.images[service].digest === `$${service.toUpperCase()}_DIGEST`, `${service} current digest placeholder invalid`);
 }
 
-console.log(`1.0.2 candidate runtime plus sealed 1.0.1 and 1.0.0 release contracts: ${packages.length} package versions, ${migrationFiles.length} migrations, 4 digest-only signed images verified`);
+const formalEnvironmentText = await read("config/environment-schema.1.0.2.json");
+const formalMigrationsText = await read("config/migrations.1.0.2.json");
+const formalLicensesText = await read("config/licenses.1.0.2.json");
+const formalEnvironment = JSON.parse(formalEnvironmentText);
+const formalMigrations = JSON.parse(formalMigrationsText);
+const formalLicenses = JSON.parse(formalLicensesText);
+const formalManifest = await json("config/release-manifest.1.0.2.json");
+assert(formalEnvironment.properties.APP_VERSION.const === version && formalEnvironment.properties.APP_CHANNEL.const === "release",
+  "1.0.2 formal environment boundary invalid");
+assert(formalMigrations.productVersion === version && formalMigrations.maximumCompatibleApplicationVersion === version,
+  "1.0.2 formal migration compatibility invalid");
+assert(formalMigrations.applyOrder.length === migrationFiles.length && formalMigrations.latestSchema === "0901_beta_signup.sql",
+  "1.0.2 formal migration manifest is incomplete");
+for (const entry of formalMigrations.applyOrder) {
+  assert(hash(await read(`packages/database/migrations/${entry.name}`)) === entry.sha256, `${entry.name} 1.0.2 checksum changed`);
+}
+assert(formalLicenses.productVersion === version && formalLicenses.lockfileSha256 === hash(lockfile), "1.0.2 formal license inventory invalid");
+assert(Object.values(formalLicenses.licenses).flat().length === formalLicenses.totalPackages,
+  "1.0.2 formal license package count changed");
+assert(formalLicenses.review.unknownLicenses.length === 0 && formalLicenses.review.blockedLicenses.length === 0,
+  "1.0.2 formal license review has blockers");
+assert(formalManifest.releaseVersion === version && formalManifest.releaseChannel === "release" && formalManifest.productionAuthorized === true,
+  "1.0.2 formal release authorization invalid");
+assert(formalManifest.source.commit === "$GIT_SHA" && formalManifest.source.lockfileSha256 === hash(lockfile),
+  "1.0.2 formal source placeholders invalid");
+assert(formalManifest.database.manifestSha256 === hash(formalMigrationsText)
+  && formalManifest.environment.schemaSha256 === hash(formalEnvironmentText)
+  && formalManifest.licenses.inventorySha256 === hash(formalLicensesText), "1.0.2 formal artifact checksums differ");
+for (const service of ["web", "collaboration", "worker", "migrate"]) {
+  assert(formalManifest.images[service].repository === `parkingplace/lyricscloud-${service}`, `${service} 1.0.2 repository invalid`);
+  assert(formalManifest.images[service].digest === `$${service.toUpperCase()}_DIGEST`, `${service} 1.0.2 digest placeholder invalid`);
+}
+
+console.log(`1.0.2 runtime and formal release plus sealed 1.0.1 and 1.0.0 contracts: ${packages.length} package versions, ${migrationFiles.length} migrations, 4 digest-only signed images verified`);

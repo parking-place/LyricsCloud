@@ -2,7 +2,7 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
-## [1.0.2 P5 candidate] - 2026-09-10
+## [1.0.2] - 2026-09-10
 
 ### Added
 
@@ -22,7 +22,7 @@
 - Chromium desktop/mobile 전체 267건과 의도적 31건 제외, Chromium·Firefox·WebKit 5-project 10건 통과
 - 네 production image의 DB·collaboration 재시작, durable pending projection, 중복 ACK, revision restore와 owner-only logout 통과
 
-Phase 5 전체 CI, 네 개발 image 게시와 동일 SHA 개발 서버 인수를 통과해 후보를 완료했다. `main`·정식 이미지·릴리스 서버는 별도 go/no-go 전까지 변경하지 않는다. 외부 암호화 backup·24시간 RPO·복원 훈련 미구축은 기존 Known limitations로 유지한다.
+Phase 5 전체 CI, 네 개발 image 게시와 동일 SHA 개발 서버 인수를 통과했고 사용자가 정식 릴리스를 승인했다. 정식 main·image·릴리스 서버 결과는 annotated tag와 GitHub Release에 고정한다. 외부 암호화 backup·24시간 RPO·복원 훈련 미구축은 기존 Known limitations로 유지한다.
 
 ## [1.0.1] - 2026-09-10
 
