@@ -1,6 +1,6 @@
 # 1.0.6 Phase 2 — 핵심 기반·저장과 서버
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`, 2026-09-11)
 - 단계 목적: Extend 작업 메모·송폼 삽입 메뉴의 핵심 기반·저장과 서버을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -40,12 +40,12 @@ Extend 표식은 원문에 남기면서 Suno 전체 복사에서 제외하고, �
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.0.6-P2-01` 구현 전 `1.0.6` 수용 사례의 실패 테스트를 작성한다. 제안 위치는 `tests/new-feature/1.0.6.contract.test.ts`이며 runner 포함 여부를 확인한 뒤 실패 이유를 기록한다.
-- [ ] `LC-NF-1.0.6-P2-02` 전체 Suno 복사에서 Extend 표식만 제외하고 recovery export/수정 기록에는 보존하는 출력 모드를 구현한다.
-- [ ] `LC-NF-1.0.6-P2-03` 부분 선택/구간 복사의 Extend 포함 여부를 명시하고 원문 복사 경로와 혼동하지 않게 한다.
-- [ ] `LC-NF-1.0.6-P2-04` 삽입 메뉴의 cursor를 CRDT 상대 위치로 유지하고 composition 중 삽입은 안전하게 연기/취소한다.
-- [ ] `LC-NF-1.0.6-P2-05` 한 번 삽입을 한 undo transaction으로 처리하고 실패/삭제된 cursor에는 원문을 보존한다.
-- [ ] `LC-NF-1.0.6-P2-06` 추가 schema가 있으면 실제 테스트 DB의 빈 설치·이전 schema 업그레이드·권한·되돌림을 검사한다. 원인 수정 후 동일 실패 테스트와 기존 관련 회귀를 다시 실행한다.
+- [x] `LC-NF-1.0.6-P2-01` 실제 unit runner에 포함되는 `packages/editor/src/{copy,songform-insertion}.test.ts`를 먼저 추가해 기존 copy 2건과 누락 module 1 suite 실패를 확인했다.
+- [x] `LC-NF-1.0.6-P2-02` 전체 Suno copy에서 exact-case Extend 정식 marker 줄과 소속 LF 하나만 제외했다. 저장/revision/export 경로는 건드리지 않았다.
+- [x] `LC-NF-1.0.6-P2-03` `copySongFormSections`는 별도 LF serializer를 사용해 Extend 원문을 보존하고 전체 Suno copy filter와 분리했다.
+- [x] `LC-NF-1.0.6-P2-04` 기존 BrowserLyricSync의 Yjs 상대 selection capture/resolve를 재사용하고 단일 source marker·독립 줄 change builder를 추가했다. composition guard의 UI 소비는 P3로 인계한다.
+- [x] `LC-NF-1.0.6-P2-05` remote prefix 뒤 상대 caret 해석·한 Yjs transaction 삽입·한 undo 복구와 invalid position/marker 무변경을 단위 검증했다.
+- [x] `LC-NF-1.0.6-P2-06` schema/API/권한 변경이 없음을 확인했다. 기존 schema `1000_prompt_modes.sql`로 동일 SHA 개발 migrate·기동을 통과했고 실패 fixture와 전체 unit·check·build를 다시 실행했다.
 
 ## 구체적 검증
 
@@ -64,12 +64,12 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드·실행·검토 증거와 후보 SHA `7f87b8af1a5118c2d5eda3a07948e89c1696a215`가 연결되어 있다.
+- [x] 현재 patch의 원문·오류·복구 경계를 unit과 기존 전체 회귀로 검증했다. UI 권한·복구 교차 검증은 P3/P4에 명시했다.
+- [x] 실제 UI/지원 브라우저/물리 IME 미실행과 후속 책임을 숨김없이 기록했다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 구현 Phase는 원격 PR #45와 동일 SHA 개발 인수를 갖췄다. 정책상 최종 필수 CI는 P5 후보에서 수행하며 생략을 PASS로 기록하지 않았다.
+- [x] main·Release·릴리스 서버는 변경하지 않고 개발 서버만 승인 범위에서 갱신했다.
 
 ## 산출물
 
