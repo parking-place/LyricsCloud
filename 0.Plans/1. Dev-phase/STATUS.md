@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.3"
-current_phase: "../2.Patch-phase/1.0.3/3phase.md"
+current_phase: "../2.Patch-phase/1.0.3/4phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "1.0.3 P3 PC·모바일 mode 선택·raw 입력·명시 변환 흐름을 구현·검증한다"
+next_action: "1.0.3 P4 네 수용 사례와 실패·권한·복구·브라우저·서버 재시작 회귀를 교차 검증한다"
 ```
 
 ## 승인과 기준
@@ -47,12 +47,14 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.2 P5 | complete | Actions 전체 verify·네 dev image·동일 SHA 개발 공개 인수와 후속 연결 완료 |
 | 1.0.3 P1 | complete | mode/raw 저장·구버전 capability·원자 projection·rollback·파일 담당 계약을 설계-only로 확정 |
 | 1.0.3 P2 | complete | mode/raw schema·store·CRDT·복제/검색/내보내기·구버전 차단과 동일 SHA 개발 인수 완료 |
+| 1.0.3 P3 | complete | PC·모바일 mode 선택·문장 raw·명시 변환/undo·revision v1/v2와 동일 SHA 개발 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.3/P3 | LC-NF-1.0.3-P3-01~06 | prompt 신규·편집·목록·템플릿 UI, editor draft/CRDT, PC/mobile E2E | 1.0.3 P2 동일 SHA 개발 인수 `62e3d58` | 2026-09-10T17:10:00+09:00 | in_progress |
+| Codex | 1.0.3/P4 | LC-NF-1.0.3-P4-01~06 | prompt mode 수용·권한·offline/reconnect·server restart·지원 브라우저 회귀 | 1.0.3 P3 동일 SHA 개발 인수 `30dfef7` | 2026-09-10T17:45:00+09:00 | in_progress |
+| Codex | 1.0.3/P3 | LC-NF-1.0.3-P3-01~06 | prompt 신규·편집·목록·템플릿 UI, editor draft/CRDT, PC/mobile E2E | 1.0.3 P2 동일 SHA 개발 인수 `62e3d58` | 2026-09-10T17:10:00+09:00 | complete |
 | Codex | 1.0.3/P2 | LC-NF-1.0.3-P2-01~06 | domain·database·editor·collaboration의 prompt mode/raw·migration·검증 | 1.0.3 P1 계약 `698e2d6` | 2026-09-10T17:00:00+09:00 | complete |
 | Codex | 1.0.3/P1 | LC-NF-1.0.3-P1-01~06 | prompt mode/raw 계약·수용 입력·migration/API/CRDT/capability/rollback 경계 | v1.0.2 release `b4cfd665feb72612122253a26f336e5816bfb28c` | 2026-09-10T16:19:00+09:00 | complete |
 | Codex | 1.0.2/P5 | LC-NF-1.0.2-P5-01~06 | 요구 추적·현재 문서·최종 CI·동일 SHA 개발 인수·후속 연결 | P4 동일 SHA 개발 인수 | 2026-09-10T13:07:30+09:00 | complete |
