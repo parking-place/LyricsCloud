@@ -16,8 +16,9 @@
 
 - PostgreSQL 18 migration 반복과 unit/integration 283건, Chromium 전체 340건과 5-project 신규 기능 30건 검증
 - 동일 SHA 개발 서버의 owner/type 저장·stale 복구와 서비스 재시작 뒤 지속성 검증
+- Actions `34533353553` 전체 verify와 네 dev image 게시·서명 통과
 
-Known limitations: 실제 물리 기기는 이번 후보에서 새로 실행하지 않았고 `OPS-100-001` 외부 backup 예외를 유지한다. Phase 5 전체 CI·동일 SHA 개발 인수 뒤 정식 릴리스한다.
+P1~P5 후보 인수를 완료했고 사용자가 정식 릴리스를 승인했다. Known limitations: 실제 물리 기기는 이번 후보에서 새로 실행하지 않았고 `OPS-100-001` 외부 backup 예외를 유지한다.
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
