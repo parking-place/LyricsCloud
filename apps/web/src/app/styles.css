@@ -581,6 +581,8 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .songform-list button:hover { background: var(--surface); color: var(--ink); }
 .songform-list button.active { border-color: rgb(200 255 61 / 24%); background: rgb(200 255 61 / 8%); color: var(--acid); }
 .songform-list button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.songform-list button .songform-primary-label { flex: 0 1 auto; color: inherit; font-weight: 750; }
+.songform-list button .songform-subtag { flex: 1 1 auto; color: var(--subtle); font-size: .6rem; font-weight: 550; }
 .songform-list button small { margin-left: auto; color: var(--subtle); font-size: .58rem; }
 .songform-empty { margin: .75rem .35rem; color: var(--subtle); font-size: .67rem; line-height: 1.6; }
 .songform-copy-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; margin-top: .7rem; padding-top: .7rem; border-top: 1px solid var(--line); }
@@ -590,6 +592,9 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .songform-copy-actions button:disabled { opacity: .38; cursor: not-allowed; }
 .lyric-editor-surface { width: min(100%, 54rem); min-height: 0; justify-self: center; overflow: hidden; border: 1px solid var(--line); border-radius: .85rem; background: var(--panel); font-family: "Noto Sans KR", Pretendard, sans-serif; font-size: 1rem; }
 .lyric-editor-footer { width: min(100%, 54rem); display: flex; justify-content: space-between; gap: 1rem; justify-self: center; padding-top: .65rem; color: var(--subtle); font-size: .62rem; }
+.lyric-copy-length { align-self: center; color: var(--subtle); font-size: .62rem; white-space: nowrap; }
+.lyric-copy-length.over { color: var(--danger); }
+.mobile-editor-dock button small { color: var(--subtle); font-size: .52rem; font-weight: 650; }
 .other-lyrics-panel { min-width: 0; display: grid; align-content: start; gap: .75rem; overflow-y: auto; }
 .lyric-metadata, .other-lyrics-list { padding: .8rem; border: 1px solid var(--line); border-radius: .8rem; background: var(--panel); }
 .other-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding-bottom: .6rem; border-bottom: 1px solid var(--line); }

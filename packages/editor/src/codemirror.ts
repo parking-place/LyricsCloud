@@ -90,7 +90,8 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       const pending = pendingNavigation;
       pendingNavigation = null;
       if (!pending) return;
-      const signature = `${pending.activeSectionId ?? ""}:${pending.sections.map((section) => section.id).join(",")}`;
+      const signature = `${pending.activeSectionId ?? ""}:${pending.sections.map((section) =>
+        `${section.id}:${section.label}:${section.subtag ?? ""}`).join(",")}`;
       if (signature === lastNavigationSignature) return;
       lastNavigationSignature = signature;
       options.onSongFormNavigationChange?.(pending);
@@ -190,6 +191,7 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
         ".cm-content": { minHeight: "100%", padding: "1.25rem 0" },
         ".cm-line": { padding: "0 1.5rem" },
         ".cm-songform-line": { color: "var(--acid)", fontWeight: "800", backgroundColor: "color-mix(in srgb, var(--acid) 5%, transparent)" },
+        ".cm-songform-subtag": { color: "var(--muted)", fontWeight: "550" },
         ".cm-cursor": { borderLeftColor: "var(--acid)" },
         ".cm-selectionBackground, &.cm-focused .cm-selectionBackground": { backgroundColor: "color-mix(in srgb, var(--acid) 22%, transparent)" },
         ".cm-gutters": { display: "none" },
@@ -289,10 +291,17 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
 export function normalizeLineEndings(value: string): string { return value.replace(/\r\n?/g, "\n"); }
 
 function songFormDecorations(sections: readonly SongFormSection[]): DecorationSet {
-  return Decoration.set(sections.map((section) => Decoration.line({
-    class: "cm-songform-line",
-    attributes: { "data-songform-id": section.id, "data-songform-label": section.label }
-  }).range(section.tagFrom)), true);
+  return Decoration.set(sections.flatMap((section) => {
+    const line = Decoration.line({
+      class: "cm-songform-line",
+      attributes: { "data-songform-id": section.id, "data-songform-label": section.label }
+    }).range(section.tagFrom);
+    if (section.subtagFrom === null || section.subtagTo === null || section.subtagFrom === section.subtagTo) return [line];
+    return [line, Decoration.mark({
+      class: "cm-songform-subtag",
+      attributes: { "data-songform-subtag": section.subtag ?? "" }
+    }).range(section.subtagFrom, section.subtagTo)];
+  }), true);
 }
 
 function navigationState(sections: readonly SongFormSection[], position: number): SongFormNavigationState {
