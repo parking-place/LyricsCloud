@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.0.3"
-current_phase: "../2.Patch-phase/1.0.3/5phase.md"
+current_version: "1.0.4"
+current_phase: "../2.Patch-phase/1.0.4/1phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "승인된 1.0.3 정식 릴리스를 완료한 뒤 의존 순서대로 1.0.4 P1~P5와 1.0.5 P1~P5·정식 릴리스를 실행한다"
+next_action: "1.0.4 P1 설계 인수를 기준으로 P2 lossless span·공통 copy 경고 기반을 구현한다"
 ```
 
 ## 승인과 기준
@@ -52,11 +52,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.3 P3 | complete | PC·모바일 mode 선택·문장 raw·명시 변환/undo·revision v1/v2와 동일 SHA 개발 인수 완료 |
 | 1.0.3 P4 | complete | 실제 PostgreSQL·Chromium/Firefox/WebKit·offline/두 탭/구버전/권한·collaboration 재시작과 동일 SHA 개발 인수 완료 |
 | 1.0.3 P5 | complete | Actions 전체 verify·네 dev image 게시/서명·동일 SHA 개발 공개 인수와 후속 연결 완료 |
+| 1.0.4 P1 | complete | U+002E lossless span·최종 payload code point·비차단 1,000자 경고·담당/rollback 계약을 설계-only로 확정 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.4/P1 | LC-NF-1.0.4-P1-01~06 | prompt display/copy 계약·수용 입력·domain/UI/E2E 담당·호환/rollback 경계 | 1.0.3 P5 main `859c41e` | 2026-09-10T19:45:00+09:00 | complete |
 | Codex | 1.0.3/P5 | LC-NF-1.0.3-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅 문서·환경 schema·최종 CI·개발 인수 | 1.0.3 P4 동일 SHA 개발 인수 `611eab0` | 2026-09-10T18:15:00+09:00 | complete |
 | Codex | 1.0.3/P4 | LC-NF-1.0.3-P4-01~06 | prompt mode 수용·권한·offline/reconnect·server restart·지원 브라우저 회귀 | 1.0.3 P3 동일 SHA 개발 인수 `30dfef7` | 2026-09-10T17:45:00+09:00 | complete |
 | Codex | 1.0.3/P3 | LC-NF-1.0.3-P3-01~06 | prompt 신규·편집·목록·템플릿 UI, editor draft/CRDT, PC/mobile E2E | 1.0.3 P2 동일 SHA 개발 인수 `62e3d58` | 2026-09-10T17:10:00+09:00 | complete |
