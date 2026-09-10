@@ -3,11 +3,12 @@
 import {
   createBrowserPromptSync, type BrowserPromptSync, type LocalSyncState, type PromptEditorSnapshot
 } from "@lyricscloud/editor";
-import { parsePromptText, PROMPT_LIMITS, type PromptMode, type PromptRecord, type TemplateRecord } from "@lyricscloud/domain";
+import { parsePromptText, PROMPT_LIMITS, splitPromptSentenceDisplay, type PromptMode, type PromptRecord, type TemplateRecord } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
 import { DialogFocusBoundary, trapDialogTab } from "../lib/dialog-focus.js";
+import { promptCopyView } from "../lib/prompt-copy.js";
 import { PromptHistory } from "./prompt-history.js";
 import { PromptTokenBuilder } from "./prompt-token-builder.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
@@ -236,9 +237,10 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
   }
 
   async function copyPrompt() {
-    const value = snapshotRef.current.plainText;
-    if (!value) { setNotice(`복사할 ${snapshotRef.current.mode === "tags" ? "태그" : "문장"}를 먼저 입력해 주세요.`); return; }
-    if (await copyFeedback.copyText(value, "프롬프트", snapshotRef.current.mode === "tags" ? "쉼표로 정리한 프롬프트를 복사했습니다." : "문장 원문을 복사했습니다.") === "manual") return;
+    const view = promptCopyView(snapshotRef.current.plainText);
+    if (!view.text) { setNotice(`복사할 ${snapshotRef.current.mode === "tags" ? "태그" : "문장"}를 먼저 입력해 주세요.`); return; }
+    const success = snapshotRef.current.mode === "tags" ? "쉼표로 정리한 프롬프트를 복사했습니다." : "문장 원문을 복사했습니다.";
+    if (await copyFeedback.copyText(view.text, "프롬프트", view.feedback(success), view.warningMessage) === "manual") return;
     try {
       const response = await fetch(`/api/prompts/${initialPrompt.id}/use`, { method: "POST" });
       if (!response.ok) throw new Error();
@@ -352,6 +354,8 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
   }
 
   const titleLength = [...snapshot.title.trim()].length;
+  const copyView = useMemo(() => promptCopyView(snapshot.plainText), [snapshot.plainText]);
+  const sentenceSpans = useMemo(() => splitPromptSentenceDisplay(snapshot.sentenceText), [snapshot.sentenceText]);
   const titleError = !snapshot.title.trim() ? "제목을 입력해야 검색용 읽기 모델에 반영됩니다."
     : titleLength > PROMPT_LIMITS.title ? `제목은 ${PROMPT_LIMITS.title}자 이하로 입력해 주세요.` : "";
   return <section className="prompt-editor-page" aria-labelledby="prompt-editor-heading">
@@ -361,7 +365,7 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
         <button type="button" aria-pressed={isPinned} disabled={!editable || metadataBusy !== null} onClick={() => void toggleMetadata("pin")}>⌁ {isPinned ? "고정됨" : "고정"}</button>
         <button type="button" disabled={!editable || duplicating} onClick={() => void duplicatePrompt()}>{duplicating ? "복제 중…" : "복제"}</button>
         <button type="button" disabled={!editable} onClick={() => setHistoryOpen(true)}>수정 기록</button>
-        <button type="button" className="prompt-copy-button" disabled={!editable} onClick={() => void copyPrompt()}>전체 복사</button></div>
+        <button type="button" className="prompt-copy-button" disabled={!editable} onClick={() => void copyPrompt()}>전체 복사</button><span className={`prompt-header-copy-length${copyView.exceedsRecommendedLimit ? " over" : ""}`}>{copyView.codePointCount.toLocaleString("ko-KR")}자</span></div>
       <SyncIndicator state={syncState} onRetry={() => syncRef.current?.retry()} />
     </header>
     {notice ? <p className="editor-command-notice" role="status">{notice}{conversionUndo ? <> <button type="button" disabled={conversionBusy || !editable} onClick={() => void undoConversion()}>변환 취소</button></> : null}</p> : null}
@@ -386,9 +390,12 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
           onChange={(event) => changeSentence(event.target.value)}
           onCompositionStart={() => { sentenceComposing.current = true; syncRef.current?.setComposing(true); }}
           onCompositionEnd={() => finishPromptSentence()} />
+        <div className="prompt-sentence-display" aria-label="마침표 기준 문장 표시">{sentenceSpans.length
+          ? sentenceSpans.map((span) => <span className={span.terminated ? "sentence-span" : "sentence-span unfinished"} key={span.start}>{span.text}</span>)
+          : <span className="is-empty">표시할 문장이 없습니다.</span>}</div>
         <p>쉼표·마침표·공백·줄바꿈을 태그로 나누거나 정규화하지 않고 그대로 저장합니다.</p></section>}
       <aside className="prompt-editor-info" aria-label="프롬프트 정보">
-        <section><h2>복사될 내용 · {snapshot.mode === "tags" ? "태그형" : "문장형"}</h2><p className="prompt-copy-preview">{snapshot.plainText || (snapshot.mode === "tags" ? "태그를 추가하면 쉼표 문자열을 미리 볼 수 있습니다." : "문장을 입력하면 보이는 원문 그대로 복사됩니다.")}</p></section>
+        <section><h2>복사될 내용 · {snapshot.mode === "tags" ? "태그형" : "문장형"}</h2><p className="prompt-copy-preview">{snapshot.plainText || (snapshot.mode === "tags" ? "태그를 추가하면 쉼표 문자열을 미리 볼 수 있습니다." : "문장을 입력하면 보이는 원문 그대로 복사됩니다.")}</p><p className={`prompt-copy-length${copyView.exceedsRecommendedLimit ? " over" : ""}`}>{copyView.codePointCount.toLocaleString("ko-KR")}자{copyView.exceedsRecommendedLimit ? " · 1,000자 권장 기준을 넘었지만 저장과 복사는 가능합니다." : " · 1,000자 권장 기준"}</p></section>
         <section><h2>{snapshot.mode === "tags" ? "태그 수" : "문장 원문"}</h2>{snapshot.mode === "tags" ? <><strong>{snapshot.tokens.length}개</strong><p>중복 제외 · {snapshot.readTokens.length}개</p></> : <><strong>{[...snapshot.sentenceText].length}자</strong><p>공백·줄바꿈 포함 · 원문 보존</p></>}</section>
         <section className="prompt-song-links"><div className="other-panel-heading"><strong>연결 곡</strong><span>{linkedSongIds.size}개</span></div>
           <label htmlFor="prompt-song-search">곡 검색</label><input id="prompt-song-search" type="search" maxLength={200} value={songSearch} placeholder="곡 제목 검색" onChange={(event) => setSongSearch(event.target.value)} />

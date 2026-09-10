@@ -306,6 +306,12 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .prompt-card-actions button:hover, .prompt-card-actions button.is-on { border-color: rgb(200 255 61 / 35%); color: var(--acid); }
 .prompt-token-preview { min-height: 4.25rem; pointer-events: none; }
 .prompt-sentence-preview p { display: -webkit-box; margin: 0; overflow: hidden; color: var(--muted); font-size: .75rem; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 4; }
+.prompt-sentence-preview .sentence-span { border-bottom: 1px solid rgb(200 255 61 / 24%); }
+.prompt-sentence-preview .sentence-span.unfinished { border-bottom-style: dashed; }
+.prompt-copy-length { position: relative; z-index: 1; margin: 0; color: var(--subtle); font-size: .64rem; line-height: 1.5; }
+.prompt-copy-length.over, .copy-length-warning { color: var(--danger); }
+.prompt-header-copy-length { align-self: center; color: var(--subtle); font-size: .65rem; white-space: nowrap; }
+.prompt-header-copy-length.over { color: var(--danger); }
 .prompt-tokens { display: flex; flex-wrap: wrap; align-content: start; gap: .4rem; margin: 0; padding: 0; list-style: none; }
 .prompt-tokens li { max-width: 100%; padding: .32rem .55rem; overflow: hidden; border: 1px solid rgb(200 255 61 / 16%); border-radius: 999px; background: rgb(200 255 61 / 7%); color: #c7e88a; font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }
 .prompt-tokens li.is-empty { border-color: var(--line); background: transparent; color: var(--subtle); font-style: italic; }
@@ -1115,6 +1121,9 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .prompt-sentence-card header > span.over { color: var(--danger); }
 .prompt-sentence-card textarea { width: 100%; min-height: 17rem; resize: vertical; padding: .85rem; border: 1px solid var(--line); border-radius: .62rem; outline: 0; background: var(--surface); color: var(--ink); font: .82rem/1.7 ui-monospace, monospace; white-space: pre-wrap; }
 .prompt-sentence-card textarea:focus { border-color: var(--acid); }
+.prompt-sentence-display { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .35rem; padding: .7rem; border: 1px dashed var(--line); border-radius: .6rem; background: var(--canvas); color: var(--muted); font-size: .72rem; line-height: 1.6; }
+.prompt-sentence-display .sentence-span { padding: .18rem .35rem; border-radius: .32rem; background: var(--surface-raised); white-space: pre-wrap; overflow-wrap: anywhere; }
+.prompt-sentence-display .sentence-span.unfinished { border: 1px dashed var(--line); }
 .prompt-sentence-card > p { margin: 0; color: var(--muted); font-size: .68rem; line-height: 1.55; }
 .prompt-builder-card > header { display: flex; justify-content: space-between; gap: 1rem; }
 .prompt-builder-card h2, .prompt-editor-info h2 { margin: 0; font-size: .78rem; }
