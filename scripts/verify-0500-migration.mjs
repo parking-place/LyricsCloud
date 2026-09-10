@@ -63,11 +63,26 @@ try {
   } finally { await target.end(); }
   console.log("0500 migration, token normalization, owner isolation, rollback guard and rhyme preservation: OK");
 } finally {
-  await admin.query(`drop database if exists "${databaseName}" with (force)`).catch(() => undefined);
+  await dropDatabaseWhenIdle();
   await admin.end();
 }
 
 function migrate() {
   const result = spawnSync("pnpm", ["migrate"], { env: { ...process.env, NODE_ENV: "test", DATABASE_URL: url.href }, encoding: "utf8" });
   if (result.status !== 0) throw new Error(result.stderr || result.stdout || "migration failed");
+}
+
+async function dropDatabaseWhenIdle() {
+  let lastError;
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    try {
+      await admin.query(`drop database if exists "${databaseName}"`);
+      return;
+    } catch (error) {
+      if (error?.code !== "55006") throw error;
+      lastError = error;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  }
+  throw lastError;
 }
