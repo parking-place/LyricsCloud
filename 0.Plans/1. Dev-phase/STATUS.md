@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.4"
-current_phase: "../2.Patch-phase/1.0.4/2phase.md"
+current_phase: "../2.Patch-phase/1.0.4/3phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "1.0.4 P2 기반을 기준으로 P3 목록·편집기·자료 패널의 표시와 비차단 경고를 연결한다"
+next_action: "1.0.4 P3 사용자 흐름을 기준으로 P4 실제 PostgreSQL·권한·offline·재접속·지원 브라우저 교차 회귀를 수행한다"
 ```
 
 ## 승인과 기준
@@ -54,11 +54,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.3 P5 | complete | Actions 전체 verify·네 dev image 게시/서명·동일 SHA 개발 공개 인수와 후속 연결 완료 |
 | 1.0.4 P1 | complete | U+002E lossless span·최종 payload code point·비차단 1,000자 경고·담당/rollback 계약을 설계-only로 확정 |
 | 1.0.4 P2 | complete | lossless span parser·공통 final-payload code point/1,000자 안내 builder와 단위·장문 회귀 완료 |
+| 1.0.4 P3 | complete | 목록·편집기·자료 패널의 lossless span·공통 길이/비차단 경고와 PC·모바일 Chromium 수용 흐름 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.4/P3 | LC-NF-1.0.4-P3-01~06 | web prompt 목록·편집기·자료 패널·copy fallback·PC/mobile E2E | 1.0.4 P2 `c8b18f7` | 2026-09-10T20:35:00+09:00 | complete |
 | Codex | 1.0.4/P2 | LC-NF-1.0.4-P2-01~06 | domain lossless span·prompt copy payload/count/warning·단위/장문 회귀 | 1.0.4 P1 `93a0704` | 2026-09-10T20:08:00+09:00 | complete |
 | Codex | 1.0.4/P1 | LC-NF-1.0.4-P1-01~06 | prompt display/copy 계약·수용 입력·domain/UI/E2E 담당·호환/rollback 경계 | 1.0.3 P5 main `859c41e` | 2026-09-10T19:45:00+09:00 | complete |
 | Codex | 1.0.3/P5 | LC-NF-1.0.3-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅 문서·환경 schema·최종 CI·개발 인수 | 1.0.3 P4 동일 SHA 개발 인수 `611eab0` | 2026-09-10T18:15:00+09:00 | complete |
@@ -116,3 +118,5 @@ P10 후보 `869e32b8a15c2e1e7524a75ab4d8b4428a925c79`는 원격 CI run `34394222
 1.0.3 P4 구현 후보 `611eab02ccd3ba7279a1627e93d92436876657d7`은 실제 PostgreSQL unit/integration 261건, migration 1000, Chromium 전체 306건 중 274 PASS·의도적 31 skip과 발견 후 보정한 접근성 대비 1건의 재감사 PASS를 통과했다. 새 기능은 Chromium PC/mobile 8건, Firefox 4건, WebKit mobile 4건을 통과했다. 원격 PR #32와 개발 서버 checkout/build metadata가 같은 SHA였고 공개 `1.0.3`, channel `dev`, phase `p4`, schema `1000_prompt_modes.sql`, 네 서비스 healthy였다. 실제 collaboration container 재시작 전후 capability 연결·동일 document 재접속·문장 raw 조회/복제를 확인하고 합성 사용자를 제거했다. P5는 문서·환경 schema·최종 CI와 같은 SHA 개발 인수를 담당하며 1.0.3 main·정식 image·릴리스 서버는 변경하지 않는다.
 
 1.0.3 P5 후보 `5092d12fc67c83b165bf83cf83210b49d62b4e4a`는 GitHub Actions run `34460759490`의 전체 verify와 web·collaboration·migrate·worker 개발 image 게시·서명을 통과했다. 원격 PR #33과 개발 서버 checkout·환경 `BUILD_ID`·공개 live/ready가 같은 SHA였고 `1.0.3`, channel `dev`, phase `p5`, schema `1000_prompt_modes.sql`, 네 서비스 healthy를 확인했다. 실제 collaboration 재시작 전후 capability 연결·동일 document 재접속·연속 공백/구두점/줄바꿈 raw 조회·복제가 PASS했고 합성 사용자를 제거했다. P1~P5 후보 인수는 완료됐으며 1.0.3 main·tag·정식 image·릴리스 서버는 별도 release go/no-go 전까지 변경하지 않는다.
+
+1.0.4 P3 구현 후보 `f8b5fb67cd3fefdabfb6e0b6874002b2db78976d`는 Node 24 전체 check·production build와 Chromium PC/mobile 4건을 통과했다. 목록·편집기·가사 자료 패널의 동일 최종 payload, lossless 문장 span, 1,001자 자동/수동 copy 경고를 확인했다. HTML textarea의 CRLF 표시 정규화와 달리 API·자동 clipboard payload는 원본 CRLF 그대로임을 별도로 검증했다. 권한·offline·collaboration restart·지원 브라우저 전체 교차 회귀는 P4에서 수행한다.
