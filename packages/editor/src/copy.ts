@@ -1,5 +1,19 @@
 import type { SongFormSection } from "./songform.js";
 
+export const LYRIC_COPY_WARNING_LIMIT = 3_000;
+
+export interface LyricCopyPayload {
+  readonly payload: string;
+  readonly codePointCount: number;
+  readonly exceedsRecommendedLimit: boolean;
+}
+
+export function buildLyricCopyPayload(document: string): LyricCopyPayload {
+  const payload = copyWholeLyric(document);
+  const codePointCount = [...payload].length;
+  return { payload, codePointCount, exceedsRecommendedLimit: codePointCount > LYRIC_COPY_WARNING_LIMIT };
+}
+
 export function copyWholeLyric(document: string): string {
   return document.replace(/\r\n?/g, "\n");
 }

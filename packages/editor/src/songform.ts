@@ -3,6 +3,10 @@ import { type ChangeDesc, Text } from "@codemirror/state";
 export interface SongFormSection {
   readonly id: string;
   readonly label: string;
+  readonly rawLabel: string;
+  readonly subtag: string | null;
+  readonly subtagFrom: number | null;
+  readonly subtagTo: number | null;
   readonly occurrence: number;
   readonly line: number;
   readonly tagFrom: number;
@@ -13,6 +17,10 @@ export interface SongFormSection {
 
 interface SongFormMarker {
   readonly label: string;
+  readonly rawLabel: string;
+  readonly subtag: string | null;
+  readonly subtagFrom: number | null;
+  readonly subtagTo: number | null;
   readonly tagFrom: number;
   readonly tagTo: number;
 }
@@ -53,6 +61,10 @@ export class SongFormIndex {
       .filter((marker) => !mergedOld.some((window) => containsPosition(window, marker.tagFrom)))
       .map((marker) => ({
         label: marker.label,
+        rawLabel: marker.rawLabel,
+        subtag: marker.subtag,
+        subtagFrom: marker.subtagFrom === null ? null : changes.mapPos(marker.subtagFrom, 1),
+        subtagTo: marker.subtagTo === null ? null : changes.mapPos(marker.subtagTo, -1),
         tagFrom: changes.mapPos(marker.tagFrom, 1),
         tagTo: changes.mapPos(marker.tagTo, -1)
       }));
@@ -70,6 +82,10 @@ export class SongFormIndex {
       return {
         id: `songform-${marker.tagFrom}-${occurrence}`,
         label: marker.label,
+        rawLabel: marker.rawLabel,
+        subtag: marker.subtag,
+        subtagFrom: marker.subtagFrom,
+        subtagTo: marker.subtagTo,
         occurrence,
         line: document.lineAt(marker.tagFrom).number,
         tagFrom: marker.tagFrom,
@@ -114,17 +130,30 @@ function scanWindows(document: Text, windows: readonly LineWindow[]): { markers:
     for (let lineNumber = firstLine; lineNumber <= lastLine; lineNumber += 1) {
       const line = document.line(lineNumber);
       scannedCharacters += line.length + (line.to < document.length ? 1 : 0);
-      const label = parseTagLabel(line.text);
-      if (label !== null) markers.push({ label, tagFrom: line.from, tagTo: line.to });
+      const marker = parseTagMarker(line.text, line.from);
+      if (marker !== null) markers.push({ ...marker, tagFrom: line.from, tagTo: line.to });
     }
   }
   return { markers, scannedCharacters };
 }
 
-function parseTagLabel(line: string): string | null {
+function parseTagMarker(line: string, lineFrom: number): Omit<SongFormMarker, "tagFrom" | "tagTo"> | null {
   const match = /^\s*\[([^\[\]\r\n]+)\]\s*$/u.exec(line);
   if (!match?.[1] || !match[1].trim()) return null;
-  return match[1];
+  const rawLabel = match[1];
+  const colon = rawLabel.indexOf(":");
+  const primary = colon < 0 ? "" : rawLabel.slice(0, colon).trim();
+  if (colon < 0 || !primary) {
+    return { label: rawLabel, rawLabel, subtag: null, subtagFrom: null, subtagTo: null };
+  }
+  const innerFrom = lineFrom + line.indexOf("[") + 1;
+  return {
+    label: primary,
+    rawLabel,
+    subtag: rawLabel.slice(colon),
+    subtagFrom: innerFrom + colon,
+    subtagTo: innerFrom + rawLabel.length
+  };
 }
 
 function expandLineWindow(document: Text, from: number, to: number): LineWindow {
