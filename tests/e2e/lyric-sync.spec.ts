@@ -128,7 +128,7 @@ test.describe("same-owner server synchronization", () => {
       await page.evaluate(() => window.dispatchEvent(new Event("test-abort-next-sync-write")));
       await page.locator(".cm-content").press("Control+End");
       await page.keyboard.insertText("\n저장 실패에도 보관할 입력");
-      await expect(page.getByText("동기화를 완료하지 못했습니다. 현재 입력을 복사해 보관해 주세요.")).toBeVisible();
+      await expect(page.getByText("이 기기 초안 또는 서버 저장을 완료하지 못했습니다. 현재 입력은 화면에 남아 있습니다.")).toBeVisible();
       await expect(page.locator(".cm-content")).toContainText("저장 실패에도 보관할 입력");
       expect(await body(page, id)).toBe("[Verse]\n서버 기준");
       await expect(page.getByText("방금 저장됨", { exact: true })).toHaveCount(0);
