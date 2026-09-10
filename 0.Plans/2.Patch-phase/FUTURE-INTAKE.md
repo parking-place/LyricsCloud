@@ -79,6 +79,7 @@
 | 2026-09-10 1.0.5 P2 구현 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `29180cf356ca3edc574340b8c98bf33317fdde46` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 주 이름/suffix projection·최종 LF payload 3,000자 builder와 단위 회귀만 구현 | 1.0.5 P1 완료 push 전 행 |
 | 2026-09-10 1.0.5 P2 완료 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `6dce2e363155ebd0da578a30c9c8185bf12564d5` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P2 parser/copy 단위·migration·동일 SHA 개발 인수를 완료하고 기존 P3 UI 범위만 착수 | 1.0.5 P2 구현 후보 push 전 행 |
 | 2026-09-10 1.0.5 P3 구현 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `3b12d0ab3610dbddbb6a1e5ec93035f89e25a076` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 송폼 suffix 저강조·목차 보조 정보·전체 복사 3,000자 비차단 경고와 PC/mobile 흐름만 구현 | 1.0.5 P2 완료 push 전 행 |
+| 2026-09-10 1.0.5 P3 완료 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `3649d014163c91b8f74d5b30d0460757bc97ab1c` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P3 PC/mobile UI와 동일 SHA 공개 기능 인수를 완료하고 기존 P4 교차 회귀만 착수 | 1.0.5 P3 구현 후보 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
