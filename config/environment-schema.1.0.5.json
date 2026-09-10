@@ -1,0 +1,182 @@
+
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lyricscloud.local/schema/environment/1.0.5",
+  "title": "LyricsCloud 1.0.5 production environment",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["NODE_ENV", "DATABASE_URL", "APP_VERSION", "BUILD_ID", "APP_CHANNEL"],
+  "properties": {
+    "NODE_ENV": {
+      "const": "production",
+      "x-services": ["web", "collaboration", "worker", "migrate", "backup", "admin"]
+    },
+    "DATABASE_URL": {
+      "type": "string",
+      "pattern": "^postgres(ql)?://",
+      "minLength": 1,
+      "x-secret": true,
+      "x-services": ["web", "collaboration", "worker", "migrate", "admin"]
+    },
+    "APP_VERSION": {
+      "const": "1.0.5",
+      "x-services": ["web", "collaboration", "worker", "migrate", "backup", "admin"]
+    },
+    "BUILD_ID": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "x-services": ["web", "collaboration", "worker", "migrate", "backup", "admin"]
+    },
+    "APP_CHANNEL": {
+      "const": "release",
+      "x-services": ["web", "collaboration", "worker", "migrate", "backup", "admin"]
+    },
+    "APP_ORIGIN": {
+      "type": "string",
+      "pattern": "^https://[^/?#]+$",
+      "x-services": ["web", "collaboration"]
+    },
+    "GOOGLE_ISSUER": {
+      "const": "https://accounts.google.com",
+      "default": "https://accounts.google.com",
+      "x-services": ["web"]
+    },
+    "GOOGLE_CLIENT_ID": {
+      "type": "string",
+      "pattern": "^[^\\s]+\\.apps\\.googleusercontent\\.com$",
+      "x-services": ["web"]
+    },
+    "GOOGLE_CLIENT_SECRET": {
+      "type": "string",
+      "minLength": 1,
+      "x-secret": true,
+      "x-services": ["web"]
+    },
+    "SESSION_SECRET": {
+      "type": "string",
+      "minLength": 32,
+      "x-secret": true,
+      "x-services": ["web"]
+    },
+    "AUTH_ALLOWED_EMAILS_FILE": {
+      "type": "string",
+      "pattern": "^/run/secrets/",
+      "x-secret-file": true,
+      "x-services": ["web"]
+    },
+    "AUTH_ALLOWLIST_FORMAT": {
+      "const": "hmac-v1",
+      "x-services": ["web"]
+    },
+    "AUTH_ALLOWLIST_ENVIRONMENT": {
+      "const": "release",
+      "x-services": ["web"]
+    },
+    "AUTH_ALLOWLIST_HMAC_KEYRING_FILE": {
+      "type": "string",
+      "pattern": "^/run/secrets/",
+      "x-secret-file": true,
+      "x-services": ["web"]
+    },
+    "BETA_ENVIRONMENT": {
+      "const": "release",
+      "x-services": ["web", "admin"]
+    },
+    "BETA_CODE_INDEX_KID": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$",
+      "x-services": ["web", "admin"]
+    },
+    "BETA_CODE_INDEX_KEY_FILE": {
+      "type": "string",
+      "pattern": "^/run/secrets/",
+      "x-secret-file": true,
+      "x-services": ["web", "admin"]
+    },
+    "BETA_CODE_AEAD_KEY_FILE": {
+      "type": "string",
+      "pattern": "^/run/secrets/",
+      "x-secret-file": true,
+      "x-services": ["admin"]
+    },
+    "BETA_CODE_TTL_HOURS": {
+      "type": "integer",
+      "minimum": 1,
+      "x-services": ["admin"]
+    },
+    "COLLABORATION_INTERNAL_URL": {
+      "type": "string",
+      "pattern": "^http://collaboration:3001$",
+      "default": "http://collaboration:3001",
+      "x-services": ["web"]
+    },
+    "COLLABORATION_PORT": {
+      "type": "integer",
+      "const": 3001,
+      "default": 3001,
+      "x-services": ["collaboration"]
+    },
+    "WORKER_HEALTH_PORT": {
+      "type": "integer",
+      "const": 3002,
+      "default": 3002,
+      "x-services": ["worker"]
+    },
+    "LIFECYCLE_PURGE_INTERVAL_MS": {
+      "type": "integer",
+      "minimum": 60000,
+      "default": 300000,
+      "x-services": ["worker"]
+    },
+    "BACKUP_STORAGE_ID": {
+      "type": "string",
+      "minLength": 1,
+      "x-services": ["backup"]
+    },
+    "BACKUP_REPOSITORY_DIR": {
+      "type": "string",
+      "const": "/backup/repository",
+      "default": "/backup/repository",
+      "x-persistent-boundary": "external-mounted-storage",
+      "x-services": ["backup"]
+    },
+    "PGPASSWORD_FILE": {
+      "type": "string",
+      "pattern": "^/run/secrets/",
+      "x-secret-file": true,
+      "x-services": ["backup"]
+    },
+    "AGE_RECIPIENT_FILE": {
+      "type": "string",
+      "pattern": "^/run/secrets/",
+      "x-secret-file": true,
+      "x-services": ["backup"]
+    },
+    "BACKUP_RETENTION_DAYS": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 30,
+      "x-services": ["backup"]
+    },
+    "BACKUP_MAX_AGE_HOURS": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 24,
+      "x-services": ["backup"]
+    },
+    "BACKUP_MIN_FREE_BYTES": {
+      "type": "integer",
+      "minimum": 67108864,
+      "default": 67108864,
+      "x-services": ["backup"]
+    }
+  },
+  "x-required-by-service": {
+    "web": ["NODE_ENV", "DATABASE_URL", "APP_VERSION", "BUILD_ID", "APP_CHANNEL", "APP_ORIGIN", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "SESSION_SECRET", "AUTH_ALLOWED_EMAILS_FILE", "AUTH_ALLOWLIST_FORMAT", "AUTH_ALLOWLIST_ENVIRONMENT", "AUTH_ALLOWLIST_HMAC_KEYRING_FILE", "BETA_ENVIRONMENT", "BETA_CODE_INDEX_KID", "BETA_CODE_INDEX_KEY_FILE", "COLLABORATION_INTERNAL_URL"],
+    "collaboration": ["NODE_ENV", "DATABASE_URL", "APP_VERSION", "BUILD_ID", "APP_CHANNEL", "APP_ORIGIN", "COLLABORATION_PORT"],
+    "worker": ["NODE_ENV", "DATABASE_URL", "APP_VERSION", "BUILD_ID", "APP_CHANNEL", "WORKER_HEALTH_PORT"],
+    "migrate": ["NODE_ENV", "DATABASE_URL", "APP_VERSION", "BUILD_ID", "APP_CHANNEL"],
+    "admin": ["NODE_ENV", "DATABASE_URL", "APP_VERSION", "BUILD_ID", "APP_CHANNEL", "BETA_ENVIRONMENT", "BETA_CODE_INDEX_KID", "BETA_CODE_INDEX_KEY_FILE", "BETA_CODE_AEAD_KEY_FILE", "BETA_CODE_TTL_HOURS"],
+    "backup": ["NODE_ENV", "APP_VERSION", "BUILD_ID", "APP_CHANNEL", "BACKUP_STORAGE_ID", "BACKUP_REPOSITORY_DIR", "PGPASSWORD_FILE", "AGE_RECIPIENT_FILE"]
+  }
+}

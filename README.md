@@ -11,7 +11,7 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 개인 창작용 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합과 온라인 우선 PWA를 지원한다.
 
-현재 소스는 `1.0.5` 서브 송폼·가사 복사 안내 후보이며 P1~P4 교차 인수를 완료하고 P5 최종 검증 중이다. 현재 운영 버전은 `v1.0.3`이다.
+현재 소스는 `1.0.5` 서브 송폼·가사 복사 안내이며 P1~P5 전체 CI·동일 SHA 개발 인수를 완료했고 정식 릴리스 실행이 승인됐다. 현재 운영 버전은 배포 완료 전까지 `v1.0.3`이다.
 
 ## 주요 기능
 
@@ -31,13 +31,13 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 | 항목 | 상태 |
 |---|---|
 | 소스·runtime version | `1.0.5` |
-| 현재 작업 | [1.0.5 Phase 5 — 최종 후보 인수](<./0.Plans/2.Patch-phase/1.0.5/5phase.md>) |
+| 현재 작업 | [1.0.5 Phase 5 — 정식 릴리스 실행](<./0.Plans/2.Patch-phase/1.0.5/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
-| 정식 릴리스 | `v1.0.3` ([1.0.3 release notes](./docs/releases/1.0.3.md)) |
-| 개발 인수 | 1.0.5 서브 송폼·가사 3,000자 안내 P1~P4, PostgreSQL·PC/mobile·Chromium/Firefox/WebKit·collaboration 재시작 PASS; P5 CI 진행 중 |
+| 정식 릴리스 | `v1.0.5` 승인·실행 중 ([1.0.5 release notes](./docs/releases/1.0.5.md)); 배포 완료 전 운영은 `v1.0.3` |
+| 개발 인수 | 1.0.5 서브 송폼·가사 3,000자 안내 P1~P5, 전체 CI·네 dev image·동일 SHA 공개 기능·collaboration 재시작 PASS |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
-1.0.3은 원문 보존·capability 차단을 포함한 P1~P5와 정식 릴리스를 완료했다. 1.0.4의 lossless 프롬프트 표시·1,000자 안내를 선행 기준으로 유지한다. 1.0.5는 저장 schema를 바꾸지 않고 첫 콜론 앞 송폼 이름으로 탐색하며 suffix 원문을 보존하고, 가사 최종 복사 payload가 3,000 Unicode code point를 넘을 때만 비차단 안내한다.
+1.0.3은 원문 보존·capability 차단을 포함한 P1~P5와 정식 릴리스를 완료했다. 1.0.4의 lossless 프롬프트 표시·1,000자 안내를 선행 기준으로 유지한다. 1.0.5는 저장 schema를 바꾸지 않고 첫 콜론 앞 송폼 이름으로 탐색하며 suffix 원문을 보존하고, 가사 최종 복사 payload가 3,000 Unicode code point를 넘을 때만 비차단 안내한다. 현재 사용자 승인에 따라 main·annotated tag·정식 image·릴리스 서버 반영을 순서대로 실행한다.
 
 ## 화면
 
@@ -95,7 +95,7 @@ LyricsCloud betacode refresh
 | 인증·베타 운영자 | [Google OAuth](./docs/runbooks/google-oauth-setup.md), [초대 코드 CLI](./docs/runbooks/1.0.1-phase2-beta-admin.md), [HMAC allowlist](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md) |
 | 복구·배포 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md), [개발 배포](./docs/runbooks/development-deploy.md), [Docker Hub 발행](./docs/runbooks/dockerhub-publish.md) |
 | 보안·장애 담당자 | [Security policy](./SECURITY.md), [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
-| 릴리스 검토자 | [1.0.3 release notes](./docs/releases/1.0.3.md), [1.0.5 후보 추적](./docs/architecture/1.0.5-FINAL-TRACEABILITY.md), [CHANGELOG](./CHANGELOG.md) |
+| 릴리스 검토자 | [1.0.5 release notes](./docs/releases/1.0.5.md), [1.0.5 추적](./docs/architecture/1.0.5-FINAL-TRACEABILITY.md), [CHANGELOG](./CHANGELOG.md) |
 | 기여자 | [Agent 지침](./Agent.md), [후속 계획](./0.Plans/2.Patch-phase/README.md), [ADR 색인](./docs/adr/README.md) |
 
 ## 저장소 구조
