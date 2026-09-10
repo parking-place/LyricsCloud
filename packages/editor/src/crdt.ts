@@ -1,9 +1,12 @@
 import * as Y from "yjs";
-import { findPromptDuplicates, normalizePromptToken, projectUniquePromptTokens, serializePromptTokens, type PromptDuplicate, type PromptTokenValue } from "@lyricscloud/domain";
+import { findPromptDuplicates, normalizePromptToken, projectUniquePromptTokens, serializePromptContent, serializePromptTokens,
+  validatePromptSentenceText, type PromptDuplicate, type PromptMode, type PromptTokenValue } from "@lyricscloud/domain";
 
 const BODY_KEY = "body";
 const PROMPT_TITLE_KEY = "prompt-title";
+const PROMPT_MODE_KEY = "prompt-mode";
 const PROMPT_TOKENS_KEY = "prompt-tokens";
+const PROMPT_SENTENCE_KEY = "prompt-sentence";
 
 export interface LyricProjection {
   readonly title: string;
@@ -19,8 +22,11 @@ export interface PromptSequenceItem {
 
 export interface PromptProjection {
   readonly title: string;
+  readonly mode: PromptMode;
   readonly tokens: readonly PromptTokenValue[];
   readonly readTokens: readonly PromptTokenValue[];
+  readonly tagText: string;
+  readonly sentenceText: string;
   readonly plainText: string;
   readonly duplicates: readonly PromptDuplicate[];
 }
@@ -51,10 +57,16 @@ export function applyLyricUpdate(document: Y.Doc, update: Uint8Array): void {
 
 export const applyRhymeUpdate = applyLyricUpdate;
 
-export function createPromptDocument(title = "", tokens: readonly PromptSequenceItem[] = []): Y.Doc {
+export function createPromptDocument(title = "", tokens: readonly PromptSequenceItem[] = [], mode?: PromptMode, sentenceText = ""): Y.Doc {
   const document = new Y.Doc();
-  if (title) document.getText(PROMPT_TITLE_KEY).insert(0, title.normalize("NFC").trim());
-  if (tokens.length) document.getArray<PromptSequenceItem>(PROMPT_TOKENS_KEY).insert(0, tokens.map(validateSequenceItem));
+  const initialMode = mode ?? (title || tokens.length || sentenceText ? "tags" : undefined);
+  document.transact(() => {
+    if (title) document.getText(PROMPT_TITLE_KEY).insert(0, title.normalize("NFC").trim());
+    if (initialMode) document.getMap<PromptMode>(PROMPT_MODE_KEY).set("value", initialMode);
+    if (tokens.length) document.getArray<PromptSequenceItem>(PROMPT_TOKENS_KEY).insert(0, tokens.map(validateSequenceItem));
+    const raw = validatePromptSentenceText(sentenceText);
+    if (raw) document.getText(PROMPT_SENTENCE_KEY).insert(0, raw);
+  });
   return document;
 }
 
@@ -64,6 +76,28 @@ export function promptTitle(document: Y.Doc): Y.Text {
 
 export function promptTokenSequence(document: Y.Doc): Y.Array<PromptSequenceItem> {
   return document.getArray<PromptSequenceItem>(PROMPT_TOKENS_KEY);
+}
+
+export function promptMode(document: Y.Doc): PromptMode {
+  return document.getMap<unknown>(PROMPT_MODE_KEY).get("value") === "sentence" ? "sentence" : "tags";
+}
+
+export function promptSentence(document: Y.Doc): Y.Text {
+  return document.getText(PROMPT_SENTENCE_KEY);
+}
+
+export function setPromptMode(document: Y.Doc, mode: PromptMode, sentenceText?: string): void {
+  document.transact(() => {
+    if (sentenceText !== undefined) replacePromptSentence(document, sentenceText);
+    document.getMap<PromptMode>(PROMPT_MODE_KEY).set("value", mode);
+  });
+}
+
+export function replacePromptSentence(document: Y.Doc, value: string): void {
+  const raw = validatePromptSentenceText(value);
+  const sentence = promptSentence(document);
+  sentence.delete(0, sentence.length);
+  if (raw) sentence.insert(0, raw);
 }
 
 export function insertPromptToken(document: Y.Doc, index: number, item: PromptSequenceItem): void {
@@ -108,11 +142,17 @@ export function projectPrompt(document: Y.Doc): PromptProjection {
     return true;
   }).map((item) => normalizePromptToken(item.displayValue));
   const readTokens = projectUniquePromptTokens(tokens);
+  const mode = promptMode(document);
+  const sentenceText = promptSentence(document).toString();
+  const tagText = serializePromptTokens(readTokens);
   return {
     title: promptTitle(document).toString().normalize("NFC").trim(),
+    mode,
     tokens,
     readTokens,
-    plainText: serializePromptTokens(readTokens),
+    tagText,
+    sentenceText,
+    plainText: serializePromptContent(mode, readTokens, sentenceText),
     duplicates: findPromptDuplicates(tokens)
   };
 }

@@ -10,7 +10,8 @@ import { createDatabasePool } from "./pool.js";
 
 interface TemplateRow extends QueryResultRow {
   id: string; owner_id: string | null; type: "lyrics" | "prompt"; title: string;
-  lyric_body: string | null; prompt_tokens: string[] | null; is_favorite: boolean;
+  lyric_body: string | null; prompt_tokens: string[] | null; prompt_mode: TemplateRecord["promptMode"];
+  prompt_text: string | null; is_favorite: boolean;
   use_count: string; last_used_at: Date | null; row_version: string; created_at: Date; updated_at: Date;
 }
 
@@ -21,7 +22,7 @@ export interface AppliedTemplate {
 
 export type WrittenTemplate = { readonly template: TemplateRecord; readonly replayed: boolean };
 
-const TEMPLATE_SELECT = `select t.id,t.owner_id,t.type,t.title,t.lyric_body,t.prompt_tokens,
+const TEMPLATE_SELECT = `select t.id,t.owner_id,t.type,t.title,t.lyric_body,t.prompt_tokens,t.prompt_mode,t.prompt_text,
   coalesce(pref.is_favorite,false) is_favorite,coalesce(pref.use_count,0)::text use_count,pref.last_used_at,
   t.row_version::text,t.created_at,t.updated_at
   from templates t left join template_preferences pref on pref.template_id=t.id and pref.owner_id=$1
@@ -76,6 +77,13 @@ export class PostgresTemplateStore {
       const values: unknown[] = [id, ownerId];
       if (input.title !== undefined) { values.push(input.title); updates.push(`title=$${values.length}`); }
       if (input.lyricBody !== undefined) { values.push(input.lyricBody); updates.push(`lyric_body=$${values.length}`); }
+      if (input.promptMode !== undefined) {
+        if (input.promptMode === "sentence" && input.promptText === undefined && current.promptText === null) {
+          throw new TemplateValidationError([{ field: "promptText", code: "required" }]);
+        }
+        values.push(input.promptMode); updates.push(`prompt_mode=$${values.length}`);
+      }
+      if (input.promptText !== undefined) { values.push(input.promptText); updates.push(`prompt_text=$${values.length}`); }
       if (input.tokens !== undefined) { values.push(input.tokens.map((token) => token.displayValue)); updates.push(`prompt_tokens=$${values.length}`); }
       if (updates.length) {
         updates.push("row_version=row_version+1", "updated_at=clock_timestamp()");
@@ -96,7 +104,7 @@ export class PostgresTemplateStore {
       const copyId = randomUUID();
       const input: CreateTemplateInput = {
         requestId, type: source.type, title: `${[...source.title].slice(0, 196).join("")} 복사본`,
-        lyricBody: source.lyricBody, tokens: source.tokens
+        lyricBody: source.lyricBody, promptMode: source.promptMode, promptText: source.promptText, tokens: source.tokens
       };
       await insertTemplate(client, copyId, ownerId, input);
       await recordRequest(client, ownerId, requestId, "duplicate", requestHash, copyId, "template");
@@ -137,7 +145,8 @@ export class PostgresTemplateStore {
       } else {
         await client.query("insert into resources(id,owner_id,type,title) values($1,$2,'prompt',$3)", [resourceId, ownerId, input.title]);
         const tokens = template.tokens;
-        await client.query("insert into prompts(resource_id,owner_id,plain_text) values($1,$2,$3)", [resourceId, ownerId, serializePromptTokens(tokens)]);
+        await client.query("insert into prompts(resource_id,owner_id,mode,plain_text,sentence_text) values($1,$2,$3,$4,$5)",
+          [resourceId, ownerId, template.promptMode, serializePromptTokens(tokens), template.promptText]);
         for (const [ordinal, token] of tokens.entries()) await insertPromptToken(client, ownerId, resourceId, ordinal, token);
       }
       await upsertPreference(client, ownerId, id, undefined, true);
@@ -167,8 +176,9 @@ export class PostgresTemplateStore {
 }
 
 async function insertTemplate(client: PoolClient, id: string, ownerId: string, input: CreateTemplateInput): Promise<void> {
-  await client.query(`insert into templates(id,owner_id,type,title,lyric_body,prompt_tokens)
-    values($1,$2,$3,$4,$5,$6)`, [id, ownerId, input.type, input.title, input.lyricBody, input.type === "prompt" ? input.tokens.map((token) => token.displayValue) : null]);
+  await client.query(`insert into templates(id,owner_id,type,title,lyric_body,prompt_tokens,prompt_mode,prompt_text)
+    values($1,$2,$3,$4,$5,$6,$7,$8)`, [id, ownerId, input.type, input.title, input.lyricBody,
+    input.type === "prompt" ? input.tokens.map((token) => token.displayValue) : null, input.promptMode, input.promptText]);
 }
 
 async function selectTemplate(client: PoolClient, ownerId: string, id: string, lock = false): Promise<TemplateRecord | null> {
@@ -179,7 +189,8 @@ async function selectTemplate(client: PoolClient, ownerId: string, id: string, l
 function mapTemplate(row: TemplateRow): TemplateRecord {
   return {
     id: row.id, type: row.type, source: row.owner_id === null ? "default" : "user", title: row.title,
-    lyricBody: row.lyric_body, tokens: (row.prompt_tokens ?? []).map((value) => normalizePromptToken(value)),
+    lyricBody: row.lyric_body, promptMode: row.prompt_mode, promptText: row.prompt_text,
+    tokens: (row.prompt_tokens ?? []).map((value) => normalizePromptToken(value)),
     isFavorite: row.is_favorite, useCount: Number(row.use_count), lastUsedAt: row.last_used_at?.toISOString() ?? null,
     rowVersion: Number(row.row_version), createdAt: row.created_at.toISOString(), updatedAt: row.updated_at.toISOString()
   };

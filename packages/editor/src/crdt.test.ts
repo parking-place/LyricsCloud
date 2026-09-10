@@ -1,6 +1,6 @@
 import * as Y from "yjs";
 import { describe, expect, it } from "vitest";
-import { applyLyricUpdate, applyPromptUpdate, createLyricDocument, createPromptDocument, createRhymeDocument, encodeLyricSnapshot, encodePromptSnapshot, encodeTextRelativePosition, insertPromptToken, lyricBody, movePromptToken, projectLyric, projectPrompt, projectRhyme, removePromptToken, resolveTextRelativePosition, rhymeBody } from "./crdt.js";
+import { applyLyricUpdate, applyPromptUpdate, createLyricDocument, createPromptDocument, createRhymeDocument, encodeLyricSnapshot, encodePromptSnapshot, encodeTextRelativePosition, insertPromptToken, lyricBody, movePromptToken, projectLyric, projectPrompt, projectRhyme, removePromptToken, replacePromptSentence, resolveTextRelativePosition, rhymeBody, setPromptMode } from "./crdt.js";
 
 describe("lyric CRDT contract", () => {
   it("converges with reversed and duplicate delivery", () => {
@@ -107,6 +107,26 @@ it("keeps user duplicates in the CRDT draft while projecting a unique comma read
   expect(projection.duplicates).toEqual([{ normalizedValue: "female vocal", firstIndex: 0, duplicateIndexes: [1] }]);
   expect(projection.plainText).toBe("Ｆｅｍａｌｅ  Vocal, bright synth");
   document.destroy();
+});
+
+it("stores a raw sentence and its mode in one transaction without mixing a concurrent stale tag edit", () => {
+  const baseline = createPromptDocument("모드", [{ occurrenceId: "seed", displayValue: "ambient" }]);
+  const seed = encodePromptSnapshot(baseline);
+  const modeSide = createPromptDocument(); const staleTagSide = createPromptDocument();
+  applyPromptUpdate(modeSide, seed); applyPromptUpdate(staleTagSide, seed);
+  const updates: Uint8Array[] = [];
+  modeSide.on("update", (update) => updates.push(update));
+  const raw = "  cinematic, not tags.\r\n두  칸 🙂  ";
+  setPromptMode(modeSide, "sentence", raw);
+  insertPromptToken(staleTagSide, 1, { occurrenceId: "stale", displayValue: "stale tag" });
+  expect(updates).toHaveLength(1);
+  applyPromptUpdate(modeSide, encodePromptSnapshot(staleTagSide));
+  applyPromptUpdate(staleTagSide, updates[0]!);
+  expect(projectPrompt(modeSide)).toEqual(projectPrompt(staleTagSide));
+  expect(projectPrompt(modeSide)).toMatchObject({ mode: "sentence", sentenceText: raw, plainText: raw, tagText: "ambient, stale tag" });
+  replacePromptSentence(modeSide, "  다음, 문장.  ");
+  expect(projectPrompt(modeSide).plainText).toBe("  다음, 문장.  ");
+  baseline.destroy(); modeSide.destroy(); staleTagSide.destroy();
 });
 
 function createFrom(update: Uint8Array) {

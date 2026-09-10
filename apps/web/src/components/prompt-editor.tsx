@@ -18,7 +18,8 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
   const [snapshot, setSnapshot] = useState<PromptEditorSnapshot>({
     title: initialPrompt.title,
     items: initialPrompt.tokens.map((token, index) => ({ occurrenceId: `initial-${index}`, displayValue: token.displayValue })),
-    tokens: initialPrompt.tokens, readTokens: initialPrompt.tokens, plainText: initialPrompt.plainText, duplicates: []
+    mode: initialPrompt.mode, tokens: initialPrompt.tokens, readTokens: initialPrompt.tokens,
+    tagText: initialPrompt.tagText, sentenceText: initialPrompt.sentenceText ?? "", plainText: initialPrompt.plainText, duplicates: []
   });
   const [syncState, setSyncState] = useState<LocalSyncState>("loading");
   const [editable, setEditable] = useState(false);
@@ -90,7 +91,7 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
       finishPromptTitle(sync);
       return sync?.flush() ?? true;
     }, () => ({
-      resourceId: initialPrompt.id, title: snapshotRef.current.title, body: snapshotRef.current.tokens.map(({ displayValue }) => displayValue).join(", ")
+      resourceId: initialPrompt.id, title: snapshotRef.current.title, body: snapshotRef.current.plainText
     }));
     void createBrowserPromptSync({
       ownerId, resourceId: initialPrompt.id,

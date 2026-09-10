@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.3"
-current_phase: "../2.Patch-phase/1.0.3/1phase.md"
+current_phase: "../2.Patch-phase/1.0.3/2phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-09"
 updated_at: "2026-09-10"
-next_action: "1.0.3 P1 설계 인수를 기준으로 P2 core mode/raw schema·store·CRDT를 구현한다"
+next_action: "1.0.3 P3 PC·모바일 mode 선택·raw 입력·명시 변환 흐름을 착수한다"
 ```
 
 ## 승인과 기준
@@ -46,11 +46,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.2 P4 | complete | 네 수용 사례·실제 PostgreSQL·267건 전체 E2E·5-browser·production restart·동일 SHA 개발 인수 완료 |
 | 1.0.2 P5 | complete | Actions 전체 verify·네 dev image·동일 SHA 개발 공개 인수와 후속 연결 완료 |
 | 1.0.3 P1 | complete | mode/raw 저장·구버전 capability·원자 projection·rollback·파일 담당 계약을 설계-only로 확정 |
+| 1.0.3 P2 | complete | mode/raw schema·store·CRDT·복제/검색/내보내기·구버전 차단과 동일 SHA 개발 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.3/P2 | LC-NF-1.0.3-P2-01~06 | domain·database·editor·collaboration의 prompt mode/raw·migration·검증 | 1.0.3 P1 계약 `698e2d6` | 2026-09-10T17:00:00+09:00 | complete |
 | Codex | 1.0.3/P1 | LC-NF-1.0.3-P1-01~06 | prompt mode/raw 계약·수용 입력·migration/API/CRDT/capability/rollback 경계 | v1.0.2 release `b4cfd665feb72612122253a26f336e5816bfb28c` | 2026-09-10T16:19:00+09:00 | complete |
 | Codex | 1.0.2/P5 | LC-NF-1.0.2-P5-01~06 | 요구 추적·현재 문서·최종 CI·동일 SHA 개발 인수·후속 연결 | P4 동일 SHA 개발 인수 | 2026-09-10T13:07:30+09:00 | complete |
 | Codex | 1.0.2/P4 | LC-NF-1.0.2-P4-01~06 | 가입 응답 유실·저장/PWA·계정·재접속·서버 재시작 교차 회귀 | P3 동일 SHA 개발 인수 | 2026-09-10T12:42:00+09:00 | complete |
@@ -72,6 +74,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.0.3 P2 구현 후보 `5e6c7d0fcfec5ae20aaf17807fcf20e6213eadd7`은 전체 unit 176건 PASS(DB 필요 84건은 별도 실행), PostgreSQL 18 관련 28건, migration 빈 설치·반복·legacy upgrade·RLS·차단 rollback, typecheck와 production build를 통과했다. 개발 서버 원격 branch·checkout·환경 `BUILD_ID`가 일치했고 공개 `1.0.3`, `dev`, `p2`, schema `1000_prompt_modes.sql`, 네 서비스 healthy를 확인했다. 합성 공개 smoke에서 문장 raw·mode 저장/복제/검색, 소유권, 구버전 capability 차단과 신규 연결이 PASS였고 합성 자료를 제거했다. P3는 일반 보기/입력에서 원문을 변환하지 않고 명시 변환에서만 preview/confirm/undo를 제공한다.
 
 1.0.1 P1의 자동 P6 감사 100건과 개발 서버·공개 live/ready/auth 기준은 [P1 인수 기록](../../docs/runbooks/1.0.1-phase1-intake.md)에 연결했다. 사용자 PC의 기존 Compose는 healthy지만 앱 `0.7.0`·schema `0701_recent_searches.sql`로 오래되어 현재 결함 판정에서 제외했고, source 갱신 전 DB custom archive와 목록 판독을 확인했다. 사용자가 실제 Windows 입력·재진입 손실과 `+ 새 가사`·`연결 관리` 테마 오류 화면을 제출했다. 최초 손실 경계는 이탈 시 취소되는 지연 composition commit, 테마 원인은 정의되지 않은 `primary-button` selector로 판정했다. P5 후보 `fa06b0ba1c74c314345dbe4eb2fb873ca1d7cb00`의 공개 서버 영구 저장 smoke와 Windows Chrome·Edge 실제 입력이 PASS였다. 양 테마·버튼은 P6에서 같은 후보 SHA로 닫는다.
 

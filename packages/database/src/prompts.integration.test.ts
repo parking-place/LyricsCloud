@@ -52,6 +52,32 @@ describe.runIf(enabled)("prompt PostgreSQL contract", () => {
     await expect(prompts!.updatePrompt(owner, original.id, { ...update, title: "변조" })).rejects.toBeInstanceOf(PromptConflictError);
   });
 
+  it("preserves sentence raw text across update, mode changes, list search and duplication", async () => {
+    const owner = users[0]!;
+    const raw = "  cinematic, not tags.\r\n두  칸과 🙂  ";
+    const created = (await prompts!.createPrompt(owner, parseCreatePromptInput({
+      requestId: randomUUID(), title: "문장 원문", mode: "sentence", sentenceText: raw
+    }))).prompt;
+    expect(created).toMatchObject({ mode: "sentence", tagText: "", sentenceText: raw, plainText: raw, tokens: [] });
+    const copy = await prompts!.duplicatePrompt(owner, created.id, randomUUID());
+    expect(copy?.prompt).toMatchObject({ mode: "sentence", tagText: "", sentenceText: raw, plainText: raw });
+    expect((await prompts!.listPrompts(owner, parsePromptListInput(new URLSearchParams({ search: "두  칸" })))).items)
+      .toContainEqual(expect.objectContaining({ id: created.id, plainText: raw }));
+
+    const tags = (await prompts!.updatePrompt(owner, created.id, parseUpdatePromptInput({
+      requestId: randomUUID(), rowVersion: created.rowVersion, mode: "tags", tokens: ["Dream Pop", "808"]
+    })))!.prompt;
+    expect(tags).toMatchObject({ mode: "tags", tagText: "Dream Pop, 808", sentenceText: raw, plainText: "Dream Pop, 808" });
+    const sentence = (await prompts!.updatePrompt(owner, created.id, parseUpdatePromptInput({
+      requestId: randomUUID(), rowVersion: tags.rowVersion, mode: "sentence"
+    })))!.prompt;
+    expect(sentence).toMatchObject({ mode: "sentence", sentenceText: raw, plainText: raw });
+    await expect(prompts!.updatePrompt(owner, created.id, parseUpdatePromptInput({
+      requestId: randomUUID(), rowVersion: sentence.rowVersion, tokens: ["stale 1.0.2 write"]
+    }))).rejects.toMatchObject({ code: "MODE_CONFLICT" });
+    expect(await prompts!.getPrompt(owner, created.id)).toMatchObject({ mode: "sentence", sentenceText: raw, plainText: raw });
+  });
+
   it("isolates token history and song links by owner, and unlink preserves originals", async () => {
     const [alice, bob] = users as [string, string];
     const prompt = (await prompts!.createPrompt(alice, parseCreatePromptInput({ requestId: randomUUID(), title: "Alice", tokens: ["alice-private"] }))).prompt;

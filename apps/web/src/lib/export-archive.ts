@@ -70,11 +70,12 @@ function readableResourceEntry(resource: ExportReadableResource): ArchiveEntry {
   if (resource.type === "rhyme_note") return textEntry(`rhymes/${safeExportFilename(resource.title, resource.id, "txt")}`,
     `${resource.title}\nID: ${resource.id}${deleted}\n\n${resource.body}`);
   return textEntry(`prompts/${safeExportFilename(resource.title, resource.id, "txt")}`,
-    `${resource.title}\nID: ${resource.id}${deleted}\n\n${resource.plainText}`);
+    `${resource.title}\nID: ${resource.id}\n형식: ${resource.promptMode === "sentence" ? "문장형" : "태그형"}${deleted}\n\n${resource.plainText}`);
 }
 
 function readableTemplateEntry(template: ExportReadableTemplate): ArchiveEntry {
-  const body = template.type === "lyrics" ? template.lyricBody ?? "" : (template.promptTokens ?? []).join(", ");
+  const body = template.type === "lyrics" ? template.lyricBody ?? ""
+    : template.promptMode === "sentence" ? template.promptText ?? "" : (template.promptTokens ?? []).join(", ");
   const deleted = template.deletedAt ? `\n삭제 시각: ${template.deletedAt}` : "";
   return textEntry(`templates/${safeExportFilename(template.title, template.id, "txt")}`, `${template.title}\nID: ${template.id}\n유형: ${template.type}${deleted}\n\n${body}`);
 }

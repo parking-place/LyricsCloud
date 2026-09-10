@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   findPromptDuplicates, normalizePromptToken, parseCreatePromptInput, parsePromptText,
-  parsePromptListInput, parsePromptSongSearchInput, parsePromptSuggestionInput, projectUniquePromptTokens, PROMPT_LIMITS, PromptValidationError, serializePromptTokens
+  parsePromptListInput, parsePromptSongSearchInput, parsePromptSuggestionInput, parseUpdatePromptInput,
+  projectUniquePromptTokens, PROMPT_LIMITS, PromptValidationError, serializePromptContent,
+  serializePromptTokens, validatePromptSentenceText
 } from "./prompt-contract.js";
 
 describe("prompt comma contract", () => {
@@ -24,6 +26,30 @@ describe("prompt comma contract", () => {
   it("accepts a bulk paste containing one hundred commas within the sequence limit", () => {
     const source = Array.from({ length: 101 }, (_, index) => `token ${index}`).join(",");
     expect(parsePromptText(source)).toHaveLength(101);
+  });
+});
+
+describe("prompt mode and raw sentence contract", () => {
+  it("keeps the 1.0.2 tag payload and serializer as the default golden path", () => {
+    const input = parseCreatePromptInput({ requestId: "00000000-0000-4000-8000-000000000001", title: "태그", tokens: ["Dream Pop", "Female Vocal"] });
+    expect(input).toMatchObject({ mode: "tags", sentenceText: null });
+    expect(serializePromptContent(input.mode, input.tokens, input.sentenceText)).toBe("Dream Pop, Female Vocal");
+  });
+
+  it("round-trips sentence punctuation, spaces and line endings without normalization", () => {
+    const raw = "  cinematic, but not tags.\r\n두  칸과 🙂를 그대로  ";
+    const input = parseCreatePromptInput({ requestId: "00000000-0000-4000-8000-000000000001", title: "문장", mode: "sentence", sentenceText: raw });
+    expect(input).toMatchObject({ mode: "sentence", tokens: [], sentenceText: raw });
+    expect(validatePromptSentenceText(raw)).toBe(raw);
+    expect(serializePromptContent(input.mode, input.tokens, input.sentenceText)).toBe(raw);
+  });
+
+  it("requires mode-specific create payloads while allowing atomic conversion updates", () => {
+    const base = { requestId: "00000000-0000-4000-8000-000000000001", title: "x" };
+    expect(() => parseCreatePromptInput({ ...base, mode: "sentence", tokens: ["tag"], sentenceText: "raw" })).toThrow(PromptValidationError);
+    expect(() => parseCreatePromptInput({ ...base, mode: "sentence" })).toThrow(PromptValidationError);
+    expect(parseUpdatePromptInput({ requestId: base.requestId, rowVersion: 1, mode: "sentence", sentenceText: " a,b " }))
+      .toMatchObject({ mode: "sentence", sentenceText: " a,b " });
   });
 });
 

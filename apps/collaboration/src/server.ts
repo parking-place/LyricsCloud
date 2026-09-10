@@ -74,7 +74,8 @@ const server = createServer(async (request, response) => {
     if (request.headers.origin !== appOrigin) return unavailable(response, 403, requestId);
     const session = await authenticate(request);
     if (!session) return unavailable(response, 401, requestId);
-    const document = await documents.ensureDocument(session.userId, documentRequest[1]!);
+    const capability = request.headers["x-lyricscloud-prompt-capability"] === "prompt-mode-v1";
+    const document = await documents.ensureDocument(session.userId, documentRequest[1]!, capability);
     if (!document) return unavailable(response, 404, requestId);
     return response.end(JSON.stringify({ documentKey: document.document_key }));
   }
@@ -111,6 +112,11 @@ const server = createServer(async (request, response) => {
   response.statusCode = 404;
   return response.end(JSON.stringify({ error: { code: "NOT_FOUND", requestId } }));
   } catch (error) {
+    if (error instanceof Error && error.message === "PROMPT_MODE_CAPABILITY_REQUIRED") {
+      response.statusCode = 409;
+      response.setHeader("x-request-id", requestId);
+      return response.end(JSON.stringify({ error: { code: error.message, requestId } }));
+    }
     if (error instanceof Error && error.message.startsWith("REVISION_")) {
       response.statusCode = error.message === "REVISION_INPUT_INVALID" ? 400 : 409;
       response.setHeader("x-request-id", requestId);
@@ -123,16 +129,19 @@ const server = createServer(async (request, response) => {
 const websocket = new WebSocketServer({ noServer: true, maxPayload: Math.ceil(SYNC_LIMITS.updateBytes / 3) * 4 + 1024 });
 server.on("upgrade", async (request, socket, head) => {
   try {
-    const match = request.headers.origin === appOrigin && request.url?.match(/^\/sync\/([0-9a-f-]{36})$/i);
+    const requestUrl = new URL(request.url ?? "/", "http://collaboration.local");
+    const match = request.headers.origin === appOrigin && requestUrl.pathname.match(/^\/sync\/([0-9a-f-]{36})$/i);
     const session = match ? await authenticate(request) : null;
     const loaded = match && session ? await documents.loadDocument(session.userId, match[1]!) : null;
-    if (!match || !session || !loaded) {
-      socket.write("HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n");
+    const capable = requestUrl.searchParams.get("capability") === "prompt-mode-v1";
+    if (!match || !session || !loaded || (loaded.resourceType === "prompt" && loaded.promptMode === "sentence" && !capable)) {
+      const status = loaded?.resourceType === "prompt" && loaded.promptMode === "sentence" && !capable ? "409 Conflict" : "404 Not Found";
+      socket.write(`HTTP/1.1 ${status}\r\nConnection: close\r\n\r\n`);
       socket.destroy();
       return;
     }
     websocket.handleUpgrade(request, socket, head, (client) => {
-      contexts.set(client, { documentKey: match[1]!, ownerId: session.userId, request });
+      contexts.set(client, { documentKey: match[1]!, ownerId: session.userId, request, promptModeCapable: capable });
       websocket.emit("connection", client, request);
     });
   } catch {
@@ -159,6 +168,11 @@ websocket.on("connection", (client, request) => {
     try {
       const session = await authenticate(request);
       if (!session || session.userId !== context.ownerId) return closeUnavailable(client);
+      const current = await documents.loadDocument(session.userId, context.documentKey);
+      if (!current) return closeUnavailable(client);
+      if (current.resourceType === "prompt" && current.promptMode === "sentence" && !context.promptModeCapable) {
+        return client.close(4409, "PROMPT_MODE_CAPABILITY_REQUIRED");
+      }
       const input = JSON.parse(raw.toString()) as { type?: unknown; updateId?: unknown; payload?: unknown };
       if (input.type !== "update" || typeof input.payload !== "string") throw new Error("SYNC_UPDATE_INVALID");
       const payload = Buffer.from(input.payload, "base64");
@@ -195,7 +209,7 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) process.on(signal, () => {
   server.close(async () => { await Promise.all([auth.close(), documents.close()]); process.exit(0); });
 });
 
-interface ConnectionContext { documentKey: string; ownerId: string; request: IncomingMessage }
+interface ConnectionContext { documentKey: string; ownerId: string; request: IncomingMessage; promptModeCapable: boolean }
 
 async function authorized(client: WebSocket, checkDocument = false): Promise<boolean> {
   const context = contexts.get(client);

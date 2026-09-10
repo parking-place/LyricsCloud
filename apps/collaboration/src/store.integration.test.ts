@@ -133,6 +133,33 @@ describe.runIf(enabled)("durable owner-only collaboration state", () => {
     });
     document.destroy(); restoredDocument.destroy();
   });
+
+  it("requires the prompt mode capability and preserves sentence mode through projection and revision restore", async () => {
+    const alice = users[0]!;
+    const raw = "  cinematic, not tags.\r\n문장  원문 🙂  ";
+    const prompt = (await prompts!.createPrompt(alice, parseCreatePromptInput({
+      requestId: randomUUID(), title: "문장 동기화", mode: "sentence", sentenceText: raw
+    }))).prompt;
+    await expect(sync!.ensureDocument(alice, prompt.id)).rejects.toThrow("PROMPT_MODE_CAPABILITY_REQUIRED");
+    const mapping = (await sync!.ensureDocument(alice, prompt.id, true))!;
+    const loaded = (await sync!.loadDocument(alice, mapping.document_key))!;
+    expect(loaded).toMatchObject({ resourceType: "prompt", promptMode: "sentence" });
+    const document = materialize(loaded.snapshot, loaded.updates);
+    expect(document.getMap("prompt-mode").get("value")).toBe("sentence");
+    expect(document.getText("prompt-sentence").toString()).toBe(raw);
+    const revision = await sync!.checkpoint(alice, mapping.document_key, "large_paste");
+    const vector = Y.encodeStateVector(document);
+    document.transact(() => {
+      const sentence = document.getText("prompt-sentence");
+      sentence.delete(0, sentence.length); sentence.insert(0, "바뀐, 문장.\n  공백");
+    });
+    await sync!.applyUpdate(alice, mapping.document_key, randomUUID(), Y.encodeStateAsUpdate(document, vector));
+    expect(await prompts!.getPrompt(alice, prompt.id)).toMatchObject({ mode: "sentence", plainText: "바뀐, 문장.\n  공백" });
+    const history = (await sync!.listRevisions(alice, mapping.document_key))!;
+    await sync!.restoreRevision(alice, mapping.document_key, revision!.id, { requestId: randomUUID(), expectedHash: history.current.hash });
+    expect(await prompts!.getPrompt(alice, prompt.id)).toMatchObject({ mode: "sentence", sentenceText: raw, plainText: raw });
+    document.destroy();
+  });
 });
 
 afterAll(async () => {

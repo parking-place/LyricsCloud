@@ -17,6 +17,7 @@ export interface ExportReadableResource {
   readonly workNotes: string;
   readonly body: string;
   readonly memo: string;
+  readonly promptMode: "tags" | "sentence" | null;
   readonly plainText: string;
 }
 
@@ -26,6 +27,8 @@ export interface ExportReadableTemplate {
   readonly title: string;
   readonly lyricBody: string | null;
   readonly promptTokens: readonly string[] | null;
+  readonly promptMode: "tags" | "sentence";
+  readonly promptText: string | null;
   readonly deletedAt: string | null;
 }
 
@@ -87,7 +90,9 @@ export class ExportSnapshot {
         songId: typeof row.song_id === "string" ? row.song_id : null,
         status: typeof row.status === "string" ? row.status : null,
         description: String(row.description ?? ""), workNotes: String(row.work_notes ?? ""),
-        body: String(row.body ?? ""), memo: String(row.memo ?? ""), plainText: String(row.plain_text ?? "")
+        body: String(row.body ?? ""), memo: String(row.memo ?? ""),
+        promptMode: row.prompt_mode === "sentence" ? "sentence" : row.prompt_mode === "tags" ? "tags" : null,
+        plainText: String(row.plain_text ?? "")
       };
     }
   }
@@ -98,6 +103,8 @@ export class ExportSnapshot {
         id: String(row.id), type: row.type as ExportReadableTemplate["type"], title: String(row.title),
         lyricBody: typeof row.lyric_body === "string" ? row.lyric_body : null,
         promptTokens: Array.isArray(row.prompt_tokens) ? row.prompt_tokens.map(String) : null,
+        promptMode: row.prompt_mode === "sentence" ? "sentence" : "tags",
+        promptText: typeof row.prompt_text === "string" ? row.prompt_text : null,
         deletedAt: exportTimestamp(row.deleted_at)
       };
     }
@@ -142,13 +149,13 @@ const EXPORT_SECTIONS = [
   { name: "songs", query: `select to_jsonb(q) data from (select resource_id,status,description,work_notes from songs where owner_id=app_current_user_id() order by resource_id) q` },
   { name: "lyrics", query: `select to_jsonb(q) data from (select resource_id,song_id,body,memo,status from lyrics where owner_id=app_current_user_id() order by resource_id) q` },
   { name: "rhymeNotes", query: `select to_jsonb(q) data from (select resource_id,body from rhyme_notes where owner_id=app_current_user_id() order by resource_id) q` },
-  { name: "prompts", query: `select to_jsonb(q) data from (select resource_id,plain_text from prompts where owner_id=app_current_user_id() order by resource_id) q` },
+  { name: "prompts", query: `select to_jsonb(q) data from (select resource_id,mode,plain_text,sentence_text from prompts where owner_id=app_current_user_id() order by resource_id) q` },
   { name: "promptDictionary", query: `select to_jsonb(q) data from (select id,display_value,normalized_value,usage_count,last_used_at,created_at,updated_at from prompt_token_dictionary where owner_id=app_current_user_id() order by id) q` },
   { name: "promptTokens", query: `select to_jsonb(q) data from (select prompt_resource_id,ordinal,dictionary_token_id,display_value,normalized_value,created_at from prompt_tokens where owner_id=app_current_user_id() order by prompt_resource_id,ordinal) q` },
   { name: "tags", query: `select to_jsonb(q) data from (select id,display_value,normalized_value,created_at,updated_at,deleted_at from tags where owner_id=app_current_user_id() order by id) q` },
   { name: "resourceTags", query: `select to_jsonb(q) data from (select resource_id,tag_id,created_at from resource_tags where owner_id=app_current_user_id() order by resource_id,tag_id) q` },
   { name: "songResourceLinks", query: `select to_jsonb(q) data from (select song_resource_id,linked_resource_id,linked_resource_type,created_at from song_resource_links where owner_id=app_current_user_id() order by song_resource_id,linked_resource_id) q` },
-  { name: "templates", query: `select to_jsonb(q) data from (select t.id,case when t.owner_id is null then 'built_in' else 'owned' end source,t.type,t.title,t.lyric_body,t.prompt_tokens,t.row_version,t.created_at,t.updated_at,t.deleted_at,t.purge_at from templates t where t.owner_id=app_current_user_id() or (t.owner_id is null and exists(select 1 from template_preferences p where p.owner_id=app_current_user_id() and p.template_id=t.id)) order by source,t.type,t.id) q` },
+  { name: "templates", query: `select to_jsonb(q) data from (select t.id,case when t.owner_id is null then 'built_in' else 'owned' end source,t.type,t.title,t.lyric_body,t.prompt_tokens,t.prompt_mode,t.prompt_text,t.row_version,t.created_at,t.updated_at,t.deleted_at,t.purge_at from templates t where t.owner_id=app_current_user_id() or (t.owner_id is null and exists(select 1 from template_preferences p where p.owner_id=app_current_user_id() and p.template_id=t.id)) order by source,t.type,t.id) q` },
   { name: "templatePreferences", query: `select to_jsonb(q) data from (select template_id,is_favorite,use_count,last_used_at,updated_at from template_preferences where owner_id=app_current_user_id() order by template_id) q` },
   { name: "settings", query: `select to_jsonb(q) data from (select theme,writing_font,font_size,line_height,letter_spacing,focus_mode_default,row_version,updated_at from user_settings where owner_id=app_current_user_id()) q` },
   { name: "lyricDisplaySettings", query: `select to_jsonb(q) data from (select lyric_id,writing_font,font_size,line_height,letter_spacing,row_version,updated_at from lyric_display_settings where owner_id=app_current_user_id() order by lyric_id) q` },
@@ -159,14 +166,15 @@ const EXPORT_SECTIONS = [
 
 const READABLE_RESOURCES_QUERY = `select r.id,r.type,r.title,r.deleted_at,l.song_id,
   coalesce(s.status,l.status) status,coalesce(s.description,'') description,coalesce(s.work_notes,'') work_notes,
-  coalesce(l.body,n.body,'') body,coalesce(l.memo,'') memo,coalesce(p.plain_text,'') plain_text
+  coalesce(l.body,n.body,'') body,coalesce(l.memo,'') memo,p.mode prompt_mode,
+  coalesce(case when p.mode='sentence' then p.sentence_text else p.plain_text end,'') plain_text
 from resources r left join songs s on s.resource_id=r.id and s.owner_id=r.owner_id
 left join lyrics l on l.resource_id=r.id and l.owner_id=r.owner_id
 left join rhyme_notes n on n.resource_id=r.id and n.owner_id=r.owner_id
 left join prompts p on p.resource_id=r.id and p.owner_id=r.owner_id
 where r.owner_id=app_current_user_id() order by r.type,r.created_at,r.id`;
 
-const READABLE_TEMPLATES_QUERY = `select id,type,title,lyric_body,prompt_tokens,deleted_at from templates
+const READABLE_TEMPLATES_QUERY = `select id,type,title,lyric_body,prompt_tokens,prompt_mode,prompt_text,deleted_at from templates
 where owner_id=app_current_user_id() order by type,created_at,id`;
 
 function exportTimestamp(value: unknown): string | null {

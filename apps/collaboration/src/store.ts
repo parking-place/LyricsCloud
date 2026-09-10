@@ -2,8 +2,8 @@ import { createHash, randomUUID } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
 import * as Y from "yjs";
 import {
-  normalizePromptToken, projectUniquePromptTokens, REVISION_POLICY, serializePromptTokens,
-  type CheckpointReason, type PromptTokenValue, type RestoreRevisionInput
+  normalizePromptToken, projectUniquePromptTokens, REVISION_POLICY, serializePromptTokens, validatePromptSentenceText,
+  type CheckpointReason, type PromptMode, type PromptTokenValue, type RestoreRevisionInput
 } from "@lyricscloud/domain";
 import { bodyHash, captureRevision, pruneRevisions, summarize, type RevisionRow } from "./revisions.js";
 import { createDatabasePool } from "@lyricscloud/database";
@@ -20,11 +20,13 @@ export class CollaborationStore {
   constructor(databaseUrl: string) { this.#pool = createDatabasePool(databaseUrl, 10); }
   close() { return this.#pool.end(); }
 
-  async ensureDocument(ownerId: string, resourceId: string) {
+  async ensureDocument(ownerId: string, resourceId: string, promptModeCapable = false) {
     return this.#owned(ownerId, async (client) => {
       await client.query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [resourceId]);
-      const editable = await client.query<{ resource_type: EditableResourceType; title: string; body: string | null; prompt_tokens: unknown }>(`select r.type resource_type,r.title,
+      const editable = await client.query<{ resource_type: EditableResourceType; title: string; body: string | null;
+        prompt_tokens: unknown; prompt_mode: PromptMode | null; sentence_text: string | null }>(`select r.type resource_type,r.title,
         case r.type when 'lyrics' then l.body when 'rhyme_note' then n.body else null end body,
+        p.mode prompt_mode,p.sentence_text,
         coalesce((select jsonb_agg(jsonb_build_object('displayValue',pt.display_value) order by pt.ordinal)
           from prompt_tokens pt where pt.owner_id=r.owner_id and pt.prompt_resource_id=r.id),'[]'::jsonb) prompt_tokens
         from resources r left join lyrics l on l.resource_id=r.id and l.owner_id=r.owner_id
@@ -35,12 +37,17 @@ export class CollaborationStore {
             or (r.type='prompt' and p.resource_id is not null))
         for update of r`, [resourceId, ownerId]);
       if (!editable.rowCount) return null;
+      const resource = editable.rows[0]!;
+      if (resource.resource_type === "prompt" && resource.prompt_mode === "sentence" && !promptModeCapable) {
+        throw new Error("PROMPT_MODE_CAPABILITY_REQUIRED");
+      }
       const existing = await client.query<DocumentRows>("select document_key,resource_id,resource_type,snapshot,snapshot_sequence::text from sync_documents where resource_id=$1", [resourceId]);
       if (existing.rows[0]) return existing.rows[0];
-      const resource = editable.rows[0]!;
       const document = new Y.Doc();
       if (resource.resource_type === "prompt") {
         if (resource.title) document.getText("prompt-title").insert(0, resource.title);
+        document.getMap<PromptMode>("prompt-mode").set("value", resource.prompt_mode ?? "tags");
+        if (resource.sentence_text) document.getText("prompt-sentence").insert(0, resource.sentence_text);
         const tokens = Array.isArray(resource.prompt_tokens) ? resource.prompt_tokens as Array<{ displayValue?: unknown }> : [];
         const items = tokens.map((token, index) => ({ occurrenceId: `seed-${index}`, displayValue: normalizePromptToken(token.displayValue as string).displayValue }));
         if (items.length) document.getArray("prompt-tokens").insert(0, items);
@@ -223,12 +230,14 @@ export class CollaborationStore {
   }
 
   async #loadLocked(client: PoolClient, ownerId: string, key: string, lock: boolean) {
-    const result = await client.query<DocumentRows & { deleted_at: Date | null }>(`select d.document_key,d.resource_id,d.resource_type,d.snapshot,d.snapshot_sequence::text,d.projection_error_code,r.deleted_at
+    const result = await client.query<DocumentRows & { deleted_at: Date | null; prompt_mode: PromptMode | null }>(`select d.document_key,d.resource_id,d.resource_type,d.snapshot,d.snapshot_sequence::text,d.projection_error_code,r.deleted_at,p.mode prompt_mode
       from sync_documents d join resources r on r.id=d.resource_id and r.owner_id=d.owner_id
+      left join prompts p on p.resource_id=r.id and p.owner_id=r.owner_id
       where d.document_key=$1 and d.owner_id=$2 ${lock ? "for update of r,d" : ""}`, [key, ownerId]);
     const row = result.rows[0]; if (!row || row.deleted_at) return null;
     const updates = await client.query<{ payload: Buffer }>("select payload from sync_updates where document_key=$1 and sequence>$2 order by sequence", [key, row.snapshot_sequence]);
-    return { resourceId: row.resource_id, resourceType: row.resource_type, snapshot: new Uint8Array(row.snapshot), updates: updates.rows.map((item) => new Uint8Array(item.payload)), projectionPending: row.projection_error_code !== null };
+    return { resourceId: row.resource_id, resourceType: row.resource_type, promptMode: row.prompt_mode,
+      snapshot: new Uint8Array(row.snapshot), updates: updates.rows.map((item) => new Uint8Array(item.payload)), projectionPending: row.projection_error_code !== null };
   }
 
   async #owned<T>(ownerId: string, work: (client: PoolClient) => Promise<T>): Promise<T> {
@@ -270,18 +279,21 @@ async function projectDocument(client: PoolClient, resourceType: EditableResourc
     await client.query(`insert into prompt_tokens(owner_id,prompt_resource_id,ordinal,dictionary_token_id,display_value,normalized_value)
       values($1,$2,$3,$4,$5,$6)`, [ownerId, resourceId, ordinal, dictionary.rows[0]!.id, token.displayValue, token.normalizedValue]);
   }
-  const prompt = await client.query("update prompts set plain_text=$3 where resource_id=$1 and owner_id=$2 returning resource_id",
-    [resourceId, ownerId, serializePromptTokens(tokens)]);
+  const prompt = await client.query(`update prompts set mode=$3,plain_text=$4,
+    sentence_text=case when $3='sentence' or $5<>'' then $5 else sentence_text end
+    where resource_id=$1 and owner_id=$2 returning resource_id`,
+    [resourceId, ownerId, state.mode, serializePromptTokens(tokens), state.sentenceText]);
   if (prompt.rowCount !== 1) throw new Error("SYNC_DOCUMENT_UNAVAILABLE");
 }
 
 function documentContent(document: Y.Doc, resourceType: EditableResourceType): string {
   if (resourceType !== "prompt") return document.getText("body").toString();
   const state = readPromptState(document);
-  return JSON.stringify({ version: 1, title: state.title, tokens: state.items });
+  return JSON.stringify({ version: 2, title: state.title, mode: state.mode, tokens: state.items, sentenceText: state.sentenceText });
 }
 
-function readPromptState(document: Y.Doc): { title: string; items: Array<{ occurrenceId: string; displayValue: string }>; tokens: PromptTokenValue[] } {
+function readPromptState(document: Y.Doc): { title: string; mode: PromptMode; items: Array<{ occurrenceId: string; displayValue: string }>;
+  tokens: PromptTokenValue[]; sentenceText: string } {
   const seen = new Set<string>();
   const items = document.getArray<unknown>("prompt-tokens").toArray().map((value) => {
     if (!value || typeof value !== "object") throw new Error("SYNC_PROMPT_INVALID");
@@ -291,8 +303,12 @@ function readPromptState(document: Y.Doc): { title: string; items: Array<{ occur
     seen.add(candidate.occurrenceId);
     return { occurrenceId: candidate.occurrenceId, displayValue: normalizePromptToken(candidate.displayValue).displayValue };
   });
-  return { title: document.getText("prompt-title").toString().normalize("NFC").trim(), items,
-    tokens: items.map(({ displayValue }) => normalizePromptToken(displayValue)) };
+  const modeValue = document.getMap<unknown>("prompt-mode").get("value");
+  if (modeValue !== undefined && modeValue !== "tags" && modeValue !== "sentence") throw new Error("SYNC_PROMPT_INVALID");
+  const mode: PromptMode = modeValue === "sentence" ? "sentence" : "tags";
+  const sentenceText = validatePromptSentenceText(document.getText("prompt-sentence").toString());
+  return { title: document.getText("prompt-title").toString().normalize("NFC").trim(), mode, items,
+    tokens: items.map(({ displayValue }) => normalizePromptToken(displayValue)), sentenceText };
 }
 
 function replaceDocumentContent(document: Y.Doc, resourceType: EditableResourceType, content: string): void {
@@ -301,16 +317,21 @@ function replaceDocumentContent(document: Y.Doc, resourceType: EditableResourceT
     document.transact(() => { body.delete(0, body.length); if (content) body.insert(0, content); });
     return;
   }
-  let parsed: { version?: unknown; title?: unknown; tokens?: unknown };
+  let parsed: { version?: unknown; title?: unknown; mode?: unknown; tokens?: unknown; sentenceText?: unknown };
   try { parsed = JSON.parse(content) as typeof parsed; } catch { throw new Error("REVISION_CONTENT_INVALID"); }
-  if (parsed.version !== 1 || typeof parsed.title !== "string" || !Array.isArray(parsed.tokens)) throw new Error("REVISION_CONTENT_INVALID");
+  if ((parsed.version !== 1 && parsed.version !== 2) || typeof parsed.title !== "string" || !Array.isArray(parsed.tokens)) throw new Error("REVISION_CONTENT_INVALID");
   const restoredTitle = parsed.title;
   const restoredTokens = parsed.tokens;
+  const restoredMode: PromptMode = parsed.version === 2 && parsed.mode === "sentence" ? "sentence" : "tags";
+  const restoredSentence = parsed.version === 2 ? validatePromptSentenceText(parsed.sentenceText) : "";
   const title = document.getText("prompt-title");
   const tokens = document.getArray("prompt-tokens");
+  const sentence = document.getText("prompt-sentence");
   document.transact(() => {
     title.delete(0, title.length); if (restoredTitle) title.insert(0, restoredTitle);
     tokens.delete(0, tokens.length); if (restoredTokens.length) tokens.insert(0, restoredTokens);
+    sentence.delete(0, sentence.length); if (restoredSentence) sentence.insert(0, restoredSentence);
+    document.getMap<PromptMode>("prompt-mode").set("value", restoredMode);
   });
   readPromptState(document);
 }

@@ -1,5 +1,6 @@
 import { isResourceId, LYRIC_LIMITS } from "./lyric-contract.js";
-import { PROMPT_LIMITS, normalizePromptToken, projectUniquePromptTokens, serializePromptTokens, type PromptTokenValue } from "./prompt-contract.js";
+import { PROMPT_LIMITS, PROMPT_MODES, normalizePromptToken, projectUniquePromptTokens, serializePromptTokens,
+  validatePromptSentenceText, type PromptMode, type PromptTokenValue } from "./prompt-contract.js";
 import type { ValidationIssue } from "./result.js";
 
 export const TEMPLATE_TYPES = ["lyrics", "prompt"] as const;
@@ -15,6 +16,8 @@ export interface TemplateRecord {
   readonly source: "default" | "user";
   readonly title: string;
   readonly lyricBody: string | null;
+  readonly promptMode: PromptMode;
+  readonly promptText: string | null;
   readonly tokens: readonly PromptTokenValue[];
   readonly isFavorite: boolean;
   readonly useCount: number;
@@ -35,6 +38,8 @@ export interface CreateTemplateInput {
   readonly type: TemplateType;
   readonly title: string;
   readonly lyricBody: string | null;
+  readonly promptMode: PromptMode;
+  readonly promptText: string | null;
   readonly tokens: readonly PromptTokenValue[];
 }
 
@@ -42,6 +47,8 @@ export interface UpdateTemplateInput {
   readonly rowVersion: number;
   readonly title?: string;
   readonly lyricBody?: string;
+  readonly promptMode?: PromptMode;
+  readonly promptText?: string;
   readonly tokens?: readonly PromptTokenValue[];
   readonly isFavorite?: boolean;
 }
@@ -81,15 +88,19 @@ export function parseCreateTemplateInput(value: unknown): CreateTemplateInput {
 export function parseUpdateTemplateInput(value: unknown, type: TemplateType): UpdateTemplateInput {
   const input = object(value);
   if (!Number.isSafeInteger(input.rowVersion) || Number(input.rowVersion) < 1) fail("rowVersion", "positive_integer_required");
-  const result: { rowVersion: number; title?: string; lyricBody?: string; tokens?: readonly PromptTokenValue[]; isFavorite?: boolean } = { rowVersion: Number(input.rowVersion) };
+  const result: { rowVersion: number; title?: string; lyricBody?: string; promptMode?: PromptMode; promptText?: string;
+    tokens?: readonly PromptTokenValue[]; isFavorite?: boolean } = { rowVersion: Number(input.rowVersion) };
   if ("title" in input) result.title = title(input.title);
   if ("isFavorite" in input) {
     if (typeof input.isFavorite !== "boolean") fail("isFavorite", "boolean_required");
     result.isFavorite = input.isFavorite;
   }
   if (type === "lyrics" && "lyricBody" in input) result.lyricBody = lyricBody(input.lyricBody);
+  if (type === "prompt" && "promptMode" in input) result.promptMode = promptMode(input.promptMode);
+  if (type === "prompt" && "promptText" in input) result.promptText = validatePromptSentenceText(input.promptText);
   if (type === "prompt" && "tokens" in input) result.tokens = promptTokens(input.tokens);
-  if ((type === "lyrics" && "tokens" in input) || (type === "prompt" && "lyricBody" in input)) fail("type", "payload_mismatch");
+  if ((type === "lyrics" && ("tokens" in input || "promptMode" in input || "promptText" in input))
+    || (type === "prompt" && "lyricBody" in input)) fail("type", "payload_mismatch");
   if (Object.keys(result).length === 1) fail("body", "at_least_one_field");
   return result;
 }
@@ -112,11 +123,22 @@ export function parseApplyTemplateInput(value: unknown): ApplyTemplateInput {
 
 function payload(type: TemplateType, input: Record<string, unknown>, base: { requestId: string; title: string; type: TemplateType }): CreateTemplateInput {
   if (type === "lyrics") {
-    if ("tokens" in input) fail("type", "payload_mismatch");
-    return { ...base, lyricBody: lyricBody(input.lyricBody ?? ""), tokens: [] };
+    if ("tokens" in input || "promptMode" in input || "promptText" in input) fail("type", "payload_mismatch");
+    return { ...base, lyricBody: lyricBody(input.lyricBody ?? ""), promptMode: "tags", promptText: null, tokens: [] };
   }
   if ("lyricBody" in input) fail("type", "payload_mismatch");
-  return { ...base, lyricBody: null, tokens: promptTokens(input.tokens ?? []) };
+  const mode = promptMode(input.promptMode ?? "tags");
+  if (mode === "tags" && "promptText" in input && input.promptText !== null) fail("promptText", "payload_mismatch");
+  if (mode === "sentence" && "tokens" in input && (!Array.isArray(input.tokens) || input.tokens.length > 0)) fail("tokens", "payload_mismatch");
+  if (mode === "sentence" && !("promptText" in input)) fail("promptText", "required");
+  return { ...base, lyricBody: null, promptMode: mode,
+    promptText: mode === "sentence" ? validatePromptSentenceText(input.promptText) : null,
+    tokens: mode === "tags" ? promptTokens(input.tokens ?? []) : [] };
+}
+
+function promptMode(value: unknown): PromptMode {
+  if (!PROMPT_MODES.includes(value as PromptMode)) fail("promptMode", "unsupported_value");
+  return value as PromptMode;
 }
 
 function promptTokens(value: unknown): readonly PromptTokenValue[] {
