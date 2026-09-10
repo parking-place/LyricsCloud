@@ -11,6 +11,7 @@ export * from "./crdt.js";
 export * from "./cursor-insertion.js";
 export * from "./browser-sync.js";
 export * from "./songform.js";
+export * from "./songform-insertion.js";
 export * from "./revision-diff.js";
 export * from "./prompt-browser-sync.js";
 export * from "./position-save.js";

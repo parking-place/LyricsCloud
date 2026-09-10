@@ -7,6 +7,22 @@ describe("lyric copy contract", () => {
     expect(copyWholeLyric("머리말\r\n[Verse]\r본문\n끝")).toBe("머리말\n[Verse]\n본문\n끝");
   });
 
+  it("removes only exact Extend marker lines from the Suno whole-copy payload", () => {
+    expect(copyWholeLyric("[Extend: 3:00:24]\r\n첫 줄\r\n둘째 줄")).toBe("첫 줄\n둘째 줄");
+    expect(copyWholeLyric("앞\n[Extend]\n뒤\n[Extend]")).toBe("앞\n뒤\n");
+    expect(copyWholeLyric("[Extend]\n\n뒤")).toBe("\n뒤");
+    expect(copyWholeLyric("[extend]\n문장 [Extend]\n[Extend\n뒤")).toBe("[extend]\n문장 [Extend]\n[Extend\n뒤");
+  });
+
+  it("preserves Extend in partial song-form copy while counting the filtered whole payload", () => {
+    const body = "[Verse]\n앞\n[Extend: 3:00:24]\n뒤";
+    const sections = parseSongForm(body);
+    expect(copySongFormSections(body, sections, [sections[1]!.id])).toBe("[Extend: 3:00:24]\n뒤");
+    expect(buildLyricCopyPayload(`[Extend]\n${"가".repeat(3_000)}`)).toEqual({
+      payload: "가".repeat(3_000), codePointCount: 3_000, exceedsRecommendedLimit: false
+    });
+  });
+
   it("copies one exact tag-inclusive section including blank lines", () => {
     const body = "머리말\n[Verse: whisper]\n첫 줄\n\n둘째 줄\n[Hook]\n후렴";
     const sections = parseSongForm(body);
