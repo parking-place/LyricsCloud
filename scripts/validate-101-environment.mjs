@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { validateEnvironment } from "./check-environment.mjs";
 
-const schema = JSON.parse(await readFile(new URL("../config/environment-schema.1.0.5.json", import.meta.url), "utf8"));
+const schema = JSON.parse(await readFile(new URL("../config/environment-schema.1.0.6.json", import.meta.url), "utf8"));
 const common = {
   NODE_ENV: "production",
   DATABASE_URL: "postgresql://user:secret@db/app",
-  APP_VERSION: "1.0.5",
+  APP_VERSION: "1.0.6",
   BUILD_ID: "a".repeat(40),
   APP_CHANNEL: "release"
 };
@@ -38,7 +38,7 @@ assert(validateEnvironment("admin", {
   BETA_CODE_TTL_HOURS: "24"
 }));
 assert(validateEnvironment("backup", {
-  NODE_ENV: "production", APP_VERSION: "1.0.5", BUILD_ID: "a".repeat(40), APP_CHANNEL: "release",
+  NODE_ENV: "production", APP_VERSION: "1.0.6", BUILD_ID: "a".repeat(40), APP_CHANNEL: "release",
   BACKUP_STORAGE_ID: "external-1", BACKUP_REPOSITORY_DIR: "/backup/repository",
   PGPASSWORD_FILE: "/run/secrets/postgres", AGE_RECIPIENT_FILE: "/run/secrets/age"
 }));
@@ -48,4 +48,4 @@ for (const name of ["AUTH_ALLOWED_EMAILS_FILE", "AUTH_ALLOWLIST_HMAC_KEYRING_FIL
   assert.equal(schema.properties[name]["x-secret-file"], true);
 }
 
-console.log("1.0.5 release environment: 6 service contracts and secret-file boundaries PASS");
+console.log("1.0.6 release environment: 6 service contracts and secret-file boundaries PASS");

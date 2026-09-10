@@ -2,7 +2,7 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
-## [1.0.6 candidate] - 2026-09-11
+## [1.0.6] - 2026-09-11
 
 ### Added
 
@@ -18,8 +18,11 @@
 
 - PostgreSQL 18 unit/integration 275건, Chromium PC/mobile 전체 292건, Chromium/Firefox/WebKit 신규 기능 행렬 17건 통과
 - 동일 SHA 개발 서버 네 서비스 health, 공개 revision·계정 ZIP exact Extend 원문과 collaboration 재시작·동일 document key 보존 통과
+- GitHub Actions run `34511266182` 전체 verify와 네 개발 image 게시·서명, 동일 SHA 공개 P5 인수 통과
 
-Known limitations: 실제 Windows/iOS/Android 물리 기기는 이번 후보에서 새로 실행하지 않았고 기존 `OPS-100-001` 외부 backup 예외를 유지한다. Phase 5 최종 CI와 같은 SHA 개발 인수 전에는 정식 릴리스로 보지 않는다.
+Known limitations: 실제 Windows/iOS/Android 물리 기기는 이번 후보에서 새로 실행하지 않았고 기존 `OPS-100-001` 외부 backup 예외를 유지한다.
+
+Phase 5 후보 CI와 같은 SHA 개발 인수를 통과했고 사용자가 정식 릴리스를 승인했다. 정식 main·image·릴리스 서버 결과는 annotated tag와 GitHub Release에 고정한다.
 
 ## [1.0.5] - 2026-09-10
 

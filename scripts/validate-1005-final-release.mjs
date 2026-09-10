@@ -51,11 +51,11 @@ const currentTraceability = read("docs/architecture/1.0.1-FINAL-TRACEABILITY.md"
 const currentReleaseNotes = read("docs/releases/1.0.1.md");
 const currentReleaseRunbook = read("docs/runbooks/1.0.1-phase10-private-beta-release.md");
 const currentManifest = JSON.parse(read("config/release-manifest.1.0.1.json"));
-const formalTraceability = read("docs/architecture/1.0.5-FINAL-TRACEABILITY.md");
-const formalReleaseNotes = read("docs/releases/1.0.5.md");
-const formalReleaseRunbook = read("docs/runbooks/1.0.5-release.md");
-const formalReleaseChecklist = read("docs/runbooks/1.0.5-release-checklist.md");
-const formalManifest = JSON.parse(read("config/release-manifest.1.0.5.json"));
+const formalTraceability = read("docs/architecture/1.0.6-FINAL-TRACEABILITY.md");
+const formalReleaseNotes = read("docs/releases/1.0.6.md");
+const formalReleaseRunbook = read("docs/runbooks/1.0.6-release.md");
+const formalReleaseChecklist = read("docs/runbooks/1.0.6-release-checklist.md");
+const formalManifest = JSON.parse(read("config/release-manifest.1.0.6.json"));
 const candidateTraceability = read("docs/architecture/1.0.6-FINAL-TRACEABILITY.md");
 
 for (const marker of ["주요 기능", "설치와 업그레이드", "알려진 제한과 운영 위험", "지원과 보안", "iOS update PASS, Android update PASS", "미해결 P0/P1은 0건"]) {
@@ -83,7 +83,7 @@ try {
   const phase6Plan = status.includes('current_phase: "1.0.0/6phase.md"') ? read("0.Plans/1. Dev-phase/1.0.0/6phase.md") : "";
   validateReleasePhase(status, { requireRelease, phase6Plan, phaseCount: currentVersion === "1.0.1" ? 10 : 5 });
 } catch { failures.push("STATUS must identify an allowed historical or current release phase"); }
-for (const marker of ["1.0.6 Phase 5", "1.0.5 release notes", "CHANGELOG.md"]) {
+for (const marker of ["1.0.6 Phase 5", "1.0.6 release notes", "CHANGELOG.md"]) {
   assert(readme.includes(marker), `README release handoff marker missing: ${marker}`);
 }
 assert(runbookIndex.includes("1.0.0-phase5-release.md"), "runbook index missing Phase 5 release handoff");
@@ -114,24 +114,24 @@ for (const marker of ["NF-REQ-026", "NF-REQ-027", "AC-1.0.6-01", "AC-1.0.6-04", 
   assert(candidateTraceability.includes(marker), `1.0.6 traceability marker missing: ${marker}`);
 }
 for (const marker of ["P5", "P0/P1", "OPS-100-001", "동일 SHA 개발 인수"]) {
-  assert(formalTraceability.includes(marker), `1.0.5 traceability marker missing: ${marker}`);
+  assert(formalTraceability.includes(marker), `1.0.6 traceability marker missing: ${marker}`);
 }
-for (const marker of ["서브 송폼", "원문", "3,000", "알려진 제한", "OPS-100-001"]) {
-  assert(formalReleaseNotes.includes(marker), `1.0.5 release notes marker missing: ${marker}`);
+for (const marker of ["Extend", "송폼", "원문", "알려진 제한", "OPS-100-001"]) {
+  assert(formalReleaseNotes.includes(marker), `1.0.6 release notes marker missing: ${marker}`);
 }
-for (const marker of ["annotated `v1.0.5`", "publish=true", "release=true", "Release-latest", "application-first rollback"]) {
-  assert(formalReleaseRunbook.includes(marker), `1.0.5 release runbook marker missing: ${marker}`);
+for (const marker of ["annotated `v1.0.6`", "publish=true", "release=true", "Release-latest", "application-first rollback"]) {
+  assert(formalReleaseRunbook.includes(marker), `1.0.6 release runbook marker missing: ${marker}`);
 }
-for (const marker of ["main", "annotated `v1.0.5`", "exact digest", "OPS-100-001"]) {
-  assert(formalReleaseChecklist.includes(marker), `1.0.5 release checklist marker missing: ${marker}`);
+for (const marker of ["main", "annotated `v1.0.6`", "exact digest", "OPS-100-001"]) {
+  assert(formalReleaseChecklist.includes(marker), `1.0.6 release checklist marker missing: ${marker}`);
 }
-assert(formalManifest.releaseVersion === "1.0.5" && formalManifest.releaseChannel === "release"
+assert(formalManifest.releaseVersion === "1.0.6" && formalManifest.releaseChannel === "release"
   && formalManifest.productionAuthorized === true && formalManifest.database.requiredLatestSchema === "1000_prompt_modes.sql",
-  "1.0.5 formal release manifest boundary invalid");
-const formalReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: "v1.0.5",
-  sha: "c".repeat(40), version: "1.0.5", release: true }).tags;
-for (const tag of ["1.0.5", "Release", "latest", "Release-latest"]) {
-  assert(formalReleaseTags.includes(tag), `1.0.5 release tag missing: ${tag}`);
+  "1.0.6 formal release manifest boundary invalid");
+const formalReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: "v1.0.6",
+  sha: "c".repeat(40), version: "1.0.6", release: true }).tags;
+for (const tag of ["1.0.6", "Release", "latest", "Release-latest"]) {
+  assert(formalReleaseTags.includes(tag), `1.0.6 release tag missing: ${tag}`);
 }
 
 if (requireRelease) {

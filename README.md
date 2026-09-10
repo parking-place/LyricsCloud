@@ -11,7 +11,7 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 개인 창작용 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합과 온라인 우선 PWA를 지원한다.
 
-현재 소스는 `1.0.6` Extend 원문 분리 복사·송폼 삽입이며 P1~P4와 동일 SHA 개발 인수를 완료하고 P5 최종 후보를 검증 중이다. 현재 운영 버전은 `v1.0.5`다.
+현재 소스는 `1.0.6` Extend 원문 분리 복사·송폼 삽입이며 P1~P5 전체 CI와 동일 SHA 공개 개발 인수를 완료했다. 현재 운영 버전은 `v1.0.5`이며 승인된 1.0.6 정식 릴리스를 준비 중이다.
 
 ## 주요 기능
 
@@ -33,8 +33,8 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 | 소스·runtime version | `1.0.6` |
 | 현재 작업 | [1.0.6 Phase 5 — 최종 후보 인수](<./0.Plans/2.Patch-phase/1.0.6/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
-| 정식 릴리스 | 현재 `v1.0.5` ([1.0.5 release notes](./docs/releases/1.0.5.md)); 1.0.6은 P5 완료 뒤 승인된 릴리스 절차 실행 |
-| 개발 인수 | 1.0.6 Extend 분리 copy·송폼 삽입 P1~P4, PostgreSQL·전체 Chromium·지원 엔진·동일 SHA 공개 revision/export/restart PASS |
+| 정식 릴리스 | 현재 `v1.0.5`; 승인된 `v1.0.6` main·tag·image·릴리스 서버 절차 실행 대상 |
+| 개발 인수 | 1.0.6 P1~P5, PostgreSQL·전체 CI·네 dev image·지원 엔진·동일 SHA 공개 revision/export/restart PASS |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.0.5는 첫 콜론 앞 송폼 이름 탐색·suffix 원문 보존과 가사 최종 복사 3,000 Unicode code point 비차단 안내를 포함해 정식 릴리스됐다. 1.0.6은 저장 schema를 바꾸지 않고 exact-case Extend 정식 표식만 Suno 전체 복사에서 제외하며, 원문·revision·export에는 그대로 남긴다. 기본 송폼은 CRDT 상대 caret에 한 transaction으로 넣고 키보드·모바일 대안과 IME/undo 안전 경계를 유지한다.
@@ -95,7 +95,7 @@ LyricsCloud betacode refresh
 | 인증·베타 운영자 | [Google OAuth](./docs/runbooks/google-oauth-setup.md), [초대 코드 CLI](./docs/runbooks/1.0.1-phase2-beta-admin.md), [HMAC allowlist](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md) |
 | 복구·배포 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md), [개발 배포](./docs/runbooks/development-deploy.md), [Docker Hub 발행](./docs/runbooks/dockerhub-publish.md) |
 | 보안·장애 담당자 | [Security policy](./SECURITY.md), [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
-| 릴리스 검토자 | [1.0.5 release notes](./docs/releases/1.0.5.md), [1.0.6 추적](./docs/architecture/1.0.6-FINAL-TRACEABILITY.md), [CHANGELOG](./CHANGELOG.md) |
+| 릴리스 검토자 | [1.0.6 release notes](./docs/releases/1.0.6.md), [1.0.6 추적](./docs/architecture/1.0.6-FINAL-TRACEABILITY.md), [CHANGELOG](./CHANGELOG.md) |
 | 기여자 | [Agent 지침](./Agent.md), [후속 계획](./0.Plans/2.Patch-phase/README.md), [ADR 색인](./docs/adr/README.md) |
 
 ## 저장소 구조
@@ -111,4 +111,4 @@ LyricsCloud betacode refresh
 | `scripts/` | 검증·migration·배포 보조 명령 |
 | `0.Plans/` | 보호된 기획·목업·기술 결정과 Phase 상태 |
 
-1.0.7 이후 가사 어휘 제안·Suno 메타데이터·사전·폰트·공유·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있으며, 현재 1.0.6 후보 인수와는 별도다.
+1.0.7 이후 목록 보기·사용자 정렬·Suno 메타데이터·사전·폰트·공유·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있으며, 현재 1.0.6 릴리스와는 별도다.
