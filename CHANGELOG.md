@@ -2,6 +2,28 @@
 
 사용자에게 의미 있는 변경을 버전별로 기록합니다. 형식은 Keep a Changelog의 범주를 따르되, 버전과 완료 조건은 [`0.Plans/1. Dev-phase`](<./0.Plans/1. Dev-phase/README.md>)를 기준으로 합니다.
 
+## [1.0.3] - 2026-09-10
+
+### Added
+
+- 프롬프트를 기존 태그형 또는 구두점·연속 공백·줄바꿈을 보존하는 문장형으로 작성·복사하는 mode/raw 계약
+- 원문과 결과를 먼저 보여 주는 명시 변환 확인, 변환 직후 undo와 revision v1/v2 비교·복원
+- 문장형을 이해하지 못하는 collaboration client의 409 capability 차단과 최신 상태 hash 기반 오래된 변환 거부
+
+### Fixed
+
+- 문장형 revision v2를 기존 태그형 기록으로만 해석해 수정 기록 UI가 실패하던 호환 회귀
+- 비활성 프롬프트 작업 버튼과 mode 설명의 dark-theme 대비가 opacity로 WCAG 기준 아래로 내려가던 표시
+
+### Validation
+
+- PostgreSQL unit/integration 261건과 migration `1000_prompt_modes.sql` fresh/repeat, typecheck·production build 통과
+- Chromium desktop/mobile 전체 306건 중 274 PASS·조건부 31 skip, 새 기능 Chromium 8건·Firefox 4건·WebKit mobile 4건 통과
+- 동일 SHA 개발 서버의 네 서비스 health, 공개 HTTPS, 실제 collaboration 재시작 전후 raw 조회·복제·재연결 통과
+- GitHub Actions 전체 migration·unit/integration·production image·backup/restore·취약점/secret·브라우저 행렬과 네 개발 image 게시/서명 통과
+
+Phase 5 최종 CI와 같은 SHA 개발 인수를 통과했고 사용자가 정식 릴리스를 승인했다. 정식 main·image·릴리스 서버 결과는 annotated tag와 GitHub Release에 고정한다. `OPS-100-001` 외부 backup 예외는 계속 유지한다.
+
 ## [1.0.2] - 2026-09-10
 
 ### Added
