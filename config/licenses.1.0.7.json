@@ -1,0 +1,42 @@
+
+{
+  "schemaVersion": "lyricscloud.license-inventory.v1",
+  "productVersion": "1.0.7",
+  "lockfileSha256": "f0e2d5984457b2a3c89d2f0b711e4bbe1e254360e1b640f85bbcb9dec3b3a963",
+  "generatedBy": "pnpm@11.25.0 licenses list --prod --json",
+  "totalPackages": 65,
+  "licenses": {
+    "0BSD": ["tslib@2.8.1"],
+    "Apache-2.0": [
+      "@img/sharp-linux-x64@0.35.4", "@opentelemetry/api@1.9.1", "@playwright/test@1.62.1",
+      "@swc/helpers@0.5.23", "baseline-browser-mapping@2.11.20", "detect-libc@2.1.2", "dexie@4.4.5",
+      "drizzle-orm@0.45.2", "playwright-core@1.62.1", "playwright@1.62.1", "sharp@0.35.4"
+    ],
+    "BSD-3-Clause": ["diff@9.0.0", "source-map-js@1.2.1"],
+    "CC-BY-4.0": ["caniuse-lite@1.0.50001810"],
+    "ISC": ["pg-int8@1.0.2", "picocolors@1.1.1", "semver@7.8.5", "split2@4.2.0"],
+    "LGPL-3.0-or-later": ["@img/sharp-libvips-linux-x64@1.3.3"],
+    "MIT": [
+      "@codemirror/commands@6.11.0", "@codemirror/language@6.12.4", "@codemirror/state@6.7.2",
+      "@codemirror/view@6.43.11", "@img/colour@1.1.0", "@lezer/common@1.5.2", "@lezer/highlight@1.2.3",
+      "@lezer/lr@1.4.10", "@marijn/find-cluster-break@1.0.4", "@next/env@16.3.4",
+      "@next/swc-linux-x64-gnu@16.3.4", "@types/node@24.10.0", "@types/pg@8.15.5", "client-only@0.0.1",
+      "crelt@1.0.7", "isomorphic.js@0.2.5", "jose@6.2.10", "lib0@0.2.117", "nanoid@3.3.18",
+      "next@16.3.4", "oauth4webapi@3.8.7", "openid-client@6.8.7", "pg-cloudflare@1.4.0",
+      "pg-connection-string@2.14.0", "pg-pool@3.14.0", "pg-protocol@1.16.0", "pg-types@2.2.0",
+      "pg@8.16.3", "pgpass@1.0.5", "postcss@8.5.23", "postgres-array@2.0.0", "postgres-bytea@1.0.2",
+      "postgres-date@1.0.7", "postgres-interval@1.2.0", "react-dom@19.2.4", "react@19.2.4",
+      "scheduler@0.27.0", "style-mod@4.1.3", "styled-jsx@5.1.6", "undici-types@7.16.0",
+      "w3c-keyname@2.2.8", "ws@8.21.3", "xtend@4.0.2", "y-indexeddb@9.0.12", "yjs@13.6.32"
+    ]
+  },
+  "review": {
+    "unknownLicenses": [],
+    "blockedLicenses": [],
+    "redistributionNotes": [
+      "Preserve notices and attribution supplied by dependencies.",
+      "Keep libvips dynamically linked and provide LGPL-3.0-or-later notices and relinking rights with distributed images.",
+      "Preserve CC-BY-4.0 attribution for caniuse-lite data."
+    ]
+  }
+}

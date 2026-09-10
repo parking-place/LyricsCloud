@@ -79,6 +79,13 @@
 - [`1.0.6 Phase 5 최종 후보 인수`](./1.0.6-phase5-final-acceptance.md)
 - [`1.0.6 정식 릴리스 실행`](./1.0.6-release.md)
 - [`1.0.6 정식 릴리스 체크리스트`](./1.0.6-release-checklist.md)
+- [`1.0.7 Phase 1 목록 보기 계약`](./1.0.7-phase1-library-view-contract.md)
+- [`1.0.7 Phase 2 목록 보기 저장`](./1.0.7-phase2-library-view-store.md)
+- [`1.0.7 Phase 3 목록 보기 UI`](./1.0.7-phase3-library-view-ui.md)
+- [`1.0.7 Phase 4 목록 보기 교차 회귀`](./1.0.7-phase4-library-view-regression.md)
+- [`1.0.7 Phase 5 최종 후보 인수`](./1.0.7-phase5-final-acceptance.md)
+- [`1.0.7 정식 릴리스 실행`](./1.0.7-release.md)
+- [`1.0.7 정식 릴리스 체크리스트`](./1.0.7-release-checklist.md)
 - [`0.7.0 Phase 3 최근 작업·위치 복원 검증`](./0.7.0-phase3-validation.md)
 
 ## 개발 서버 운영
