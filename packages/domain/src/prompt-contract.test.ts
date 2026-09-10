@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-  findPromptDuplicates, normalizePromptToken, parseCreatePromptInput, parsePromptText,
+  buildPromptCopyPayload, findPromptDuplicates, normalizePromptToken, parseCreatePromptInput, parsePromptText,
   parsePromptListInput, parsePromptSongSearchInput, parsePromptSuggestionInput, parseUpdatePromptInput,
-  projectUniquePromptTokens, PROMPT_LIMITS, PromptValidationError, serializePromptContent,
-  serializePromptTokens, validatePromptSentenceText
+  projectUniquePromptTokens, PROMPT_COPY_WARNING_LIMIT, PROMPT_LIMITS, PromptValidationError, serializePromptContent,
+  serializePromptTokens, splitPromptSentenceDisplay, validatePromptSentenceText
 } from "./prompt-contract.js";
 
 describe("prompt comma contract", () => {
@@ -50,6 +50,47 @@ describe("prompt mode and raw sentence contract", () => {
     expect(() => parseCreatePromptInput({ ...base, mode: "sentence" })).toThrow(PromptValidationError);
     expect(parseUpdatePromptInput({ requestId: base.requestId, rowVersion: 1, mode: "sentence", sentenceText: " a,b " }))
       .toMatchObject({ mode: "sentence", sentenceText: " a,b " });
+  });
+});
+
+describe("1.0.4 sentence display and copy guidance", () => {
+  it("splits only after U+002E and joins back to the exact raw source", () => {
+    for (const raw of ["a.. b.", "3.5", "https://example.invalid/a.b", "끝 미완성", "한 줄.\r\n다음 🙂."]) {
+      const spans = splitPromptSentenceDisplay(raw);
+      expect(spans.map(({ text }) => text).join("")).toBe(raw);
+      expect(spans.every(({ text, terminated }, index) => terminated === text.endsWith(".") && (index < spans.length - 1 || text.length > 0))).toBe(true);
+    }
+    expect(splitPromptSentenceDisplay("a.. b.").map(({ text }) => text)).toEqual(["a.", ".", " b."]);
+    expect(splitPromptSentenceDisplay("")).toEqual([]);
+  });
+
+  it("counts final payload Unicode code points and warns only above 1,000", () => {
+    expect(PROMPT_COPY_WARNING_LIMIT).toBe(1_000);
+    for (const count of [999, 1_000, 1_001]) {
+      expect(buildPromptCopyPayload("한".repeat(count))).toEqual({
+        text: "한".repeat(count), codePointCount: count, exceedsRecommendedLimit: count > 1_000
+      });
+    }
+  });
+
+  it("keeps emoji, decomposed Hangul, spaces and CRLF byte-for-byte", () => {
+    const raw = "🙂  가\r\n끝.";
+    const result = buildPromptCopyPayload(raw);
+    expect(result.text).toBe(raw);
+    expect(result.codePointCount).toBe([...raw].length);
+    expect(splitPromptSentenceDisplay(raw).map(({ text }) => text).join("")).toBe(raw);
+  });
+
+  it("processes the maximum prompt in linear time without changing it", () => {
+    const raw = ".🙂\r\n".repeat(Math.floor(PROMPT_LIMITS.serialized / 4));
+    const started = performance.now();
+    let joined = "";
+    for (let iteration = 0; iteration < 20; iteration += 1) {
+      joined = splitPromptSentenceDisplay(raw).map(({ text }) => text).join("");
+      buildPromptCopyPayload(raw);
+    }
+    expect(joined).toBe(raw);
+    expect(performance.now() - started).toBeLessThan(2_000);
   });
 });
 

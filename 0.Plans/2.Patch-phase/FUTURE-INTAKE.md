@@ -65,6 +65,7 @@
 | 2026-09-10 1.0.3 P1 완료 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `b4cfd665feb72612122253a26f336e5816bfb28c` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 기존 NF-REQ-022의 mode/raw·호환·복구 계약만 확정 | 1.0.2 main CI 정리 경쟁 수정 push 전 행 |
 | 2026-09-10 1.0.3 정식 릴리스 준비 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `99c79ae1e986bd763faf9ddc51fcfe15ab4cc52f` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 승인된 1.0.3 정식 artifact·main/tag/image/운영 실행만 수행 | 1.0.3 P1 완료 push 전 행 |
 | 2026-09-10 1.0.4 P1 완료 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `859c41e6bd611358d39f4b5cbf719ee0207498dd` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 기존 NF-REQ-022/023의 lossless 표시·copy 경고 계약만 확정 | 1.0.3 정식 릴리스 준비 push 전 행 |
+| 2026-09-10 1.0.4 P2 구현 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `93a07042b7518d42872d4974b99e2e5a0127fb82` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; lossless span·최종 payload Unicode code point 경고 기반만 구현 | 1.0.4 P1 완료 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 

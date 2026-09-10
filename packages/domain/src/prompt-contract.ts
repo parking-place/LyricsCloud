@@ -10,6 +10,23 @@ export const PROMPT_LIMITS = {
   serialized: 40_398
 } as const;
 
+/** Product guidance only. Copying remains available above this threshold. */
+export const PROMPT_COPY_WARNING_LIMIT = 1_000;
+
+export interface PromptSentenceDisplaySpan {
+  readonly text: string;
+  /** UTF-16 offsets are suitable for React keys and lossless source slicing. */
+  readonly start: number;
+  readonly end: number;
+  readonly terminated: boolean;
+}
+
+export interface PromptCopyPayload {
+  readonly text: string;
+  readonly codePointCount: number;
+  readonly exceedsRecommendedLimit: boolean;
+}
+
 export const PROMPT_MODES = ["tags", "sentence"] as const;
 export type PromptMode = (typeof PROMPT_MODES)[number];
 
@@ -150,6 +167,32 @@ export function serializePromptContent(
 ): string {
   if (mode === "tags") return serializePromptTokens(tokens);
   return validatePromptSentenceText(sentenceText);
+}
+
+/**
+ * Creates presentation-only spans. Every ASCII full stop belongs to the span
+ * before it, and concatenating every span is guaranteed to reproduce `raw`.
+ */
+export function splitPromptSentenceDisplay(raw: string): readonly PromptSentenceDisplaySpan[] {
+  if (typeof raw !== "string") fail("sentenceText", "string_required");
+  if (!raw) return [];
+  const spans: PromptSentenceDisplaySpan[] = [];
+  let start = 0;
+  for (let index = 0; index < raw.length; index += 1) {
+    if (raw.charCodeAt(index) !== 0x2e) continue;
+    const end = index + 1;
+    spans.push({ text: raw.slice(start, end), start, end, terminated: true });
+    start = end;
+  }
+  if (start < raw.length) spans.push({ text: raw.slice(start), start, end: raw.length, terminated: false });
+  return spans;
+}
+
+/** Measures the exact clipboard payload without normalization or line-ending conversion. */
+export function buildPromptCopyPayload(text: string): PromptCopyPayload {
+  if (typeof text !== "string") fail("plainText", "string_required");
+  const codePointCount = [...text].length;
+  return { text, codePointCount, exceedsRecommendedLimit: codePointCount > PROMPT_COPY_WARNING_LIMIT };
 }
 
 export function findPromptDuplicates(tokens: readonly PromptTokenValue[]): readonly PromptDuplicate[] {
