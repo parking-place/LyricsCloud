@@ -31,7 +31,7 @@ export default defineConfig({
         APP_VERSION: "1.0.4",
         BUILD_ID: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
         APP_CHANNEL: "dev",
-        APP_PHASE: "p3",
+        APP_PHASE: "p4",
         APP_ORIGIN: "http://127.0.0.1:3000",
         GOOGLE_ISSUER: "http://127.0.0.1:3100",
         GOOGLE_CLIENT_ID: "synthetic-e2e-client",

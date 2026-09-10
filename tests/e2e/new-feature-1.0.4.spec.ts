@@ -62,8 +62,9 @@ test.describe("1.0.4 lossless sentence display and prompt copy guidance", () => 
       await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: {
         writeText: (value: string) => { (window as unknown as { copied: string }).copied = value; return Promise.resolve(); }
       } }));
-      if (info.project.name === "mobile") await page.getByRole("button", { name: /≋ 다른 가사 .*자료/ }).click();
-      const panel = info.project.name === "mobile" ? page.getByRole("dialog", { name: "작업 자료" }) : page.getByRole("complementary", { name: "작업 자료" });
+      const mobile = info.project.name.endsWith("mobile");
+      if (mobile) await page.getByRole("button", { name: /≋ 다른 가사 .*자료/ }).click();
+      const panel = mobile ? page.getByRole("dialog", { name: "작업 자료" }) : page.getByRole("complementary", { name: "작업 자료" });
       await panel.getByRole("tab", { name: "프롬프트" }).click();
       const item = panel.locator("li", { hasText: "패널 긴 프롬프트" });
       await item.getByRole("button", { name: "복사", exact: true }).click();
