@@ -61,6 +61,7 @@
 | 2026-09-10 1.0.2 P5 최종 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `1e04c3a4ed77dca70c7643a4f9627ae163e579cf` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P5 요구 추적·현재 문서·최종 CI·동일 SHA 개발 인수만 수행 | 1.0.2 P4 완료·P5 착수 push 전 행 |
 | 2026-09-10 1.0.2 P5 완료 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `8d55ddc2a5b2383bc7388a248bb7d66f13a5bd0b` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P5 전체 CI·네 dev image·동일 SHA 개발 인수 완료, 별도 release go/no-go만 대기 | 1.0.2 P5 최종 후보 push 전 행 |
 | 2026-09-10 1.0.2 정식 릴리스 준비 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `4fe14cf382b50a827f92e106836c9f2930aa7b34` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 승인된 1.0.2 정식 artifact·main/tag/image/운영 실행만 수행 | 1.0.2 P5 완료 push 전 행 |
+| 2026-09-10 1.0.2 main CI 정리 경쟁 수정 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `1f3fa89d004a373ad0d27750ce5f1362e74f5ea7` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; beta admin 검증 완료 뒤 강제 DB 삭제와 pool 종료의 정리 경쟁만 안정화 | 1.0.2 정식 릴리스 준비 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
