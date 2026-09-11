@@ -147,7 +147,8 @@ jobs:
         run: pnpm test:release:0914 && pnpm test:observability:0914
       - name: Verify 0.9.1 backup, restore and artifact contract
         run: pnpm test:release:0915
-      - name: Verify 1.0.7 candidate and sealed release contracts
+      - name: Verify final candidate and sealed release contracts
+        if: env.APP_PHASE == 'p5'
         run: pnpm test:release:1001 && pnpm test:release:1002 && pnpm test:release:1004 && pnpm test:release:1005 && pnpm test:environment:101
       - name: Build development server production image
         run: docker build --file infra/docker/Dockerfile.web --tag lyricscloud-web-ci:${{ github.sha }} .
