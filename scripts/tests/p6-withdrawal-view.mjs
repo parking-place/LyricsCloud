@@ -18,6 +18,7 @@ function render({ open, message = '', busy = false }) {
     '@lyricscloud/domain': { DEFAULT_USER_SETTINGS: initialSettings },
     '../lib/account-cache.js': { clearAccountPrivateData() {}, downloadRecoveryDrafts() {} },
     '../lib/dialog-focus.js': { trapDialogTab() {} },
+    '../lib/font-assets.js': { WRITING_FONT_OPTIONS: [{ value: 'sans', label: '산세리프' }], writingDisplayStyle() { return {}; } },
     './shortcut-help.js': { ShortcutGuide() {} }
   };
   const source = readFileSync(new URL('../../apps/web/src/components/settings-screen.tsx', import.meta.url), 'utf8');
