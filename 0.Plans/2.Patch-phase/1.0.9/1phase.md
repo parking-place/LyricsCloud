@@ -1,6 +1,6 @@
 # 1.0.9 Phase 1 — 계약·실패 사례·담당 경계
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`, 2026-09-11)
 - 단계 목적: 라임·프롬프트 사용자정렬의 계약·실패 사례·담당 경계을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -39,12 +39,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.0.9-P1-01` 라임·프롬프트는 각각 독립된 owner 순서를 가지며 곡이나 전역 핀과 혼합하지 않는다.
-- [ ] `LC-NF-1.0.9-P1-02` 프롬프트 자료 카드의 순서와 한 프롬프트 안의 토큰 순서는 별개다.
-- [ ] `LC-NF-1.0.9-P1-03` 공유 자료가 미래에 등장해도 개인 순서가 owner의 자료 metadata를 바꾸지 않게 경계를 둔다.
-- [ ] `LC-NF-1.0.9-P1-04` 관련 구현·테스트 경로를 읽고 위 요구/수용 사례를 정상·오류·권한·복구 입력표로 고정한다. 원인 미확정 항목은 가설과 증거 수준을 표시한다.
-- [ ] `LC-NF-1.0.9-P1-05` 저장 형식·API·순서·copy·권한 중 변경되는 인터페이스와 호환/되돌림을 결정 문서에 기록하고 최초 소비 전에 승인한다.
-- [ ] `LC-NF-1.0.9-P1-06` 각 변경 파일 담당자와 실제 최종 source SHA를 기록한다. 해당 패치 밖의 기능이나 아직 선택하지 않은 아이디어를 섞지 않는다.
+- [x] `LC-NF-1.0.9-P1-01` 1002의 owner+`rhyme_note`/`prompt` state·rank·request namespace를 각각 소비하고 곡·전역 핀과 섞지 않는 계약을 확정했다.
+- [x] `LC-NF-1.0.9-P1-02` 프롬프트 자료 카드 순서와 `prompt_tokens.ordinal`·occurrence·exact copy payload를 별도 경계로 고정했다.
+- [x] `LC-NF-1.0.9-P1-03` 개인 order projection이 미래 공유 원본 metadata의 쓰기 권한으로 확장되지 않게 owner/actor 경계를 기록했다.
+- [x] `LC-NF-1.0.9-P1-04` 기존 1002/song order·rhyme/prompt store·목록 UI·copy/gesture 경로를 읽고 정상·오류·권한·복구 입력표를 [P1 인수 기록](../../../docs/runbooks/1.0.9-phase1-rhyme-prompt-order-contract.md)에 고정했다.
+- [x] `LC-NF-1.0.9-P1-05` 두 고정 type route, visible anchor, type별 CAS/idempotency/manual cursor와 1002 유지 application-first rollback을 최초 소비 전에 승인했다.
+- [x] `LC-NF-1.0.9-P1-06` P2/P3 담당 경로와 실제 출발 source SHA `5388bbfae54762288aea9bc4d83e81535faa385e`를 연결하고 Suno·공유·사전·폰트를 섞지 않았다.
 
 ## 구체적 검증
 
@@ -63,12 +63,12 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 설계·검토 증거·정확한 출발 SHA가 연결되어 있다.
+- [x] owner/type 권한·필터 밖 자료 보존·copy/gesture 분리·CAS/idempotency·복구·오류 기대를 입력표로 고정했다. runtime 검증은 P2~P4 책임이다.
+- [x] 아직 미실행인 DB/API/browser/실기기 증거를 숨김없이 기록했다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 설계-only Phase는 2026-09-11 사용자의 전체 실행 승인과 범위 확정 증거를 갖췄다.
+- [x] P1 변경은 1.0.8 고정 tag나 릴리스 서버 artifact를 변경하지 않는다.
 
 ## 산출물
 
@@ -79,3 +79,5 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 ## 다음 Phase 인계
 
 [1.0.9 P2](2phase.md)에 입력·실행 결과·호환 및 중단 조건을 넘긴다. 다음 단계의 승인이 없거나 선행 증거가 부족하면 자동 진행하지 않는다. 문서 작성으로 runtime version을 바꾸지 않는다.
+
+P2는 [인수 기록](../../../docs/runbooks/1.0.9-phase1-rhyme-prompt-order-contract.md)의 기존 1002 재사용, 두 고정 type route, type별 CAS/idempotency/manual cursor, prompt token/copy 불변과 실패 우선 fixture를 소비한다.

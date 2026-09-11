@@ -112,6 +112,7 @@
 | 2026-09-11 1.0.8 P4 완료·P5 착수 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `72af9f9096d7c171c8d346b889b5cda7ca256a02` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P4 전체 DB/browser/CI·개발 재시작과 순서 복원 인수 완료, 기존 P5 문서·봉인·release 인계만 착수 | 1.0.8 P4 회귀 후보 push 전 행 |
 | 2026-09-11 1.0.8 P5 최종 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `2998382c2587f000656a18670b6af21698d4225d` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P5 요구 추적·현재 문서·1.0.8 봉인 artifact·최종 CI·동일 SHA 개발 인수만 수행 | 1.0.8 P4 완료·P5 착수 push 전 행 |
 | 2026-09-11 1.0.8 P5 완료·release 실행 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `800c66593c8801fd55dad013448b1ef4b037d85a` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P5 전체 CI·네 dev image·동일 SHA 개발 공개 인수 완료, 승인된 main/tag/정식 image/릴리스 서버 실행만 진행 | 1.0.8 P5 최종 후보 push 전 행 |
+| 2026-09-11 1.0.9 P1 완료 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `5388bbfae54762288aea9bc4d83e81535faa385e` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 기존 NF-REQ-028의 라임/프롬프트 owner+type 순서·copy/gesture·CAS/복구 계약만 확정, Suno·공유·사전·폰트는 미소비 | 1.0.8 P5 완료·release 실행 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
