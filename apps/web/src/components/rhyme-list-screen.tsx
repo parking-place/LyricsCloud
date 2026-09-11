@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
+import { dropAfter, LibraryOrderHandle, useLibraryCardOrder } from "./library-order-controls.js";
 import { LibraryViewModeSelector, useLibraryViewMode } from "./library-view-mode-selector.js";
 
-const SORTS = ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"] as const;
+const SORTS = ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first", "manual"] as const;
 const COLORS = [null, "red", "yellow", "green", "blue", "gray"] as const;
 type RhymeSort = (typeof SORTS)[number];
 type ResourceColor = Exclude<(typeof COLORS)[number], null>;
@@ -19,6 +20,7 @@ interface RhymeNote {
 }
 interface RhymeListResponse {
   readonly items: RhymeNote[]; readonly totalCount: number; readonly nextCursor: string | null;
+  readonly orderVersion: number; readonly capabilities: { readonly manualOrder: true };
   readonly filters: { readonly tags: readonly { id: string; label: string }[]; readonly songs: readonly LinkedSong[] };
 }
 interface MetadataQueueEntry<T> {
@@ -29,7 +31,7 @@ interface MetadataQueueEntry<T> {
 
 const SORT_LABELS: Record<RhymeSort, string> = {
   updated_desc: "최근 수정순", created_desc: "최근 생성순", created_asc: "오래된 생성순",
-  title_asc: "제목순", favorite_first: "즐겨찾기 우선"
+  title_asc: "제목순", favorite_first: "즐겨찾기 우선", manual: "사용자 정렬"
 };
 const COLOR_LABELS: Record<ResourceColor, string> = { red: "빨강", yellow: "노랑", green: "초록", blue: "파랑", gray: "회색" };
 
@@ -44,6 +46,7 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
   const [filters, setFilters] = useState<RhymeListResponse["filters"]>({ tags: [], songs: [] });
   const [totalCount, setTotalCount] = useState(0);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [orderVersion, setOrderVersion] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
@@ -52,6 +55,11 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
   const requestSequence = useRef(0);
   const metadataQueue = useRef(new Map<string, MetadataQueueEntry<unknown>>());
   const copyFeedback = useCopyFeedback();
+  const order = useLibraryCardOrder({
+    items: notes, setItems: setNotes, orderVersion, setOrderVersion,
+    endpoint: "/api/rhymes/order/moves", noun: "라임 노트",
+    activateManual: () => setSort("manual"), reload: () => setRetryKey((value) => value + 1), setNotice
+  });
 
   useEffect(() => {
     const timer = window.setTimeout(() => setAppliedSearch(search.trim()), 300);
@@ -73,6 +81,7 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
       .then((result) => {
         if (sequence !== requestSequence.current) return;
         setNotes(result.items); setTotalCount(result.totalCount); setNextCursor(result.nextCursor); setFilters(result.filters);
+        setOrderVersion(result.orderVersion);
         if (tag && !result.filters.tags.some(({ id }) => id === tag)) setTag("");
         if (song && !result.filters.songs.some(({ id }) => id === song)) setSong("");
       })
@@ -86,10 +95,10 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
   }, [appliedSearch, tag, song, sort, retryKey]);
 
   useEffect(() => {
-    if (!notice) return;
+    if (!notice || order.retryMove) return;
     const timer = window.setTimeout(() => setNotice(""), 3_000);
     return () => window.clearTimeout(timer);
-  }, [notice]);
+  }, [notice, order.retryMove]);
 
   async function loadMore() {
     if (!nextCursor || loadingMore) return;
@@ -100,6 +109,7 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
       if (!response.ok) throw new Error("다음 라임 노트를 불러오지 못했습니다.");
       const result = await response.json() as RhymeListResponse;
       setNotes((current) => [...current, ...result.items]); setNextCursor(result.nextCursor); setFilters(result.filters);
+      setOrderVersion(result.orderVersion);
     } catch (caught) { setError(caught instanceof Error ? caught.message : "다음 라임 노트를 불러오지 못했습니다."); }
     finally { setLoadingMore(false); }
   }
@@ -178,22 +188,40 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
     <div className="rhyme-tag-scroll" aria-label="태그 빠른 필터"><button className={!tag ? "active" : ""} aria-pressed={!tag} onClick={() => setTag("")}>전체</button>{filters.tags.map((item) => <button key={item.id} className={tag === item.id ? "active" : ""} aria-pressed={tag === item.id} onClick={() => setTag(item.id)}>#{item.label}</button>)}</div>
     <LibraryViewModeSelector label="라임 노트 목록" state={libraryView} />
     <div className="list-summary" aria-live="polite"><strong>{loading ? "라임 노트를 불러오는 중" : `총 ${totalCount}개`}</strong><span>{filtered ? "현재 검색 조건" : "내 개인 작업 공간"}</span></div>
-    {notice ? <p className="copy-toast" role="status">{notice}</p> : null}
+    {notice ? <div className="song-order-notice" role="status"><span>{notice}</span>{order.retryMove ? <button type="button" disabled={Boolean(order.movingId)} onClick={() => void order.submitMove(order.retryMove!)}>같은 이동 다시 시도</button> : null}</div> : null}
     {error ? <div className="list-error" role="alert"><strong>{error}</strong><button type="button" onClick={() => setRetryKey((value) => value + 1)}>다시 시도</button></div> : null}
     {loading ? <div className={`rhyme-grid library-grid library-view-${libraryView.viewMode}`} aria-label="라임 노트 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="rhyme-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
     {!loading && !error && notes.length === 0 ? <div className="empty-state rhyme-empty"><span aria-hidden="true">{filtered ? "⌕" : "≈"}</span><h2>{filtered ? "조건에 맞는 라임 노트가 없어요" : "아직 라임 노트가 없어요"}</h2><p>{filtered ? "검색어·태그·연결 곡 조건을 바꿔보세요." : "떠오른 단어나 표현을 짧게라도 남겨보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={clearFilters}>검색 조건 지우기</button> : <a className="primary-link" href="/rhymes/new">첫 라임 노트 만들기</a>}</div> : null}
-    {!loading && notes.length ? <div className={`rhyme-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{notes.map((note) => <RhymeCard key={note.id} note={note} onToggle={toggle} onColor={cycleColor} onCopy={copy} />)}</div> : null}
+    {!loading && notes.length ? <div className={`rhyme-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{notes.map((note) => {
+      const group = notes.filter(({ isPinned }) => isPinned === note.isPinned);
+      const position = group.findIndex(({ id }) => id === note.id);
+      return <RhymeCard key={note.id} note={note} onToggle={toggle} onColor={cycleColor} onCopy={copy}
+        moving={order.movingId === note.id} dragActive={order.draggedId !== null}
+        canMoveBefore={position > 0} canMoveAfter={position >= 0 && position < group.length - 1}
+        onMove={(destination) => order.moveItem(note.id, destination === "first" ? 0 : destination === "previous" ? position - 1 : destination === "next" ? position + 1 : group.length - 1)}
+        onDragStart={() => order.setDraggedId(note.id)} onDragEnd={() => order.setDraggedId(null)}
+        onDrop={(after) => { if (order.draggedId) order.moveToTarget(order.draggedId, note.id, after); order.setDraggedId(null); }} />;
+    })}</div> : null}
     {!loading && notes.length ? <div className="load-more-wrap"><button className="secondary-button load-more" type="button" disabled={!nextCursor || loadingMore} onClick={() => void loadMore()}>{loadingMore ? "불러오는 중…" : nextCursor ? "더 불러오기" : "모든 라임 노트를 불러왔습니다"}</button></div> : null}
     <CopyFeedback state={copyFeedback} />
   </section>;
 }
 
-function RhymeCard({ note, onToggle, onColor, onCopy }: { note: RhymeNote; onToggle: (note: RhymeNote, field: "isFavorite" | "isPinned") => void; onColor: (note: RhymeNote) => void; onCopy: (note: RhymeNote) => void }) {
-  return <article className={`rhyme-card${note.color ? ` color-${note.color}` : ""}`}>
+function RhymeCard({ note, onToggle, onColor, onCopy, moving, dragActive, canMoveBefore, canMoveAfter, onMove, onDragStart, onDragEnd, onDrop }: {
+  note: RhymeNote; onToggle: (note: RhymeNote, field: "isFavorite" | "isPinned") => void;
+  onColor: (note: RhymeNote) => void; onCopy: (note: RhymeNote) => void;
+  moving: boolean; dragActive: boolean; canMoveBefore: boolean; canMoveAfter: boolean;
+  onMove: (destination: "first" | "previous" | "next" | "last") => void;
+  onDragStart: () => void; onDragEnd: () => void; onDrop: (after: boolean) => void;
+}) {
+  return <article className={`rhyme-card${note.color ? ` color-${note.color}` : ""}${moving ? " is-moving" : ""}${dragActive ? " drag-active" : ""}`}
+    onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); onDrop(dropAfter(event)); }}>
     <a className="rhyme-card-hit" href={`/rhymes/${note.id}`} aria-label={`${note.title} 라임 노트 열기`}><span className="sr-only">{note.title}</span></a>
     <div className="rhyme-card-top"><button type="button" className={`rhyme-color${note.color ? ` color-${note.color}` : ""}`} aria-label={`${note.title} 색상: ${note.color ? COLOR_LABELS[note.color] : "없음"}. 다음 색상으로 변경`} onClick={() => void onColor(note)}><span aria-hidden="true" /></button><span className="rhyme-card-actions"><button type="button" className={note.isPinned ? "is-on" : ""} aria-label={`${note.title} ${note.isPinned ? "고정 해제" : "고정"}`} aria-pressed={note.isPinned} onClick={() => void onToggle(note, "isPinned")}>⌁</button><button type="button" className={note.isFavorite ? "is-on" : ""} aria-label={`${note.title} ${note.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"}`} aria-pressed={note.isFavorite} onClick={() => void onToggle(note, "isFavorite")}>★</button><button type="button" aria-label={`${note.title} 본문 전체 복사`} onClick={() => void onCopy(note)}>⧉</button></span></div>
     <h2>{note.title}</h2><p className={note.body ? "rhyme-body" : "rhyme-body is-empty"}>{note.body || "아직 본문이 없습니다."}</p>
     {note.tags.length ? <ul className="rhyme-card-tags" aria-label={`${note.title} 태그`}>{note.tags.map((item) => <li key={item.id}>#{item.displayValue}</li>)}</ul> : null}
+    <LibraryOrderHandle title={note.title} moving={moving} canMoveBefore={canMoveBefore} canMoveAfter={canMoveAfter}
+      onMove={onMove} onDragStart={onDragStart} onDragEnd={onDragEnd} />
     <footer><span>{note.linkedSongs.length ? note.linkedSongs.map(({ title }) => title).join(", ") : "연결 곡 없음"}</span><time dateTime={note.updatedAt}>{relativeDate(note.updatedAt)}</time></footer>
   </article>;
 }

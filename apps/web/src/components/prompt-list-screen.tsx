@@ -4,9 +4,10 @@ import { splitPromptSentenceDisplay } from "@lyricscloud/domain";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { promptCopyView } from "../lib/prompt-copy.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
+import { dropAfter, LibraryOrderHandle, useLibraryCardOrder } from "./library-order-controls.js";
 import { LibraryViewModeSelector, useLibraryViewMode } from "./library-view-mode-selector.js";
 
-const SORTS = ["favorite_first", "recent_used", "updated_desc", "created_desc", "created_asc", "title_asc"] as const;
+const SORTS = ["favorite_first", "recent_used", "updated_desc", "created_desc", "created_asc", "title_asc", "manual"] as const;
 type PromptSort = (typeof SORTS)[number];
 
 export interface PromptListQuery {
@@ -27,13 +28,14 @@ interface PromptItem {
 }
 interface PromptListResponse {
   readonly items: PromptItem[]; readonly totalCount: number; readonly nextCursor: string | null;
+  readonly orderVersion: number; readonly capabilities: { readonly manualOrder: true };
   readonly filters: { readonly songs: readonly LinkedSong[] };
 }
 interface MetadataQueueEntry<T> { desired: T; confirmed: T; running: boolean }
 
 const SORT_LABELS: Record<PromptSort, string> = {
   favorite_first: "즐겨찾기 우선", recent_used: "최근 사용순", updated_desc: "최근 수정순",
-  created_desc: "최근 생성순", created_asc: "오래된 생성순", title_asc: "제목순"
+  created_desc: "최근 생성순", created_asc: "오래된 생성순", title_asc: "제목순", manual: "사용자 정렬"
 };
 
 export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQuery }) {
@@ -48,6 +50,7 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   const [filters, setFilters] = useState<PromptListResponse["filters"]>({ songs: [] });
   const [totalCount, setTotalCount] = useState(0);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [orderVersion, setOrderVersion] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
@@ -59,6 +62,11 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   const metadataQueue = useRef(new Map<string, MetadataQueueEntry<unknown>>());
   const duplicateRequests = useRef(new Map<string, string>());
   const copyFeedback = useCopyFeedback();
+  const order = useLibraryCardOrder({
+    items, setItems, orderVersion, setOrderVersion,
+    endpoint: "/api/prompts/order/moves", noun: "프롬프트",
+    activateManual: () => setSort("manual"), reload: () => setRetryKey((value) => value + 1), setNotice
+  });
 
   useEffect(() => {
     const timer = window.setTimeout(() => setAppliedSearch(search.trim()), 300);
@@ -80,6 +88,7 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
       .then((result) => {
         if (sequence !== requestSequence.current) return;
         setItems(result.items); setTotalCount(result.totalCount); setNextCursor(result.nextCursor); setFilters(result.filters);
+        setOrderVersion(result.orderVersion);
         if (song && !result.filters.songs.some(({ id }) => id === song)) setSong("");
       })
       .catch((caught: unknown) => {
@@ -92,10 +101,10 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   }, [appliedSearch, song, favorite, recent, sort, retryKey]);
 
   useEffect(() => {
-    if (!notice) return;
+    if (!notice || order.retryMove) return;
     const timer = window.setTimeout(() => setNotice(""), 3_500);
     return () => window.clearTimeout(timer);
-  }, [notice]);
+  }, [notice, order.retryMove]);
 
   async function loadMore() {
     if (!nextCursor || loadingMore) return;
@@ -106,6 +115,7 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
       if (!response.ok) throw new Error("다음 프롬프트를 불러오지 못했습니다.");
       const result = await response.json() as PromptListResponse;
       setItems((current) => [...current, ...result.items]); setNextCursor(result.nextCursor); setFilters(result.filters);
+      setOrderVersion(result.orderVersion);
     } catch (caught) { setError(caught instanceof Error ? caught.message : "다음 프롬프트를 불러오지 못했습니다."); }
     finally { setLoadingMore(false); }
   }
@@ -210,20 +220,32 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
     </div>
     <LibraryViewModeSelector label="프롬프트 목록" state={libraryView} />
     <div className="list-summary" aria-live="polite"><strong>{loading ? "프롬프트를 불러오는 중" : `총 ${totalCount}개`}</strong><span>{filtered ? "현재 검색 조건" : "내 개인 프롬프트 보관함"}</span></div>
-    {notice ? <p className="copy-toast" role="status">{notice}</p> : null}
+    {notice ? <div className="song-order-notice" role="status"><span>{notice}</span>{order.retryMove ? <button type="button" disabled={Boolean(order.movingId)} onClick={() => void order.submitMove(order.retryMove!)}>같은 이동 다시 시도</button> : null}</div> : null}
     {error ? <div className="list-error" role="alert"><strong>{error}</strong><button type="button" onClick={() => setRetryKey((value) => value + 1)}>다시 시도</button></div> : null}
     {loading ? <div className={`prompt-grid library-grid library-view-${libraryView.viewMode}`} aria-label="프롬프트 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="prompt-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
     {!loading && !error && items.length === 0 ? <div className="empty-state prompt-empty"><span aria-hidden="true">{filtered ? "⌕" : "✦"}</span><h2>{filtered ? "조건에 맞는 프롬프트가 없어요" : "자주 쓰는 스타일 조합을 만들어보세요"}</h2><p>{filtered ? "검색어·즐겨찾기·최근 사용·연결 곡 조건을 바꿔보세요." : "장르, 보컬, 분위기와 악기를 토큰으로 모아 빠르게 재사용할 수 있어요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={clearFilters}>검색 조건 지우기</button> : <a className="primary-link" href="/prompts/new">첫 프롬프트 만들기</a>}</div> : null}
-    {!loading && items.length ? <div className={`prompt-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{items.map((prompt) => <PromptCard key={prompt.id} prompt={prompt} duplicating={duplicating === prompt.id} onToggle={toggle} onCopy={copy} onDuplicate={duplicate} />)}</div> : null}
+    {!loading && items.length ? <div className={`prompt-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{items.map((prompt) => {
+      const group = items.filter(({ isPinned }) => isPinned === prompt.isPinned);
+      const position = group.findIndex(({ id }) => id === prompt.id);
+      return <PromptCard key={prompt.id} prompt={prompt} duplicating={duplicating === prompt.id} onToggle={toggle} onCopy={copy} onDuplicate={duplicate}
+        moving={order.movingId === prompt.id} dragActive={order.draggedId !== null}
+        canMoveBefore={position > 0} canMoveAfter={position >= 0 && position < group.length - 1}
+        onMove={(destination) => order.moveItem(prompt.id, destination === "first" ? 0 : destination === "previous" ? position - 1 : destination === "next" ? position + 1 : group.length - 1)}
+        onDragStart={() => order.setDraggedId(prompt.id)} onDragEnd={() => order.setDraggedId(null)}
+        onDrop={(after) => { if (order.draggedId) order.moveToTarget(order.draggedId, prompt.id, after); order.setDraggedId(null); }} />;
+    })}</div> : null}
     {!loading && items.length ? <div className="load-more-wrap"><button className="secondary-button load-more" type="button" disabled={!nextCursor || loadingMore} onClick={() => void loadMore()}>{loadingMore ? "불러오는 중…" : nextCursor ? "더 불러오기" : "모든 프롬프트를 불러왔습니다"}</button></div> : null}
     <CopyFeedback state={copyFeedback} onManualComplete={manualUsagePrompt ? () => completeManualCopy(manualUsagePrompt) : undefined} />
   </section>;
 }
 
-function PromptCard({ prompt, duplicating, onToggle, onCopy, onDuplicate }: {
+function PromptCard({ prompt, duplicating, onToggle, onCopy, onDuplicate, moving, dragActive, canMoveBefore, canMoveAfter, onMove, onDragStart, onDragEnd, onDrop }: {
   prompt: PromptItem; duplicating: boolean;
   onToggle: (prompt: PromptItem, field: "isFavorite" | "isPinned") => void;
   onCopy: (prompt: PromptItem) => void; onDuplicate: (prompt: PromptItem) => void;
+  moving: boolean; dragActive: boolean; canMoveBefore: boolean; canMoveAfter: boolean;
+  onMove: (destination: "first" | "previous" | "next" | "last") => void;
+  onDragStart: () => void; onDragEnd: () => void; onDrop: (after: boolean) => void;
 }) {
   const copy = promptCopyView(prompt.plainText);
   const timer = useRef<number | null>(null);
@@ -239,7 +261,8 @@ function PromptCard({ prompt, duplicating, onToggle, onCopy, onDuplicate }: {
     if (!start.current) return;
     if (Math.hypot(event.clientX - start.current.x, event.clientY - start.current.y) > 10) cancel();
   }
-  return <article className="prompt-card" onPointerDown={down} onPointerMove={move} onPointerUp={cancel} onPointerCancel={cancel}
+  return <article className={`prompt-card${moving ? " is-moving" : ""}${dragActive ? " drag-active" : ""}`} onPointerDown={down} onPointerMove={move} onPointerUp={cancel} onPointerCancel={cancel}
+    onDragOver={(event) => { cancel(); event.preventDefault(); }} onDrop={(event) => { event.preventDefault(); cancel(); onDrop(dropAfter(event)); }}
     onClickCapture={(event) => {
       if (!longPressed.current) return;
       longPressed.current = false;
@@ -255,6 +278,8 @@ function PromptCard({ prompt, duplicating, onToggle, onCopy, onDuplicate }: {
     <p className={`prompt-copy-length${copy.exceedsRecommendedLimit ? " over" : ""}`}>{copy.codePointCount.toLocaleString("ko-KR")}자{copy.exceedsRecommendedLimit ? " · 1,000자 권장 초과" : ""}</p>
     <p className="prompt-copy-hint">모바일에서는 카드를 길게 눌러도 복사할 수 있습니다.</p>
     <div className="prompt-card-buttons"><button type="button" onClick={() => void onCopy(prompt)}>⧉ 복사</button><button type="button" disabled={duplicating} onClick={() => void onDuplicate(prompt)}>{duplicating ? "복제 중…" : "복제"}</button></div>
+    <LibraryOrderHandle title={prompt.title} moving={moving} canMoveBefore={canMoveBefore} canMoveAfter={canMoveAfter}
+      onMove={onMove} onDragStart={() => { cancel(); onDragStart(); }} onDragEnd={onDragEnd} />
     <footer><span>{prompt.linkedSongs.length ? prompt.linkedSongs.map(({ title }) => title).join(", ") : "연결 곡 없음"}</span><time dateTime={prompt.lastUsedAt ?? prompt.updatedAt}>{prompt.lastUsedAt ? `${relativeDate(prompt.lastUsedAt)} 사용` : `${relativeDate(prompt.updatedAt)} 수정`}</time></footer>
   </article>;
 }
