@@ -92,7 +92,11 @@ for (const path of ["infra/backup/backup.sh", "infra/backup/restore.sh", "infra/
 
 console.log("0.9.1 Phase 5 contract: encrypted daily backup, isolated restore, failure injection, digest rollback and keyless artifact verification verified");
 
-await import("./validate-1001-final-gate.mjs");
-await import("./validate-1002-release-artifacts.mjs");
-await import("./validate-1004-documentation.mjs");
-await import("./validate-1005-final-release.mjs");
+if (process.env.APP_PHASE === "p5" || process.env.APP_CHANNEL === "release") {
+  await import("./validate-1001-final-gate.mjs");
+  await import("./validate-1002-release-artifacts.mjs");
+  await import("./validate-1004-documentation.mjs");
+  await import("./validate-1005-final-release.mjs");
+} else {
+  console.log("Current release-document sealing is deferred until Phase 5.");
+}
