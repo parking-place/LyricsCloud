@@ -17,8 +17,9 @@
 
 - 실제 PostgreSQL 계약/store/export 7건, Chromium·Firefox·WebKit 5-project 기능 20건 통과
 - Actions `34610699744` P4 전체 verify·네 dev image 게시/서명과 동일 SHA 개발 삭제복원·서비스 재시작 지속성 통과
+- Actions `34614794684` P5 전체 verify·네 dev image 게시/서명과 동일 SHA 개발 desktop/mobile 저장·재진입·삭제복원·재시작 인수 통과
 
-P5 최종 후보 CI와 동일 SHA 개발 인수 뒤 사용자가 승인한 정식 릴리스를 실행한다. Known limitations: 자동 metadata와 실제 물리 기기 검증은 없고 `OPS-100-001` 외부 backup 예외를 유지한다.
+P1~P5 후보 인수를 완료했고 사용자가 승인한 정식 릴리스를 실행한다. Known limitations: 자동 metadata와 실제 물리 기기 검증은 없고 `OPS-100-001` 외부 backup 예외를 유지한다.
 
 ## [1.0.9] - 2026-09-11
 
