@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
 import { LibraryViewModeSelector, useLibraryViewMode } from "./library-view-mode-selector.js";
 
 const STATUSES = ["idea", "writing_lyrics", "revising", "suno_generating", "mixing", "completed", "on_hold"] as const;
-const SORTS = ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"] as const;
+const SORTS = ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first", "manual"] as const;
 const WORK_FILTERS = ["all", "has_linked_resources", "no_lyrics"] as const;
 type SongStatus = (typeof STATUSES)[number];
 type SongSort = (typeof SORTS)[number];
@@ -37,7 +37,23 @@ interface SongListResponse {
   readonly items: Song[];
   readonly totalCount: number;
   readonly nextCursor: string | null;
-  readonly capabilities: { readonly lyricsSearch: true; readonly linkedResourceFilters: true };
+  readonly orderVersion: number;
+  readonly capabilities: { readonly lyricsSearch: true; readonly linkedResourceFilters: true; readonly manualOrder: true };
+}
+
+interface SongMoveBody {
+  readonly requestId: string;
+  readonly itemId: string;
+  readonly beforeId: string | null;
+  readonly afterId: string | null;
+  readonly expectedVersion: number;
+}
+
+interface PendingSongMove {
+  readonly body: SongMoveBody;
+  readonly title: string;
+  readonly snapshot: Song[];
+  readonly optimistic: Song[];
 }
 
 const STATUS_LABELS: Record<SongStatus, string> = {
@@ -54,7 +70,8 @@ const SORT_LABELS: Record<SongSort, string> = {
   created_desc: "최근 생성순",
   created_asc: "오래된 생성순",
   title_asc: "제목순",
-  favorite_first: "즐겨찾기 우선"
+  favorite_first: "즐겨찾기 우선",
+  manual: "사용자 정렬"
 };
 const WORK_FILTER_LABELS: Record<SongWorkFilter, string> = {
   all: "전체 작업",
@@ -72,12 +89,17 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
   const [songs, setSongs] = useState<Song[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [orderVersion, setOrderVersion] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [retryKey, setRetryKey] = useState(0);
+  const [movingId, setMovingId] = useState<string | null>(null);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [retryMove, setRetryMove] = useState<PendingSongMove | null>(null);
   const requestSequence = useRef(0);
+  const moveInFlight = useRef(false);
   const loadButton = useRef<HTMLButtonElement>(null);
   const pageRef = useRef<HTMLElement>(null);
   const restoredScrollKey = useRef("");
@@ -113,6 +135,8 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
         setSongs(result.items);
         setTotalCount(result.totalCount);
         setNextCursor(result.nextCursor);
+        setOrderVersion(result.orderVersion);
+        setRetryMove(null);
       })
       .catch((caught: unknown) => {
         if (controller.signal.aborted || sequence !== requestSequence.current) return;
@@ -140,6 +164,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
       const result = await response.json() as SongListResponse;
       setSongs((current) => [...current, ...result.items]);
       setNextCursor(result.nextCursor);
+      setOrderVersion(result.orderVersion);
       loaded = true;
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "다음 곡을 불러오지 못했습니다.");
@@ -169,6 +194,75 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
       setSongs((current) => current.map((item) => item.id === song.id ? song : item));
       setNotice("변경을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
     }
+  }
+
+  async function submitMove(pending: PendingSongMove) {
+    if (moveInFlight.current) return;
+    moveInFlight.current = true;
+    setMovingId(pending.body.itemId);
+    setRetryMove(null);
+    setNotice("");
+    setSongs(pending.optimistic);
+    try {
+      const response = await fetch("/api/songs/order/moves", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pending.body)
+      });
+      if (response.status === 409) {
+        setSongs(pending.snapshot);
+        setSort("manual");
+        setRetryKey((value) => value + 1);
+        setNotice("다른 화면에서 곡 순서가 변경되어 최신 사용자 정렬을 불러왔습니다.");
+        return;
+      }
+      if (!response.ok) throw new Error("SAVE_FAILED");
+      const result = await response.json() as { orderVersion: number };
+      setOrderVersion(result.orderVersion);
+      setSort("manual");
+      setNotice(`${pending.title} 순서를 사용자 정렬로 저장했습니다.`);
+    } catch {
+      setSongs(pending.snapshot);
+      setRetryMove(pending);
+      setNotice("곡 순서를 저장하지 못했습니다. 원래 순서로 복원했습니다.");
+    } finally { moveInFlight.current = false; setMovingId(null); }
+  }
+
+  function moveSong(itemId: string, destinationIndex: number) {
+    if (moveInFlight.current) return;
+    const song = songs.find(({ id }) => id === itemId);
+    if (!song) return;
+    const group = songs.filter(({ isPinned }) => isPinned === song.isPinned);
+    const sourceIndex = group.findIndex(({ id }) => id === itemId);
+    if (sourceIndex < 0 || group.length < 2) return;
+    const without = group.filter(({ id }) => id !== itemId);
+    const boundedIndex = Math.max(0, Math.min(destinationIndex, without.length));
+    const nextGroup = [...without.slice(0, boundedIndex), song, ...without.slice(boundedIndex)];
+    if (nextGroup.every((item, index) => item.id === group[index]?.id)) return;
+    let groupIndex = 0;
+    const optimistic = songs.map((item) => item.isPinned === song.isPinned ? nextGroup[groupIndex++]! : item);
+    const newIndex = nextGroup.findIndex(({ id }) => id === itemId);
+    void submitMove({
+      title: song.title,
+      snapshot: songs,
+      optimistic,
+      body: {
+        requestId: crypto.randomUUID(),
+        itemId,
+        beforeId: nextGroup[newIndex + 1]?.id ?? null,
+        afterId: nextGroup[newIndex - 1]?.id ?? null,
+        expectedVersion: orderVersion
+      }
+    });
+  }
+
+  function moveToTarget(itemId: string, targetId: string, after: boolean) {
+    const song = songs.find(({ id }) => id === itemId);
+    const target = songs.find(({ id }) => id === targetId);
+    if (!song || !target || song.isPinned !== target.isPinned || itemId === targetId) return;
+    const without = songs.filter(({ isPinned, id }) => isPinned === song.isPinned && id !== itemId);
+    const targetIndex = without.findIndex(({ id }) => id === targetId);
+    if (targetIndex >= 0) moveSong(itemId, targetIndex + (after ? 1 : 0));
   }
 
   const filtered = Boolean(appliedSearch || status || work !== "all");
@@ -220,23 +314,52 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     <LibraryViewModeSelector label="곡 목록" state={libraryView} />
 
     <div className="list-summary" aria-live="polite"><strong>{loading ? "곡을 불러오는 중" : `총 ${totalCount}곡`}</strong>{filtered ? <span>현재 검색 조건</span> : <span>내 개인 작업 공간</span>}</div>
-    {notice ? <p className="sr-only" role="status">{notice}</p> : null}
+    {notice ? <div className="song-order-notice" role="status"><span>{notice}</span>{retryMove ? <button type="button" disabled={Boolean(movingId)} onClick={() => void submitMove(retryMove)}>같은 이동 다시 시도</button> : null}</div> : null}
     {error ? <div className="list-error" role="alert"><strong>{error}</strong><button type="button" onClick={() => setRetryKey((value) => value + 1)}>다시 시도</button></div> : null}
 
     {loading ? <div className={`song-grid library-grid library-view-${libraryView.viewMode}`} aria-label="곡 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="song-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
     {!loading && !error && songs.length === 0 ? <div className="empty-state song-empty"><span aria-hidden="true">{filtered ? "⌕" : "♪"}</span><h2>{filtered ? "조건에 맞는 곡이 없어요" : "아직 만든 곡이 없어요"}</h2><p>{filtered ? "검색어나 필터를 바꾸면 다른 곡을 찾을 수 있어요." : "떠오른 아이디어를 첫 곡으로 기록해보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={() => { setSearch(""); setStatus(""); setWork("all"); }}>검색 조건 지우기</button> : <a className="primary-link" href={newSongHref}>첫 곡 만들기</a>}</div> : null}
-    {!loading && songs.length > 0 ? <div className={`song-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{songs.map((song) => <SongCard song={song} returnTo={returnTo} key={song.id} onOpen={rememberScroll} onToggle={toggle} />)}</div> : null}
+    {!loading && songs.length > 0 ? <div className={`song-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{songs.map((song) => {
+      const group = songs.filter(({ isPinned }) => isPinned === song.isPinned);
+      const position = group.findIndex(({ id }) => id === song.id);
+      return <SongCard song={song} returnTo={returnTo} key={song.id} onOpen={rememberScroll} onToggle={toggle}
+        moving={movingId === song.id} dragActive={draggedId !== null} canMoveBefore={position > 0} canMoveAfter={position >= 0 && position < group.length - 1}
+        onMove={(destination) => moveSong(song.id, destination === "first" ? 0 : destination === "previous" ? position - 1 : destination === "next" ? position + 1 : group.length - 1)}
+        onDragStart={() => setDraggedId(song.id)} onDragEnd={() => setDraggedId(null)}
+        onDrop={(event) => { if (!draggedId) return; const box = event.currentTarget.getBoundingClientRect(); moveToTarget(draggedId, song.id, event.clientY >= box.top + box.height / 2); setDraggedId(null); }} />;
+    })}</div> : null}
     {!loading && songs.length > 0 ? <div className="load-more-wrap"><button ref={loadButton} className="secondary-button load-more" type="button" disabled={!nextCursor || loadingMore} onClick={() => void loadMore()}>{loadingMore ? "불러오는 중…" : nextCursor ? "더 불러오기" : "모든 곡을 불러왔습니다"}</button></div> : null}
   </section>;
 }
 
-function SongCard({ song, returnTo, onOpen, onToggle }: { song: Song; returnTo: string; onOpen: () => void; onToggle: (song: Song, field: "isFavorite" | "isPinned") => void }) {
+function SongCard({ song, returnTo, onOpen, onToggle, moving, dragActive, canMoveBefore, canMoveAfter, onMove, onDragStart, onDragEnd, onDrop }: {
+  song: Song; returnTo: string; onOpen: () => void; onToggle: (song: Song, field: "isFavorite" | "isPinned") => void;
+  moving: boolean; dragActive: boolean; canMoveBefore: boolean; canMoveAfter: boolean;
+  onMove: (destination: "first" | "previous" | "next" | "last") => void;
+  onDragStart: () => void; onDragEnd: () => void; onDrop: (event: DragEvent<HTMLElement>) => void;
+}) {
   const note = song.workNotes || song.description;
-  return <article className={`song-card${song.color ? ` color-${song.color}` : ""}`}>
+  function keyboardMove(event: KeyboardEvent<HTMLButtonElement>) {
+    const destination = event.key === "Home" ? "first" : event.key === "ArrowUp" || event.key === "ArrowLeft" ? "previous"
+      : event.key === "ArrowDown" || event.key === "ArrowRight" ? "next" : event.key === "End" ? "last" : null;
+    if (!destination) return;
+    event.preventDefault();
+    onMove(destination);
+  }
+  return <article className={`song-card${song.color ? ` color-${song.color}` : ""}${moving ? " is-moving" : ""}${dragActive ? " drag-active" : ""}`}
+    onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); onDrop(event); }}>
     <a className="song-card-hit" href={`/songs/${song.id}?returnTo=${encodeURIComponent(returnTo)}`} aria-label={`${song.title} 대시보드 열기`} onClick={onOpen}><span className="sr-only">{song.title}</span></a>
     <div className="song-card-top"><span className={`status-badge status-${song.status}`}>{STATUS_LABELS[song.status]}</span><span className="song-card-actions"><button type="button" className={song.isPinned ? "is-on" : ""} aria-label={`${song.title} ${song.isPinned ? "고정 해제" : "고정"}`} aria-pressed={song.isPinned} onClick={() => onToggle(song, "isPinned")}>⌁</button><button type="button" className={song.isFavorite ? "is-on" : ""} aria-label={`${song.title} ${song.isFavorite ? "즐겨찾기 해제" : "즐겨찾기"}`} aria-pressed={song.isFavorite} onClick={() => onToggle(song, "isFavorite")}>★</button></span></div>
     <h2>{song.title}</h2>
     <p className={note ? "song-note" : "song-note is-empty"}>{note || "아직 작업 메모가 없습니다."}</p>
+    <div className="song-order-controls" aria-label={`${song.title} 순서 이동`}>
+      <button type="button" className="song-drag-handle" draggable={!moving} disabled={moving} aria-label={`${song.title} 드래그 또는 방향키로 순서 이동`}
+        onDragStart={(event) => { event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", song.id); onDragStart(); }} onDragEnd={onDragEnd} onKeyDown={keyboardMove}>⠿</button>
+      <button type="button" disabled={moving || !canMoveBefore} aria-label={`${song.title} 맨 앞으로 이동`} title="맨 앞으로" onClick={() => onMove("first")}>⇤</button>
+      <button type="button" disabled={moving || !canMoveBefore} aria-label={`${song.title} 앞으로 이동`} onClick={() => onMove("previous")}>↑</button>
+      <button type="button" disabled={moving || !canMoveAfter} aria-label={`${song.title} 뒤로 이동`} onClick={() => onMove("next")}>↓</button>
+      <button type="button" disabled={moving || !canMoveAfter} aria-label={`${song.title} 맨 뒤로 이동`} title="맨 뒤로" onClick={() => onMove("last")}>⇥</button>
+    </div>
     <footer><span>가사 {song.lyricCount}개</span><time dateTime={song.updatedAt}>{relativeDate(song.updatedAt)}</time></footer>
   </article>;
 }

@@ -230,6 +230,16 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .song-card-actions button { position: relative; z-index: 3; width: 2.2rem; height: 2.2rem; border: 0; border-radius: .5rem; background: transparent; color: var(--subtle); cursor: pointer; }
 .song-card-actions button:hover { background: rgb(255 255 255 / 6%); color: var(--ink); }
 .song-card-actions button.is-on { color: var(--acid); }
+.song-order-notice { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin: .7rem 0; padding: .75rem .85rem; border: 1px solid rgb(200 255 61 / 28%); border-radius: .65rem; background: rgb(200 255 61 / 7%); color: var(--ink); font-size: .75rem; }
+.song-order-notice button { min-height: 2.25rem; flex: 0 0 auto; padding: .35rem .65rem; border: 1px solid var(--acid); border-radius: .5rem; background: transparent; color: var(--acid); font: inherit; font-weight: 750; cursor: pointer; }
+.song-order-controls { position: relative; z-index: 3; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; gap: .3rem; pointer-events: auto; }
+.song-order-controls button { min-width: 0; min-height: 2.25rem; padding: .35rem .45rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--surface-raised); color: var(--muted); font-size: .66rem; font-weight: 750; cursor: pointer; }
+.song-order-controls button:hover:not(:disabled), .song-order-controls button:focus-visible { border-color: var(--acid); color: var(--acid); }
+.song-order-controls button:disabled { opacity: .4; cursor: default; }
+.song-order-controls .song-drag-handle { color: var(--acid); font-size: 1rem; cursor: grab; touch-action: none; }
+.song-order-controls .song-drag-handle:active { cursor: grabbing; }
+.song-card.is-moving { opacity: .68; border-color: var(--acid); }
+.song-card.drag-active { transition: border-color 100ms ease, transform 100ms ease; }
 .song-card h2 { margin: 0; overflow-wrap: anywhere; font-size: clamp(1.2rem, 2vw, 1.55rem); letter-spacing: -.035em; }
 .song-note { display: -webkit-box; margin: 0; overflow: hidden; color: var(--muted); font-size: .8rem; line-height: 1.65; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 .song-note.is-empty { color: var(--subtle); font-style: italic; }
