@@ -4,12 +4,13 @@ import {
   createBrowserRhymeSync, createCodeMirrorTextEditor, SerializedSaveController,
   type BrowserRhymeSync, type CodeMirrorTextEditor, type LocalSyncState, type SaveState
 } from "@lyricscloud/editor";
-import { RESOURCE_COLORS, RHYME_LIMITS, type ResourceColor, type RhymeNoteRecord, type RhymeTagRecord } from "@lyricscloud/domain";
+import { RESOURCE_COLORS, RHYME_LIMITS, type ResourceColor, type RhymeNoteRecord, type RhymeTagRecord, type WritingDisplaySettings } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
 import { DialogFocusBoundary, trapDialogTab } from "../lib/dialog-focus.js";
 import { createRhymeMetadataSaver } from "../lib/rhyme-metadata.js";
+import { writingDisplayVariables } from "../lib/font-assets.js";
 import { RhymeHistory } from "./rhyme-history.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 
@@ -24,7 +25,7 @@ interface SongCandidate { readonly id: string; readonly title: string; readonly 
 
 const colorLabels: Record<ResourceColor, string> = { red: "빨강", yellow: "노랑", green: "초록", blue: "파랑", gray: "회색" };
 
-export function RhymeEditor({ ownerId, initialRhyme, returnTo = "/rhymes" }: { ownerId: string; initialRhyme: RhymeNoteRecord; returnTo?: string }) {
+export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo = "/rhymes" }: { ownerId: string; initialRhyme: RhymeNoteRecord; displaySettings: WritingDisplaySettings; returnTo?: string }) {
   const mountRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<CodeMirrorTextEditor | null>(null);
   const syncRef = useRef<BrowserRhymeSync | null>(null);
@@ -266,7 +267,7 @@ export function RhymeEditor({ ownerId, initialRhyme, returnTo = "/rhymes" }: { o
   const titleLength = [...title.trim()].length;
   const titleError = !title.trim() ? "제목을 입력해야 저장할 수 있습니다." : titleLength > RHYME_LIMITS.title ? `제목은 ${RHYME_LIMITS.title}자 이하로 입력해 주세요.` : "";
 
-  return <section className="rhyme-editor-page" aria-labelledby="rhyme-editor-heading">
+  return <section className="rhyme-editor-page" aria-labelledby="rhyme-editor-heading" style={writingDisplayVariables(displaySettings)}>
     <h1 className="sr-only" id="rhyme-editor-heading">라임 노트 편집: {title || "제목 없음"}</h1>
     <header className="rhyme-editor-header">
       <div><button type="button" className="back-button" onClick={() => void goBack()}>← 라임 노트</button><p className="eyebrow">Rhyme editor</p></div>

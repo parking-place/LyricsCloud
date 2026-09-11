@@ -3,7 +3,7 @@ import type { ValidationIssue } from "./result.js";
 export const THEME_PREFERENCES = ["system", "light", "dark"] as const;
 export type ThemePreference = (typeof THEME_PREFERENCES)[number];
 
-export const WRITING_FONTS = ["sans", "serif", "mono"] as const;
+export const WRITING_FONTS = ["sans", "serif", "mono", "noto_sans_kr"] as const;
 export type WritingFont = (typeof WRITING_FONTS)[number];
 
 export const DISPLAY_SETTING_LIMITS = {

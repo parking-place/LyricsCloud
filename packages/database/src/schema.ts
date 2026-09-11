@@ -221,7 +221,7 @@ export const templateRequests = pgTable("template_requests", {
 export const userSettings = pgTable("user_settings", {
   ownerId: uuid("owner_id").primaryKey(),
   theme: text("theme").$type<"system" | "light" | "dark">().notNull().default("system"),
-  writingFont: text("writing_font").$type<"sans" | "serif" | "mono">().notNull().default("sans"),
+  writingFont: text("writing_font").$type<"sans" | "serif" | "mono" | "noto_sans_kr">().notNull().default("sans"),
   fontSize: integer("font_size").notNull().default(18),
   lineHeight: doublePrecision("line_height").notNull().default(1.8),
   letterSpacing: doublePrecision("letter_spacing").notNull().default(0),
@@ -302,7 +302,7 @@ export const lyricDisplaySettings = pgTable("lyric_display_settings", {
   lyricId: uuid("lyric_id").primaryKey(),
   ownerId: uuid("owner_id").notNull(),
   resourceType: text("resource_type").$type<"lyrics">().notNull(),
-  writingFont: text("writing_font").$type<"sans" | "serif" | "mono">().notNull(),
+  writingFont: text("writing_font").$type<"sans" | "serif" | "mono" | "noto_sans_kr">().notNull(),
   fontSize: integer("font_size").notNull(),
   lineHeight: doublePrecision("line_height").notNull(),
   letterSpacing: doublePrecision("letter_spacing").notNull(),

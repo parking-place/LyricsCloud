@@ -4,14 +4,15 @@ import {
   clearPromptCreationDraft, openPromptCreationDraft, writePromptCreationDraft,
   type CreationDraftLease, type CreationSubmission, type PromptCreationDraft
 } from "@lyricscloud/editor";
-import { findPromptDuplicates, normalizePromptToken, PROMPT_LIMITS, type PromptMode, type PromptRecord, type TemplateRecord } from "@lyricscloud/domain";
+import { findPromptDuplicates, normalizePromptToken, PROMPT_LIMITS, type PromptMode, type PromptRecord, type TemplateRecord, type WritingDisplaySettings } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
 import { DialogFocusBoundary } from "../lib/dialog-focus.js";
+import { writingDisplayVariables } from "../lib/font-assets.js";
 import { PromptTokenBuilder, type PromptBuilderItem } from "./prompt-token-builder.js";
 
-export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; templateId?: string }) {
+export function PromptNewScreen({ ownerId, templateId, displaySettings }: { ownerId: string; templateId?: string; displaySettings: WritingDisplaySettings }) {
   const [title, setTitle] = useState("");
   const [items, setItems] = useState<readonly PromptBuilderItem[]>([]);
   const [promptMode, setPromptMode] = useState<PromptMode>("tags");
@@ -188,7 +189,7 @@ export function PromptNewScreen({ ownerId, templateId }: { ownerId: string; temp
     : "이 기기에 임시 저장됨 · 유효한 제목을 입력하면 자동 저장됩니다";
 
   const sentenceLength = [...sentenceText].length;
-  return <section className="prompt-editor-page" aria-labelledby="new-prompt-title" data-pending-input={Boolean(title || items.length || sentenceText)}
+  return <section className="prompt-editor-page" aria-labelledby="new-prompt-title" data-pending-input={Boolean(title || items.length || sentenceText)} style={writingDisplayVariables(displaySettings)}
     onCompositionStart={() => { composingRef.current = true; setComposing(true); }} onCompositionEnd={() => { composingRef.current = false; setComposing(false); }}>
     <header className="prompt-editor-header"><div><button type="button" className="back-button" onClick={cancel}>← 프롬프트</button><p className="eyebrow">{templateId ? "New prompt · Template copy" : "New prompt"}</p></div>
       <button type="button" className="secondary-button" onClick={cancel}>취소</button>

@@ -4,6 +4,7 @@ import { DEFAULT_USER_SETTINGS, type ThemePreference, type UserSettingsRecord, t
 import { useEffect, useRef, useState } from "react";
 import { clearAccountPrivateData, downloadRecoveryDrafts } from "../lib/account-cache.js";
 import { trapDialogTab } from "../lib/dialog-focus.js";
+import { WRITING_FONT_OPTIONS, writingDisplayStyle } from "../lib/font-assets.js";
 import { ShortcutGuide } from "./shortcut-help.js";
 
 type ThemeWindow = Window & { __lcApplyTheme?: (theme: ThemePreference) => void };
@@ -181,7 +182,7 @@ export function SettingsScreen({ initialSettings, ownerId }: { initialSettings: 
 function DisplayControls({ groupName, settings, onChange }: { groupName: string; settings: UserSettingsRecord; onChange: <K extends keyof UserSettingsRecord>(key: K, value: UserSettingsRecord[K]) => void }) {
   return <div className="display-controls">
     <fieldset><legend>테마</legend><div className="segmented-control">{(["system", "light", "dark"] as const).map((theme) => <label key={theme}><input type="radio" name={groupName} value={theme} checked={settings.theme === theme} onChange={() => onChange("theme", theme)} /><span>{theme === "system" ? "시스템" : theme === "light" ? "라이트" : "다크"}</span></label>)}</div></fieldset>
-    <label>작성 폰트<select value={settings.font} onChange={(event) => onChange("font", event.target.value as WritingFont)}><option value="sans">산세리프</option><option value="serif">세리프</option><option value="mono">고정폭</option></select></label>
+    <label>작성 폰트<select value={settings.font} onChange={(event) => onChange("font", event.target.value as WritingFont)}>{WRITING_FONT_OPTIONS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}</select></label>
     <label>글자 크기 <output>{settings.fontSize}px</output><input type="range" min="14" max="28" step="1" value={settings.fontSize} onChange={(event) => onChange("fontSize", Number(event.target.value))} /></label>
     <label>줄 간격 <output>{settings.lineHeight.toFixed(1)}</output><input type="range" min="1.2" max="2.4" step="0.1" value={settings.lineHeight} onChange={(event) => onChange("lineHeight", Number(event.target.value))} /></label>
     <label>자간 <output>{settings.letterSpacing.toFixed(2)}em</output><input type="range" min="-0.05" max="0.2" step="0.01" value={settings.letterSpacing} onChange={(event) => onChange("letterSpacing", Number(event.target.value))} /></label>
@@ -190,13 +191,7 @@ function DisplayControls({ groupName, settings, onChange }: { groupName: string;
 }
 
 function WritingPreview({ settings }: { settings: Pick<UserSettingsRecord, "font" | "fontSize" | "lineHeight" | "letterSpacing"> }) {
-  return <div className="writing-preview"><span>미리보기</span><p style={{ fontFamily: fontFamily(settings.font), fontSize: `${settings.fontSize}px`, lineHeight: settings.lineHeight, letterSpacing: `${settings.letterSpacing}em` }}>새벽의 공기 위로<br />우리의 멜로디가 번져 간다</p></div>;
-}
-
-function fontFamily(font: WritingFont): string {
-  if (font === "serif") return 'Georgia, "Noto Serif KR", serif';
-  if (font === "mono") return 'ui-monospace, "SFMono-Regular", Consolas, monospace';
-  return 'Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif';
+  return <div className="writing-preview"><span>미리보기</span><p style={writingDisplayStyle(settings)}>한글 가사 · bright rhyme · 光 ひかり · ♫<br />새벽의 공기 위로 우리의 멜로디가 번져 간다</p></div>;
 }
 
 function applyTheme(theme: ThemePreference) { (window as ThemeWindow).__lcApplyTheme?.(theme); }

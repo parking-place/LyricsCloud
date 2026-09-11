@@ -15,7 +15,7 @@ import { createDatabasePool } from "./pool.js";
 
 interface UserSettingsRow extends QueryResultRow {
   theme: "system" | "light" | "dark";
-  writing_font: "sans" | "serif" | "mono";
+  writing_font: "sans" | "serif" | "mono" | "noto_sans_kr";
   font_size: number;
   line_height: number;
   letter_spacing: number;
@@ -25,7 +25,7 @@ interface UserSettingsRow extends QueryResultRow {
 }
 
 interface LyricDisplayRow extends QueryResultRow {
-  writing_font: "sans" | "serif" | "mono";
+  writing_font: "sans" | "serif" | "mono" | "noto_sans_kr";
   font_size: number;
   line_height: number;
   letter_spacing: number;

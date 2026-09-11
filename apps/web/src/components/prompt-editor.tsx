@@ -3,10 +3,11 @@
 import {
   createBrowserPromptSync, type BrowserPromptSync, type LocalSyncState, type PromptEditorSnapshot
 } from "@lyricscloud/editor";
-import { parsePromptText, PROMPT_LIMITS, splitPromptSentenceDisplay, type PromptMode, type PromptRecord, type TemplateRecord } from "@lyricscloud/domain";
+import { parsePromptText, PROMPT_LIMITS, splitPromptSentenceDisplay, type PromptMode, type PromptRecord, type TemplateRecord, type WritingDisplaySettings } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { registerLogoutSave } from "../lib/account-cache.js";
+import { writingDisplayVariables } from "../lib/font-assets.js";
 import { DialogFocusBoundary, trapDialogTab } from "../lib/dialog-focus.js";
 import { promptCopyView } from "../lib/prompt-copy.js";
 import { PromptHistory } from "./prompt-history.js";
@@ -17,7 +18,7 @@ interface SongCandidate { readonly id: string; readonly title: string; readonly 
 interface PromptConversion { readonly target: PromptMode; readonly sourceMode: PromptMode; readonly sourceText: string; readonly preview: string; readonly tokens: readonly string[] }
 interface PromptUndo { readonly mode: PromptMode; readonly tokens: readonly string[]; readonly sentenceText: string }
 
-export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: { ownerId: string; initialPrompt: PromptRecord; returnTo?: string }) {
+export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo = "/prompts" }: { ownerId: string; initialPrompt: PromptRecord; displaySettings: WritingDisplaySettings; returnTo?: string }) {
   const [snapshot, setSnapshot] = useState<PromptEditorSnapshot>({
     title: initialPrompt.title,
     items: initialPrompt.tokens.map((token, index) => ({ occurrenceId: `initial-${index}`, displayValue: token.displayValue })),
@@ -358,7 +359,7 @@ export function PromptEditor({ ownerId, initialPrompt, returnTo = "/prompts" }: 
   const sentenceSpans = useMemo(() => splitPromptSentenceDisplay(snapshot.sentenceText), [snapshot.sentenceText]);
   const titleError = !snapshot.title.trim() ? "제목을 입력해야 검색용 읽기 모델에 반영됩니다."
     : titleLength > PROMPT_LIMITS.title ? `제목은 ${PROMPT_LIMITS.title}자 이하로 입력해 주세요.` : "";
-  return <section className="prompt-editor-page" aria-labelledby="prompt-editor-heading">
+  return <section className="prompt-editor-page" aria-labelledby="prompt-editor-heading" style={writingDisplayVariables(displaySettings)}>
     <h1 className="sr-only" id="prompt-editor-heading">프롬프트 편집: {snapshot.title || "제목 없음"}</h1>
     <header className="prompt-editor-header"><div><button type="button" className="back-button" onClick={() => void back()}>← 프롬프트</button><p className="eyebrow">Prompt editor</p></div>
       <div className="prompt-editor-actions"><button type="button" aria-pressed={isFavorite} disabled={!editable || metadataBusy !== null} onClick={() => void toggleMetadata("favorite")}>★ {isFavorite ? "즐겨찾기됨" : "즐겨찾기"}</button>

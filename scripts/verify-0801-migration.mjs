@@ -10,6 +10,7 @@ const databaseName = `lyricscloud_0801_${randomUUID().replaceAll("-", "")}`;
 const url = new URL(source); url.pathname = `/${databaseName}`;
 const admin = new Pool({ connectionString: source.href, max: 1 });
 const rollback = await readFile("packages/database/rollback/0801_display_settings.sql", "utf8");
+const fontRollback = await readFile("packages/database/rollback/1004_web_font_selection.sql", "utf8");
 
 try {
   await admin.query(`create database "${databaseName}"`);
@@ -30,6 +31,7 @@ try {
     await asUser(target, alice, (client) => client.query("insert into lyric_display_settings(lyric_id,owner_id,writing_font,font_size,line_height,letter_spacing) values($1,$2,'mono',16,2,-0.01)", [lyric, alice]));
     assert.equal((await asUser(target, bob, (client) => client.query("select * from lyric_display_settings where lyric_id=$1", [lyric]))).rowCount, 0);
     await assert.rejects(asUser(target, alice, (client) => client.query("update user_settings set font_size=99 where owner_id=$1", [alice])), /check constraint/);
+    await target.query(fontRollback);
     await target.query(rollback);
     assert.equal((await target.query("select to_regclass('public.user_settings')::text value")).rows[0].value, null);
     migrate(); migrate();

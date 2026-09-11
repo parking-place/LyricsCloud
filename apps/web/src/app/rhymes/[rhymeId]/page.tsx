@@ -13,8 +13,11 @@ export default async function RhymeEditorPage({ params, searchParams }: { params
   if (!user) redirect("/auth");
   const { rhymeId } = await params;
   const query = await searchParams;
-  const rhyme = await getAuthContext().rhymes.getRhymeNote(user.userId, rhymeId).catch(() => null);
+  const [rhyme, displaySettings] = await Promise.all([
+    getAuthContext().rhymes.getRhymeNote(user.userId, rhymeId).catch(() => null),
+    getAuthContext().displaySettings.getUserSettings(user.userId)
+  ]);
   if (!rhyme) notFound();
   await getAuthContext().recentWork.recordOpen(user.userId, rhyme.id).catch(() => false);
-  return <WorkspaceShell profile={user} active="rhymes"><RhymeEditor key={rhyme.id} ownerId={user.userId} initialRhyme={rhyme} returnTo={safeWorkspaceReturnTo(query.returnTo, "/rhymes")} /></WorkspaceShell>;
+  return <WorkspaceShell profile={user} active="rhymes"><RhymeEditor key={rhyme.id} ownerId={user.userId} initialRhyme={rhyme} displaySettings={displaySettings} returnTo={safeWorkspaceReturnTo(query.returnTo, "/rhymes")} /></WorkspaceShell>;
 }

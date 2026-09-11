@@ -37,6 +37,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createLyricMetadataSaver } from "../lib/lyric-metadata.js";
 import { registerLogoutSave } from "../lib/account-cache.js";
+import { writingFontFamily } from "../lib/font-assets.js";
 import { promptCopyView } from "../lib/prompt-copy.js";
 import { lyricCopyView } from "../lib/lyric-copy.js";
 import { DialogFocusBoundary, trapDialogTab } from "../lib/dialog-focus.js";
@@ -780,7 +781,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   });
 
   const writingVariables = {
-    "--lyric-font-family": displayFontFamily(displaySettings.effective.font),
+    "--lyric-font-family": writingFontFamily(displaySettings.effective.font),
     "--lyric-font-size": `${displaySettings.effective.fontSize}px`,
     "--lyric-line-height": String(displaySettings.effective.lineHeight),
     "--lyric-letter-spacing": `${displaySettings.effective.letterSpacing}em`
@@ -931,12 +932,6 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     </section></div> : null}
     {deleteOpen ? <div className="dialog-backdrop" role="presentation"><section className="delete-dialog lyric-editor-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="editor-delete-title" aria-describedby="editor-delete-description"><DialogFocusBoundary selector=".lyric-editor-delete-dialog" onClose={() => setDeleteOpen(false)} blocked={commandBusy} /><p className="eyebrow">Soft delete</p><h2 id="editor-delete-title">‘{title}’ 가사를 삭제할까요?</h2><p id="editor-delete-description">현재 가사를 숨긴 뒤 최근 다른 가사 또는 곡 대시보드로 이동합니다.</p><div><button className="secondary-button" type="button" disabled={commandBusy} onClick={() => setDeleteOpen(false)}>취소</button><button className="danger-button" type="button" disabled={commandBusy} onClick={deleteCurrent}>{commandBusy ? "삭제 중…" : "가사 삭제 확인"}</button></div></section></div> : null}
   </section>;
-}
-
-function displayFontFamily(font: LyricDisplaySettingsRecord["effective"]["font"]): string {
-  if (font === "serif") return 'Georgia, "Noto Serif KR", serif';
-  if (font === "mono") return 'ui-monospace, "SFMono-Regular", Consolas, monospace';
-  return 'Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif';
 }
 
 function LyricMetadataControls({ memo, status, isFavorite, isPinned, onMemo, onStatus, onFavorite, onPinned, onMemoCompositionStart, onMemoCompositionEnd }: {

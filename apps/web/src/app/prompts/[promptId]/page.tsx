@@ -13,8 +13,11 @@ export default async function PromptEditorPage({ params, searchParams }: { param
   if (!user) redirect("/auth");
   const { promptId } = await params;
   const query = await searchParams;
-  const prompt = await getAuthContext().prompts.getPrompt(user.userId, promptId).catch(() => null);
+  const [prompt, displaySettings] = await Promise.all([
+    getAuthContext().prompts.getPrompt(user.userId, promptId).catch(() => null),
+    getAuthContext().displaySettings.getUserSettings(user.userId)
+  ]);
   if (!prompt) notFound();
   await getAuthContext().recentWork.recordOpen(user.userId, prompt.id).catch(() => false);
-  return <WorkspaceShell profile={user} active="prompts"><PromptEditor key={prompt.id} ownerId={user.userId} initialPrompt={prompt} returnTo={safeWorkspaceReturnTo(query.returnTo, "/prompts")} /></WorkspaceShell>;
+  return <WorkspaceShell profile={user} active="prompts"><PromptEditor key={prompt.id} ownerId={user.userId} initialPrompt={prompt} displaySettings={displaySettings} returnTo={safeWorkspaceReturnTo(query.returnTo, "/prompts")} /></WorkspaceShell>;
 }
