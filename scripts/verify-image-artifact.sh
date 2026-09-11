@@ -16,7 +16,9 @@ issuer=https://token.actions.githubusercontent.com
 cosign sign --yes "$artifact"
 
 signature_verified=false
-for attempt in {1..10}; do
+signature_attempts=30
+signature_delay_seconds=5
+for ((attempt = 1; attempt <= signature_attempts; attempt += 1)); do
   if cosign verify --experimental-oci11 \
     --certificate-identity "$identity" \
     --certificate-oidc-issuer "$issuer" \
@@ -25,14 +27,14 @@ for attempt in {1..10}; do
     break
   fi
 
-  if (( attempt < 10 )); then
-    printf 'Signature discovery pending for %s (attempt %d/10); retrying.\n' "$artifact" "$attempt" >&2
-    sleep 3
+  if (( attempt < signature_attempts )); then
+    printf 'Signature discovery pending for %s (attempt %d/%d); retrying.\n' "$artifact" "$attempt" "$signature_attempts" >&2
+    sleep "$signature_delay_seconds"
   fi
 done
 
 if [[ "$signature_verified" != true ]]; then
-  printf 'Signature verification failed for %s after 10 attempts.\n' "$artifact" >&2
+  printf 'Signature verification failed for %s after %d attempts.\n' "$artifact" "$signature_attempts" >&2
   exit 1
 fi
 
