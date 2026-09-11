@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { once } from "node:events";
 import { createRequire } from "node:module";
+import { createServer } from "node:net";
 import { pathToFileURL } from "node:url";
 import { parseCreateLyricInput, parseCreateSongInput } from "@lyricscloud/domain";
 import { PostgresLyricStore, PostgresSongStore } from "@lyricscloud/database";
@@ -19,7 +20,7 @@ describe.runIf(process.env.AUTH_DATABASE_INTEGRATION === "true")("collaboration 
     const lyrics = new PostgresLyricStore(databaseUrl, 1);
     const userId = randomUUID();
     const token = `crash-fixture-${randomUUID()}`;
-    const port = 31_000 + Math.floor(Math.random() * 10_000);
+    const port = await availablePort();
     const origin = "http://localhost:8080";
     let child: ChildProcessWithoutNullStreams | undefined;
     let startupFailure = "";
@@ -104,6 +105,17 @@ describe.runIf(process.env.AUTH_DATABASE_INTEGRATION === "true")("collaboration 
     }
   }, 15_000);
 });
+
+async function availablePort(): Promise<number> {
+  const reservation = createServer();
+  reservation.unref();
+  reservation.listen(0, "127.0.0.1");
+  await once(reservation, "listening");
+  const address = reservation.address();
+  if (!address || typeof address === "string") throw new Error("failed to reserve a test port");
+  await new Promise<void>((resolve, reject) => reservation.close((error) => error ? reject(error) : resolve()));
+  return address.port;
+}
 
 function next(client: WebSocket, type: string): Promise<Record<string, any>> {
   return new Promise((resolve, reject) => {
