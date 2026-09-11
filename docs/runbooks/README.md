@@ -116,6 +116,8 @@
 - [`1.0.13 최종 no-go 인수`](./1.0.13-final-no-go.md)
 - [`1.0.14 Phase 1 웹폰트 계약`](./1.0.14-phase1-font-contract.md)
 - [`1.0.14 Phase 2 폰트 자산·로딩 후보`](./1.0.14-phase2-font-assets.md)
+- [`1.0.14 Phase 3 폰트 선택·편집 적용`](./1.0.14-phase3-font-selection.md)
+- [`1.0.14 Phase 4 입력·성능 통합 후보`](./1.0.14-phase4-font-integration.md)
 - [`0.7.0 Phase 3 최근 작업·위치 복원 검증`](./0.7.0-phase3-validation.md)
 
 ## 개발 서버 운영

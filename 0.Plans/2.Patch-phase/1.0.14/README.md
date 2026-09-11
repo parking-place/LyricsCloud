@@ -1,6 +1,6 @@
 # 1.0.14 — 무료 웹폰트·다국어 글리프와 개인 흐름 인수
 
-상태: **P1~P3 완료 / P4 착수**. Noto Sans KR 2.004 Regular 자산·캐시와 계정/가사별 선택 영속, 가사·라임·프롬프트 편집 적용을 인수했다. 요구 `NF-REQ-044`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
+상태: **P1~P4 완료 / P5 착수**. Noto Sans KR 2.004 Regular 자산·캐시, 선택 영속·세 편집기 적용과 slow/blocked/offline·장문 입력·성능 회귀를 인수했다. 실제 Windows/Android/iOS의 1.0.14 폰트 전환은 미실행 위험으로 유지한다. 요구 `NF-REQ-044`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
 
 선행: [1.0.13](../1.0.13/README.md)의 인수와 해당 결정 gate. 코드 변경 없는 개발안/외부 gate 보류는 제품 출시로 세지 않는다.
 
