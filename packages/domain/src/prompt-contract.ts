@@ -30,7 +30,7 @@ export interface PromptCopyPayload {
 export const PROMPT_MODES = ["tags", "sentence"] as const;
 export type PromptMode = (typeof PROMPT_MODES)[number];
 
-export const PROMPT_SORTS = ["favorite_first", "recent_used", "updated_desc", "created_desc", "created_asc", "title_asc"] as const;
+export const PROMPT_SORTS = ["manual", "favorite_first", "recent_used", "updated_desc", "created_desc", "created_asc", "title_asc"] as const;
 export type PromptSort = (typeof PROMPT_SORTS)[number];
 export const PROMPT_LIST_LIMITS = { default: 20, maximum: 50 } as const;
 

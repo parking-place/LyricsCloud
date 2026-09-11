@@ -3,10 +3,14 @@ import {
   isResourceId, normalizeRhymeTag, parseCreateRhymeNoteInput, parseRhymeRequestId,
   parseUpdateRhymeNoteInput, RHYME_LIMITS, RhymeConflictError,
   type CreateRhymeNoteInput, type RhymeNoteRecord, type RhymeTagRecord,
-  type RhymeListInput, type RhymeSongSearchInput, type RhymeSort, type UpdateRhymeNoteInput, type ResourceColor
+  type LibraryMoveInput, type RhymeListInput, type RhymeSongSearchInput, type RhymeSort, type UpdateRhymeNoteInput, type ResourceColor
 } from "@lyricscloud/domain";
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { createDatabasePool } from "./pool.js";
+import {
+  appendLibraryOrderItem, ensureLibraryOrder, lockLibraryOrder, moveLibraryOrderItem,
+  moveLibraryOrderPinGroup, LibraryOrderConflictError, type LibraryMoveResult
+} from "./library-order.js";
 
 interface RhymeRow extends QueryResultRow {
   id: string; title: string; body: string; is_favorite: boolean; is_pinned: boolean;
@@ -19,8 +23,14 @@ interface TagRow extends QueryResultRow {
 interface RhymeListRow extends RhymeRow {
   tags: unknown;
   linked_songs: unknown;
+  manual_rank: string;
 }
-interface RhymeCursor { readonly version: 1; readonly offset: number; readonly signature: string }
+interface RhymeCursor {
+  readonly version: 1 | 2;
+  readonly offset: number;
+  readonly signature: string;
+  readonly orderVersion?: number;
+}
 
 export interface RhymeListItem extends RhymeNoteRecord {
   readonly linkedSongs: readonly { readonly id: string; readonly title: string }[];
@@ -29,6 +39,8 @@ export interface RhymeListResult {
   readonly items: readonly RhymeListItem[];
   readonly totalCount: number;
   readonly nextCursor: string | null;
+  readonly orderVersion: number;
+  readonly capabilities: { readonly manualOrder: true };
   readonly filters: {
     readonly tags: readonly { readonly id: string; readonly label: string }[];
     readonly songs: readonly { readonly id: string; readonly title: string }[];
@@ -62,6 +74,8 @@ export class PostgresRhymeStore {
       const requestHash = hashRequest("create", input);
       const replay = await replayRequest(client, ownerId, input.requestId, requestHash);
       if (replay) return replay;
+      await lockLibraryOrder(client, ownerId, "rhyme_note");
+      await ensureLibraryOrder(client, ownerId, "rhyme_note");
       return insertRhyme(client, ownerId, input, "create", requestHash);
     });
   }
@@ -73,6 +87,8 @@ export class PostgresRhymeStore {
 
   listRhymeNotes(ownerId: string, input: RhymeListInput): Promise<RhymeListResult> {
     return this.#withUser(ownerId, async (client) => {
+      await lockLibraryOrder(client, ownerId, "rhyme_note");
+      const orderVersion = await ensureLibraryOrder(client, ownerId, "rhyme_note");
       const values: unknown[] = [ownerId];
       const conditions = ["r.owner_id=$1", "r.type='rhyme_note'", "r.deleted_at is null"];
       if (input.search) {
@@ -93,10 +109,10 @@ export class PostgresRhymeStore {
       const where = conditions.join(" and ");
       const count = Number((await client.query<{ count: string }>(`select count(*)::text count from resources r
         join rhyme_notes n on n.resource_id=r.id and n.owner_id=r.owner_id where ${where}`, values)).rows[0]?.count ?? 0);
-      const offset = input.cursor ? decodeRhymeCursor(input.cursor, input).offset : 0;
+      const offset = input.cursor ? decodeRhymeCursor(input.cursor, input, orderVersion).offset : 0;
       values.push(input.limit + 1, offset);
       const rows = await client.query<RhymeListRow>(`select r.id,r.title,n.body,r.is_favorite,r.is_pinned,r.pin_order,r.color,
-        r.row_version::text,r.created_at,r.updated_at,
+        r.row_version::text,r.created_at,r.updated_at,manual_order.sort_rank::text manual_rank,
         coalesce((select jsonb_agg(jsonb_build_object('id',t.id,'displayValue',t.display_value,'normalizedValue',t.normalized_value,
           'createdAt',to_char(t.created_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
           'updatedAt',to_char(t.updated_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"')) order by t.normalized_value,t.id)
@@ -107,6 +123,8 @@ export class PostgresRhymeStore {
           where sl.owner_id=r.owner_id and sl.linked_resource_id=r.id and sl.linked_resource_type='rhyme_note'
             and song.type='song' and song.deleted_at is null),'[]'::jsonb) linked_songs
         from resources r join rhyme_notes n on n.resource_id=r.id and n.owner_id=r.owner_id
+        join library_order_items manual_order on manual_order.owner_id=r.owner_id
+          and manual_order.resource_type='rhyme_note' and manual_order.resource_id=r.id
         where ${where} order by ${rhymeSortOrder(input.sort)} limit $${values.length - 1} offset $${values.length}`, values);
       const hasMore = rows.rows.length > input.limit;
       const page = hasMore ? rows.rows.slice(0, input.limit) : rows.rows;
@@ -122,7 +140,11 @@ export class PostgresRhymeStore {
       ]);
       return {
         items: page.map(mapRhymeListItem), totalCount: count,
-        nextCursor: hasMore ? encodeRhymeCursor({ version: 1, offset: offset + input.limit, signature: rhymeQuerySignature(input) }) : null,
+        nextCursor: hasMore ? encodeRhymeCursor({ version: input.sort === "manual" ? 2 : 1,
+          offset: offset + input.limit, signature: rhymeQuerySignature(input),
+          ...(input.sort === "manual" ? { orderVersion } : {}) }) : null,
+        orderVersion,
+        capabilities: { manualOrder: true },
         filters: { tags: tags.rows.map((tag) => ({ id: tag.id, label: tag.display_value })), songs: songs.rows }
       };
     });
@@ -156,10 +178,22 @@ export class PostgresRhymeStore {
 
   setPin(ownerId: string, resourceId: string, value: boolean, pinOrder: number | null): Promise<RhymeNoteRecord | null> {
     return this.#withUser(ownerId, async (client) => {
+      await lockLibraryOrder(client, ownerId, "rhyme_note");
+      await ensureLibraryOrder(client, ownerId, "rhyme_note");
+      const current = await client.query<{ is_pinned: boolean }>(`select is_pinned from resources
+        where id=$1 and owner_id=$2 and type='rhyme_note' and deleted_at is null for update`, [resourceId, ownerId]);
+      if (!current.rows[0]) return null;
       const result = await client.query(`update resources set is_pinned=$3,pin_order=$4
         where id=$1 and owner_id=$2 and type='rhyme_note' and deleted_at is null returning id`, [resourceId, ownerId, value, pinOrder]);
+      if (current.rows[0].is_pinned !== value) {
+        await moveLibraryOrderPinGroup(client, ownerId, "rhyme_note", resourceId, value);
+      }
       return result.rowCount ? selectRhyme(client, ownerId, resourceId) : null;
     });
+  }
+
+  moveRhymeNote(ownerId: string, input: LibraryMoveInput): Promise<LibraryMoveResult> {
+    return this.#withUser(ownerId, (client) => moveLibraryOrderItem(client, ownerId, "rhyme_note", input));
   }
 
   setColor(ownerId: string, resourceId: string, value: ResourceColor | null): Promise<RhymeNoteRecord | null> {
@@ -176,6 +210,8 @@ export class PostgresRhymeStore {
       if (replay) return replay;
       const source = await lockRhyme(client, ownerId, resourceId);
       if (!source) return null;
+      await lockLibraryOrder(client, ownerId, "rhyme_note");
+      await ensureLibraryOrder(client, ownerId, "rhyme_note");
       const suffix = " (복사본)";
       const created = await insertRhyme(client, ownerId, {
         requestId,
@@ -364,6 +400,7 @@ async function insertRhyme(client: PoolClient, ownerId: string, input: CreateRhy
   await client.query("insert into rhyme_notes(resource_id,owner_id,body) values($1,$2,$3)", [id, ownerId, input.body]);
   await client.query(`insert into rhyme_note_create_requests(owner_id,request_id,resource_id,operation,request_sha256)
     values($1,$2,$3,$4,$5)`, [ownerId, input.requestId, id, operation, requestHash]);
+  await appendLibraryOrderItem(client, ownerId, "rhyme_note", id, input.isPinned);
   const rhyme = await selectRhyme(client, ownerId, id);
   if (!rhyme) throw new Error("RHYME_CREATE_READBACK_FAILED");
   return { rhyme, replayed: false };
@@ -390,6 +427,7 @@ function mapRhymeListItem(row: RhymeListRow): RhymeListItem {
 }
 
 function rhymeSortOrder(sort: RhymeSort): string {
+  if (sort === "manual") return "case when r.is_pinned then 0 else 1 end,manual_order.sort_rank,r.id";
   const prefix = "case when r.is_pinned then 0 else 1 end,coalesce(r.pin_order,2147483647)";
   if (sort === "created_desc") return `${prefix},r.created_at desc,r.id desc`;
   if (sort === "created_asc") return `${prefix},r.created_at asc,r.id asc`;
@@ -406,14 +444,17 @@ function encodeRhymeCursor(cursor: RhymeCursor): string {
   return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
 }
 
-function decodeRhymeCursor(value: string, input: RhymeListInput): RhymeCursor {
+function decodeRhymeCursor(value: string, input: RhymeListInput, orderVersion: number): RhymeCursor {
   try {
     const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as Partial<RhymeCursor>;
-    if (parsed.version !== 1 || !Number.isSafeInteger(parsed.offset) || Number(parsed.offset) < 0
+    if (parsed.version !== (input.sort === "manual" ? 2 : 1) || !Number.isSafeInteger(parsed.offset) || Number(parsed.offset) < 0
       || parsed.signature !== rhymeQuerySignature(input)) throw new RhymeCursorError();
+    if (input.sort === "manual" && parsed.orderVersion !== orderVersion) {
+      throw new LibraryOrderConflictError(orderVersion);
+    }
     return parsed as RhymeCursor;
   } catch (error) {
-    if (error instanceof RhymeCursorError) throw error;
+    if (error instanceof RhymeCursorError || error instanceof LibraryOrderConflictError) throw error;
     throw new RhymeCursorError();
   }
 }

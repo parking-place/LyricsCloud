@@ -10,7 +10,7 @@ export const RHYME_LIMITS = {
   tagsPerNote: 30
 } as const;
 
-export const RHYME_SORTS = ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"] as const;
+export const RHYME_SORTS = ["manual", "updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"] as const;
 export type RhymeSort = (typeof RHYME_SORTS)[number];
 export const RHYME_LIST_LIMITS = { default: 20, maximum: 50 } as const;
 

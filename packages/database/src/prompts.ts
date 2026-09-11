@@ -2,11 +2,15 @@ import { createHash, randomUUID } from "node:crypto";
 import {
   isResourceId, normalizePromptToken, parseCreatePromptInput, parseUpdatePromptInput,
   projectUniquePromptTokens, serializePromptTokens, PromptConflictError,
-  type CreatePromptInput, type PromptListInput, type PromptRecord, type PromptSort,
+  type CreatePromptInput, type LibraryMoveInput, type PromptListInput, type PromptRecord, type PromptSort,
   type PromptMode, type PromptTokenValue, type ResourceColor, type UpdatePromptInput
 } from "@lyricscloud/domain";
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 import { createDatabasePool } from "./pool.js";
+import {
+  appendLibraryOrderItem, ensureLibraryOrder, lockLibraryOrder, moveLibraryOrderItem,
+  moveLibraryOrderPinGroup, LibraryOrderConflictError, type LibraryMoveResult
+} from "./library-order.js";
 
 interface PromptRow extends QueryResultRow {
   id: string; title: string; mode: PromptMode; plain_text: string; sentence_text: string | null; is_favorite: boolean; is_pinned: boolean;
@@ -21,9 +25,15 @@ interface PromptTokenRow extends QueryResultRow {
 interface PromptListRow extends PromptRow {
   tokens: unknown;
   linked_songs: unknown;
+  manual_rank: string;
 }
 
-interface PromptCursor { readonly version: 1; readonly offset: number; readonly signature: string }
+interface PromptCursor {
+  readonly version: 1 | 2;
+  readonly offset: number;
+  readonly signature: string;
+  readonly orderVersion?: number;
+}
 
 export interface PromptListItem extends PromptRecord {
   readonly linkedSongs: readonly { readonly id: string; readonly title: string }[];
@@ -33,6 +43,8 @@ export interface PromptListResult {
   readonly items: readonly PromptListItem[];
   readonly totalCount: number;
   readonly nextCursor: string | null;
+  readonly orderVersion: number;
+  readonly capabilities: { readonly manualOrder: true };
   readonly filters: { readonly songs: readonly { readonly id: string; readonly title: string }[] };
 }
 
@@ -69,12 +81,15 @@ export class PostgresPromptStore {
       const requestHash = hashRequest("create", input);
       const replay = await replayRequest(client, ownerId, input.requestId, requestHash);
       if (replay) return replay;
+      await lockLibraryOrder(client, ownerId, "prompt");
+      await ensureLibraryOrder(client, ownerId, "prompt");
       const resourceId = randomUUID();
       await client.query(`insert into resources(id,owner_id,type,title,is_favorite,is_pinned,pin_order,color)
         values($1,$2,'prompt',$3,$4,$5,$6,$7)`, [resourceId, ownerId, input.title, input.isFavorite, input.isPinned, input.pinOrder, input.color]);
       await client.query("insert into prompts(resource_id,owner_id,mode,plain_text,sentence_text) values($1,$2,$3,$4,$5)",
         [resourceId, ownerId, input.mode, serializePromptTokens(projectUniquePromptTokens(input.tokens)), input.sentenceText]);
       await writeTokenProjection(client, ownerId, resourceId, input.tokens, new Set());
+      await appendLibraryOrderItem(client, ownerId, "prompt", resourceId, input.isPinned);
       const prompt = await selectPrompt(client, ownerId, resourceId);
       if (!prompt) throw new Error("PROMPT_CREATE_FAILED");
       await recordRequest(client, ownerId, input.requestId, resourceId, "create", requestHash, prompt.rowVersion);
@@ -89,6 +104,8 @@ export class PostgresPromptStore {
 
   listPrompts(ownerId: string, input: PromptListInput): Promise<PromptListResult> {
     return this.#withUser(ownerId, async (client) => {
+      await lockLibraryOrder(client, ownerId, "prompt");
+      const orderVersion = await ensureLibraryOrder(client, ownerId, "prompt");
       const values: unknown[] = [ownerId];
       const conditions = ["r.owner_id=$1", "r.type='prompt'", "r.deleted_at is null"];
       if (input.search) {
@@ -110,10 +127,11 @@ export class PostgresPromptStore {
       const where = conditions.join(" and ");
       const totalCount = Number((await client.query<{ count: string }>(`select count(*)::text count from resources r
         join prompts p on p.resource_id=r.id and p.owner_id=r.owner_id where ${where}`, values)).rows[0]?.count ?? 0);
-      const offset = input.cursor ? decodePromptCursor(input.cursor, input).offset : 0;
+      const offset = input.cursor ? decodePromptCursor(input.cursor, input, orderVersion).offset : 0;
       values.push(input.limit + 1, offset);
       const rows = await client.query<PromptListRow>(`select r.id,r.title,p.mode,p.plain_text,p.sentence_text,r.is_favorite,r.is_pinned,r.pin_order,r.color,
         r.row_version::text,p.use_count::text,p.last_used_at,r.created_at,r.updated_at,
+        manual_order.sort_rank::text manual_rank,
         coalesce((select jsonb_agg(jsonb_build_object('displayValue',pt.display_value,'normalizedValue',pt.normalized_value) order by pt.ordinal)
           from prompt_tokens pt where pt.owner_id=r.owner_id and pt.prompt_resource_id=r.id),'[]'::jsonb) tokens,
         coalesce((select jsonb_agg(jsonb_build_object('id',song.id,'title',song.title) order by lower(song.title),song.id)
@@ -121,6 +139,8 @@ export class PostgresPromptStore {
           where sl.owner_id=r.owner_id and sl.linked_resource_id=r.id and sl.linked_resource_type='prompt'
             and song.type='song' and song.deleted_at is null),'[]'::jsonb) linked_songs
         from resources r join prompts p on p.resource_id=r.id and p.owner_id=r.owner_id
+        join library_order_items manual_order on manual_order.owner_id=r.owner_id
+          and manual_order.resource_type='prompt' and manual_order.resource_id=r.id
         where ${where} order by ${promptSortOrder(input.sort)} limit $${values.length - 1} offset $${values.length}`, values);
       const hasMore = rows.rows.length > input.limit;
       const page = hasMore ? rows.rows.slice(0, input.limit) : rows.rows;
@@ -131,7 +151,11 @@ export class PostgresPromptStore {
               and pr.type='prompt' and pr.deleted_at is null) order by lower(r.title),r.id`, [ownerId]);
       return {
         items: page.map(mapPromptListItem), totalCount,
-        nextCursor: hasMore ? encodePromptCursor({ version: 1, offset: offset + input.limit, signature: promptQuerySignature(input) }) : null,
+        nextCursor: hasMore ? encodePromptCursor({ version: input.sort === "manual" ? 2 : 1,
+          offset: offset + input.limit, signature: promptQuerySignature(input),
+          ...(input.sort === "manual" ? { orderVersion } : {}) }) : null,
+        orderVersion,
+        capabilities: { manualOrder: true },
         filters: { songs: songs.rows }
       };
     });
@@ -183,6 +207,8 @@ export class PostgresPromptStore {
       const requestHash = hashRequest("duplicate", { resourceId });
       const replay = await replayRequest(client, ownerId, requestId, requestHash);
       if (replay) return replay;
+      await lockLibraryOrder(client, ownerId, "prompt");
+      await ensureLibraryOrder(client, ownerId, "prompt");
       const source = await lockPrompt(client, ownerId, resourceId);
       if (!source) return null;
       const copyId = randomUUID();
@@ -192,6 +218,7 @@ export class PostgresPromptStore {
       await client.query("insert into prompts(resource_id,owner_id,mode,plain_text,sentence_text) values($1,$2,$3,$4,$5)",
         [copyId, ownerId, source.mode, source.tagText, source.sentenceText]);
       await writeTokenProjection(client, ownerId, copyId, source.tokens, new Set());
+      await appendLibraryOrderItem(client, ownerId, "prompt", copyId, false);
       const prompt = await selectPrompt(client, ownerId, copyId);
       if (!prompt) throw new Error("PROMPT_DUPLICATE_FAILED");
       await recordRequest(client, ownerId, requestId, copyId, "duplicate", requestHash, prompt.rowVersion);
@@ -267,10 +294,22 @@ export class PostgresPromptStore {
   setPin(ownerId: string, resourceId: string, value: boolean, pinOrder: number | null): Promise<PromptRecord | null> {
     if (!isResourceId(resourceId)) return Promise.resolve(null);
     return this.#withUser(ownerId, async (client) => {
+      await lockLibraryOrder(client, ownerId, "prompt");
+      await ensureLibraryOrder(client, ownerId, "prompt");
+      const current = await client.query<{ is_pinned: boolean }>(`select is_pinned from resources
+        where id=$1 and owner_id=$2 and type='prompt' and deleted_at is null for update`, [resourceId, ownerId]);
+      if (!current.rows[0]) return null;
       const result = await client.query(`update resources set is_pinned=$3,pin_order=$4
         where id=$1 and owner_id=$2 and type='prompt' and deleted_at is null returning id`, [resourceId, ownerId, value, pinOrder]);
+      if (current.rows[0].is_pinned !== value) {
+        await moveLibraryOrderPinGroup(client, ownerId, "prompt", resourceId, value);
+      }
       return result.rowCount ? selectPrompt(client, ownerId, resourceId) : null;
     });
+  }
+
+  movePrompt(ownerId: string, input: LibraryMoveInput): Promise<LibraryMoveResult> {
+    return this.#withUser(ownerId, (client) => moveLibraryOrderItem(client, ownerId, "prompt", input));
   }
 
   markUsed(ownerId: string, resourceId: string): Promise<{ readonly useCount: number; readonly lastUsedAt: string } | null> {
@@ -392,6 +431,7 @@ function mapPromptListItem(row: PromptListRow): PromptListItem {
 }
 
 function promptSortOrder(sort: PromptSort): string {
+  if (sort === "manual") return "case when r.is_pinned then 0 else 1 end,manual_order.sort_rank,r.id";
   const pinned = "case when r.is_pinned then 0 else 1 end,coalesce(r.pin_order,2147483647)";
   if (sort === "recent_used") return `${pinned},p.last_used_at desc nulls last,r.updated_at desc,r.id desc`;
   if (sort === "updated_desc") return `${pinned},r.updated_at desc,r.id desc`;
@@ -411,14 +451,15 @@ function encodePromptCursor(cursor: PromptCursor): string {
   return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
 }
 
-function decodePromptCursor(value: string, input: PromptListInput): PromptCursor {
+function decodePromptCursor(value: string, input: PromptListInput, orderVersion: number): PromptCursor {
   try {
     const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as Partial<PromptCursor>;
-    if (parsed.version !== 1 || !Number.isSafeInteger(parsed.offset) || Number(parsed.offset) < 0
+    if (parsed.version !== (input.sort === "manual" ? 2 : 1) || !Number.isSafeInteger(parsed.offset) || Number(parsed.offset) < 0
       || parsed.signature !== promptQuerySignature(input)) throw new PromptCursorError();
+    if (input.sort === "manual" && parsed.orderVersion !== orderVersion) throw new LibraryOrderConflictError(orderVersion);
     return parsed as PromptCursor;
   } catch (error) {
-    if (error instanceof PromptCursorError) throw error;
+    if (error instanceof PromptCursorError || error instanceof LibraryOrderConflictError) throw error;
     throw new PromptCursorError();
   }
 }
