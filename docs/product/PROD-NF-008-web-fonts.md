@@ -1,17 +1,19 @@
 # PROD-NF-008 — 무료 폰트 선택·다국어 표시
 
-- 상태: **Proposed**
+- 상태: **Accepted for 1.0.14**
 - 작성일: 2026-09-09
 - 최초 결정/소비: 1.0.14 P1
-- 승인자/시각: 미승인. 기술·표시 대안과 실제 검증 근거를 해당 Phase에서 기록한다.
+- 승인자/시각: Codex, 2026-09-12 05:50 KST. Noto Sans KR 선택·미리보기·영속·fallback 계약을 확정했다.
 
 ## 질문·대안·결정 gate
 
-폰트 목록·다국어 미리보기·선택 영속·fallback 표시를 정한다. 표시 변경만으로 원문/copy·조합·undo를 바꾸지 않으며 glyph와 접근성·모바일 성능을 수용한다.
+기존 `기본 산세리프`, `명조`, `고정폭`에 `Noto Sans KR`을 추가한다. 설정 화면의 대표 미리보기는 `한글 가사 · bright rhyme · 光 ひかり · ♫`이며 option 이름과 fallback 안내를 연결한다. 선택은 기존 사용자 표시 설정 API와 DB에 저장하고 새로고침·다른 탭·서비스 재시작 뒤 복원한다.
+
+선택은 가사 CodeMirror 본문, 라임 노트 편집 textarea, 프롬프트 편집 textarea와 표시 미리보기에 같은 font stack으로 적용한다. 폰트는 표시 속성일 뿐 title/body/raw mode·Unicode code point·copy/export/search/revision 값을 변경하지 않는다. 교체 전후 cursor·selection·undo·scroll·IME composition을 보존한다. font download 실패나 지원되지 않는 일본어/Han glyph는 기존 system sans로 fallback하며 빈 글자나 저장 차단을 만들지 않는다.
 
 ## 영향과 수용
 
-[세부 계약](../../0.Plans/2.Patch-phase/contracts/DICTIONARY-FONTS.md)의 언어/OS/권한·실패 사례와 [요구 추적](../../0.Plans/2.Patch-phase/Requirements-Traceability.md)을 소비한다. 기존 저장 형식·계정 소유자·원문·copy를 보존하고 실제 지원 여부와 합성 검증을 구분한다. 필요한 파일과 정확한 도구 버전은 착수 소스로 확인한다.
+[세부 계약](../../0.Plans/2.Patch-phase/contracts/DICTIONARY-FONTS.md)의 언어/OS/권한·실패 사례와 [요구 추적](../../0.Plans/2.Patch-phase/Requirements-Traceability.md)을 소비한다. P2는 자산·lazy loading·cache/fallback, P3는 domain/DB/API·설정/편집 UI, P4는 glyph·원문·성능·브라우저 회귀를 담당한다.
 
 ## 되돌림·미실행
 

@@ -114,6 +114,7 @@
 - [`1.0.12 정식 릴리스 체크리스트`](./1.0.12-release-checklist.md)
 - [`1.0.13 Phase 1 NAVER 사전 provider gate`](./1.0.13-phase1-provider-gate.md)
 - [`1.0.13 최종 no-go 인수`](./1.0.13-final-no-go.md)
+- [`1.0.14 Phase 1 웹폰트 계약`](./1.0.14-phase1-font-contract.md)
 - [`0.7.0 Phase 3 최근 작업·위치 복원 검증`](./0.7.0-phase3-validation.md)
 
 ## 개발 서버 운영
