@@ -6,6 +6,7 @@ import { hashToken, withE2eDatabase } from "./fixtures.js";
 
 const origin = "http://127.0.0.1:3000";
 const mutationHeaders = { Origin: origin };
+const fontAsset = "/fonts/NotoSansKR-Regular.69975a0a.otf";
 
 test.describe("0.9.0 installable online-first PWA", () => {
   test.skip(!process.env.E2E_DATABASE_URL, "requires the isolated E2E database");
@@ -93,6 +94,23 @@ test.describe("0.9.0 installable online-first PWA", () => {
       });
       await expect.poll(() => page.evaluate(async () => (await Promise.all((await caches.keys()).filter((name) => name.startsWith("lyricscloud-shell-")).map(async (name) => (await caches.open(name)).keys()))).flat().length)).toBeGreaterThan(0);
 
+      await page.evaluate(async ({ fontAsset }) => {
+        const sample = document.createElement("span");
+        sample.textContent = "한글 bright ひかり 光";
+        sample.style.fontFamily = '"LyricsCloud Noto Sans KR", system-ui, sans-serif';
+        document.body.append(sample);
+        await document.fonts.load('16px "LyricsCloud Noto Sans KR"', sample.textContent);
+        const response = await fetch(fontAsset);
+        if (!response.ok) throw new Error("font asset unavailable");
+      }, { fontAsset });
+      await expect.poll(() => page.evaluate(async ({ fontAsset }) => {
+        for (const name of await caches.keys()) {
+          if (await (await caches.open(name)).match(fontAsset)) return true;
+        }
+        return false;
+      }, { fontAsset })).toBe(true);
+      expect((await page.request.get(fontAsset)).headers()["cache-control"]).toContain("immutable");
+
       await createSong(context.request, privateText);
       expect((await page.request.get("/api/songs")).status()).toBe(200);
       const cached = await page.evaluate(async () => {
@@ -102,11 +120,15 @@ test.describe("0.9.0 installable online-first PWA", () => {
         }
         return records;
       });
-      expect(cached.every(({ url }) => new URL(url).pathname.startsWith("/_next/static/"))).toBe(true);
+      expect(cached.every(({ url }) => {
+        const pathname = new URL(url).pathname;
+        return pathname.startsWith("/_next/static/") || pathname === fontAsset;
+      })).toBe(true);
       expect(cached.some(({ url }) => /\/api\/|\/lyrics\//.test(new URL(url).pathname))).toBe(false);
       expect(cached.some(({ body }) => body.includes(privateText))).toBe(false);
       await context.setOffline(true);
       expect(await page.evaluate(async (url) => (await fetch(url)).ok, cached[0]!.url)).toBe(true);
+      expect(await page.evaluate(async (url) => (await fetch(url)).ok, fontAsset)).toBe(true);
       await context.setOffline(false);
       for (const route of ["/workspace", "/rhymes", "/api/songs"]) {
         expect((await page.request.get(route)).headers()["cache-control"]).toContain("no-store");

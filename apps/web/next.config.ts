@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const config: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["yjs"],
-  generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-1.0.12",
+  generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-1.0.14",
   outputFileTracingRoot: new URL("../../", import.meta.url).pathname,
   transpilePackages: ["@lyricscloud/auth", "@lyricscloud/config", "@lyricscloud/database", "@lyricscloud/domain", "@lyricscloud/ui"],
   async rewrites() {
@@ -27,6 +27,7 @@ const config: NextConfig = {
     ];
     return [
       { source: "/:path*", headers: security },
+      { source: "/fonts/:asset*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
       ...privateRoutes.map((source) => ({ source, headers: noStore }))
     ];
   }
