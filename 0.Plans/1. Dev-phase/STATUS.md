@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.0.10"
 current_phase: "../2.Patch-phase/1.0.10/5phase.md"
-state: "active"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-11"
-updated_at: "2026-09-11"
-next_action: "1.0.10 P5에서 요구 추적·사용자/운영 문서·봉인 artifact·최종 CI와 동일 SHA 개발 인수를 완료한다"
+updated_at: "2026-09-12"
+next_action: "완료된 1.0.10 P1~P5를 main에 순차 병합하고 annotated tag·정식 image·릴리스 서버 공개 인수를 실행한다"
 ```
 
 ## 승인과 기준
@@ -90,13 +90,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.10 P2 | complete | 1003 schema·domain/store/API·export, 실제 DB·전체 CI와 동일 SHA 공개 개발 API 인수 완료 |
 | 1.0.10 P3 | complete | 모델/복수 링크 UI·새 탭 보호·탭 초안/실패 복구, 전체 CI와 공개 desktop/mobile 인수 완료 |
 | 1.0.10 P4 | complete | 실제 DB 7건·5-project 기능 20건, Actions `34610699744` 전체 CI·네 dev image와 동일 SHA 공개 재시작 인수 완료 |
-| 1.0.10 P5 | active | 요구 추적·사용자/운영 문서·봉인 artifact·최종 CI·동일 SHA 개발 인수 착수 |
+| 1.0.10 P5 | complete | Actions `34614794684` 전체 CI·네 dev image 게시/서명·동일 SHA 공개 저장/재진입·삭제복원·재시작 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.10/P5 | LC-NF-1.0.10-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.0.10 P4 `386c37a` | 2026-09-11T23:57:00+09:00 | active |
+| Codex | 1.0.10/P5 | LC-NF-1.0.10-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.0.10 P4 `386c37a` | 2026-09-11T23:57:00+09:00 | complete |
 | Codex | 1.0.10/P4 | LC-NF-1.0.10-P4-01~06 | 실제 DB·수용 사례·권한/오프라인/재접속·서비스 재시작·지원 browser 회귀 | 1.0.10 P3 `fdfb6da` | 2026-09-11T22:40:00+09:00 | complete |
 | Codex | 1.0.10/P3 | LC-NF-1.0.10-P3-01~06 | song dashboard·Suno model/link panel·draft/실패 복구·PC/mobile E2E | 1.0.10 P2 `fa402c2` | 2026-09-11T22:05:00+09:00 | complete |
 | Codex | 1.0.10/P2 | LC-NF-1.0.10-P2-01~06 | domain parser·1003 migration/RLS·aggregate store/API·export·DB 회귀 | 1.0.10 P1 / v1.0.9 `07efeb0` | 2026-09-11T21:00:00+09:00 | complete |
@@ -156,6 +156,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.0.10 P5 후보 `49b32010571dd33e2a0668dc632e7e54fc054680`는 GitHub Actions push run `34614794684`의 verify 21분·Chromium desktop/mobile 전체 회귀·release matrix·보안/복구 검사와 네 dev image 게시/서명을 통과했다. 같은 SHA 개발 서버의 `1.0.10`·`dev`·`p5`, schema `1003_song_suno_workspaces.sql`, 네 서비스 healthy를 확인하고 공개 desktop/mobile 사용자 지정 모델·링크 3개 저장/재진입·새 탭 보호·한글 순차 입력 초안 복구·좁은 화면, owner 차단·soft-delete/restore·web/collaboration/worker 재시작 지속성을 PASS한 뒤 fixture를 제거했다. 신규 제품 P0/P1·원문 유실·인증 우회·무음 저장 실패는 0건이다. 실제 물리 기기는 새로 실행하지 않았고 `OPS-100-001`은 사용자 승인 예외로 유지하며 승인된 정식 main/tag/image/릴리스 서버 절차로 이동한다.
 
 1.0.10 P4 제품 후보 `386c37ac1b4bf0e54b7ff008179a5384273c020e`는 CI `APP_PHASE`가 P2에 남은 표시 결함을 P4로 바로잡고 제품 기능은 P3와 동일하게 유지했다. 실제 PostgreSQL 계약/store/export 7건, 5-project Suno 기능 20건, 로컬 0.9.1 성능 예산을 통과했고 Actions push run `34610699744`의 verify 21분 29초·Chromium desktop/mobile 330 PASS·환경 조건부 36 skip·release matrix 10 PASS와 네 dev image 게시/서명을 통과했다. 같은 SHA 개발 서버의 `1.0.10`·`dev`·`p4`, schema `1003_song_suno_workspaces.sql`, 네 서비스 healthy를 확인하고 공개 링크 3개·owner 차단·soft-delete/restore 뒤 web·collaboration·worker 실제 재시작에도 workspace가 유지됨을 확인했으며 fixture를 제거했다. 최초 `b0c2e29` run의 짧은 save/revision CV만 환경 편차로 실패했고 같은 제품 tree의 로컬·최종 단독 CI에서 통과했다. 실제 물리 기기는 새로 실행하지 않았고 `OPS-100-001`은 사용자 승인 예외로 유지한다.
 

@@ -11,11 +11,12 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 개인 창작용 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합과 온라인 우선 PWA를 지원한다.
 
-현재 소스는 `1.0.9` 라임·프롬프트 사용자정렬의 Phase 5 인수를 완료하고 정식 릴리스를 실행 중이다. `v1.0.8`은 정식 태그·image·릴리스 서버 배포를 완료했다.
+현재 소스는 `1.0.10` Suno 수동 작업공간의 Phase 5 최종 인수를 진행 중이다. `v1.0.9`는 정식 태그·image·릴리스 서버 배포를 완료했다.
 
 ## 주요 기능
 
 - 곡 CRUD, 상태·메모·필터·즐겨찾기·핀과 곡 중심 대시보드
+- 곡별 Suno 모델명과 최대 20개 수동 작업 링크·제목·메모·순서 저장, 보호된 새 탭 열기
 - 곡·라임 노트·프롬프트의 drag·버튼·키보드 사용자정렬, 모바일 copy gesture 분리와 계정별 순서 복원
 - 곡·라임 노트·프롬프트 목록의 리스트·소/중/대 그리드와 계정·자료유형별 보기 저장
 - CodeMirror 기반 한글 가사 편집, `[TAG:sub tag]` 탐색, Extend 원문/Suno 복사 분리, PC 우클릭·키보드·모바일 송폼 삽입, 전체·구간 복사와 3,000자 초과 안내, 수정 기록 비교·복원
@@ -32,14 +33,14 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 
 | 항목 | 상태 |
 |---|---|
-| 소스·runtime version | `1.0.9` |
-| 현재 작업 | [1.0.9 Phase 5 — 문서·개발 인수·후속 연결](<./0.Plans/2.Patch-phase/1.0.9/5phase.md>) |
+| 소스·runtime version | `1.0.10` |
+| 현재 작업 | [1.0.10 Phase 5 — 문서·개발 인수·후속 연결](<./0.Plans/2.Patch-phase/1.0.10/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
-| 정식 릴리스 | 현재 `v1.0.8`; 승인된 `v1.0.9` main·tag·image·릴리스 서버 절차 실행 대상 |
-| 개발 인수 | 1.0.9 P1~P5, Actions 전체 CI·네 dev image·동일 SHA 공개 desktop/mobile 순서/재시작 지속성 PASS |
+| 정식 릴리스 | 현재 `v1.0.9`; 승인된 `v1.0.10` main·tag·image·릴리스 서버 절차는 P5 통과 뒤 실행 |
+| 개발 인수 | 1.0.10 P1~P4, 실제 DB·지원 browser·Actions 전체 CI·동일 SHA 공개 삭제복원/재시작 PASS |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
-1.0.8은 곡 목록 사용자정렬을 포함해 정식 릴리스됐다. 1.0.9는 같은 계약을 라임 노트·프롬프트로 확장하고 mobile long-press copy와 이동을 분리한다.
+1.0.9는 라임 노트·프롬프트 사용자정렬과 mobile long-press copy 분리를 포함해 정식 릴리스됐다. 1.0.10은 곡 대시보드에 수동 Suno 모델명과 여러 작업 링크를 추가하며 외부 metadata 요청은 하지 않는다.
 
 ## 화면
 
@@ -97,7 +98,7 @@ LyricsCloud betacode refresh
 | 인증·베타 운영자 | [Google OAuth](./docs/runbooks/google-oauth-setup.md), [초대 코드 CLI](./docs/runbooks/1.0.1-phase2-beta-admin.md), [HMAC allowlist](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md) |
 | 복구·배포 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md), [개발 배포](./docs/runbooks/development-deploy.md), [Docker Hub 발행](./docs/runbooks/dockerhub-publish.md) |
 | 보안·장애 담당자 | [Security policy](./SECURITY.md), [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
-| 릴리스 검토자 | [1.0.9 release notes](./docs/releases/1.0.9.md), [1.0.9 추적](./docs/architecture/1.0.9-FINAL-TRACEABILITY.md), [CHANGELOG](./CHANGELOG.md) |
+| 릴리스 검토자 | [1.0.10 release notes](./docs/releases/1.0.10.md), [1.0.10 추적](./docs/architecture/1.0.10-FINAL-TRACEABILITY.md), [CHANGELOG](./CHANGELOG.md) |
 | 기여자 | [Agent 지침](./Agent.md), [후속 계획](./0.Plans/2.Patch-phase/README.md), [ADR 색인](./docs/adr/README.md) |
 
 ## 저장소 구조
@@ -113,4 +114,4 @@ LyricsCloud betacode refresh
 | `scripts/` | 검증·migration·배포 보조 명령 |
 | `0.Plans/` | 보호된 기획·목업·기술 결정과 Phase 상태 |
 
-1.0.10 이후 Suno 메타데이터, 사전·폰트·공유·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있으며 현재 1.0.9 범위와는 별도다.
+1.0.11 이후 Suno 자동 메타데이터, 사전·폰트·공유·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있으며 현재 1.0.10 수동 작업공간과는 별도다.

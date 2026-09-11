@@ -110,13 +110,13 @@ for (const tag of [currentVersion, "1.0.2", releasedVersion, "Release", "latest"
 for (const marker of [`APP_VERSION: ${currentVersion}`, "APP_PHASE: p5", "test:migration:1002", "test:environment:101"]) {
   assert(workflow.includes(marker), `P5 CI marker missing: ${marker}`);
 }
-for (const marker of ["NF-REQ-028", `AC-${currentVersion}-01`, `AC-${currentVersion}-04`, "P0/P1", "OPS-100-001", "1002_library_manual_order.sql"]) {
+for (const marker of ["NF-REQ-030", "NF-REQ-031", "NF-REQ-033", `AC-${currentVersion}-01`, `AC-${currentVersion}-04`, "P0/P1", "OPS-100-001", "1003_song_suno_workspaces.sql"]) {
   assert(candidateTraceability.includes(marker), `${currentVersion} traceability marker missing: ${marker}`);
 }
 for (const marker of ["P5", "P0/P1", "OPS-100-001", "동일 SHA 개발 인수"]) {
   assert(formalTraceability.includes(marker), `${currentVersion} traceability marker missing: ${marker}`);
 }
-for (const marker of ["라임", "프롬프트", "사용자정렬", "계정", "알려진 제한", "OPS-100-001"]) {
+for (const marker of ["Suno", "모델", "링크", "owner", "알려진 제한", "OPS-100-001"]) {
   assert(formalReleaseNotes.includes(marker), `${currentVersion} release notes marker missing: ${marker}`);
 }
 for (const marker of [`annotated \`v${currentVersion}\``, "publish=true", "release=true", "Release-latest", "application-first rollback"]) {
@@ -126,7 +126,7 @@ for (const marker of ["main", `annotated \`v${currentVersion}\``, "exact digest"
   assert(formalReleaseChecklist.includes(marker), `${currentVersion} release checklist marker missing: ${marker}`);
 }
 assert(formalManifest.releaseVersion === currentVersion && formalManifest.releaseChannel === "release"
-  && formalManifest.productionAuthorized === true && formalManifest.database.requiredLatestSchema === "1002_library_manual_order.sql",
+  && formalManifest.productionAuthorized === true && formalManifest.database.requiredLatestSchema === "1003_song_suno_workspaces.sql",
   `${currentVersion} formal release manifest boundary invalid`);
 const formalReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${currentVersion}`,
   sha: "c".repeat(40), version: currentVersion, release: true }).tags;
