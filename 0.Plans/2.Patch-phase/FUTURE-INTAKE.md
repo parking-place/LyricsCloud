@@ -144,6 +144,7 @@
 | 2026-09-11 1.0.9 P3 main 병합 정렬 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `3c3588a0206f63af235b5960ee8e028529d07b10` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 승인 완료된 P2 main과 P3 완료 이력의 문서 충돌만 정렬하며 제품 tree와 후속 배정은 변경하지 않음 | 1.0.9 P3 완료·P4 착수 push 전 행 |
 | 2026-09-11 1.0.9 P4 main 병합 정렬 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `7d9a2b4827b59093282c341293b54b18ad19f53a` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 승인 완료된 P3 main과 P4 완료 이력의 검수 행만 함께 보존하며 제품 tree와 후속 배정은 변경하지 않음 | 1.0.9 P4 완료·P5 착수 push 전 행 |
 | 2026-09-11 1.0.9 P5 main 병합 정렬 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `e170b77d764e61d2ff58e994db4383e1ca4bf2e8` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 승인 완료된 P4 main과 P5 완료 이력의 검수 행만 함께 보존하며 제품 tree와 후속 배정은 변경하지 않음 | 1.0.9 P5 완료·release 실행 push 전 행 |
+| 2026-09-11 1.0.9 정식 tag gate 상태 정렬 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `dc0571a1c77fd7b9effd7771e9c5c5fcdd214c87` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 완료된 P5의 STATUS state를 정식 tag 검증 계약인 complete로 정렬하며 제품 tree와 후속 배정은 변경하지 않음 | 1.0.9 P5 main 병합 정렬 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
