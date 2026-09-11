@@ -1,6 +1,6 @@
 # 1.0.10 — Suno 모델명·복수 작업 링크
 
-상태: **P2 저장·서버 완료 / P3 사용자 흐름 진행**. 번호는 미발행 작업 배정이며 정식 배포는 다섯 Phase 인수 뒤 현재 사용자 승인 범위에서만 수행한다.
+상태: **P3 사용자 흐름 완료 / P4 교차 회귀 진행**. 번호는 미발행 작업 배정이며 정식 배포는 다섯 Phase 인수 뒤 현재 사용자 승인 범위에서만 수행한다.
 
 ## 목표
 
@@ -29,6 +29,7 @@
 - 링크는 현재 곡에 N개 허용한다. 제목/메모 등 수동 값과 자동 조회값의 권한/우선순위를 구분한다.
 - 1.0.10은 곡당 최대 20개의 수동 링크만 저장하고 outbound metadata 조회를 하지 않는다. 모델명·URL·수동 제목/메모·순서·멱등 CAS·soft-delete 복원/export 경계는 [P1 인수 기록](../../../docs/runbooks/1.0.10-phase1-suno-manual-contract.md)을 따른다.
 - P2는 `1003_song_suno_workspaces.sql`, 공통 parser, owner 전용 aggregate store/API와 export를 구현하고 실제 PostgreSQL·전체 CI·동일 SHA 공개 개발 API 인수를 완료했다. 상세 증거는 [P2 인수 기록](../../../docs/runbooks/1.0.10-phase2-suno-workspace-store.md)을 따른다.
+- P3는 곡 대시보드에서 미지정·제안·사용자 지정 모델과 복수 링크의 추가·수정·정렬·제거, 새 탭 보호, 브라우저 탭 초안·실패 복구를 제공한다. 상세 증거는 [P3 인수 기록](../../../docs/runbooks/1.0.10-phase3-suno-workspace-ui.md)을 따른다.
 
 ## 대표 수용 사례
 
