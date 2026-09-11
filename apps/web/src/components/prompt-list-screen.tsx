@@ -1,7 +1,8 @@
 "use client";
 
 import { splitPromptSentenceDisplay } from "@lyricscloud/domain";
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
+import { buildPinnedGroupPositions } from "../lib/library-group-positions.js";
 import { promptCopyView } from "../lib/prompt-copy.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 import { dropAfter, LibraryOrderHandle, useLibraryCardOrder } from "./library-order-controls.js";
@@ -47,6 +48,7 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   const [recent, setRecent] = useState(initialQuery.recent);
   const [sort, setSort] = useState<PromptSort>(initialQuery.sort);
   const [items, setItems] = useState<PromptItem[]>([]);
+  const groupPositions = useMemo(() => buildPinnedGroupPositions(items), [items]);
   const [filters, setFilters] = useState<PromptListResponse["filters"]>({ songs: [] });
   const [totalCount, setTotalCount] = useState(0);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -225,12 +227,11 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
     {loading ? <div className={`prompt-grid library-grid library-view-${libraryView.viewMode}`} aria-label="프롬프트 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="prompt-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
     {!loading && !error && items.length === 0 ? <div className="empty-state prompt-empty"><span aria-hidden="true">{filtered ? "⌕" : "✦"}</span><h2>{filtered ? "조건에 맞는 프롬프트가 없어요" : "자주 쓰는 스타일 조합을 만들어보세요"}</h2><p>{filtered ? "검색어·즐겨찾기·최근 사용·연결 곡 조건을 바꿔보세요." : "장르, 보컬, 분위기와 악기를 토큰으로 모아 빠르게 재사용할 수 있어요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={clearFilters}>검색 조건 지우기</button> : <a className="primary-link" href="/prompts/new">첫 프롬프트 만들기</a>}</div> : null}
     {!loading && items.length ? <div className={`prompt-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{items.map((prompt) => {
-      const group = items.filter(({ isPinned }) => isPinned === prompt.isPinned);
-      const position = group.findIndex(({ id }) => id === prompt.id);
+      const { position, groupSize } = groupPositions.get(prompt.id)!;
       return <PromptCard key={prompt.id} prompt={prompt} duplicating={duplicating === prompt.id} onToggle={toggle} onCopy={copy} onDuplicate={duplicate}
         moving={order.movingId === prompt.id} dragActive={order.draggedId !== null}
-        canMoveBefore={position > 0} canMoveAfter={position >= 0 && position < group.length - 1}
-        onMove={(destination) => order.moveItem(prompt.id, destination === "first" ? 0 : destination === "previous" ? position - 1 : destination === "next" ? position + 1 : group.length - 1)}
+        canMoveBefore={position > 0} canMoveAfter={position < groupSize - 1}
+        onMove={(destination) => order.moveItem(prompt.id, destination === "first" ? 0 : destination === "previous" ? position - 1 : destination === "next" ? position + 1 : groupSize - 1)}
         onDragStart={() => order.setDraggedId(prompt.id)} onDragEnd={() => order.setDraggedId(null)}
         onDrop={(after) => { if (order.draggedId) order.moveToTarget(order.draggedId, prompt.id, after); order.setDraggedId(null); }} />;
     })}</div> : null}

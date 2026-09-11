@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { buildPinnedGroupPositions } from "../lib/library-group-positions.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 import { dropAfter, LibraryOrderHandle, useLibraryCardOrder } from "./library-order-controls.js";
 import { LibraryViewModeSelector, useLibraryViewMode } from "./library-view-mode-selector.js";
@@ -43,6 +44,7 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
   const [song, setSong] = useState(initialQuery.song);
   const [sort, setSort] = useState<RhymeSort>(initialQuery.sort);
   const [notes, setNotes] = useState<RhymeNote[]>([]);
+  const groupPositions = useMemo(() => buildPinnedGroupPositions(notes), [notes]);
   const [filters, setFilters] = useState<RhymeListResponse["filters"]>({ tags: [], songs: [] });
   const [totalCount, setTotalCount] = useState(0);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -193,12 +195,11 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
     {loading ? <div className={`rhyme-grid library-grid library-view-${libraryView.viewMode}`} aria-label="라임 노트 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="rhyme-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
     {!loading && !error && notes.length === 0 ? <div className="empty-state rhyme-empty"><span aria-hidden="true">{filtered ? "⌕" : "≈"}</span><h2>{filtered ? "조건에 맞는 라임 노트가 없어요" : "아직 라임 노트가 없어요"}</h2><p>{filtered ? "검색어·태그·연결 곡 조건을 바꿔보세요." : "떠오른 단어나 표현을 짧게라도 남겨보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={clearFilters}>검색 조건 지우기</button> : <a className="primary-link" href="/rhymes/new">첫 라임 노트 만들기</a>}</div> : null}
     {!loading && notes.length ? <div className={`rhyme-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{notes.map((note) => {
-      const group = notes.filter(({ isPinned }) => isPinned === note.isPinned);
-      const position = group.findIndex(({ id }) => id === note.id);
+      const { position, groupSize } = groupPositions.get(note.id)!;
       return <RhymeCard key={note.id} note={note} onToggle={toggle} onColor={cycleColor} onCopy={copy}
         moving={order.movingId === note.id} dragActive={order.draggedId !== null}
-        canMoveBefore={position > 0} canMoveAfter={position >= 0 && position < group.length - 1}
-        onMove={(destination) => order.moveItem(note.id, destination === "first" ? 0 : destination === "previous" ? position - 1 : destination === "next" ? position + 1 : group.length - 1)}
+        canMoveBefore={position > 0} canMoveAfter={position < groupSize - 1}
+        onMove={(destination) => order.moveItem(note.id, destination === "first" ? 0 : destination === "previous" ? position - 1 : destination === "next" ? position + 1 : groupSize - 1)}
         onDragStart={() => order.setDraggedId(note.id)} onDragEnd={() => order.setDraggedId(null)}
         onDrop={(after) => { if (order.draggedId) order.moveToTarget(order.draggedId, note.id, after); order.setDraggedId(null); }} />;
     })}</div> : null}
