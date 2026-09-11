@@ -1,6 +1,6 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "1001_library_view_settings.sql";
+export const CURRENT_SCHEMA_VERSION = "1002_library_manual_order.sql";
 
 export * from "./auth.js";
 export * from "./beta-access.js";

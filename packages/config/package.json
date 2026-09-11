@@ -1,4 +1,4 @@
 {
-  "name": "@lyricscloud/config", "version": "1.0.7", "private": true, "type": "module",
+  "name": "@lyricscloud/config", "version": "1.0.8", "private": true, "type": "module",
   "exports": "./src/index.ts", "scripts": { "check": "tsc -p tsconfig.json" }
 }

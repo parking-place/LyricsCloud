@@ -9,6 +9,7 @@ import {
 import type { ValidationIssue } from "./result.js";
 
 export const SONG_SORTS = [
+  "manual",
   "updated_desc",
   "created_desc",
   "created_asc",
@@ -66,6 +67,14 @@ export interface SongListInput {
   readonly sort: SongSort;
   readonly cursor?: string;
   readonly limit: number;
+}
+
+export interface SongMoveInput {
+  readonly requestId: string;
+  readonly itemId: string;
+  readonly beforeId: string | null;
+  readonly afterId: string | null;
+  readonly expectedVersion: number;
 }
 
 export class SongValidationError extends Error {
@@ -147,6 +156,28 @@ export function parseSongListInput(params: URLSearchParams): SongListInput {
   if (cursor && cursor.length > 1_024) issues.push({ field: "cursor", code: "too_long" });
   if (issues.length) throw new SongValidationError(issues);
   return { ...(search ? { search } : {}), ...(status ? { status } : {}), work, sort, ...(cursor ? { cursor } : {}), limit };
+}
+
+export function parseSongMoveInput(value: unknown): SongMoveInput {
+  const input = objectInput(value);
+  const issues: ValidationIssue[] = [];
+  const allowed = new Set(["requestId", "itemId", "beforeId", "afterId", "expectedVersion"]);
+  for (const key of Object.keys(input)) {
+    if (!allowed.has(key)) issues.push({ field: key, code: "unsupported_field" });
+  }
+  const requestId = uuid(input.requestId, "requestId", issues);
+  const itemId = uuid(input.itemId, "itemId", issues);
+  const beforeId = nullableUuid(input.beforeId, "beforeId", issues);
+  const afterId = nullableUuid(input.afterId, "afterId", issues);
+  const expectedVersion = input.expectedVersion;
+  if (!Number.isSafeInteger(expectedVersion) || (expectedVersion as number) < 0) {
+    issues.push({ field: "expectedVersion", code: "non_negative_safe_integer_required" });
+  }
+  if (beforeId === null && afterId === null) issues.push({ field: "anchors", code: "at_least_one_required" });
+  if (beforeId === itemId || afterId === itemId) issues.push({ field: "anchors", code: "item_cannot_be_anchor" });
+  if (beforeId !== null && beforeId === afterId) issues.push({ field: "anchors", code: "distinct_values_required" });
+  if (issues.length) throw new SongValidationError(issues);
+  return { requestId, itemId, beforeId, afterId, expectedVersion: expectedVersion as number };
 }
 
 export function parseSongLinkListInput(params: URLSearchParams): SongLinkListInput {
@@ -257,6 +288,11 @@ function uuid(value: unknown, field: string, issues: ValidationIssue[]): string 
   if (typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)) return value;
   issues.push({ field, code: "uuid_required" });
   return "00000000-0000-4000-8000-000000000000";
+}
+
+function nullableUuid(value: unknown, field: string, issues: ValidationIssue[]): string | null {
+  if (value === null) return null;
+  return uuid(value, field, issues);
 }
 
 function resourceIdList(value: unknown, field: string, issues: ValidationIssue[]): readonly string[] {
