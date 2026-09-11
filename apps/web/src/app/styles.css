@@ -515,6 +515,46 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .linked-none p { margin: 0; }
 .linked-none button { justify-self: start; min-height: 2.1rem; padding: .35rem .55rem; border: 1px solid var(--line); border-radius: .45rem; background: transparent; color: var(--muted); font-size: .64rem; cursor: pointer; }
 .linked-guidance { margin-top: .8rem; white-space: normal; }
+.suno-panel-heading, .suno-links-heading { display: flex; align-items: start; justify-content: space-between; gap: .7rem; }
+.suno-panel-heading h2 { margin-bottom: .7rem; }
+.suno-panel-heading > button { min-height: 2.1rem; padding: .35rem .5rem; border: 1px solid var(--line); border-radius: .45rem; background: transparent; color: var(--subtle); font-size: .62rem; cursor: pointer; }
+.suno-panel button:disabled { opacity: .52; cursor: wait; }
+.suno-message { margin: 0 0 .7rem; padding: .6rem .7rem; border-radius: .5rem; background: rgb(200 255 61 / 7%); color: var(--muted); font-size: .67rem; line-height: 1.5; }
+.suno-message.is-error, .suno-dialog-error { background: var(--danger-bg); color: var(--danger); }
+.suno-model-editor { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .55rem; padding: .7rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface); }
+.suno-model-editor label { min-width: 0; display: grid; gap: .35rem; color: var(--subtle); font-size: .6rem; }
+.suno-model-editor label:nth-child(2) { grid-column: 1 / -1; }
+.suno-model-editor select, .suno-model-editor input, .suno-link-dialog input, .suno-link-dialog textarea { width: 100%; min-width: 0; padding: .58rem .65rem; border: 1px solid var(--line); border-radius: .45rem; background: var(--surface-raised); color: var(--ink); font: inherit; }
+.suno-model-editor > button { align-self: end; }
+.suno-links-heading { align-items: center; margin-top: 1rem; }
+.suno-links-heading > div { display: flex; align-items: baseline; gap: .45rem; }
+.suno-links-heading h3 { margin: 0; font-size: .8rem; }
+.suno-links-heading span { color: var(--subtle); font-size: .6rem; }
+.suno-links-heading > button { min-height: 2.35rem; }
+.suno-guidance { margin: .45rem 0 .75rem; color: var(--subtle); font-size: .62rem; line-height: 1.55; }
+.suno-link-list { display: grid; gap: .55rem; }
+.suno-link-card { min-width: 0; display: grid; gap: .6rem; padding: .7rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface); }
+.suno-link-card a { min-width: 0; display: flex; align-items: center; gap: .5rem; color: var(--ink); text-decoration: none; }
+.suno-link-card a:hover strong { color: var(--acid); }
+.suno-link-card a strong { min-width: 0; overflow: hidden; font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; }
+.suno-link-card a span { flex-shrink: 0; margin-left: auto; color: var(--acid); font-size: .58rem; }
+.suno-link-card p { margin: .45rem 0 .3rem; overflow-wrap: anywhere; color: var(--muted); font-size: .65rem; line-height: 1.5; white-space: pre-wrap; }
+.suno-link-card small { display: block; overflow: hidden; color: var(--subtle); font-size: .56rem; text-overflow: ellipsis; white-space: nowrap; }
+.suno-link-actions { display: flex; justify-content: flex-end; gap: .3rem; }
+.suno-link-actions button, .suno-empty button { min-height: 2rem; padding: .3rem .48rem; border: 1px solid var(--line); border-radius: .4rem; background: transparent; color: var(--muted); font-size: .6rem; cursor: pointer; }
+.suno-empty { display: grid; gap: .4rem; padding: .75rem; border: 1px dashed var(--line); border-radius: .55rem; color: var(--subtle); font-size: .65rem; line-height: 1.5; }
+.suno-empty strong { color: var(--muted); }
+.suno-empty p { margin: 0; }
+.suno-empty button { justify-self: start; }
+.suno-dialog-backdrop { z-index: 55; }
+.suno-link-dialog { width: min(100%, 38rem); max-height: min(90dvh, 50rem); overflow: auto; padding: 1.25rem; border: 1px solid var(--line); border-radius: .9rem; background: var(--surface-raised); box-shadow: 0 30px 90px rgb(0 0 0 / 60%); }
+.suno-link-dialog h2 { margin: .45rem 0 .3rem; font-size: 1.2rem; }
+.suno-link-dialog > p:not(.eyebrow) { margin: 0 0 .9rem; color: var(--subtle); font-size: .66rem; }
+.suno-link-dialog label { display: grid; gap: .35rem; margin-top: .65rem; color: var(--muted); font-size: .64rem; }
+.suno-link-dialog textarea { min-height: 7rem; line-height: 1.55; resize: vertical; }
+.suno-link-dialog > small { display: block; margin-top: .3rem; color: var(--subtle); text-align: right; font-size: .6rem; }
+.suno-dialog-error { padding: .6rem; border-radius: .45rem; font-size: .65rem; }
+.suno-link-dialog footer { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1rem; }
 .dashboard-section-error { display: grid; gap: .65rem; padding: .8rem; border: 1px solid rgb(255 172 158 / 28%); border-radius: .6rem; background: var(--danger-bg); color: var(--danger); font-size: .68rem; line-height: 1.5; }
 .dashboard-section-error button { justify-self: start; }
 .count-error { grid-column: 1 / -1; }
@@ -957,9 +997,10 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
   .dashboard-actions > * { flex: 1 1 auto; }
   .dashboard-layout { grid-template-columns: minmax(0, 1fr); }
   .dashboard-side { grid-row: 2; }
-  .dashboard-side .linked-panel { order: 1; }
-  .dashboard-side .notes-panel { order: 2; }
-  .dashboard-side .danger-zone { order: 3; }
+  .dashboard-side .suno-panel { order: 1; }
+  .dashboard-side .linked-panel { order: 2; }
+  .dashboard-side .notes-panel { order: 3; }
+  .dashboard-side .danger-zone { order: 4; }
   .song-link-backdrop { align-items: end; padding: 0; }
   .song-link-dialog { width: 100%; max-height: min(84dvh, 48rem); padding: .75rem max(.8rem, var(--lc-safe-right)) max(.8rem, var(--lc-safe-bottom)) max(.8rem, var(--lc-safe-left)); border-width: 1px 0 0; border-radius: 1rem 1rem 0 0; }
   .song-link-dialog .sheet-handle { width: 2.8rem; height: .28rem; margin: 0 auto .55rem; border-radius: 999px; background: var(--subtle); }
@@ -1081,6 +1122,12 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
   .dashboard-actions .primary-link { grid-column: 1 / -1; }
   .linked-panel-heading { display: grid; grid-template-columns: minmax(0, 1fr); }
   .linked-panel-heading > button { width: 100%; }
+  .suno-model-editor { grid-template-columns: minmax(0, 1fr); }
+  .suno-model-editor label:nth-child(2) { grid-column: 1; }
+  .suno-model-editor > button, .suno-links-heading > button { width: 100%; }
+  .suno-links-heading { align-items: stretch; display: grid; }
+  .suno-link-dialog { width: 100%; max-height: 86dvh; border-width: 1px 0 0; border-radius: 1rem 1rem 0 0; }
+  .suno-dialog-backdrop { align-items: end; padding: 0; }
 }
 
 @media (max-height: 690px) and (max-width: 720px) {
