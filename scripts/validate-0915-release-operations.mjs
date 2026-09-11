@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { readFile, stat } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
@@ -92,11 +93,13 @@ for (const path of ["infra/backup/backup.sh", "infra/backup/restore.sh", "infra/
 
 console.log("0.9.1 Phase 5 contract: encrypted daily backup, isolated restore, failure injection, digest rollback and keyless artifact verification verified");
 
-if (process.env.APP_PHASE === "p5" || process.env.APP_CHANNEL === "release") {
+const currentVersion = (await read("VERSION")).trim();
+const currentReleaseManifest = new URL(`../config/release-manifest.${currentVersion}.json`, import.meta.url);
+if (process.env.APP_CHANNEL === "release" || existsSync(currentReleaseManifest)) {
   await import("./validate-1001-final-gate.mjs");
   await import("./validate-1002-release-artifacts.mjs");
   await import("./validate-1004-documentation.mjs");
   await import("./validate-1005-final-release.mjs");
 } else {
-  console.log("Current release-document sealing is deferred until Phase 5.");
+  console.log(`Current ${currentVersion} release-document sealing is deferred until its Phase 5 artifacts exist.`);
 }
