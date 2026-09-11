@@ -66,6 +66,27 @@ describe.runIf(enabled)("rhyme and prompt manual order store", () => {
       .rejects.toBeInstanceOf(LibraryOrderPinGroupError);
   });
 
+  it("restores a favorite prompt once at its previous manual rank", async () => {
+    const owner = await createUser();
+    const marker = randomUUID().slice(0, 8);
+    const ids: string[] = [];
+    for (const name of ["A", "B", "C"]) {
+      const prompt = (await prompts!.createPrompt(owner, parseCreatePromptInput({
+        requestId: randomUUID(), title: `${marker}-${name}`, tokens: [name]
+      }))).prompt;
+      ids.push(prompt.id);
+      await prompts!.setFavorite(owner, prompt.id, true);
+    }
+    const favoriteInput = { search: marker, sort: "manual" as const, limit: 20, favoriteOnly: true, recentlyUsedOnly: false };
+    const before = await prompts!.listPrompts(owner, favoriteInput);
+    await prompts!.movePrompt(owner, move(ids[2]!, ids[1]!, ids[0]!, before.orderVersion));
+    await prompts!.deletePrompt(owner, ids[2]!);
+    await pool!.query("update resources set deleted_at=null where owner_id=$1 and id=$2", [owner, ids[2]]);
+    const restored = await prompts!.listPrompts(owner, favoriteInput);
+    expect(restored.items.map(({ id }) => id)).toEqual([ids[0], ids[2], ids[1]]);
+    expect(restored.items.filter(({ id }) => id === ids[2])).toHaveLength(1);
+  });
+
   it("keeps song, rhyme and prompt versions and ranks independent", async () => {
     const owner = await createUser();
     const songIds: string[] = [];
