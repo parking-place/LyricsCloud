@@ -1,0 +1,38 @@
+
+{
+  "schemaVersion": "lyricscloud.migrations.v1",
+  "productVersion": "1.0.9",
+  "databaseEngine": "PostgreSQL 18",
+  "minimumCompatibleApplicationVersion": "0.9.0",
+  "maximumCompatibleApplicationVersion": "1.0.9",
+  "latestSchema": "1002_library_manual_order.sql",
+  "applyOrder": [
+    { "name": "0000_baseline.sql", "sha256": "b5e2e1a84f0568455183c0327f1e49068c900275e10068cacbeee327d6b4efa0" },
+    { "name": "0100_auth.sql", "sha256": "42c2a4185f498ed24c1a12f0976d3d336ca001b334a4301ba811376ba9d99751" },
+    { "name": "0101_profiles_ownership.sql", "sha256": "07570db2c0f801318e51d2cdc1ad24a2312cb75a255131243e426c1e130043fd" },
+    { "name": "0200_resources_songs.sql", "sha256": "dd78f79936f18704fe4a66fce398b05919460cfae2a9663b052109cc7ee15835" },
+    { "name": "0201_song_commands.sql", "sha256": "996557d4140feeb2aa38d1735dc54598adec614270da66d7f83907ef537140d8" },
+    { "name": "0300_lyrics.sql", "sha256": "e2c104a069f9488a49b5386bd0128e5ed369477603e044fb7eddf64850c98a93" },
+    { "name": "0310_crdt_sync.sql", "sha256": "2e9269abc06893abb5f088efa335c183444a7828d3bc1a0d032766cf0432d66e" },
+    { "name": "0311_lyric_revisions.sql", "sha256": "5f948bb629f4367d64a7681288b07738459184861809d759fd02ccd459e6fd85" },
+    { "name": "0400_rhyme_notes.sql", "sha256": "22b4fd596a0810c9f0c2bb822f1cf2f8263735fce46b272859b4863d7a91f8fb" },
+    { "name": "0500_prompts.sql", "sha256": "c73cee72f311055e60f0798b45ecceed352852c312b4ef3c42b56941f5f761f9" },
+    { "name": "0501_prompt_usage.sql", "sha256": "b78b8013db98e142b3e590f3a447306236bf244a4093d921be605d08cdb4cac7" },
+    { "name": "0700_search_foundation.sql", "sha256": "4f5e6b311b81f113ef6a1944dfbd7cf9b0328438ca69f828320e436ec0441d46" },
+    { "name": "0701_recent_searches.sql", "sha256": "12004559445c798b45cbd3e36c0aa57e8ba068e74020ec3e9c8f2008584bf8fb" },
+    { "name": "0702_recent_items.sql", "sha256": "885589038032a8a1aa509f659c9ae11515789a2d2141679fb93e787a1eb108d6" },
+    { "name": "0800_templates.sql", "sha256": "de0a3ae9f80d23f5088316e4a598377da377811888e2840de2a739867900307a" },
+    { "name": "0801_display_settings.sql", "sha256": "1aef60dd0e2e9ae97e2bb8ac4c136f76ec2debe8769ada38fbf9fac20890c290" },
+    { "name": "0802_lifecycle.sql", "sha256": "adb74f8713fed2d794d62bec71eef5b92f6d071931bd2a8b9fb52117ec2b5f50" },
+    { "name": "0900_beta_access.sql", "sha256": "f5f5a4422f5257d3d1e37cc2d7eda5f839fd08c3623a996e5a71981ac257a73b" },
+    { "name": "0901_beta_signup.sql", "sha256": "64435561361bfded3ef703a4c3b63f4f46b906cd7fd218aad8097f95f8c4a270" },
+    { "name": "1000_prompt_modes.sql", "sha256": "c383de2048e8c3b6bddf10458d89a845127bf607c806ccd9bf31d745570a5e22" },
+    { "name": "1001_library_view_settings.sql", "sha256": "ccea0ff0608c2a4af05b9b609a4adb7c4ae1cd2c9717396c79696cc5b7048e0d" },
+    { "name": "1002_library_manual_order.sql", "sha256": "07eca2c47545fed11f0f1cfd493aad8d9f615ca59b5af15b0cbc43b0c5f70ba8" }
+  ],
+  "rollback": {
+    "destructiveDownMigrationAllowed": false,
+    "applicationFirstWhenSchemaCompatible": true,
+    "databaseRecovery": "restore encrypted pre-deploy backup into a new empty database"
+  }
+}
