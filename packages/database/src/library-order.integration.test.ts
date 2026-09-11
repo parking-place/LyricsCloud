@@ -106,9 +106,9 @@ describe.runIf(enabled)("rhyme and prompt manual order store", () => {
     const songAfter = await songs!.listSongs(owner, { work: "all", sort: "manual", limit: 20 });
     const rhymeAfter = await rhymes!.listRhymeNotes(owner, { sort: "manual", limit: 20 });
     const promptAfter = await prompts!.listPrompts(owner, { sort: "manual", limit: 20, favoriteOnly: false, recentlyUsedOnly: false });
-    expect(songAfter.items.map(({ id }) => id)).toEqual(songIds.toReversed());
-    expect(rhymeAfter.items.map(({ id }) => id)).toEqual(rhymeIds.toReversed());
-    expect(promptAfter.items.map(({ id }) => id)).toEqual(promptIds.toReversed());
+    expect(songAfter.items.map(({ id }) => id)).toEqual([...songIds].reverse());
+    expect(rhymeAfter.items.map(({ id }) => id)).toEqual([...rhymeIds].reverse());
+    expect(promptAfter.items.map(({ id }) => id)).toEqual([...promptIds].reverse());
     expect([songAfter.orderVersion - songBefore.orderVersion,
       rhymeAfter.orderVersion - rhymeBefore.orderVersion,
       promptAfter.orderVersion - promptBefore.orderVersion]).toEqual([1, 1, 1]);
