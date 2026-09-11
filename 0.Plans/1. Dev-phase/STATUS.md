@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.14"
-current_phase: "../2.Patch-phase/1.0.14/2phase.md"
+current_phase: "../2.Patch-phase/1.0.14/3phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.0.14 P2에서 승인 OTF·OFL을 hash 경로로 번들하고 lazy loading·font-display·PWA cache·fallback 실패 시험을 구현한다"
+next_action: "1.0.14 P3에서 Noto Sans KR 선택 영속·다국어 미리보기·가사/라임/프롬프트 편집 적용과 cursor/undo/IME 보존을 인수한다"
 ```
 
 ## 승인과 기준
@@ -105,13 +105,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.13 P2~P4 | blocked | 공식 provider 계약·표시/캐시/재배포 권리·비용/rate limit 확보 전 API·tooltip·실제 언어/기기 수용 착수 금지 |
 | 1.0.13 P5/no-go | complete | 공식 근거·미완료 요구·재개 조건·1.0.14 인계 기록. 제품 변경이 없어 빈 `v1.0.13` tag·image·운영 배포 미발행 |
 | 1.0.14 P1 | complete | Noto Sans KR 2.004 Regular 공식 OTF·OFL·해시, 한글/자모/Kana/선별 Han+system fallback, cold 1건/4.7MB 예산 승인 |
-| 1.0.14 P2 | in_progress | hash 자산·lazy loading·font-display swap·PWA cache·실패 fallback 구현 중 |
+| 1.0.14 P2 | complete | 공식 hash OTF/OFL·swap/system fallback·immutable/PWA cache, Actions 두 run과 동일 SHA 공개 개발 인수 완료 |
+| 1.0.14 P3 | in_progress | 계정/가사별 선택 영속·다국어 미리보기·가사/라임/프롬프트 편집 적용·입력 상태 보존 구현 중 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.14/P2 | LC-NF-1.0.14-P2-01~03 | OTF/OFL hash 자산·lazy loading·PWA cache·fallback 실패 회귀 | 1.0.14 P1 | 2026-09-12T05:55:00+09:00 | in_progress |
+| Codex | 1.0.14/P3 | LC-NF-1.0.14-P3-01~03 | 선택 영속·다국어 preview·세 편집기 적용·cursor/undo/IME·모바일 overflow | 1.0.14 P2 `1c97f4c` | 2026-09-12T06:45:00+09:00 | in_progress |
+| Codex | 1.0.14/P2 | LC-NF-1.0.14-P2-01~03 | OTF/OFL hash 자산·lazy loading·PWA cache·fallback 실패 회귀 | 1.0.14 P1 | 2026-09-12T05:55:00+09:00 | complete |
 | Codex | 1.0.14/P1 | LC-NF-1.0.14-P1-01~03 | 폰트 공식 출처·OFL/재배포·글리프·용량·fallback 후보·예산 | 1.0.13 no-go | 2026-09-12T05:45:00+09:00 | complete |
 | Codex | 1.0.13/P5 | LC-NF-1.0.13-P5-01~03 | provider no-go·미완료 요구·재개 조건·1.0.14 인계 | 1.0.13 P1 no-go | 2026-09-12T05:35:00+09:00 | complete |
 | Codex | 1.0.13/P1 | LC-NF-1.0.13-P1-01~03 | 공식 NAVER 사전 제공 경로·권리/캐시·tooltip 대안·go/no-go 증거 | v1.0.12 release `b051d5d` | 2026-09-12T05:25:00+09:00 | complete (no-go) |
