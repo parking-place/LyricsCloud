@@ -95,7 +95,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.10/P4 | LC-NF-1.0.10-P4-01~06 | 실제 DB·수용 사례·권한/오프라인/재접속·서비스 재시작·지원 browser 회귀 | 1.0.10 P3 `55f1b99` | 2026-09-11T22:40:00+09:00 | active |
+| Codex | 1.0.10/P4 | LC-NF-1.0.10-P4-01~06 | 실제 DB·수용 사례·권한/오프라인/재접속·서비스 재시작·지원 browser 회귀 | 1.0.10 P3 `fdfb6da` | 2026-09-11T22:40:00+09:00 | active |
 | Codex | 1.0.10/P3 | LC-NF-1.0.10-P3-01~06 | song dashboard·Suno model/link panel·draft/실패 복구·PC/mobile E2E | 1.0.10 P2 `fa402c2` | 2026-09-11T22:05:00+09:00 | complete |
 | Codex | 1.0.10/P2 | LC-NF-1.0.10-P2-01~06 | domain parser·1003 migration/RLS·aggregate store/API·export·DB 회귀 | 1.0.10 P1 / v1.0.9 `07efeb0` | 2026-09-11T21:00:00+09:00 | complete |
 | Codex | 1.0.10/P1 | LC-NF-1.0.10-P1-01~06 | Suno 수동 모델/링크 결정·계약·수용 입력·P2/P3 담당 경계 | v1.0.9 release `07efeb0` | 2026-09-11T20:47:48+09:00 | complete |
@@ -155,7 +155,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 ## 인계
 
-1.0.10 P3 후보 `55f1b9918a2e21d4bcb3768271f637d4fd52a232`는 곡 대시보드에 미지정·제안·사용자 지정 모델 selector와 최대 20개 수동 링크의 추가·수정·순서·제거 UI를 추가했다. 외부 링크는 `_blank`와 `noopener noreferrer`로 열고 제거 확인은 LyricsCloud 항목만 제거하며 Suno 원곡을 건드리지 않음을 명시한다. 서버 validation·CAS 충돌·네트워크 실패를 숨기지 않고 sessionStorage 탭 초안을 유지한다. Node 24 전체 typecheck·production build, desktop/mobile 신규 8건과 dashboard/accessibility 관련 10건이 PASS했고 Actions push run `34604293119`의 전체 verify·네 dev image 게시/서명 및 PR run `34604299718`의 20분 52초 단독 전체 verify를 통과했다. 공개 개발 SHA에서 custom model·3개 링크 저장/재진입·새 탭 보호·mobile 한글 순차 입력 초안 복구·overflow 없음과 fixture 제거가 PASS했다. 자동화 viewport를 실제 물리 기기로 기록하지 않으며 P4가 owner·삭제복원·offline/reconnect·재시작과 지원 엔진 회귀를 담당한다.
+1.0.10 P3 제품 후보 `55f1b9918a2e21d4bcb3768271f637d4fd52a232`와 완료 SHA `fdfb6dabf551f6419679658c2863ffaec7031c2a`는 곡 대시보드에 미지정·제안·사용자 지정 모델 selector와 최대 20개 수동 링크의 추가·수정·순서·제거 UI를 추가했다. 외부 링크는 `_blank`와 `noopener noreferrer`로 열고 제거 확인은 LyricsCloud 항목만 제거하며 Suno 원곡을 건드리지 않음을 명시한다. 서버 validation·CAS 충돌·네트워크 실패를 숨기지 않고 sessionStorage 탭 초안을 유지한다. Node 24 전체 typecheck·production build, desktop/mobile 신규 8건과 dashboard/accessibility 관련 10건이 PASS했고 Actions push run `34604293119`의 전체 verify·네 dev image 게시/서명 및 PR run `34604299718`의 20분 52초 단독 전체 verify를 통과했다. 완료 SHA를 개발 서버에 다시 배포한 뒤 공개 custom model·3개 링크 저장/재진입·새 탭 보호·mobile 한글 순차 입력 초안 복구·overflow 없음과 fixture 제거도 다시 PASS했다. 자동화 viewport를 실제 물리 기기로 기록하지 않으며 P4가 owner·삭제복원·offline/reconnect·재시작과 지원 엔진 회귀를 담당한다.
 
 1.0.10 P2 구현·CI 후보 `fa402c2ceecdee500db866c4ace4562cfbfb9d91`와 같은 제품 tree의 Phase 완료 SHA `779dc623a9fff0e864ee0d150978e6a7bdcce023`는 공통 model/URL parser, `1003_song_suno_workspaces.sql`, owner RLS·aggregate CAS/idempotency store와 GET/POST API, soft-delete/restore/export 연결을 완성했다. Node 24 단위·실제 PostgreSQL·migration fresh/repeat/upgrade/RLS/rollback, production build와 보안 inventory를 통과했으며 GitHub Actions run `34600374457` 재실행에서 환경 변동으로 최초 실패했던 성능 CV와 Docker Hub 연결 재설정 한 건을 재시도해 전체 verify와 네 dev image 게시·서명을 통과했다. 완료 SHA 개발 서버와 공개 합성 두 owner로 3개 링크·custom model·멱등 replay·stale/소유권·삭제복원·fixture 제거가 PASS했다. P3는 저장 계약을 유지한 채 desktop/mobile UI와 새 탭 보호·draft/오류 상태를 담당한다. 실제 물리 기기와 UI gesture는 아직 실행하지 않았고 main·정식 image·릴리스 서버는 P2에서 변경하지 않았다.
 
