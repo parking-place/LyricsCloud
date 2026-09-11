@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
+import { buildPinnedGroupPositions } from "../lib/library-group-positions.js";
 import { LibraryViewModeSelector, useLibraryViewMode } from "./library-view-mode-selector.js";
 
 const STATUSES = ["idea", "writing_lyrics", "revising", "suno_generating", "mixing", "completed", "on_hold"] as const;
@@ -87,6 +88,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
   const [work, setWork] = useState<SongWorkFilter>(initialQuery.work);
   const [sort, setSort] = useState<SongSort>(initialQuery.sort);
   const [songs, setSongs] = useState<Song[]>([]);
+  const groupPositions = useMemo(() => buildPinnedGroupPositions(songs), [songs]);
   const [totalCount, setTotalCount] = useState(0);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [orderVersion, setOrderVersion] = useState(0);
@@ -320,11 +322,10 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     {loading ? <div className={`song-grid library-grid library-view-${libraryView.viewMode}`} aria-label="곡 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="song-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
     {!loading && !error && songs.length === 0 ? <div className="empty-state song-empty"><span aria-hidden="true">{filtered ? "⌕" : "♪"}</span><h2>{filtered ? "조건에 맞는 곡이 없어요" : "아직 만든 곡이 없어요"}</h2><p>{filtered ? "검색어나 필터를 바꾸면 다른 곡을 찾을 수 있어요." : "떠오른 아이디어를 첫 곡으로 기록해보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={() => { setSearch(""); setStatus(""); setWork("all"); }}>검색 조건 지우기</button> : <a className="primary-link" href={newSongHref}>첫 곡 만들기</a>}</div> : null}
     {!loading && songs.length > 0 ? <div className={`song-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{songs.map((song) => {
-      const group = songs.filter(({ isPinned }) => isPinned === song.isPinned);
-      const position = group.findIndex(({ id }) => id === song.id);
+      const { position, groupSize } = groupPositions.get(song.id)!;
       return <SongCard song={song} returnTo={returnTo} key={song.id} onOpen={rememberScroll} onToggle={toggle}
-        moving={movingId === song.id} dragActive={draggedId !== null} canMoveBefore={position > 0} canMoveAfter={position >= 0 && position < group.length - 1}
-        onMove={(destination) => moveSong(song.id, destination === "first" ? 0 : destination === "previous" ? position - 1 : destination === "next" ? position + 1 : group.length - 1)}
+        moving={movingId === song.id} dragActive={draggedId !== null} canMoveBefore={position > 0} canMoveAfter={position < groupSize - 1}
+        onMove={(destination) => moveSong(song.id, destination === "first" ? 0 : destination === "previous" ? position - 1 : destination === "next" ? position + 1 : groupSize - 1)}
         onDragStart={() => setDraggedId(song.id)} onDragEnd={() => setDraggedId(null)}
         onDrop={(event) => { if (!draggedId) return; const box = event.currentTarget.getBoundingClientRect(); moveToTarget(draggedId, song.id, event.clientY >= box.top + box.height / 2); setDraggedId(null); }} />;
     })}</div> : null}

@@ -1,6 +1,6 @@
 {
   "name": "lyricscloud",
-  "version": "1.0.10",
+  "version": "1.0.12",
   "private": true,
   "packageManager": "pnpm@11.25.0",
   "engines": {
