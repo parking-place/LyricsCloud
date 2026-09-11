@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.9"
-current_phase: "../2.Patch-phase/1.0.9/4phase.md"
+current_phase: "../2.Patch-phase/1.0.9/5phase.md"
 state: "implementation"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-11"
-next_action: "1.0.9 P3 동일 SHA 공개 사용자 흐름을 바탕으로 P4 권한·실패·재시작 지속성 교차 회귀를 완료한다"
+next_action: "1.0.9 P4 동일 SHA 교차 회귀를 바탕으로 P5 문서·봉인 artifact·최종 CI와 정식 릴리스를 완료한다"
 ```
 
 ## 승인과 기준
@@ -84,12 +84,14 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.9 P1 | complete | 기존 1002를 재사용한 owner+라임/프롬프트 독립 순서·고정 type API·CAS/idempotency·copy/gesture·복구 계약 확정 |
 | 1.0.9 P2 | complete | 라임·프롬프트 독립 rank/state/request·고정 type API, Actions `34568930374` 전체 CI·네 dev image·동일 SHA 공개 API 인수 완료 |
 | 1.0.9 P3 | complete | 라임·프롬프트 drag/버튼·copy gesture 분리·numeric rank 연속 이동, Actions `34575779766` 전체 CI·네 dev image·동일 SHA 공개 UI 인수 완료 |
+| 1.0.9 P4 | complete | 실제 DB 309건·Chromium 322건·5-project 기능 15건, Actions `34580072855` 전체 CI·네 dev image와 동일 SHA 공개 재시작 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.9/P4 | LC-NF-1.0.9-P4-01~06 | 실제 DB·세 유형 독립성·핀/삭제복원·권한/실패·지원 browser·개발 서비스 재시작 회귀 | 1.0.9 P3 `0236ee3` | 2026-09-11T17:30:00+09:00 | implementation |
+| Codex | 1.0.9/P5 | LC-NF-1.0.9-P5-01~06 | 요구 추적·현재/사용자/지원 문서·환경 schema·봉인 artifact·최종 CI·개발/정식 인수 | 1.0.9 P4 `86d8e4c` | 2026-09-11T18:10:00+09:00 | implementation |
+| Codex | 1.0.9/P4 | LC-NF-1.0.9-P4-01~06 | 실제 DB·세 유형 독립성·핀/삭제복원·권한/실패·지원 browser·개발 서비스 재시작 회귀 | 1.0.9 P3 `0236ee3` | 2026-09-11T17:30:00+09:00 | complete |
 | Codex | 1.0.9/P3 | LC-NF-1.0.9-P3-01~06 | 라임/프롬프트 drag handle·버튼/키보드 이동·copy gesture 분리·오류 원복·PC/mobile E2E | 1.0.9 P2 `ade5d08` | 2026-09-11T15:00:00+09:00 | complete |
 | Codex | 1.0.9/P1 | LC-NF-1.0.9-P1-01~06 | 라임/프롬프트 사용자정렬 계약·실패 입력·domain/database/web 담당·호환/rollback 경계 | 1.0.8 main/tag `5388bbf` | 2026-09-11T14:04:00+09:00 | complete |
 | Codex | 1.0.9/P2 | LC-NF-1.0.9-P2-01~06 | domain 고정 type 계약·기존 1002 store/API·프롬프트 copy·권한/복구 회귀 | 1.0.9 P1 `44f3a11` | 2026-09-11T14:10:00+09:00 | complete |
@@ -143,6 +145,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.0.9 P4 후보 `86d8e4c09757a3593c69017982e60a8356f30866`는 P3의 numeric rank 수정과 P4 회귀를 통합한 뒤 GitHub Actions run `34580072855`의 전체 verify와 네 dev image 게시·서명을 통과했다. 실제 PostgreSQL 전체 309건, Chromium desktop/mobile 322 PASS·조건부 36 skip, Chromium/Firefox/WebKit 5-project 기능 15건이 PASS했다. 개발 서버 checkout/build metadata는 같은 SHA의 `1.0.9`, `dev`, `p4`, schema `1002_library_manual_order.sql`, 네 서비스 healthy였고 공개 이동 뒤 web·collaboration·worker 실제 재시작 후에도 라임 `C-A-B`, 프롬프트 `B-C-A` 순서와 prompt 원문이 유지됐다. 첫 서버 내부 HTTPS 폴링 시간 초과는 같은 시각 외부 ready·사후 순서가 정상인 측정 문제였으며, 컨테이너 health와 외부 HTTPS로 분리한 재실행이 모두 PASS했다. 합성 자료는 제거했고 실제 물리 기기는 새로 수행하지 않았다. `OPS-100-001`은 사용자 승인 예외로 유지한다.
 
 1.0.9 P3 후보 `0236ee3018e00b65d634ea6ad928f60cec7d2732`는 GitHub Actions run `34575779766` 재실행의 전체 verify와 네 dev image 게시·서명을 통과했다. 첫 실행의 기존 1.0.8 HTML5 drag 1건 timing 실패는 같은 후보의 로컬 6회와 동일 SHA 전체 재실행에서 통과했고 새 1.0.9 검사는 두 실행 모두 PASS였다. 공개 개발 인수에서 공유 조회의 `sort_rank::text` 별칭이 숫자 rank 정렬을 문자열로 가로채 두 번째 연속 선두 이동을 무효화하던 결함을 재현해 qualified numeric 열 정렬과 갱신 행 확인, 실제 PostgreSQL 회귀로 닫았다. 개발 서버 checkout/build metadata는 같은 SHA의 `1.0.9`, `dev`, `p3`, schema `1002_library_manual_order.sql`, 네 서비스 healthy였고 공개 desktop/mobile 라임·프롬프트 연속 이동→재진입, prompt 원문 불변, long-press/drag 분리, overflow 없음이 PASS했다. 합성 자료는 제거했으며 실제 물리 기기 입력은 새로 수행하지 않았다.
 
