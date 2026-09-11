@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.8"
-current_phase: "../2.Patch-phase/1.0.8/3phase.md"
+current_phase: "../2.Patch-phase/1.0.8/5phase.md"
 state: "review"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-11"
-next_action: "1.0.8 P3 곡 drag·버튼·키보드·모바일 사용자정렬 흐름과 실패 복구를 구현한다"
+next_action: "1.0.8 P5 요구 추적·문서·최종 봉인 validator·전체 CI와 동일 SHA 개발 인수를 수행한다"
 ```
 
 ## 승인과 기준
@@ -78,11 +78,16 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.7 P5 | complete | Actions `34533353553` 전체 verify·네 dev image·동일 SHA 공개 설정 저장/재시작 인수 완료 |
 | 1.0.8 P1 | complete | owner+song 별도 rank·visible anchor·CAS/idempotency·핀/복원/paging·rollback 계약을 설계-only로 확정 |
 | 1.0.8 P2 | complete | 1002 migration/RLS·anchor move/CAS/idempotency·manual cursor, Actions `34551269832` 전체 CI와 동일 SHA 공개 개발 API 인수 완료 |
+| 1.0.8 P3 | complete | drag handle·버튼/키보드 대안·manual 전환·실패 원복/재시도·numeric rank 연속 이동, Actions `34554545058` 전체 CI와 동일 SHA 공개 개발 UI 인수 완료 |
+| 1.0.8 P4 | complete | 실제 PostgreSQL 298건·Chromium 316건·5-project 기능 30건, Actions `34558503310` 전체 CI·네 dev image와 동일 SHA 공개 재시작/순서 복원 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.8/P5 | LC-NF-1.0.8-P5-01~06 | 요구 추적·현재/사용자/지원 문서·환경 schema·봉인 validator·최종 CI·개발/정식 인수 | 1.0.8 P4 `72af9f9` | 2026-09-11T12:55:00+09:00 | review |
+| Codex | 1.0.8/P4 | LC-NF-1.0.8-P4-01~06 | 실제 DB·두 탭/응답 역전·offline/reconnect·지원 browser·개발 서비스 재시작 회귀 | 1.0.8 P3 `fd8b44b` | 2026-09-11T12:15:00+09:00 | complete |
+| Codex | 1.0.8/P3 | LC-NF-1.0.8-P3-01~06 | 곡 drag handle·버튼/키보드 이동·manual URL·실패 원복/409 최신화·PC/mobile E2E | 1.0.8 P2 `0f9e61a` | 2026-09-11T10:50:00+09:00 | complete |
 | Codex | 1.0.8/P2 | LC-NF-1.0.8-P2-01~06 | domain 계약·1002 rank/state/request migration·song store/API·DB/단위 회귀 | 1.0.8 P1 `994070d` | 2026-09-11T09:50:00+09:00 | complete |
 | Codex | 1.0.8/P1 | LC-NF-1.0.8-P1-01~06 | 곡 사용자정렬 계약·실패 입력·domain/database/web 담당·호환/rollback 경계 | v1.0.7 release `a7bf38c` | 2026-09-11T09:45:00+09:00 | complete |
 | Codex | 1.0.7/P4 | LC-NF-1.0.7-P4-01~06 | stale/실패·기존 목록 layout 회귀·실제 DB·지원 browser·개발 서비스 재시작 | 1.0.7 P3 `6f0a556` | 2026-09-11T06:00:00+09:00 | complete |
@@ -130,6 +135,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.0.8 P3 후보 `72370f07b33525b03507a61dfdaf065e547de641`은 실제 PostgreSQL 곡 순서 5건, check·production build, 관련 Chromium PC/mobile 32건과 공개 desktop/mobile 이동·재접속·manual URL·overflow smoke를 통과했다. 공개 연속 선두 이동에서 `sort_rank::text` 출력 별칭이 numeric rank 정렬을 문자열로 가로채던 결함을 재현해 실제 column 정렬과 DB 회귀로 닫았다. GitHub Actions run `34554545058` 재실행은 unit/DB 294 PASS·4 skip, Chromium 316 PASS·36 skip, 5-project 10 PASS와 migration/image/restore/rollback/scans, 네 dev image 게시·서명을 모두 통과했다. 첫 실행의 기존 mobile lyric-flow 1건 timing 실패는 같은 후보의 로컬 6회와 동일 SHA 전체 재실행에서 통과했고 신규 1.0.8 12건은 두 실행 모두 PASS였다. 개발 서버 checkout/build metadata는 후보와 일치했고 `1.0.8`, `dev`, `p3`, schema `1002_library_manual_order.sql`, 네 서비스 healthy였다. 실제 물리 기기는 새로 실행하지 않았으며 P4가 전체 DB·두 탭/오프라인/재시작·지원 브라우저 회귀를 담당한다.
 
 1.0.3 P2 구현 후보 `5e6c7d0fcfec5ae20aaf17807fcf20e6213eadd7`은 전체 unit 176건 PASS(DB 필요 84건은 별도 실행), PostgreSQL 18 관련 28건, migration 빈 설치·반복·legacy upgrade·RLS·차단 rollback, typecheck와 production build를 통과했다. 개발 서버 원격 branch·checkout·환경 `BUILD_ID`가 일치했고 공개 `1.0.3`, `dev`, `p2`, schema `1000_prompt_modes.sql`, 네 서비스 healthy를 확인했다. 합성 공개 smoke에서 문장 raw·mode 저장/복제/검색, 소유권, 구버전 capability 차단과 신규 연결이 PASS였고 합성 자료를 제거했다. P3는 일반 보기/입력에서 원문을 변환하지 않고 명시 변환에서만 preview/confirm/undo를 제공한다.
 

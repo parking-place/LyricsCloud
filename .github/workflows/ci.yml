@@ -47,7 +47,7 @@ jobs:
       APP_VERSION: 1.0.8
       BUILD_ID: ${{ github.sha }}
       APP_CHANNEL: dev
-      APP_PHASE: p2
+      APP_PHASE: p4
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6

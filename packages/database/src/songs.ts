@@ -369,7 +369,7 @@ export class PostgresSongStore {
 
       const ordered = await client.query<{ resource_id: string; sort_rank: string }>(`select resource_id,sort_rank::text
         from library_order_items where owner_id=$1 and resource_type='song' and pin_group=$2
-        order by sort_rank,resource_id for update`, [ownerId, pinGroup]);
+        order by library_order_items.sort_rank,resource_id for update`, [ownerId, pinGroup]);
       const original = ordered.rows.map((row) => row.resource_id);
       const without = original.filter((id) => id !== input.itemId);
       const beforeIndex = input.beforeId === null ? -1 : without.indexOf(input.beforeId);
