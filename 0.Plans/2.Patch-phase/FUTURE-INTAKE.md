@@ -108,6 +108,7 @@
 | 2026-09-11 1.0.8 P3 구현 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `0f9e61a207cf1c5f90c47da2078889c141dde7a3` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 곡 drag handle·키보드/터치 이동 대안·manual 전환·낙관 원복/멱등 재시도·409 수렴과 PC/mobile E2E만 구현 | 1.0.8 P2 완료·P3 착수 push 전 행 |
 | 2026-09-11 1.0.8 P3 연속 선두 이동 회귀 수정 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `2094f9a49512131dff37c3fa3d8209a2c54dae22` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 문자열 projection 별칭이 numeric rank 정렬을 가로채던 결함과 연속 선두 이동 DB 회귀만 보완 | 1.0.8 P3 구현 후보 push 전 행 |
 | 2026-09-11 1.0.8 P3 완료·P4 착수 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `72370f07b33525b03507a61dfdaf065e547de641` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P3 전체 CI·네 dev image·동일 SHA 공개 UI 인수 완료, 기존 P4 실패·권한·복구 교차 회귀만 착수 | 1.0.8 P3 연속 선두 이동 회귀 수정 push 전 행 |
+| 2026-09-11 1.0.8 P4 회귀 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `fd8b44bec6d84a8e9a3d8114c830826aa44f9510` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 실제 DB·전체 Chromium·5-project 기능/릴리스 행렬과 개발 재시작 회귀만 수행, 제품 기능 범위 변경 없음 | 1.0.8 P3 완료·P4 착수 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
