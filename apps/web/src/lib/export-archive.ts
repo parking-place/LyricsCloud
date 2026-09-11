@@ -63,14 +63,22 @@ async function* writeZip(entries: AsyncIterable<ArchiveEntry>, at: Date): AsyncG
 
 function readableResourceEntry(resource: ExportReadableResource): ArchiveEntry {
   const deleted = resource.deletedAt ? `\n삭제 시각: ${resource.deletedAt}` : "";
+  const suno = resource.type === "song" ? sunoMarkdown(resource) : "";
   if (resource.type === "song") return textEntry(`songs/${safeExportFilename(resource.title, resource.id, "md")}`,
-    `# ${safeMarkdownHeading(resource.title)}\n\n- ID: ${resource.id}\n- 상태: ${resource.status ?? ""}${deleted}\n\n## 설명\n\n${resource.description}\n\n## 작업 메모\n\n${resource.workNotes}\n`);
+    `# ${safeMarkdownHeading(resource.title)}\n\n- ID: ${resource.id}\n- 상태: ${resource.status ?? ""}${deleted}\n\n## 설명\n\n${resource.description}\n\n## 작업 메모\n\n${resource.workNotes}${suno}\n`);
   if (resource.type === "lyrics") return textEntry(`lyrics/${safeExportFilename(resource.title, resource.id, "txt")}`,
     `${resource.title}\nID: ${resource.id}\n곡 ID: ${resource.songId ?? ""}\n상태: ${resource.status ?? ""}${deleted}\n메모: ${resource.memo}\n\n${resource.body}`);
   if (resource.type === "rhyme_note") return textEntry(`rhymes/${safeExportFilename(resource.title, resource.id, "txt")}`,
     `${resource.title}\nID: ${resource.id}${deleted}\n\n${resource.body}`);
   return textEntry(`prompts/${safeExportFilename(resource.title, resource.id, "txt")}`,
     `${resource.title}\nID: ${resource.id}\n형식: ${resource.promptMode === "sentence" ? "문장형" : "태그형"}${deleted}\n\n${resource.plainText}`);
+}
+
+function sunoMarkdown(resource: ExportReadableResource): string {
+  const links = resource.sunoLinks.length ? resource.sunoLinks.map((link, index) =>
+    `### ${safeMarkdownHeading(link.title || `링크 ${index + 1}`)}\n\n- URL: ${link.url}\n- 순서: ${link.position + 1}\n\n${link.note}`
+  ).join("\n\n") : "저장된 작업 링크가 없습니다.";
+  return `\n\n## Suno 작업 정보\n\n- 모델명: ${resource.sunoModelLabel ?? "미지정"}\n\n${links}`;
 }
 
 function readableTemplateEntry(template: ExportReadableTemplate): ArchiveEntry {

@@ -10,11 +10,12 @@ export function errorResponse(
   code: ErrorCode,
   status: number,
   requestId?: string,
-  issues?: readonly ValidationIssue[]
+  issues?: readonly ValidationIssue[],
+  details?: Readonly<Record<string, unknown>>
 ): Response {
   const correlationId = createRequestId(requestId);
   return Response.json(
-    { error: { code, requestId: correlationId, ...(issues?.length ? { issues } : {}) } },
+    { error: { code, requestId: correlationId, ...(issues?.length ? { issues } : {}), ...(details ? { details } : {}) } },
     { status, headers: { ...privateResponseHeaders, "x-request-id": correlationId } }
   );
 }

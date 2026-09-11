@@ -19,6 +19,19 @@ export interface ExportReadableResource {
   readonly memo: string;
   readonly promptMode: "tags" | "sentence" | null;
   readonly plainText: string;
+  readonly sunoModelLabel: string | null;
+  readonly sunoLinks: readonly ExportReadableSunoLink[];
+}
+
+export interface ExportReadableSunoLink {
+  readonly id: string;
+  readonly url: string;
+  readonly title: string;
+  readonly note: string;
+  readonly position: number;
+  readonly rowVersion: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
 }
 
 export interface ExportReadableTemplate {
@@ -92,7 +105,9 @@ export class ExportSnapshot {
         description: String(row.description ?? ""), workNotes: String(row.work_notes ?? ""),
         body: String(row.body ?? ""), memo: String(row.memo ?? ""),
         promptMode: row.prompt_mode === "sentence" ? "sentence" : row.prompt_mode === "tags" ? "tags" : null,
-        plainText: String(row.plain_text ?? "")
+        plainText: String(row.plain_text ?? ""),
+        sunoModelLabel: typeof row.suno_model_label === "string" ? row.suno_model_label : null,
+        sunoLinks: Array.isArray(row.suno_links) ? row.suno_links.map(mapReadableSunoLink) : []
       };
     }
   }
@@ -155,6 +170,8 @@ const EXPORT_SECTIONS = [
   { name: "tags", query: `select to_jsonb(q) data from (select id,display_value,normalized_value,created_at,updated_at,deleted_at from tags where owner_id=app_current_user_id() order by id) q` },
   { name: "resourceTags", query: `select to_jsonb(q) data from (select resource_id,tag_id,created_at from resource_tags where owner_id=app_current_user_id() order by resource_id,tag_id) q` },
   { name: "songResourceLinks", query: `select to_jsonb(q) data from (select song_resource_id,linked_resource_id,linked_resource_type,created_at from song_resource_links where owner_id=app_current_user_id() order by song_resource_id,linked_resource_id) q` },
+  { name: "songSunoWorkspaces", query: `select to_jsonb(q) data from (select song_resource_id,model_label,row_version,updated_at from song_suno_workspaces where owner_id=app_current_user_id() order by song_resource_id) q` },
+  { name: "songSunoLinks", query: `select to_jsonb(q) data from (select id,song_resource_id,url,title,note,position,row_version,created_at,updated_at from song_suno_links where owner_id=app_current_user_id() order by song_resource_id,position,id) q` },
   { name: "templates", query: `select to_jsonb(q) data from (select t.id,case when t.owner_id is null then 'built_in' else 'owned' end source,t.type,t.title,t.lyric_body,t.prompt_tokens,t.prompt_mode,t.prompt_text,t.row_version,t.created_at,t.updated_at,t.deleted_at,t.purge_at from templates t where t.owner_id=app_current_user_id() or (t.owner_id is null and exists(select 1 from template_preferences p where p.owner_id=app_current_user_id() and p.template_id=t.id)) order by source,t.type,t.id) q` },
   { name: "templatePreferences", query: `select to_jsonb(q) data from (select template_id,is_favorite,use_count,last_used_at,updated_at from template_preferences where owner_id=app_current_user_id() order by template_id) q` },
   { name: "settings", query: `select to_jsonb(q) data from (select theme,writing_font,font_size,line_height,letter_spacing,focus_mode_default,row_version,updated_at from user_settings where owner_id=app_current_user_id()) q` },
@@ -167,11 +184,22 @@ const EXPORT_SECTIONS = [
 const READABLE_RESOURCES_QUERY = `select r.id,r.type,r.title,r.deleted_at,l.song_id,
   coalesce(s.status,l.status) status,coalesce(s.description,'') description,coalesce(s.work_notes,'') work_notes,
   coalesce(l.body,n.body,'') body,coalesce(l.memo,'') memo,p.mode prompt_mode,
-  coalesce(case when p.mode='sentence' then p.sentence_text else p.plain_text end,'') plain_text
+  coalesce(case when p.mode='sentence' then p.sentence_text else p.plain_text end,'') plain_text,
+  suno.model_label suno_model_label,coalesce(suno.links,'[]'::jsonb) suno_links
 from resources r left join songs s on s.resource_id=r.id and s.owner_id=r.owner_id
 left join lyrics l on l.resource_id=r.id and l.owner_id=r.owner_id
 left join rhyme_notes n on n.resource_id=r.id and n.owner_id=r.owner_id
 left join prompts p on p.resource_id=r.id and p.owner_id=r.owner_id
+left join lateral (
+  select workspace.model_label,coalesce(jsonb_agg(jsonb_build_object(
+    'id',link.id,'url',link.url,'title',link.title,'note',link.note,'position',link.position,
+    'rowVersion',link.row_version,'createdAt',link.created_at,'updatedAt',link.updated_at
+  ) order by link.position,link.id) filter (where link.id is not null),'[]'::jsonb) links
+  from song_suno_workspaces workspace left join song_suno_links link
+    on link.owner_id=workspace.owner_id and link.song_resource_id=workspace.song_resource_id
+  where workspace.owner_id=r.owner_id and workspace.song_resource_id=r.id
+  group by workspace.model_label
+) suno on true
 where r.owner_id=app_current_user_id() order by r.type,r.created_at,r.id`;
 
 const READABLE_TEMPLATES_QUERY = `select id,type,title,lyric_body,prompt_tokens,prompt_mode,prompt_text,deleted_at from templates
@@ -181,4 +209,13 @@ function exportTimestamp(value: unknown): string | null {
   // node-postgres decodes timestamptz as Date; JSON queries already yield text.
   if (value instanceof Date) return value.toISOString();
   return typeof value === "string" ? value : null;
+}
+
+function mapReadableSunoLink(value: unknown): ExportReadableSunoLink {
+  const row = typeof value === "object" && value !== null ? value as Record<string, unknown> : {};
+  return {
+    id: String(row.id ?? ""), url: String(row.url ?? ""), title: String(row.title ?? ""), note: String(row.note ?? ""),
+    position: Number(row.position ?? 0), rowVersion: Number(row.rowVersion ?? 0),
+    createdAt: String(row.createdAt ?? ""), updatedAt: String(row.updatedAt ?? "")
+  };
 }

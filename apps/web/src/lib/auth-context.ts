@@ -1,6 +1,6 @@
 import { AuthService, cookieNames, GoogleOidcAdapter, readCookie, sessionCookie, tokenHash } from "@lyricscloud/auth";
 import { readAuthConfig, readBetaSignupConfig, readRuntimeConfig, type AuthConfig } from "@lyricscloud/config";
-import { PostgresAuthStore, PostgresBetaSignupStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLibraryViewSettingsStore, PostgresLifecycleStore, PostgresExportStore, type PendingWithdrawalSession } from "@lyricscloud/database";
+import { PostgresAuthStore, PostgresBetaSignupStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLibraryViewSettingsStore, PostgresLifecycleStore, PostgresExportStore, PostgresSunoWorkspaceStore, type PendingWithdrawalSession } from "@lyricscloud/database";
 
 interface AuthContext {
   readonly config: AuthConfig;
@@ -19,6 +19,7 @@ interface AuthContext {
   readonly libraryViewSettings: PostgresLibraryViewSettingsStore;
   readonly lifecycle: PostgresLifecycleStore;
   readonly exports: PostgresExportStore;
+  readonly sunoWorkspaces: PostgresSunoWorkspaceStore;
 }
 
 export class RequestAuthError extends Error {
@@ -54,7 +55,8 @@ export function getAuthContext(): AuthContext {
     displaySettings: new PostgresDisplaySettingsStore(runtime.databaseUrl),
     libraryViewSettings: new PostgresLibraryViewSettingsStore(runtime.databaseUrl),
     lifecycle: new PostgresLifecycleStore(runtime.databaseUrl),
-    exports: new PostgresExportStore(runtime.databaseUrl)
+    exports: new PostgresExportStore(runtime.databaseUrl),
+    sunoWorkspaces: new PostgresSunoWorkspaceStore(runtime.databaseUrl)
   };
   cached = { key, context };
   return context;

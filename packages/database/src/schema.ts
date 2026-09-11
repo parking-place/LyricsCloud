@@ -1,5 +1,5 @@
 import type { LibraryViewMode, LibraryViewResourceType, LyricStatus, ResourceColor, ResourceType, SongStatus, TemplateType } from "@lyricscloud/domain";
-import { bigint, boolean, doublePrecision, integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { bigint, boolean, doublePrecision, integer, jsonb, pgTable, primaryKey, smallint, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const appUsers = pgTable("app_users", {
   id: uuid("id").primaryKey(),
@@ -267,6 +267,36 @@ export const libraryOrderMoveRequests = pgTable("library_order_move_requests", {
   changed: boolean("changed").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [primaryKey({ columns: [table.ownerId, table.resourceType, table.requestId] })]);
+
+export const songSunoWorkspaces = pgTable("song_suno_workspaces", {
+  songResourceId: uuid("song_resource_id").primaryKey(),
+  ownerId: uuid("owner_id").notNull(),
+  modelLabel: text("model_label"),
+  rowVersion: bigint("row_version", { mode: "number" }).notNull().default(0),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const songSunoLinks = pgTable("song_suno_links", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  ownerId: uuid("owner_id").notNull(),
+  songResourceId: uuid("song_resource_id").notNull(),
+  url: text("url").notNull(),
+  title: text("title").notNull().default(""),
+  note: text("note").notNull().default(""),
+  position: smallint("position").notNull(),
+  rowVersion: bigint("row_version", { mode: "number" }).notNull().default(1),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const songSunoCommandRequests = pgTable("song_suno_command_requests", {
+  ownerId: uuid("owner_id").notNull(),
+  songResourceId: uuid("song_resource_id").notNull(),
+  requestId: uuid("request_id").notNull(),
+  requestSha256: text("request_sha256").notNull(),
+  result: jsonb("result").$type<Record<string, unknown>>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.songResourceId, table.requestId] })]);
 
 export const lyricDisplaySettings = pgTable("lyric_display_settings", {
   lyricId: uuid("lyric_id").primaryKey(),

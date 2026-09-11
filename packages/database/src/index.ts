@@ -1,6 +1,6 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "1002_library_manual_order.sql";
+export const CURRENT_SCHEMA_VERSION = "1003_song_suno_workspaces.sql";
 
 export * from "./auth.js";
 export * from "./beta-access.js";
@@ -19,6 +19,7 @@ export * from "./templates.js";
 export * from "./display-settings.js";
 export * from "./library-view-settings.js";
 export * from "./library-order.js";
+export * from "./suno-workspaces.js";
 export * from "./lifecycle.js";
 export * from "./export.js";
 export * from "./pool.js";
