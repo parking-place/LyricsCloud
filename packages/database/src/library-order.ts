@@ -148,7 +148,7 @@ export async function moveLibraryOrderItem(
 
   const ordered = await client.query<{ resource_id: string; sort_rank: string }>(`select resource_id,sort_rank::text
     from library_order_items where owner_id=$1 and resource_type=$2 and pin_group=$3
-    order by sort_rank,resource_id for update`, [ownerId, resourceType, pinGroup]);
+    order by library_order_items.sort_rank,resource_id for update`, [ownerId, resourceType, pinGroup]);
   const original = ordered.rows.map((row) => row.resource_id);
   const without = original.filter((id) => id !== input.itemId);
   const beforeIndex = input.beforeId === null ? -1 : without.indexOf(input.beforeId);
@@ -171,9 +171,10 @@ export async function moveLibraryOrderItem(
     if (nextRank - previousRank <= 1n) {
       await rebalanceLibraryOrderGroup(client, ownerId, resourceType, pinGroup, nextOrder);
     } else {
-      await client.query(`update library_order_items set sort_rank=$5,updated_at=clock_timestamp()
+      const updated = await client.query(`update library_order_items set sort_rank=$5,updated_at=clock_timestamp()
         where owner_id=$1 and resource_type=$2 and resource_id=$3 and pin_group=$4`,
       [ownerId, resourceType, input.itemId, pinGroup, ((previousRank + nextRank) / 2n).toString()]);
+      if (updated.rowCount !== 1) throw new LibraryOrderNotFoundError();
     }
     resultVersion = await bumpLibraryOrderVersion(client, ownerId, resourceType);
   }

@@ -40,11 +40,15 @@ describe.runIf(enabled)("rhyme and prompt manual order store", () => {
     const marker = randomUUID().slice(0, 8);
     const first = (await prompts!.createPrompt(owner, parseCreatePromptInput({ requestId: randomUUID(), title: `${marker}-A`, tokens: ["one", "two", "three"] }))).prompt;
     const second = (await prompts!.createPrompt(owner, parseCreatePromptInput({ requestId: randomUUID(), title: `${marker}-B`, tokens: ["four"] }))).prompt;
+    const third = (await prompts!.createPrompt(owner, parseCreatePromptInput({ requestId: randomUUID(), title: `${marker}-C`, tokens: ["five"] }))).prompt;
     const before = await prompts!.getPrompt(owner, first.id);
     const page = await prompts!.listPrompts(owner, { search: marker, sort: "manual", limit: 20, favoriteOnly: false, recentlyUsedOnly: false });
-    await prompts!.movePrompt(owner, move(second.id, first.id, null, page.orderVersion));
+    const firstMove = await prompts!.movePrompt(owner, move(third.id, first.id, null, page.orderVersion));
+    const secondMove = await prompts!.movePrompt(owner, move(second.id, third.id, null, firstMove.orderVersion));
+    expect(firstMove.changed).toBe(true);
+    expect(secondMove.changed).toBe(true);
     expect((await prompts!.listPrompts(owner, { search: marker, sort: "manual", limit: 20, favoriteOnly: false, recentlyUsedOnly: false })).items.map(({ id }) => id))
-      .toEqual([second.id, first.id]);
+      .toEqual([second.id, third.id, first.id]);
     expect(await prompts!.getPrompt(owner, first.id)).toMatchObject({ plainText: before!.plainText, tokens: before!.tokens });
   });
 
