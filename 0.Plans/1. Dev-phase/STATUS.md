@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.0.12"
-current_phase: "../2.Patch-phase/1.0.12/5phase.md"
-state: "complete"
+current_version: "1.0.13"
+current_phase: "../2.Patch-phase/1.0.13/1phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.0.12 P5 완료 SHA를 재배포·공개 확인한 뒤 PR을 main에 병합하고 최종 main CI·개발 인수·annotated tag·정식 image·릴리스 서버·GitHub Release를 실행한다"
+next_action: "1.0.13 P1에서 NAVER 한국어·영어·일어 사전 뜻풀이의 공식 제공 경로·권리·캐시 조건을 최신 공식 근거로 판정한다"
 ```
 
 ## 승인과 기준
@@ -100,11 +100,14 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.12 P3 | complete | 전체 CI 두 run·동일 SHA 개발 공개 desktop/mobile 수직 흐름, 재진입·exact copy·Suno 새 탭·owner/실패 UI 인수 완료 |
 | 1.0.12 P4 | complete | 실제 PostgreSQL 330건·PWA/성능 계약·전체 CI 두 run·공개 desktop/mobile·owner 격리·서비스 재시작 인수 완료 |
 | 1.0.12 P5 | complete | 후보 `13a4870`, Actions `34635992205`·`34636003640`, 네 dev image, 동일 SHA 공개 수직 흐름·owner 격리·서비스 재시작 인수 완료 |
+| 1.0.12 Release | complete | main/tag `b051d5d`, main CI `34638724606`·tag CI `34641693226`, exact digest 운영 배포·공개 재시작/영속성 smoke·GitHub Release 완료 |
+| 1.0.13 P1 | in_progress | NAVER 세 언어 사전 뜻풀이의 공식 제공 경로·신청/인증·출처/캐시 권리와 대안 판정 중 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.13/P1 | LC-NF-1.0.13-P1-01~03 | 공식 NAVER 사전 제공 경로·권리/캐시·tooltip 대안·go/no-go 증거 | v1.0.12 release `b051d5d` | 2026-09-12T05:25:00+09:00 | in_progress |
 | Codex | 1.0.12/P5 | LC-NF-1.0.12-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 1.0.12 P4 `a4e0910` | 2026-09-12T03:50:00+09:00 | complete |
 | Codex | 1.0.12/P4 | LC-NF-1.0.12-P4-01~06 | 실제 DB·수용 사례·권한/계정·offline/reconnect·PWA·재시작·지원 browser 교차 회귀 | 1.0.12 P3 `9b891a8` | 2026-09-12T03:20:00+09:00 | complete |
 | Codex | 1.0.12/P3 | LC-NF-1.0.12-P3-01~06 | 곡→가사→라임 삽입→문장 prompt→copy→Suno open 수직 흐름·PC/mobile 재진입 | 1.0.12 P2 `73c1671` | 2026-09-12T02:50:00+09:00 | complete |
