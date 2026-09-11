@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.0.9"
-current_phase: "../2.Patch-phase/1.0.9/5phase.md"
-state: "complete"
+current_version: "1.0.10"
+current_phase: "../2.Patch-phase/1.0.10/2phase.md"
+state: "active"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-11"
-next_action: "완료된 1.0.9 P1~P5를 main에 병합하고 annotated v1.0.9·정식 image·릴리스 서버 exact-digest 배포를 수행한다"
+next_action: "1.0.10 P2에서 실패 fixture를 먼저 추가하고 1003 schema·aggregate store/API·export를 구현한다"
 ```
 
 ## 승인과 기준
@@ -86,11 +86,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.9 P3 | complete | 라임·프롬프트 drag/버튼·copy gesture 분리·numeric rank 연속 이동, Actions `34575779766` 전체 CI·네 dev image·동일 SHA 공개 UI 인수 완료 |
 | 1.0.9 P4 | complete | 실제 DB 309건·Chromium 322건·5-project 기능 15건, Actions `34580072855` 전체 CI·네 dev image와 동일 SHA 공개 재시작 인수 완료 |
 | 1.0.9 P5 | complete | Actions `34583462005` 전체 CI·네 dev image 게시/서명·동일 SHA 공개 desktop/mobile 이동·재진입·재시작 인수 완료 |
+| 1.0.10 P1 | complete | 수동 모델명·복수 Suno 링크의 입력 제한·owner/parent·멱등 aggregate·삭제/복원/export·새 탭 계약 확정 |
+| 1.0.10 P2 | active | 1003 schema·domain/store/API·export와 실제 DB 실패 우선 구현 착수 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.10/P2 | LC-NF-1.0.10-P2-01~06 | domain parser·1003 migration/RLS·aggregate store/API·export·DB 회귀 | 1.0.10 P1 / v1.0.9 `07efeb0` | 2026-09-11T21:00:00+09:00 | active |
+| Codex | 1.0.10/P1 | LC-NF-1.0.10-P1-01~06 | Suno 수동 모델/링크 결정·계약·수용 입력·P2/P3 담당 경계 | v1.0.9 release `07efeb0` | 2026-09-11T20:47:48+09:00 | complete |
 | Codex | 1.0.9/P5 | LC-NF-1.0.9-P5-01~06 | 요구 추적·현재/사용자/지원 문서·환경 schema·봉인 artifact·최종 CI·개발/정식 인수 | 1.0.9 P4 `86d8e4c` | 2026-09-11T18:10:00+09:00 | complete |
 | Codex | 1.0.9/P4 | LC-NF-1.0.9-P4-01~06 | 실제 DB·세 유형 독립성·핀/삭제복원·권한/실패·지원 browser·개발 서비스 재시작 회귀 | 1.0.9 P3 `0236ee3` | 2026-09-11T17:30:00+09:00 | complete |
 | Codex | 1.0.9/P3 | LC-NF-1.0.9-P3-01~06 | 라임/프롬프트 drag handle·버튼/키보드 이동·copy gesture 분리·오류 원복·PC/mobile E2E | 1.0.9 P2 `ade5d08` | 2026-09-11T15:00:00+09:00 | complete |

@@ -1,9 +1,9 @@
 # PROD-NF-004 — 모델 표기·복수 작업 링크
 
-- 상태: **Proposed**
+- 상태: **Accepted for 1.0.10 manual workspace**. 1.0.11 자동 metadata provider는 `ADR-NF-002` 승인 전 Proposed다.
 - 작성일: 2026-09-09
 - 결정 Phase: 1.0.10 P1, 1.0.11 소비
-- 승인: 아직 구현 기술/세부 계약 승인 기록 없음. 최초 소비 Phase에서 승인자·시각·범위를 기록한다.
+- 승인: 사용자, 2026-09-11. 1.0.14까지 전체 Phase와 버전별 릴리스 실행 지시로 1.0.10 P1 권장안을 소비했다. 수동 model/link 원본·owner 격리·멱등 CAS·복구/export·안전한 새 탭만 승인하며 자동 외부 조회는 승인하지 않는다.
 
 ## 해결할 질문
 
@@ -17,11 +17,11 @@
 
 ## 권장 선택과 이유
 
-1.0.10의 수동 원본을 우선 보존하고 1.0.11의 승인된 provider 결과를 파생 정보로 추가한다. 공식 자동 취득을 못 하면 미완료/범위 승인을 분리한다.
+1.0.10의 수동 원본을 우선 보존하고 1.0.11의 승인된 provider 결과를 별도 파생 정보로 추가한다. 공식 자동 취득을 못 하면 미완료/범위 승인을 분리한다. 저장 aggregate와 API·제한·rollback은 [P1 인수 기록](../runbooks/1.0.10-phase1-suno-manual-contract.md)에 고정한다.
 
 ## 영향과 검증
 
-복수 링크·unknown 모델명 보존·새 탭 보호·SSRF·갱신 실패·private 자료 비노출. 실제 source SHA·변경 파일·schema·자동/수동 증거를 해당 Phase 인수표에 기록한다. 새 문서가 있다는 사실만으로 기존 Accepted 결정을 폐기하지 않는다.
+복수 링크·unknown 모델명 보존·새 탭 보호·URL allowlist·갱신 실패·private 자료 비노출. 수동 1.0.10은 outbound 요청이 없고, 자동 1.0.11의 SSRF/redirect/DNS/provider 경계는 `ADR-NF-002`가 별도로 소유한다. 실제 source SHA·변경 파일·schema·자동/수동 증거를 해당 Phase 인수표에 기록한다. 새 문서가 있다는 사실만으로 기존 Accepted 결정을 폐기하지 않는다.
 
 ## 되돌림·비용
 

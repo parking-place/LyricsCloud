@@ -1,6 +1,6 @@
 # 1.0.10 Phase 1 — 계약·실패 사례·담당 경계
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`, 2026-09-11)
 - 단계 목적: Suno 모델명·복수 작업 링크의 계약·실패 사례·담당 경계을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -39,12 +39,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.0.10-P1-01` v3·v3.5·v4·v4.5·v4.5+·v4.5-all·v5·v5.5는 사용자 제공 예시이며 현재 공식 목록이라고 주장하지 않는다.
-- [ ] `LC-NF-1.0.10-P1-02` 곡의 모델명은 작업 메타데이터다. Suno API를 호출하거나 오디오 생성 설정을 바꾸지 않는다.
-- [ ] `LC-NF-1.0.10-P1-03` 링크는 현재 곡에 N개 허용한다. 제목/메모 등 수동 값과 자동 조회값의 권한/우선순위를 구분한다.
-- [ ] `LC-NF-1.0.10-P1-04` 관련 구현·테스트 경로를 읽고 위 요구/수용 사례를 정상·오류·권한·복구 입력표로 고정한다. 원인 미확정 항목은 가설과 증거 수준을 표시한다.
-- [ ] `LC-NF-1.0.10-P1-05` 저장 형식·API·순서·copy·권한 중 변경되는 인터페이스와 호환/되돌림을 결정 문서에 기록하고 최초 소비 전에 승인한다.
-- [ ] `LC-NF-1.0.10-P1-06` 각 변경 파일 담당자와 실제 최종 source SHA를 기록한다. 해당 패치 밖의 기능이나 아직 선택하지 않은 아이디어를 섞지 않는다.
+- [x] `LC-NF-1.0.10-P1-01` 사용자 예시 여덟 값을 초기 후보로만 고정했다. 2026-09-11 공식 릴리스 노트의 v6 계열과도 다르므로 현행 공식 전체 목록이라고 주장하지 않고 unknown/custom 값을 보존한다.
+- [x] `LC-NF-1.0.10-P1-02` nullable `modelLabel`의 NFC/trim/64 code point/제어문자 경계와 LyricsCloud 작업 metadata 의미를 확정했다. Suno API·오디오 생성 설정은 변경하지 않는다.
+- [x] `LC-NF-1.0.10-P1-03` active 곡당 수동 링크 최대 20개, URL·제목·메모·순서와 수동 우선권을 확정했다. 자동 제목/시간/thumbnail은 1.0.11 provider 승인 뒤 별도 파생 필드다.
+- [x] `LC-NF-1.0.10-P1-04` 기존 song contract/store·대시보드·내부 연결 route·lifecycle·export 경로를 읽고 정상·오류·권한·복구 입력표를 [P1 인수 기록](../../../docs/runbooks/1.0.10-phase1-suno-manual-contract.md)에 고정했다.
+- [x] `LC-NF-1.0.10-P1-05` aggregate GET/command API, 1003 additive schema, owner+active parent·CAS/idempotency, URL allowlist, soft delete/restore/export와 application-first rollback을 `PROD-NF-004`로 승인했다.
+- [x] `LC-NF-1.0.10-P1-06` P2/P3 담당 파일과 실제 출발 source SHA `07efeb075ff420d5b835e345584c8023a9c1ba66`를 연결하고 자동 metadata·공유·사전·폰트를 섞지 않았다.
 
 ## 구체적 검증
 
@@ -63,12 +63,12 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 설계·검토 증거·정확한 출발 SHA가 연결되어 있다.
+- [x] owner/parent·CAS/idempotency·URL/길이·삭제/복원/export·새 탭 오류 기대를 입력표로 고정했다. runtime 검증은 P2~P4 책임이다.
+- [x] DB/API/browser/실기기와 1.0.11 자동 provider가 아직 미실행·미승인임을 기록했다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 설계-only Phase는 2026-09-11 사용자의 전체 실행 승인과 `PROD-NF-004` 승인 기록을 갖췄다.
+- [x] P1 변경은 v1.0.9 artifact나 릴리스 서버를 변경하지 않는다.
 
 ## 산출물
 
@@ -79,3 +79,5 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 ## 다음 Phase 인계
 
 [1.0.10 P2](2phase.md)에 입력·실행 결과·호환 및 중단 조건을 넘긴다. 다음 단계의 승인이 없거나 선행 증거가 부족하면 자동 진행하지 않는다. 문서 작성으로 runtime version을 바꾸지 않는다.
+
+P2는 [인수 기록](../../../docs/runbooks/1.0.10-phase1-suno-manual-contract.md)의 `1003_song_suno_workspaces.sql`, aggregate GET/command API, owner+active parent·CAS/idempotency·URL allowlist·soft delete/restore/export 계약과 실패 우선 fixture를 소비한다.

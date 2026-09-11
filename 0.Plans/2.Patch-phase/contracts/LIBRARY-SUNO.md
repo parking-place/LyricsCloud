@@ -1,6 +1,6 @@
 # 목록·개인 순서·Suno 작업 자료 계약
 
-상태: **1.0.7 보기·1.0.8 곡 순서·1.0.9 라임/프롬프트 순서 계약 Accepted**, Suno 자동 metadata 계약은 1.0.11 P1에서 구현 전 확정한다. 이미 구현된 핀/필터/자료 관계를 임의로 단순화하지 않는다.
+상태: **1.0.7 보기·1.0.8 곡 순서·1.0.9 라임/프롬프트 순서·1.0.10 수동 Suno 작업 자료 계약 Accepted**, Suno 자동 metadata 계약은 1.0.11 P1에서 구현 전 확정한다. 이미 구현된 핀/필터/자료 관계를 임의로 단순화하지 않는다.
 
 ## 목록 사용자정렬
 
@@ -30,11 +30,21 @@ API는 보기 mode만 변경한다. 검색어·필터·정렬·cursor·page·scr
 
 사용자 제시 label `v3`, `v3.5`, `v4`, `v4.5`, `v4.5+`, `v4.5-all`, `v5`, `v5.5`를 초기 선택 후보로 둔다. **현재 Suno 공식 지원 목록이라고 표기하지 않는다.** 미지정/사용자 직접 입력/과거 모델도 저장 가능하고 catalog 갱신이 기존 값을 지우지 않아야 한다. 버전 문자열 숫자 비교로 `4.5-all` 같은 label을 변형하지 않는다.
 
+1.0.10 `modelLabel`은 nullable이며 NFC 정규화와 양끝 공백 제거 뒤 최대 64 Unicode code point다. C0/C1 제어문자와 NUL은 거부하고 내부 공백·대소문자·기호는 보존한다. 빈 입력은 미지정 `null`이다. 모델명은 LyricsCloud 작업 metadata이며 Suno의 생성 모델·계정 설정을 바꾸거나 API를 호출하지 않는다.
+
 ## 여러 작업 링크
 
 곡별 link ID, owner, parentSong, URL, 순서, 표시 제목, 재생 시간(확인된 단위), thumbnail, metadata source/manual override, fetchedAt, 실패 상태를 관리한다. 모델과 links는 곡 복제·삭제/복원·export의 의미를 명확히 한다. 기본안은 복제 시 링크 참조 metadata를 독립 복사하고 나중에 한 쪽 수정이 다른 곡의 값을 바꾸지 않는다.
 
+1.0.10은 곡당 최대 20개의 UUID link와 URL·수동 제목(최대 200 code point)·수동 메모(최대 1,000 code point)·연속 순서·행 version만 저장한다. 같은 곡의 동일 정규화 URL은 중복 저장하지 않는다. URL은 implicit 443의 `https://suno.com`/`https://www.suno.com`과 `/song/<UUID>` 또는 `/s/<6~128 ASCII token>` path만 허용한다. userinfo·명시 port·fragment·다른 protocol/host/path는 거부하며 query는 link-only 공유를 위해 1,024자 한도로 보존한다. 1.0.10 서버는 URL에 outbound 요청을 하지 않는다.
+
+aggregate 조회는 `GET /api/songs/:songId/suno-workspace`, mutation은 `POST /api/songs/:songId/suno-workspace/commands`다. mutation은 `requestId`, `expectedVersion`, 고정 command와 command별 필드만 받으며 owner/song/ordinal/provider field를 body에서 받지 않는다. `set_model`, `create_link`, `update_link`, `remove_link`, `reorder_links`를 owner+active parent lock과 aggregate CAS 안에서 수행한다. 같은 request/payload는 결과를 replay하고 request ID의 다른 payload는 409다. 의미 있는 변경만 version을 1 올린다. foreign/deleted parent나 link는 존재를 숨긴 404다. 상세 body와 실패 입력은 [1.0.10 P1 인수](../../../docs/runbooks/1.0.10-phase1-suno-manual-contract.md)를 따른다.
+
+`song_suno_workspaces`, `song_suno_links`, `song_suno_command_requests`는 additive `1003_song_suno_workspaces.sql`과 강제 RLS로 추가한다. soft delete는 행을 보존하고 active API만 숨기며 restore 뒤 같은 값·순서를 다시 제공한다. 링크 제거는 LyricsCloud 내부 행만 제거한다. hard purge/계정 삭제만 cascade한다. JSON과 사용자용 TXT/Markdown export에 수동 model/link를 포함하되 로그·telemetry에는 URL·제목·메모를 넣지 않는다. 현재 곡 복제 기능은 범위 밖이며 향후 도입 시 새 aggregate로 독립 복사한다.
+
 metadata는 **명시적 갱신 버튼**에서 승인된 provider 경계로 요청한다. 새로운 자동 조회 수단을 검증하기 전에는 공식 API·무제한 crawling이 있다고 전제하지 않는다. source가 주지 않는 정보는 unknown/수동 값으로 표시한다. '제목·시간·thumbnail 자동 표시' 요구의 실패를 수동 placeholder만으로 완료 처리하지 않는다. provider 제약으로 불가능하면 사용자에게 명시 대안 승인을 요청해야 한다.
+
+자동 metadata의 제목·시간·thumbnail·source/fetchedAt/failure는 1.0.11의 별도 파생 필드다. 어떤 성공/실패 응답도 1.0.10의 수동 제목·메모·URL·model을 덮어쓰거나 곡 저장을 막지 않는다.
 
 ## SSRF·개인정보·외부 의존
 
