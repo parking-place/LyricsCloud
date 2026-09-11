@@ -142,7 +142,7 @@ assert(formalEnvironment.properties.APP_VERSION.const === formalVersion && forma
   `${formalVersion} formal environment boundary invalid`);
 assert(formalMigrations.productVersion === formalVersion && formalMigrations.maximumCompatibleApplicationVersion === formalVersion,
   `${formalVersion} formal migration compatibility invalid`);
-assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === "1002_library_manual_order.sql",
+assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === "1003_song_suno_workspaces.sql",
   `${formalVersion} sealed migration manifest is invalid`);
 for (const entry of formalMigrations.applyOrder) {
   assert(hash(await read(`packages/database/migrations/${entry.name}`)) === entry.sha256, `${entry.name} ${formalVersion} checksum changed`);

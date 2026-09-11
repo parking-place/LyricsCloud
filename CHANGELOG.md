@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.10] - 2026-09-12
+
+### Added
+
+- 곡별 Suno 모델 미지정·참고 제안·사용자 지정 값과 최대 20개 수동 작업 링크·제목·메모·순서 저장
+- owner 전용 aggregate, `1003_song_suno_workspaces.sql`, CAS·request idempotency·soft-delete 복원·내보내기
+
+### Security and recovery
+
+- 공식 Suno HTTPS 곡/짧은 공유 주소만 허용하고 userinfo·비표준 port·다른 host/path를 거부
+- 다른 owner와 삭제된 곡을 404로 숨기고 새 탭 `noopener noreferrer`, 외부 fetch·scraping·삭제 요청 없음
+- 네트워크·validation·CAS 실패를 명시하고 같은 브라우저 탭 초안을 유지하되 서버 저장 완료로 오인시키지 않음
+
+### Validation
+
+- 실제 PostgreSQL 계약/store/export 7건, Chromium·Firefox·WebKit 5-project 기능 20건 통과
+- Actions `34610699744` P4 전체 verify·네 dev image 게시/서명과 동일 SHA 개발 삭제복원·서비스 재시작 지속성 통과
+
+P5 최종 후보 CI와 동일 SHA 개발 인수 뒤 사용자가 승인한 정식 릴리스를 실행한다. Known limitations: 자동 metadata와 실제 물리 기기 검증은 없고 `OPS-100-001` 외부 backup 예외를 유지한다.
+
 ## [1.0.9] - 2026-09-11
 
 ### Added
