@@ -1,6 +1,6 @@
 {
   "name": "lyricscloud",
-  "version": "1.0.12",
+  "version": "1.0.14",
   "private": true,
   "packageManager": "pnpm@11.25.0",
   "engines": {
@@ -57,6 +57,7 @@
     "test:release:1005": "node scripts/validate-1005-final-release.mjs",
     "test:release:1005:tag": "node scripts/validate-1005-final-release.mjs --require-release",
     "test:environment:101": "node scripts/validate-101-environment.mjs",
+    "test:font-assets:1014": "vitest run apps/web/src/lib/font-assets.test.ts",
     "test:rc:0913": "bash scripts/run-0913-rc.sh",
     "test:e2e:release:0905": "playwright test --config=playwright.release.config.ts tests/e2e/release-candidate.spec.ts",
     "test:performance:0700": "node scripts/measure-0700-search.mjs",

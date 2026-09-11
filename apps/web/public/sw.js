@@ -3,6 +3,7 @@ const CACHE_PREFIX = "lyricscloud-shell-";
 const BUILD_ID = new URL(self.location.href).searchParams.get("build") || "unknown";
 const CACHE_NAME = `${CACHE_PREFIX}${BUILD_ID.replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 128)}`;
 const STATIC_PATH = "/_next/static/";
+const CONTENT_ADDRESSED_FONT = /^\/fonts\/[A-Za-z0-9_-]+\.[0-9a-f]{8,64}\.(?:otf|woff2)$/i;
 
 function contentAddressed(pathname) {
   return pathname.slice(STATIC_PATH.length).split("/").some((segment) => {
@@ -11,12 +12,11 @@ function contentAddressed(pathname) {
   });
 }
 
-function staticAssetUrl(value) {
+function cacheableAssetUrl(value) {
   try {
     const url = new URL(value, self.location.origin);
     return url.origin === self.location.origin
-      && url.pathname.startsWith(STATIC_PATH)
-      && contentAddressed(url.pathname)
+      && ((url.pathname.startsWith(STATIC_PATH) && contentAddressed(url.pathname)) || CONTENT_ADDRESSED_FONT.test(url.pathname))
       && !url.search;
   } catch {
     return false;
@@ -24,7 +24,7 @@ function staticAssetUrl(value) {
 }
 
 async function cacheAsset(cache, value) {
-  if (!staticAssetUrl(value)) return;
+  if (!cacheableAssetUrl(value)) return;
   const request = new Request(value, { credentials: "same-origin", cache: "reload" });
   const response = await fetch(request);
   const policy = response.headers.get("cache-control") || "";
@@ -57,7 +57,7 @@ self.addEventListener("message", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
-  if (request.method !== "GET" || !staticAssetUrl(request.url)) return;
+  if (request.method !== "GET" || !cacheableAssetUrl(request.url)) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
     const cached = await cache.match(request);

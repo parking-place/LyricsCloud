@@ -115,6 +115,7 @@
 - [`1.0.13 Phase 1 NAVER 사전 provider gate`](./1.0.13-phase1-provider-gate.md)
 - [`1.0.13 최종 no-go 인수`](./1.0.13-final-no-go.md)
 - [`1.0.14 Phase 1 웹폰트 계약`](./1.0.14-phase1-font-contract.md)
+- [`1.0.14 Phase 2 폰트 자산·로딩 후보`](./1.0.14-phase2-font-assets.md)
 - [`0.7.0 Phase 3 최근 작업·위치 복원 검증`](./0.7.0-phase3-validation.md)
 
 ## 개발 서버 운영
