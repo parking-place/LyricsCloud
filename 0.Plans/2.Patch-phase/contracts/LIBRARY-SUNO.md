@@ -1,10 +1,10 @@
 # 목록·개인 순서·Suno 작업 자료 계약
 
-상태: **1.0.7 보기·1.0.8 곡 순서 계약 Accepted**, 라임/프롬프트 순서·Suno 계약은 각 1.0.9/1.0.11 P1에서 구현 전 확정한다. 이미 구현된 핀/필터/자료 관계를 임의로 단순화하지 않는다.
+상태: **1.0.7 보기·1.0.8 곡 순서·1.0.9 라임/프롬프트 순서 계약 Accepted**, Suno 자동 metadata 계약은 1.0.11 P1에서 구현 전 확정한다. 이미 구현된 핀/필터/자료 관계를 임의로 단순화하지 않는다.
 
 ## 목록 사용자정렬
 
-소유자+자료유형마다 manual order를 저장한다. 1.0.8은 곡만 소비하며 내부 자료 유형은 기존 `song`을 쓴다. 드래그/키보드 이동이 서버에서 성공하면 URL과 화면 정렬이 `manual`로 바뀐다. 보기 선택만으로 정렬을 바꾸지 않는다. 서버 실패 시 낙관적 UI를 되돌리고 원인/재시도 안내를 제공한다.
+소유자+자료유형마다 manual order를 저장한다. 1.0.8은 내부 자료 유형 `song`, 1.0.9는 `rhyme_note`와 `prompt`를 소비하며 세 state/version/rank/request namespace는 독립이다. 드래그/키보드 이동이 서버에서 성공하면 URL과 화면 정렬이 `manual`로 바뀐다. 보기 선택만으로 정렬을 바꾸지 않는다. 서버 실패 시 낙관적 UI를 되돌리고 원인/재시도 안내를 제공한다. 프롬프트 카드 이동은 `prompt_tokens.ordinal`·occurrence·원문/복사 payload를 변경하지 않으며 라임 이동도 본문·태그·곡 연결을 수정하지 않는다.
 
 필터 안에서 순서 변경은 visible neighbor anchor를 사용한다. 예를 들어 전체 `A,B,C,D,E`, 필터 `A,C,E`에서 E를 C 앞에 두면 client는 `afterId=A`, `beforeId=C`를 보내고 서버는 C의 전체 순서상 직전 위치에 E를 삽입해 `A,B,E,C,D`를 만든다. `beforeId`가 있으면 그 항목 바로 앞, 끝 이동처럼 `beforeId`가 없고 `afterId`만 있으면 그 항목 바로 뒤가 실제 삽입 경계다. 두 anchor가 모두 있으면 대상 제거 후 같은 핀 그룹에서 after가 before보다 앞서는지도 검증한다. 검색 query 때문에 숨긴 자료를 삭제/재순위하지 않는다. pagination에서 로드하지 않은 자료를 배열에서 빼서 저장하는 API는 금지한다.
 
@@ -12,7 +12,7 @@
 
 새 자료/복제는 해당 핀 그룹 끝에 append한다. soft delete는 순위 행을 tombstone처럼 보존하고 restore는 같은 rank를 재사용하며, hard purge만 FK cascade로 제거한다. 구버전/누락 행은 해당 그룹 끝에 보충한다. rank는 signed `bigint`와 `1,048,576` 간격을 사용하며 사이 정수 공간이 없을 때 현재 owner+type+핀 그룹만 안정 순서로 재분배한다. rank는 UI 의미가 아니며 response에 노출하지 않는다.
 
-이동 명령은 `POST /api/songs/order/moves`와 `{requestId,itemId,beforeId,afterId,expectedVersion}`만 사용한다. 앞/뒤 anchor는 nullable UUID이고 둘 다 null인 요청, 대상과 같은 anchor, 같은 anchor 두 번, 전체 ID 배열과 알 수 없는 필드는 거부한다. 서버는 owner+type advisory lock과 order-state CAS 안에서 active 대상/anchor, 같은 핀 그룹, anchor 순서를 검증한다. 다른 owner ID는 존재 여부를 숨긴 404로 응답하고 어느 계정도 변경하지 않는다. 동일 request ID·동일 payload 재전송은 저장된 결과를 재생하며, 같은 ID의 다른 payload는 409다.
+이동 명령은 `POST /api/songs/order/moves`, `POST /api/rhymes/order/moves`, `POST /api/prompts/order/moves`와 `{requestId,itemId,beforeId,afterId,expectedVersion}`만 사용한다. route가 자료 유형을 고정하며 body에서 owner/type/rank를 받지 않는다. 앞/뒤 anchor는 nullable UUID이고 둘 다 null인 요청, 대상과 같은 anchor, 같은 anchor 두 번, 전체 ID 배열과 알 수 없는 필드는 거부한다. 서버는 owner+type advisory lock과 order-state CAS 안에서 active 대상/anchor, 같은 핀 그룹, anchor 순서를 검증한다. 다른 owner ID는 존재 여부를 숨긴 404로 응답하고 어느 계정도 변경하지 않는다. 동일 request ID·동일 payload 재전송은 저장된 결과를 재생하며, 같은 ID의 다른 payload는 409다.
 
 `sort=manual` 목록은 `orderVersion`을 돌려준다. manual cursor에는 query signature, 핀 그룹, rank, stable ID, order version을 결합하고, 이동으로 version이 바뀐 이전 cursor는 409 후 첫 페이지 재조회한다. 성공한 이동만 version을 1 증가시키고 이미 같은 경계인 새 요청은 순서를 바꾸거나 version을 올리지 않는다. 두 탭의 같은 expected version에서는 먼저 lock을 얻은 하나만 성공하고 나머지는 최신 version과 함께 409를 받아 재조회한다.
 
