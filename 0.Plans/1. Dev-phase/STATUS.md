@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.0.13"
-current_phase: "../2.Patch-phase/1.0.13/5phase.md"
+current_version: "1.0.14"
+current_phase: "../2.Patch-phase/1.0.14/1phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.0.13 provider no-go로 P2~P4를 보류하고 P5에서 미완료 요구·재개 조건·1.0.14 인계를 정확히 종결한다"
+next_action: "1.0.14 P1에서 자체 호스팅 무료 웹폰트의 공식 출처·OFL 고지·글리프·용량·fallback 예산을 확정한다"
 ```
 
 ## 승인과 기준
@@ -103,13 +103,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.12 Release | complete | main/tag `b051d5d`, main CI `34638724606`·tag CI `34641693226`, exact digest 운영 배포·공개 재시작/영속성 smoke·GitHub Release 완료 |
 | 1.0.13 P1 | complete (no-go) | 공식 NAVER 공개 목록에 세 언어 사전 뜻풀이 경로가 없고 신청·출처·캐시 권리를 확인할 수 없어 구현 보류, `AC-1.0.13-01` PASS |
 | 1.0.13 P2~P4 | blocked | 공식 provider 계약·표시/캐시/재배포 권리·비용/rate limit 확보 전 API·tooltip·실제 언어/기기 수용 착수 금지 |
-| 1.0.13 P5 | in_progress | no-go 문서·미완료 요구·재개 조건·1.0.14 인계와 빈 릴리스 금지 판정 중 |
+| 1.0.13 P5/no-go | complete | 공식 근거·미완료 요구·재개 조건·1.0.14 인계 기록. 제품 변경이 없어 빈 `v1.0.13` tag·image·운영 배포 미발행 |
+| 1.0.14 P1 | in_progress | 무료 폰트 공식 출처·라이선스/재배포·글리프·용량·fallback 후보와 도입 판정 중 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.13/P5 | LC-NF-1.0.13-P5-01~03 | provider no-go·미완료 요구·재개 조건·1.0.14 인계 | 1.0.13 P1 no-go | 2026-09-12T05:35:00+09:00 | in_progress |
+| Codex | 1.0.14/P1 | LC-NF-1.0.14-P1-01~03 | 폰트 공식 출처·OFL/재배포·글리프·용량·fallback 후보·예산 | 1.0.13 no-go | 2026-09-12T05:45:00+09:00 | in_progress |
+| Codex | 1.0.13/P5 | LC-NF-1.0.13-P5-01~03 | provider no-go·미완료 요구·재개 조건·1.0.14 인계 | 1.0.13 P1 no-go | 2026-09-12T05:35:00+09:00 | complete |
 | Codex | 1.0.13/P1 | LC-NF-1.0.13-P1-01~03 | 공식 NAVER 사전 제공 경로·권리/캐시·tooltip 대안·go/no-go 증거 | v1.0.12 release `b051d5d` | 2026-09-12T05:25:00+09:00 | complete (no-go) |
 | Codex | 1.0.12/P5 | LC-NF-1.0.12-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 1.0.12 P4 `a4e0910` | 2026-09-12T03:50:00+09:00 | complete |
 | Codex | 1.0.12/P4 | LC-NF-1.0.12-P4-01~06 | 실제 DB·수용 사례·권한/계정·offline/reconnect·PWA·재시작·지원 browser 교차 회귀 | 1.0.12 P3 `9b891a8` | 2026-09-12T03:20:00+09:00 | complete |
