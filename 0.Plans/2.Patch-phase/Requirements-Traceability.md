@@ -49,7 +49,7 @@
 | `NF-REQ-041` | Android 네이티브 개발안 | [1.1.10](1.1.10/README.md), [1.1.11](1.1.11/README.md) | Kotlin 등 비교·IME/수명주기·서명/실기기 인수 | 계획됨 |
 
 | `NF-REQ-042` | 실제 여러 사용자 동시 보기·편집과 presence/cursor | [1.1.0](1.1.0/README.md)~[1.1.4](1.1.4/README.md) | 서로 다른 3계정·동시 한글 수렴·누가 어디 작업하는지·철회/재연결/구독 경계 | 계획됨 |
-| `NF-REQ-043` | 라임 단어 NAVER 세 언어 사전 tooltip | [1.0.13](1.0.13/README.md) | 한국어/영어/일어·hover/keyboard/터치·오류/출처/권리·제공 조건 gate | 계획됨 |
+| `NF-REQ-043` | 라임 단어 NAVER 세 언어 사전 tooltip | [1.0.13](1.0.13/README.md) | 한국어/영어/일어·hover/keyboard/터치·오류/출처/권리·제공 조건 gate | P1 no-go, 공식 provider 계약 전 미완료 |
 | `NF-REQ-044` | 무료 웹폰트 추가·다국어 표시 | [1.0.14](1.0.14/README.md) | 나눔 등 폰트별 권리/고지·glyph·로딩/fallback·모바일 성능·실제 IME | 계획됨 |
 | `NF-REQ-045` | Linux 개발안 | [1.1.12](1.1.12/README.md) | SDK/패키징·X11/Wayland/IME·협업/사전/폰트 검증 뒤 조건부 구현 | 계획됨 |
 | `NF-REQ-046` | macOS 개발안 | [1.1.13](1.1.13/README.md) | SDK/패키징·IME·Keychain·서명/notarization 검증 뒤 조건부 구현 | 계획됨 |

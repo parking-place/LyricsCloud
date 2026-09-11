@@ -1,6 +1,6 @@
 # 1.0.13 — 라임노트 다국어 NAVER 사전 조회
 
-상태: **계획 검토 / 구현 미착수**. 미발행 배정이며 실제 발행 시 다음 가용 patch를 재확인한다. 요구 `NF-REQ-043`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
+상태: **P1 no-go / P2~P4 blocked**. 2026-09-12 공식 NAVER 공개 API 목록에 세 언어 사전 뜻풀이 제공 경로가 없고 신청·표시·캐시 권리를 확인할 수 없어 구현하지 않았다. 요구 `NF-REQ-043`는 미완료로 [전체 추적표](../Requirements-Traceability.md)에 남긴다.
 
 선행: [1.0.12](../1.0.12/README.md)의 인수와 해당 결정 gate. 코드 변경 없는 개발안/외부 gate 보류는 제품 출시로 세지 않는다.
 
@@ -11,6 +11,8 @@
 - [P3 — Tooltip·키보드·터치](3phase.md)
 - [P4 — 세 언어·접근성·실패 인수](4phase.md)
 - [P5 — 문서·개발 인수·다음 패치](5phase.md)
+
+P1 증거와 재개 조건은 [ADR-NF-006](../../../docs/adr/ADR-NF-006-dictionary-provider.md)에 있다. provider gate가 열리기 전에는 P2 조회 API·P3 tooltip·P4 실제 언어/기기 수용을 시작하지 않으며, 제품 변경이 없는 no-go를 빈 tag/image/운영 배포로 가장하지 않는다.
 
 ## 대표 수용과 범위
 

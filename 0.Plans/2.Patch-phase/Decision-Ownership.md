@@ -17,9 +17,9 @@
 | `PROD-NF-005` | 공유 수신자와 공개 필드 | 1.1.0 P1, 1.1.1~1.1.3 확장 승인 | Proposed | [결정](../../docs/product/PROD-NF-005-sharing-scope.md) |
 | `PROD-NF-006` | 디자인 승인·점진 적용 | UX P5, 1.1.5~1.1.6 소비 | Proposed | [결정](../../docs/product/PROD-NF-006-ui-transition.md) |
 | `OPS-NF-002` | 제품 단계 전환·마이너 진입 | 1.0.12 점검; 1.0.14 P5, 1.1.0 P1 | Proposed | [결정](../../docs/operations/OPS-NF-002-minor-entry.md) |
-| `ADR-NF-006` | 사전 제공 경로·권리·조회 경계 | 1.0.13 P1 | Proposed | [결정](../../docs/adr/ADR-NF-006-dictionary-provider.md) |
+| `ADR-NF-006` | 사전 제공 경로·권리·조회 경계 | 1.0.13 P1 | Deferred / no-go; 공식 계약 확보 시 재개 | [결정](../../docs/adr/ADR-NF-006-dictionary-provider.md) |
 | `ADR-NF-007` | 웹폰트 자산·로딩·라이선스 | 1.0.14 P1 | Proposed | [결정](../../docs/adr/ADR-NF-007-web-fonts.md) |
-| `PROD-NF-007` | 세 언어 단어 Tooltip | 1.0.13 P1 | Proposed | [결정](../../docs/product/PROD-NF-007-dictionary-tooltip.md) |
+| `PROD-NF-007` | 세 언어 단어 Tooltip | 1.0.13 P1 | Deferred / provider no-go | [결정](../../docs/product/PROD-NF-007-dictionary-tooltip.md) |
 | `PROD-NF-008` | 무료 폰트 선택·다국어 표시 | 1.0.14 P1 | Proposed | [결정](../../docs/product/PROD-NF-008-web-fonts.md) |
 | `PROD-NF-009` | 여러 사용자 동시 작업과 위치 표시 | 1.1.0 P1; 1.1.2 P1 확장 | Proposed | [결정](../../docs/product/PROD-NF-009-collaboration-presence.md) |
 | `ADR-NF-008` | Linux 기술·패키징·수명주기 | 1.1.12 P1~P3 | Proposed | [결정](../../docs/adr/ADR-NF-008-linux-platform.md) |
