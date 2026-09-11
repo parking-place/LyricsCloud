@@ -1,10 +1,11 @@
 "use client";
 
-import { LYRIC_STATUS_LABELS, type LyricRecord } from "@lyricscloud/domain";
+import { LYRIC_STATUS_LABELS, type LyricRecord, type SunoWorkspace } from "@lyricscloud/domain";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type MouseEvent } from "react";
 import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 import { SongLinkManager, type SongLinkKind } from "./song-link-manager.js";
+import { SunoWorkspacePanel } from "./suno-workspace-panel.js";
 
 type SongStatus = "idea" | "writing_lyrics" | "revising" | "suno_generating" | "mixing" | "completed" | "on_hold";
 type ResourceColor = "red" | "yellow" | "green" | "blue" | "gray";
@@ -50,12 +51,13 @@ const STATUS_LABELS: Record<SongStatus, string> = {
   mixing: "믹싱 중", completed: "완성", on_hold: "보류"
 };
 
-export function SongDashboard({ initialSong, initialCounts, initialLyrics, initialRhymes, initialPrompts, returnTo }: {
+export function SongDashboard({ initialSong, initialCounts, initialLyrics, initialRhymes, initialPrompts, initialSunoWorkspace, returnTo }: {
   initialSong: DashboardSong;
   initialCounts: DashboardCounts | null;
   initialLyrics: readonly LyricRecord[] | null;
   initialRhymes: readonly RhymePreview[] | null;
   initialPrompts: readonly PromptPreview[] | null;
+  initialSunoWorkspace: SunoWorkspace | null;
   returnTo: string;
 }) {
   const [song, setSong] = useState(initialSong);
@@ -294,6 +296,7 @@ export function SongDashboard({ initialSong, initialCounts, initialLyrics, initi
         </section>
       </section>
       <aside className="dashboard-side">
+        <SunoWorkspacePanel songId={song.id} initialWorkspace={initialSunoWorkspace} />
         <section className="dashboard-panel notes-panel"><div className="panel-title-row"><div><p className="eyebrow">Work notes</p><h2>작업 메모</h2></div><button type="button" onClick={() => editNote({ kind: "song", title: song.title, value: song.workNotes })}>{song.workNotes ? "곡 메모 편집" : "＋ 곡 메모"}</button></div>
           {!song.workNotes && !lyrics.some((lyric) => lyric.memo) ? <p className="muted-copy">아직 작업 메모가 없습니다. 곡이나 가사에 다음 할 일을 남겨보세요.</p> : <div className="work-note-list">
             {song.workNotes ? <WorkNote label="곡" title={song.title} value={song.workNotes} onEdit={() => editNote({ kind: "song", title: song.title, value: song.workNotes })} onDelete={() => void writeNote({ kind: "song", title: song.title, value: song.workNotes }, "", false)} /> : null}

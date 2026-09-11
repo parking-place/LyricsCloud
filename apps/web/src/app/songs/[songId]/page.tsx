@@ -30,24 +30,27 @@ export default async function SongDashboardPage({
 
 async function DashboardData({ ownerId, song, returnTo }: { ownerId: string; song: DashboardSong; returnTo: string }) {
   const context = getAuthContext();
-  const [countsResult, lyricsResult, rhymesResult, promptsResult] = await Promise.allSettled([
+  const [countsResult, lyricsResult, rhymesResult, promptsResult, sunoResult] = await Promise.allSettled([
     context.songs.getSongDashboardCounts(ownerId, song.id),
     context.lyrics.listSongLyrics(ownerId, song.id),
     context.rhymes.listRhymeNotes(ownerId, { songId: song.id, sort: "updated_desc", limit: 50 }),
     context.prompts.listPrompts(ownerId, {
       songId: song.id, favoriteOnly: false, recentlyUsedOnly: false, sort: "updated_desc", limit: 50
-    })
+    }),
+    context.sunoWorkspaces.getWorkspace(ownerId, song.id)
   ]);
   const counts = countsResult.status === "fulfilled" ? countsResult.value : null;
   const lyrics = lyricsResult.status === "fulfilled" ? lyricsResult.value : null;
   const rhymes = rhymesResult.status === "fulfilled" ? rhymesResult.value.items : null;
   const prompts = promptsResult.status === "fulfilled" ? promptsResult.value.items : null;
+  const sunoWorkspace = sunoResult.status === "fulfilled" ? sunoResult.value : null;
   return <SongDashboard
     initialSong={song}
     initialCounts={counts}
     initialLyrics={lyrics}
     initialRhymes={rhymes}
     initialPrompts={prompts}
+    initialSunoWorkspace={sunoWorkspace}
     returnTo={returnTo}
   />;
 }
