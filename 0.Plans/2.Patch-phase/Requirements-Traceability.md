@@ -37,8 +37,8 @@
 | `NF-REQ-029` | 목록 네 보기 | [1.0.7](1.0.7/README.md), [1.0.12](1.0.12/README.md) | 리스트·소/중/대 그리드·유형별 저장·모바일 | 계획됨 |
 | `NF-REQ-030` | 곡 Suno 모델 기록 | [1.0.10](1.0.10/README.md), [1.0.12](1.0.12/README.md) | 사용자 제시 모델값+확장 값 저장·unknown 보존 | 계획됨 |
 | `NF-REQ-031` | 곡당 복수 Suno 링크 | [1.0.10](1.0.10/README.md), [1.0.12](1.0.12/README.md) | 여러 URL 저장/수정/삭제/순서·owner 격리 | 계획됨 |
-| `NF-REQ-032` | Suno 링크 metadata 카드 | [1.0.11](1.0.11/README.md), [1.0.12](1.0.12/README.md) | 실제 제목/시간/thumb·출처·안전 조회·실패/수동 대안 | 계획됨 |
-| `NF-REQ-033` | Suno 링크 새 탭 열기 | [1.0.10](1.0.10/README.md), [1.0.11](1.0.11/README.md), [1.0.12](1.0.12/README.md) | HTTPS 검증·noopener/noreferrer | 계획됨 |
+| `NF-REQ-032` | Suno 링크 metadata 카드 | [1.0.11](1.0.11/README.md), [1.0.12](1.0.12/README.md) | 실제 제목/시간/thumb·출처·안전 조회·실패/수동 대안 | 1.0.11 P1 공식 provider 부재로 보류·미완료 |
+| `NF-REQ-033` | Suno 링크 새 탭 열기 | [1.0.10](1.0.10/README.md), [1.0.11](1.0.11/README.md), [1.0.12](1.0.12/README.md) | HTTPS 검증·noopener/noreferrer | 1.0.10 수동 링크 담당 완료, 1.0.11 자동 metadata 부분 보류 |
 | `NF-REQ-034` | 읽기 공유 3범위 | [1.1.0](1.1.0/README.md), [1.1.1](1.1.1/README.md), [1.1.4](1.1.4/README.md) | private 기본/selected 내부ID/public-link guest read | 계획됨 |
 | `NF-REQ-035` | 쓰기 공유 3범위 | [1.1.2](1.1.2/README.md), [1.1.3](1.1.3/README.md), [1.1.4](1.1.4/README.md) | private/selected/public-link 및 guest 범위 명시 승인 | 계획됨 |
 | `NF-REQ-036` | 쓰기 권한은 읽기의 부분집합 | [1.1.0](1.1.0/README.md), [1.1.1](1.1.1/README.md), [1.1.2](1.1.2/README.md), [1.1.3](1.1.3/README.md), [1.1.4](1.1.4/README.md) | 모드+실제 수신자 집합·서버/WS 검증·철회 | 계획됨 |
