@@ -9,19 +9,19 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 const assertIncludes = (value, expected, message) => assert(value.includes(expected), message);
 
 const version = (await read("VERSION")).trim();
-const formalVersion = "1.0.8";
-assert(version === "1.0.8", "VERSION must be the current 1.0.8 candidate source");
+const formalVersion = version;
+assert(/^[0-9]+\.[0-9]+\.[0-9]+$/u.test(version), "VERSION must be a stable current candidate source");
 const packages = ["package.json", "apps/web/package.json", "apps/collaboration/package.json", "apps/worker/package.json",
   "packages/auth/package.json", "packages/config/package.json", "packages/database/package.json", "packages/domain/package.json",
   "packages/editor/package.json", "packages/observability/package.json", "packages/ui/package.json"];
 for (const path of packages) assert((await json(path)).version === version, `${path} version must equal VERSION`);
 
 const status = await read("0.Plans/1. Dev-phase/STATUS.md");
-assertIncludes(status, 'current_version: "1.0.8"', "STATUS current version does not match VERSION");
+assertIncludes(status, `current_version: "${version}"`, "STATUS current version does not match VERSION");
 const runtime = await read("packages/config/src/index.ts");
-assertIncludes(runtime, 'appVersion: env.APP_VERSION ?? "1.0.8"', "runtime default version is not current");
-assertIncludes(await read("apps/web/next.config.ts"), 'generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-1.0.8"', "deterministic Next build ID missing");
-for (const path of ["compose.yaml", "compose.backup.yaml", ".env.example"]) assertIncludes(await read(path), "1.0.8", `${path} lacks 1.0.8`);
+assertIncludes(runtime, `appVersion: env.APP_VERSION ?? "${version}"`, "runtime default version is not current");
+assertIncludes(await read("apps/web/next.config.ts"), `generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-${version}"`, "deterministic Next build ID missing");
+for (const path of ["compose.yaml", "compose.backup.yaml", ".env.example"]) assertIncludes(await read(path), version, `${path} lacks ${version}`);
 
 const lockfile = await read("pnpm-lock.yaml");
 const environment = await read("config/environment-schema.1.0.0.json");
@@ -131,37 +131,37 @@ for (const service of ["web", "collaboration", "worker", "migrate"]) {
   assert(currentManifest.images[service].digest === `$${service.toUpperCase()}_DIGEST`, `${service} current digest placeholder invalid`);
 }
 
-const formalEnvironmentText = await read("config/environment-schema.1.0.8.json");
-const formalMigrationsText = await read("config/migrations.1.0.8.json");
-const formalLicensesText = await read("config/licenses.1.0.8.json");
+const formalEnvironmentText = await read(`config/environment-schema.${formalVersion}.json`);
+const formalMigrationsText = await read(`config/migrations.${formalVersion}.json`);
+const formalLicensesText = await read(`config/licenses.${formalVersion}.json`);
 const formalEnvironment = JSON.parse(formalEnvironmentText);
 const formalMigrations = JSON.parse(formalMigrationsText);
 const formalLicenses = JSON.parse(formalLicensesText);
-const formalManifest = await json("config/release-manifest.1.0.8.json");
+const formalManifest = await json(`config/release-manifest.${formalVersion}.json`);
 assert(formalEnvironment.properties.APP_VERSION.const === formalVersion && formalEnvironment.properties.APP_CHANNEL.const === "release",
-  "1.0.8 formal environment boundary invalid");
+  `${formalVersion} formal environment boundary invalid`);
 assert(formalMigrations.productVersion === formalVersion && formalMigrations.maximumCompatibleApplicationVersion === formalVersion,
-  "1.0.8 formal migration compatibility invalid");
+  `${formalVersion} formal migration compatibility invalid`);
 assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === "1002_library_manual_order.sql",
-  "1.0.8 sealed migration manifest is invalid");
+  `${formalVersion} sealed migration manifest is invalid`);
 for (const entry of formalMigrations.applyOrder) {
-  assert(hash(await read(`packages/database/migrations/${entry.name}`)) === entry.sha256, `${entry.name} 1.0.8 checksum changed`);
+  assert(hash(await read(`packages/database/migrations/${entry.name}`)) === entry.sha256, `${entry.name} ${formalVersion} checksum changed`);
 }
-assert(formalLicenses.productVersion === formalVersion && formalLicenses.lockfileSha256 === hash(lockfile), "1.0.8 formal license inventory invalid");
+assert(formalLicenses.productVersion === formalVersion && formalLicenses.lockfileSha256 === hash(lockfile), `${formalVersion} formal license inventory invalid`);
 assert(Object.values(formalLicenses.licenses).flat().length === formalLicenses.totalPackages,
-  "1.0.8 formal license package count changed");
+  `${formalVersion} formal license package count changed`);
 assert(formalLicenses.review.unknownLicenses.length === 0 && formalLicenses.review.blockedLicenses.length === 0,
-  "1.0.8 formal license review has blockers");
+  `${formalVersion} formal license review has blockers`);
 assert(formalManifest.releaseVersion === formalVersion && formalManifest.releaseChannel === "release" && formalManifest.productionAuthorized === true,
-  "1.0.8 formal release authorization invalid");
+  `${formalVersion} formal release authorization invalid`);
 assert(formalManifest.source.commit === "$GIT_SHA" && formalManifest.source.lockfileSha256 === hash(lockfile),
-  "1.0.8 formal source placeholders invalid");
+  `${formalVersion} formal source placeholders invalid`);
 assert(formalManifest.database.manifestSha256 === hash(formalMigrationsText)
   && formalManifest.environment.schemaSha256 === hash(formalEnvironmentText)
-  && formalManifest.licenses.inventorySha256 === hash(formalLicensesText), "1.0.8 formal artifact checksums differ");
+  && formalManifest.licenses.inventorySha256 === hash(formalLicensesText), `${formalVersion} formal artifact checksums differ`);
 for (const service of ["web", "collaboration", "worker", "migrate"]) {
-  assert(formalManifest.images[service].repository === `parkingplace/lyricscloud-${service}`, `${service} 1.0.8 repository invalid`);
-  assert(formalManifest.images[service].digest === `$${service.toUpperCase()}_DIGEST`, `${service} 1.0.8 digest placeholder invalid`);
+  assert(formalManifest.images[service].repository === `parkingplace/lyricscloud-${service}`, `${service} ${formalVersion} repository invalid`);
+  assert(formalManifest.images[service].digest === `$${service.toUpperCase()}_DIGEST`, `${service} ${formalVersion} digest placeholder invalid`);
 }
 
-console.log(`1.0.8 approved release plus sealed 1.0.7/1.0.5/1.0.3/1.0.1/1.0.0 contracts: ${packages.length} package versions, ${migrationFiles.length} migrations, 4 digest-only signed images verified`);
+console.log(`${formalVersion} approved release plus sealed historical contracts: ${packages.length} package versions, ${migrationFiles.length} migrations, 4 digest-only signed images verified`);

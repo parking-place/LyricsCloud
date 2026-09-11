@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relative) => readFileSync(path.join(root, relative), "utf8");
 const failures = [];
+const currentVersion = read("VERSION").trim();
 
 function assert(condition, message) {
   if (!condition) failures.push(message);
@@ -87,8 +88,8 @@ for (const [document, markers] of [
   [observation, ["trace/log는 7일", "집계 metric은 30일", "90일", "제목·가사·메모·태그"]],
   [alerts, ["autosave-failure", "search-latency", "purge-failure", "backup-failure", "service-unavailable", "사고 기록 양식"]],
   [support, ["RC-091-001", "RC-100-001", "RC-091-002", "OPS-100-001", "미해결 P0/P1은 0건"]],
-  [changelog, ["## [1.0.8] - 2026-09-11", "## [1.0.7] - 2026-09-11", "Known limitations"]],
-  [readme, ["apps/web/public/icons/lyricscloud-mark-dark.svg", "actions/workflows/ci.yml/badge.svg", "1.0.8 Phase 5", "LyricsCloud betacode", "원문 보존"]],
+  [changelog, [`## [${currentVersion}] - 2026-09-11`, "## [1.0.8] - 2026-09-11", "Known limitations"]],
+  [readme, ["apps/web/public/icons/lyricscloud-mark-dark.svg", "actions/workflows/ci.yml/badge.svg", `${currentVersion} Phase 5`, "LyricsCloud betacode", "원문 보존"]],
   [publicationRunbook, ["dev-<VERSION>-p<N>", "Release-latest", "dev 발행은 숫자 version", "release 발행은 Dev 계열"]]
 ]) for (const marker of markers) assert(document.includes(marker), `documentation policy marker missing: ${marker}`);
 
@@ -96,9 +97,9 @@ assert(existsSync(path.join(root, "SECURITY.md")), "SECURITY.md missing");
 assert(statSync(path.join(root, "compose.selfhost.yaml")).isFile(), "compose.selfhost.yaml missing");
 
 if (failures.length) {
-  console.error(`1.0.8 current documentation validation failed (${failures.length})`);
+  console.error(`${currentVersion} current documentation validation failed (${failures.length})`);
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
-console.log(`1.0.8 current documentation validation PASS (${markdownFiles.length} Markdown files, ${uiNames.length} screens)`);
+console.log(`${currentVersion} current documentation validation PASS (${markdownFiles.length} Markdown files, ${uiNames.length} screens)`);
