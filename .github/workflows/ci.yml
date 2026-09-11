@@ -109,6 +109,8 @@ jobs:
         run: pnpm test:migration:1001
       - name: Verify 1.0.8 manual library order migration recovery
         run: pnpm test:migration:1002
+      - name: Verify 1.0.10 Suno workspace migration recovery
+        run: pnpm test:migration:1003
       - name: Verify 0.7.0 fresh and 0.6.0 upgrade release paths
         run: pnpm test:migration:0700-release
       - name: Measure 0.7.0 navigation release baseline
