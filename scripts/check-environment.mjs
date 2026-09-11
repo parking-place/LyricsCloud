@@ -2,7 +2,7 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
-const schema = JSON.parse(await readFile(new URL("../config/environment-schema.1.0.7.json", import.meta.url), "utf8"));
+const schema = JSON.parse(await readFile(new URL("../config/environment-schema.1.0.8.json", import.meta.url), "utf8"));
 
 export function validateEnvironment(service, source) {
   const required = schema["x-required-by-service"][service];
@@ -28,7 +28,7 @@ export function validateEnvironment(service, source) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
     validateEnvironment(process.argv[2], process.env);
-    process.stdout.write(`1.0.7 ${process.argv[2]} environment: PASS\n`);
+    process.stdout.write(`1.0.8 ${process.argv[2]} environment: PASS\n`);
   } catch (error) {
     process.stderr.write(`${error instanceof Error ? error.message : "Environment validation failed"}\n`);
     process.exit(2);

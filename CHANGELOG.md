@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.8] - 2026-09-11
+
+### Added
+
+- 곡 목록의 drag handle과 보이는 버튼·키보드 이동 명령, 이동 시 사용자정렬 자동 전환
+- owner+song 별도 sparse rank, visible anchor move API, CAS와 요청 idempotency
+
+### Fixed
+
+- 필터 중 이동이 숨은 곡·핀·보기 설정을 덮을 수 있는 경계와 실패한 낙관 이동의 원복·재시도
+- text로 반환된 rank가 사전식으로 정렬되어 연속 이동 순서가 어긋나던 PostgreSQL 조회
+
+### Validation
+
+- 실제 PostgreSQL 298건, Chromium desktop/mobile 316건과 조건부 36 skip, 5-project 신규 기능 30건 통과
+- Actions `34560691621` 최종 verify·네 dev image 게시·서명과 동일 SHA 개발 공개 desktop/mobile 순서 복원 통과
+
+P1~P5 후보 인수를 완료했고 사용자가 정식 릴리스를 승인했다. Known limitations: 실제 물리 기기는 이번 후보에서 새로 실행하지 않았고 `OPS-100-001` 외부 backup 예외를 유지한다.
+
 ## [1.0.7] - 2026-09-11
 
 ### Added

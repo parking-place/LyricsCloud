@@ -1,4 +1,4 @@
-# LyricsCloud 1.0.6 정식·1.0.7 후보 지원 정책
+# LyricsCloud 1.0.7 정식·1.0.8 후보 지원 정책
 
 ## 지원 환경
 
@@ -32,6 +32,8 @@
 1.0.6 후보는 exact-case Extend 정식 표식 줄만 Suno 전체 복사에서 제외하고 raw CRDT·revision·검색·ZIP export에는 그대로 보존한다. PC 우클릭·메뉴키/`Shift+F10`과 모바일 보이는 버튼이 같은 기본 송폼을 CRDT 상대 caret에 삽입한다. 실제 PostgreSQL, Chromium desktop/mobile 전수, Firefox/WebKit 기능 행렬과 동일 SHA 개발 revision/export·collaboration 재시작을 통과했다. 실제 물리 IME는 새로 실행하지 않았으며 P5 전체 CI 전에는 정식 지원 버전이나 릴리스 서버 배포로 보지 않는다.
 
 1.0.7 후보는 곡·라임·프롬프트 목록의 리스트·소/중/대 그리드를 계정·자료 유형별로 저장한다. 보기 변경은 검색·필터·순서·scroll을 유지하고 독립 CAS가 다른 표시 설정을 보존한다. 실제 PostgreSQL 283건, Chromium 전체 340건, Chromium/Firefox/WebKit 신규 30건과 동일 SHA 개발 재시작 지속성을 통과했다. 실제 물리 기기는 새로 실행하지 않았으며 P5 전체 CI 전에는 정식 지원 버전이나 릴리스 서버 배포로 보지 않는다.
+
+1.0.8 후보는 곡 목록의 drag·버튼·키보드 이동을 계정별 사용자정렬로 저장한다. 필터 중 visible anchor, 두 탭 stale·재전송, 다른 owner 거부와 실패 원복을 포함해 실제 PostgreSQL 298건, Chromium 316건, Chromium/Firefox/WebKit 신규 30건과 동일 SHA 개발 서비스 재시작 지속성을 통과했다. 실제 물리 기기는 새로 실행하지 않았으며 P5 전체 CI 전에는 정식 지원 버전이나 릴리스 서버 배포로 보지 않는다.
 
 미해결 P0/P1은 0건이다. 저장 수렴 실패, 다른 사용자의 자료 노출, 인증 우회, 핵심 모바일 불능, 복구 불가능 증거가 생기면 즉시 P0/P1으로 재분류하고 배포를 중단한다.
 
