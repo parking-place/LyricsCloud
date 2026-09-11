@@ -2,6 +2,7 @@
 
 import type { LyricDisplaySettingsRecord, WritingDisplaySettings, WritingFont } from "@lyricscloud/domain";
 import { useState } from "react";
+import { WRITING_FONT_OPTIONS, writingDisplayStyle } from "../lib/font-assets.js";
 
 export function LyricDisplaySettings({ lyricId, settings, onApply, onCancel }: {
   lyricId: string;
@@ -65,20 +66,13 @@ export function LyricDisplaySettings({ lyricId, settings, onApply, onCancel }: {
     <header><div><p className="eyebrow">Per lyric override</p><h2 id="lyric-display-title">현재 가사 표시 설정</h2></div><button type="button" onClick={cancel}>닫기</button></header>
     <p className="lyric-display-priority">이 가사에 저장하면 계정 기본값보다 우선합니다. 초기화하면 현재 계정 기본값이 즉시 적용됩니다.</p>
     <div className="lyric-display-controls">
-      <label>폰트<select autoFocus value={draft.font} onChange={(event) => patch("font", event.target.value as WritingFont)}><option value="sans">산세리프</option><option value="serif">세리프</option><option value="mono">고정폭</option></select></label>
+      <label>폰트<select autoFocus value={draft.font} onChange={(event) => patch("font", event.target.value as WritingFont)}>{WRITING_FONT_OPTIONS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}</select></label>
       <label>크기 <output>{draft.fontSize}px</output><input type="range" min="14" max="28" step="1" value={draft.fontSize} onChange={(event) => patch("fontSize", Number(event.target.value))} /></label>
       <label>줄 간격 <output>{draft.lineHeight.toFixed(1)}</output><input type="range" min="1.2" max="2.4" step="0.1" value={draft.lineHeight} onChange={(event) => patch("lineHeight", Number(event.target.value))} /></label>
       <label>자간 <output>{draft.letterSpacing.toFixed(2)}em</output><input type="range" min="-0.05" max="0.2" step="0.01" value={draft.letterSpacing} onChange={(event) => patch("letterSpacing", Number(event.target.value))} /></label>
     </div>
-    <div className="lyric-display-preview" style={writingStyle(draft)}><span>[Verse]</span><br />새벽의 공기 위로<br />우리의 멜로디가 번져 간다</div>
+    <div className="lyric-display-preview" style={writingDisplayStyle(draft)}><span>[Verse]</span><br />한글 가사 · bright rhyme · 光 ひかり · ♫<br />새벽의 공기 위로 우리의 멜로디가 번져 간다</div>
     {message ? <p className="lyric-display-message" role="alert">{message}{conflicted ? <button type="button" disabled={busy} onClick={() => void save(true)}>최신 버전에 다시 저장</button> : null}</p> : null}
     <footer><button type="button" className="secondary-button" disabled={!base.override || busy} onClick={() => void reset()}>계정 기본값으로 초기화</button><span /><button type="button" className="secondary-button" disabled={busy} onClick={cancel}>취소</button><button type="button" className="primary-link" disabled={busy} onClick={() => void save()}>{busy ? "저장 중" : "이 가사에 저장"}</button></footer>
   </section>;
-}
-
-function writingStyle(settings: WritingDisplaySettings) {
-  const fontFamily = settings.font === "serif" ? 'Georgia, "Noto Serif KR", serif'
-    : settings.font === "mono" ? 'ui-monospace, "SFMono-Regular", Consolas, monospace'
-    : 'Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif';
-  return { fontFamily, fontSize: `${settings.fontSize}px`, lineHeight: settings.lineHeight, letterSpacing: `${settings.letterSpacing}em` };
 }

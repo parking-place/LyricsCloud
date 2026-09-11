@@ -29,4 +29,14 @@ describe("display settings contract", () => {
     expect(resolveWritingDisplaySettings(DEFAULT_USER_SETTINGS, override)).toEqual({ font: "mono", fontSize: 16, lineHeight: 2, letterSpacing: -0.01 });
     expect(resolveWritingDisplaySettings(DEFAULT_USER_SETTINGS, null)).toEqual({ font: "sans", fontSize: 18, lineHeight: 1.8, letterSpacing: 0 });
   });
+
+  it("accepts the 1.0.14 self-hosted font selection", () => {
+    expect(parseUpdateUserSettingsInput({
+      rowVersion: 0, theme: "system", font: "noto_sans_kr", fontSize: 18,
+      lineHeight: 1.8, letterSpacing: 0, focusModeDefault: false
+    }).font).toBe("noto_sans_kr");
+    expect(parseUpdateLyricDisplaySettingsInput({
+      rowVersion: 0, font: "noto_sans_kr", fontSize: 18, lineHeight: 1.8, letterSpacing: 0
+    }).font).toBe("noto_sans_kr");
+  });
 });

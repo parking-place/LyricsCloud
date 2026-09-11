@@ -844,7 +844,7 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .rhyme-new-page .rhyme-editor-header > .secondary-button { margin-left: auto; }
 .rhyme-new-document { width: min(100%, 70rem); min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: .5rem; justify-self: center; padding: 0 .8rem 1rem; }
 .rhyme-new-document > label { color: var(--subtle); font-size: .68rem; font-weight: 800; }
-.rhyme-new-document > textarea { min-height: 20rem; padding: 1.25rem 1.5rem; resize: none; border: 1px solid var(--line); border-radius: .85rem; outline: 0; background: var(--panel); color: var(--ink); font: 1rem/1.8 "Noto Sans KR", Pretendard, sans-serif; }
+.rhyme-new-document > textarea { min-height: 20rem; padding: 1.25rem 1.5rem; resize: none; border: 1px solid var(--line); border-radius: .85rem; outline: 0; background: var(--panel); color: var(--ink); font-family: var(--lyric-font-family, "Noto Sans KR", Pretendard, sans-serif); font-size: var(--lyric-font-size, 1rem); line-height: var(--lyric-line-height, 1.8); letter-spacing: var(--lyric-letter-spacing, 0); }
 .rhyme-new-document > textarea:focus { border-color: var(--acid); }
 .rhyme-new-document > small { color: var(--danger); font-size: .66rem; }
 .rhyme-history-dialog .history-toolbar > p { margin: 0; }
@@ -1229,7 +1229,8 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .prompt-sentence-card .eyebrow { margin-bottom: .25rem; }
 .prompt-sentence-card header > span { color: var(--subtle); font-size: .65rem; }
 .prompt-sentence-card header > span.over { color: var(--danger); }
-.prompt-sentence-card textarea { width: 100%; min-height: 17rem; resize: vertical; padding: .85rem; border: 1px solid var(--line); border-radius: .62rem; outline: 0; background: var(--surface); color: var(--ink); font: .82rem/1.7 ui-monospace, monospace; white-space: pre-wrap; }
+.prompt-sentence-card textarea { width: 100%; min-height: 17rem; resize: vertical; padding: .85rem; border: 1px solid var(--line); border-radius: .62rem; outline: 0; background: var(--surface); color: var(--ink); font-family: var(--lyric-font-family, ui-monospace, monospace); font-size: var(--lyric-font-size, .82rem); line-height: var(--lyric-line-height, 1.7); letter-spacing: var(--lyric-letter-spacing, 0); white-space: pre-wrap; }
+.prompt-sentence-display, .prompt-copy-preview { font-family: var(--lyric-font-family, inherit); font-size: var(--lyric-font-size, inherit); line-height: var(--lyric-line-height, inherit); letter-spacing: var(--lyric-letter-spacing, inherit); }
 .prompt-sentence-card textarea:focus { border-color: var(--acid); }
 .prompt-sentence-display { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .35rem; padding: .7rem; border: 1px dashed var(--line); border-radius: .6rem; background: var(--canvas); color: var(--muted); font-size: .72rem; line-height: 1.6; }
 .prompt-sentence-display .sentence-span { padding: .18rem .35rem; border-radius: .32rem; background: var(--surface-raised); white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -1243,6 +1244,7 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .prompt-builder-empty { align-self: center; width: 100%; color: var(--subtle); font-size: .74rem; text-align: center; }
 .prompt-editor-token { max-width: 100%; height: fit-content; display: inline-flex; align-items: center; gap: .3rem; padding: .36rem .36rem .36rem .62rem; border: 1px solid color-mix(in srgb, var(--acid) 35%, var(--line)); border-radius: 999px; background: color-mix(in srgb, var(--acid) 10%, var(--panel)); color: var(--acid); font-size: .7rem; }
 .prompt-editor-token > span { min-width: 0; overflow-wrap: anywhere; }
+.prompt-editor-token > span, .prompt-token-input input, .prompt-suggestion-panel button > span { font-family: var(--lyric-font-family, inherit); }
 .prompt-editor-token button { width: 1.65rem; height: 1.65rem; flex-shrink: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
 .prompt-editor-token .prompt-drag-handle { margin-left: -.38rem; cursor: grab; touch-action: none; }
 .prompt-editor-token .prompt-drag-handle:active { cursor: grabbing; }

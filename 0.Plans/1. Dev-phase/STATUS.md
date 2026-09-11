@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.14"
-current_phase: "../2.Patch-phase/1.0.14/3phase.md"
+current_phase: "../2.Patch-phase/1.0.14/4phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.0.14 P3에서 Noto Sans KR 선택 영속·다국어 미리보기·가사/라임/프롬프트 편집 적용과 cursor/undo/IME 보존을 인수한다"
+next_action: "1.0.14 P4에서 실제/합성 입력 경계를 분리하고 slow/offline·저사양 성능·개인 창작 흐름 교차 회귀를 인수한다"
 ```
 
 ## 승인과 기준
@@ -106,13 +106,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.13 P5/no-go | complete | 공식 근거·미완료 요구·재개 조건·1.0.14 인계 기록. 제품 변경이 없어 빈 `v1.0.13` tag·image·운영 배포 미발행 |
 | 1.0.14 P1 | complete | Noto Sans KR 2.004 Regular 공식 OTF·OFL·해시, 한글/자모/Kana/선별 Han+system fallback, cold 1건/4.7MB 예산 승인 |
 | 1.0.14 P2 | complete | 공식 hash OTF/OFL·swap/system fallback·immutable/PWA cache, Actions 두 run과 동일 SHA 공개 개발 인수 완료 |
-| 1.0.14 P3 | in_progress | 계정/가사별 선택 영속·다국어 미리보기·가사/라임/프롬프트 편집 적용·입력 상태 보존 구현 중 |
+| 1.0.14 P3 | complete | 후보 `ffcf97f`, Actions `34649606547`·`34649610060`, 네 dev image와 동일 SHA 공개 저장/재진입·세 편집기 family·undo/원문·overflow 인수 완료 |
+| 1.0.14 P4 | in_progress | 실제/합성 IME 증거 분리·slow/offline·저사양 성능·개인 창작 흐름 교차 회귀 착수 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.14/P3 | LC-NF-1.0.14-P3-01~03 | 선택 영속·다국어 preview·세 편집기 적용·cursor/undo/IME·모바일 overflow | 1.0.14 P2 `1c97f4c` | 2026-09-12T06:45:00+09:00 | in_progress |
+| Codex | 1.0.14/P4 | LC-NF-1.0.14-P4-01~03 | 실제/합성 IME 경계·slow/offline·저사양 성능·개인 흐름 통합 회귀 | 1.0.14 P3 `ffcf97f` | 2026-09-12T06:53:00+09:00 | in_progress |
+| Codex | 1.0.14/P3 | LC-NF-1.0.14-P3-01~03 | 선택 영속·다국어 preview·세 편집기 적용·cursor/undo/IME·모바일 overflow | 1.0.14 P2 `1c97f4c` | 2026-09-12T06:45:00+09:00 | complete |
 | Codex | 1.0.14/P2 | LC-NF-1.0.14-P2-01~03 | OTF/OFL hash 자산·lazy loading·PWA cache·fallback 실패 회귀 | 1.0.14 P1 | 2026-09-12T05:55:00+09:00 | complete |
 | Codex | 1.0.14/P1 | LC-NF-1.0.14-P1-01~03 | 폰트 공식 출처·OFL/재배포·글리프·용량·fallback 후보·예산 | 1.0.13 no-go | 2026-09-12T05:45:00+09:00 | complete |
 | Codex | 1.0.13/P5 | LC-NF-1.0.13-P5-01~03 | provider no-go·미완료 요구·재개 조건·1.0.14 인계 | 1.0.13 P1 no-go | 2026-09-12T05:35:00+09:00 | complete |
@@ -183,6 +185,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.0.14 P3 후보 `ffcf97f5e51a7228895079f4a600ef9133682237`은 공용 Noto Sans KR 선택을 계정 기본값과 가사별 override에 영속하고 CSS 변수로 가사·라임·프롬프트 편집기에 적용한다. 실제 PostgreSQL 1004 migration·rollback, 전체 Vitest 334 PASS·전용 beta 4 skip, Chromium desktop/mobile 336 PASS·조건부 36 skip을 로컬에서 통과했고 Actions push `34649606547`과 PR `34649610060`의 전체 verify, 네 dev image 게시/서명을 통과했다. 같은 SHA 개발 서버는 schema `1004_web_font_selection.sql`, 네 서비스 healthy, 공개 폰트 승인 hash/크기/immutable 응답과 일치했다. 공개 합성 계정의 기본/가사별 저장·재진입, live 전환 뒤 undo·원문 보존, 세 편집기 family·overflow가 PASS했으며 fixture를 제거했다. 실제 Windows/Android/iOS 물리 입력과 slow/offline·저사양 성능은 P4에 남긴다.
 
 1.0.10 P5 후보 `49b32010571dd33e2a0668dc632e7e54fc054680`는 GitHub Actions push run `34614794684`의 verify 21분·Chromium desktop/mobile 전체 회귀·release matrix·보안/복구 검사와 네 dev image 게시/서명을 통과했다. 같은 SHA 개발 서버의 `1.0.10`·`dev`·`p5`, schema `1003_song_suno_workspaces.sql`, 네 서비스 healthy를 확인하고 공개 desktop/mobile 사용자 지정 모델·링크 3개 저장/재진입·새 탭 보호·한글 순차 입력 초안 복구·좁은 화면, owner 차단·soft-delete/restore·web/collaboration/worker 재시작 지속성을 PASS한 뒤 fixture를 제거했다. 신규 제품 P0/P1·원문 유실·인증 우회·무음 저장 실패는 0건이다. 실제 물리 기기는 새로 실행하지 않았고 `OPS-100-001`은 사용자 승인 예외로 유지하며 승인된 정식 main/tag/image/릴리스 서버 절차로 이동한다.
 

@@ -39,9 +39,9 @@ describe.runIf(enabled)("display settings PostgreSQL contract", () => {
     expect(await settings!.getLyricDisplaySettings(alice, lyric.id)).toMatchObject({ override: null, effective: { font: "serif", fontSize: 20 } });
 
     const withOverride = await settings!.updateLyricDisplaySettings(alice, lyric.id, {
-      rowVersion: 0, font: "mono", fontSize: 16, lineHeight: 2, letterSpacing: -0.01
+      rowVersion: 0, font: "noto_sans_kr", fontSize: 16, lineHeight: 2, letterSpacing: -0.01
     });
-    expect(withOverride).toMatchObject({ override: { rowVersion: 1 }, effective: { font: "mono", fontSize: 16 } });
+    expect(withOverride).toMatchObject({ override: { rowVersion: 1 }, effective: { font: "noto_sans_kr", fontSize: 16 } });
     await expect(settings!.updateLyricDisplaySettings(alice, lyric.id, {
       rowVersion: 0, font: "sans", fontSize: 18, lineHeight: 1.8, letterSpacing: 0
     })).rejects.toBeInstanceOf(DisplaySettingsConflictError);

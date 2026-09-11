@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { classifyDatabaseError, CURRENT_SCHEMA_VERSION, DatabaseHealthError } from "./index.js";
 
 describe("database health diagnostics", () => {
-  it("requires the 1.0.7 library view settings migration", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("1003_song_suno_workspaces.sql");
+  it("requires the 1.0.14 web font selection migration", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe("1004_web_font_selection.sql");
   });
 
   it.each([

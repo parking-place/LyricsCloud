@@ -35,6 +35,7 @@ try {
     await target.query(await readFile(resolve("packages/database/rollback/1002_library_manual_order.sql"), "utf8"));
     await target.query("delete from schema_migrations where name='1002_library_manual_order.sql'");
     await target.query(await readFile(resolve("packages/database/rollback/0802_lifecycle.sql"), "utf8"));
+    await target.query(await readFile(resolve("packages/database/rollback/1004_web_font_selection.sql"), "utf8"));
     await target.query(await readFile(resolve("packages/database/rollback/0801_display_settings.sql"), "utf8"));
     await target.query(await readFile(resolve("packages/database/rollback/0702_recent_items.sql"), "utf8"));
     await target.query(await readFile(resolve("packages/database/rollback/0701_recent_searches.sql"), "utf8"));
