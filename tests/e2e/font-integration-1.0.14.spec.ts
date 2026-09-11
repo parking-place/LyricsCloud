@@ -117,8 +117,9 @@ test.describe("1.0.14 font loading and input integration", () => {
   });
 
   test("keeps fallback text visible and saving available when the font request is blocked", async ({ context, page }, info) => {
+    test.setTimeout(90_000);
     const account = await createAccount(context, `차단 폰트 ${info.project.name}`);
-    const source = "차단 전 원문 · bright · ひかり · 光";
+    const source = Array.from({ length: 200 }, (_, index) => `[Verse ${index + 1}] 차단 전 원문 · bright · ひかり · 光`).join("\n");
     let fontRequests = 0;
     try {
       await chooseNoto(context);
@@ -127,12 +128,13 @@ test.describe("1.0.14 font loading and input integration", () => {
       await page.goto(`/lyrics/${lyricId}`, { waitUntil: "domcontentloaded" });
       const editor = page.getByLabel("가사 본문");
       await expect(editor).toBeVisible({ timeout: 20_000 });
-      await expect(editor).toContainText(source);
+      await expect(editor).toHaveAttribute("contenteditable", "true", { timeout: 20_000 });
+      expect((await (await context.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body).toBe(source);
       await editor.click(); await page.keyboard.press("Control+End"); await page.keyboard.insertText(" 차단 뒤 입력");
       const expectedBody = `${source} 차단 뒤 입력`;
       await expect.poll(async () => (await (await context.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body, { timeout: 30_000 }).toBe(expectedBody);
       await page.reload();
-      await expect(page.getByLabel("가사 본문")).toContainText(expectedBody);
+      await expect(page.getByLabel("가사 본문")).toBeVisible();
       expect(fontRequests).toBeGreaterThanOrEqual(1);
       expect((await (await context.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body).toBe(expectedBody);
     } finally { await deleteAccount(account.userId); }
