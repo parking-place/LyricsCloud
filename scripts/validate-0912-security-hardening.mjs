@@ -7,7 +7,7 @@ const read = (relative) => readFile(path.join(root, relative), "utf8");
 const routeRoot = path.join(root, "apps/web/src/app/api");
 const routeFiles = (await filesBelow(routeRoot)).filter((file) => file.endsWith("/route.ts")).sort();
 const routePaths = routeFiles.map((file) => `/api/${path.relative(routeRoot, path.dirname(file)).split(path.sep).join("/")}`);
-assertEqual(routePaths.length, 63, "API route files");
+assertEqual(routePaths.length, 65, "API route files");
 
 const ownership = await read("docs/security/0.9.1-api-ownership-matrix.md");
 for (const routePath of routePaths) {
@@ -26,7 +26,7 @@ for (const routeFile of routeFiles) {
     assert(handler.includes("mutationOriginAllowed(request)"), `${routePaths[routeFiles.indexOf(routeFile)]} ${starts[index][1]} lacks Origin guard`);
   }
 }
-assertEqual(mutationCount, 56, "mutation handlers");
+assertEqual(mutationCount, 58, "mutation handlers");
 
 const migrationRoot = path.join(root, "packages/database/migrations");
 const migrationFiles = (await filesBelow(migrationRoot)).filter((file) => file.endsWith(".sql"));
