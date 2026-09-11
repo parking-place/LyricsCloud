@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.12"
-current_phase: "../2.Patch-phase/1.0.12/4phase.md"
+current_phase: "../2.Patch-phase/1.0.12/5phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.0.12 P4에서 개인 창작 전체 흐름의 실제 DB·권한·offline/reconnect·PWA·서비스 재시작·지원 browser 교차 회귀를 수행한다"
+next_action: "1.0.12 P5에서 요구 추적·사용자/운영 문서·환경/migration/license/release artifact를 봉인하고 최종 CI·동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다"
 ```
 
 ## 승인과 기준
@@ -98,13 +98,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.12 P1 | complete | 세 목록 O(n²) group position 계산을 확인하고 2,500/10,000개 baseline·선형 후보 exact-equivalence, 불변 API/DB/권한과 rollback 계약 확정 |
 | 1.0.12 P2 | complete | 공통 O(n) position map·세 목록 memoized 소비, 전체 CI 두 run·네 dev image·동일 SHA 공개 manual 목록 인수 완료 |
 | 1.0.12 P3 | complete | 전체 CI 두 run·동일 SHA 개발 공개 desktop/mobile 수직 흐름, 재진입·exact copy·Suno 새 탭·owner/실패 UI 인수 완료 |
-| 1.0.12 P4 | in_progress | 실제 DB·권한·offline/reconnect·PWA·서비스 재시작·지원 browser 교차 회귀 착수 |
+| 1.0.12 P4 | complete | 실제 PostgreSQL 330건·PWA/성능 계약·전체 CI 두 run·공개 desktop/mobile·owner 격리·서비스 재시작 인수 완료 |
+| 1.0.12 P5 | in_progress | 요구 추적·현재 문서·환경/migration/license/release artifact·최종 CI·동일 SHA 개발/정식 인수 착수 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.12/P4 | LC-NF-1.0.12-P4-01~06 | 실제 DB·수용 사례·권한/계정·offline/reconnect·PWA·재시작·지원 browser 교차 회귀 | 1.0.12 P3 `9b891a8` | 2026-09-12T03:20:00+09:00 | in_progress |
+| Codex | 1.0.12/P5 | LC-NF-1.0.12-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 1.0.12 P4 `a4e0910` | 2026-09-12T03:50:00+09:00 | in_progress |
+| Codex | 1.0.12/P4 | LC-NF-1.0.12-P4-01~06 | 실제 DB·수용 사례·권한/계정·offline/reconnect·PWA·재시작·지원 browser 교차 회귀 | 1.0.12 P3 `9b891a8` | 2026-09-12T03:20:00+09:00 | complete |
 | Codex | 1.0.12/P3 | LC-NF-1.0.12-P3-01~06 | 곡→가사→라임 삽입→문장 prompt→copy→Suno open 수직 흐름·PC/mobile 재진입 | 1.0.12 P2 `73c1671` | 2026-09-12T02:50:00+09:00 | complete |
 | Codex | 1.0.12/P2 | LC-NF-1.0.12-P2-01~06 | position map 실패 시험·공통 선형 precompute·세 목록 소비·DB/단위 회귀 | 1.0.12 P1 `db02084` | 2026-09-12T01:50:00+09:00 | complete |
 | Codex | 1.0.12/P1 | LC-NF-1.0.12-P1-01~06 | 통합 회귀 입력·장문 목록 성능 측정·호환/rollback·담당 경계 | 1.0.11 no-go `a75c88a` | 2026-09-12T01:30:00+09:00 | complete |
