@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.12"
-current_phase: "../2.Patch-phase/1.0.12/3phase.md"
+current_phase: "../2.Patch-phase/1.0.12/4phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.0.12 P3에서 곡 생성부터 가사·라임·문장형 프롬프트·copy·Suno 새 탭까지 PC/mobile 수직 흐름과 재진입 보존을 검증한다"
+next_action: "1.0.12 P4에서 개인 창작 전체 흐름의 실제 DB·권한·offline/reconnect·PWA·서비스 재시작·지원 browser 교차 회귀를 수행한다"
 ```
 
 ## 승인과 기준
@@ -97,13 +97,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.11 P5/no-go | complete | 공식 근거·미완료 요구·재개 조건·1.0.12 인계 기록. 제품 변경이 없어 빈 `v1.0.11` tag·image·운영 배포 미발행 |
 | 1.0.12 P1 | complete | 세 목록 O(n²) group position 계산을 확인하고 2,500/10,000개 baseline·선형 후보 exact-equivalence, 불변 API/DB/권한과 rollback 계약 확정 |
 | 1.0.12 P2 | complete | 공통 O(n) position map·세 목록 memoized 소비, 전체 CI 두 run·네 dev image·동일 SHA 공개 manual 목록 인수 완료 |
-| 1.0.12 P3 | in_progress | 개인 창작 수직 흐름과 재진입 초안·위치의 PC/mobile E2E 검증 중 |
+| 1.0.12 P3 | complete | 전체 CI 두 run·동일 SHA 개발 공개 desktop/mobile 수직 흐름, 재진입·exact copy·Suno 새 탭·owner/실패 UI 인수 완료 |
+| 1.0.12 P4 | in_progress | 실제 DB·권한·offline/reconnect·PWA·서비스 재시작·지원 browser 교차 회귀 착수 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.12/P3 | LC-NF-1.0.12-P3-01~06 | 곡→가사→라임 삽입→문장 prompt→copy→Suno open 수직 흐름·PC/mobile 재진입 | 1.0.12 P2 `73c1671` | 2026-09-12T02:50:00+09:00 | in_progress |
+| Codex | 1.0.12/P4 | LC-NF-1.0.12-P4-01~06 | 실제 DB·수용 사례·권한/계정·offline/reconnect·PWA·재시작·지원 browser 교차 회귀 | 1.0.12 P3 `9b891a8` | 2026-09-12T03:20:00+09:00 | in_progress |
+| Codex | 1.0.12/P3 | LC-NF-1.0.12-P3-01~06 | 곡→가사→라임 삽입→문장 prompt→copy→Suno open 수직 흐름·PC/mobile 재진입 | 1.0.12 P2 `73c1671` | 2026-09-12T02:50:00+09:00 | complete |
 | Codex | 1.0.12/P2 | LC-NF-1.0.12-P2-01~06 | position map 실패 시험·공통 선형 precompute·세 목록 소비·DB/단위 회귀 | 1.0.12 P1 `db02084` | 2026-09-12T01:50:00+09:00 | complete |
 | Codex | 1.0.12/P1 | LC-NF-1.0.12-P1-01~06 | 통합 회귀 입력·장문 목록 성능 측정·호환/rollback·담당 경계 | 1.0.11 no-go `a75c88a` | 2026-09-12T01:30:00+09:00 | complete |
 | Codex | 1.0.11/P1 | LC-NF-1.0.11-P1-01~06 | 공식 Suno metadata 제공/허가 경로·실패 입력·go/no-go 증거 | v1.0.10 release `c15387f` | 2026-09-12T01:05:00+09:00 | complete (no-go) |
