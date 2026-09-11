@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.8"
-current_phase: "../2.Patch-phase/1.0.8/4phase.md"
+current_phase: "../2.Patch-phase/1.0.8/5phase.md"
 state: "review"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-11"
-next_action: "1.0.8 P4 실제 DB·두 탭·오프라인·재접속·서버 재시작·지원 브라우저 교차 회귀를 수행한다"
+next_action: "1.0.8 P5 요구 추적·문서·최종 봉인 validator·전체 CI와 동일 SHA 개발 인수를 수행한다"
 ```
 
 ## 승인과 기준
@@ -79,12 +79,14 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.8 P1 | complete | owner+song 별도 rank·visible anchor·CAS/idempotency·핀/복원/paging·rollback 계약을 설계-only로 확정 |
 | 1.0.8 P2 | complete | 1002 migration/RLS·anchor move/CAS/idempotency·manual cursor, Actions `34551269832` 전체 CI와 동일 SHA 공개 개발 API 인수 완료 |
 | 1.0.8 P3 | complete | drag handle·버튼/키보드 대안·manual 전환·실패 원복/재시도·numeric rank 연속 이동, Actions `34554545058` 전체 CI와 동일 SHA 공개 개발 UI 인수 완료 |
+| 1.0.8 P4 | complete | 실제 PostgreSQL 298건·Chromium 316건·5-project 기능 30건, Actions `34558503310` 전체 CI·네 dev image와 동일 SHA 공개 재시작/순서 복원 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.8/P4 | LC-NF-1.0.8-P4-01~06 | 실제 DB·두 탭/응답 역전·offline/reconnect·지원 browser·개발 서비스 재시작 회귀 | 1.0.8 P3 `72370f0` | 2026-09-11T12:15:00+09:00 | review |
+| Codex | 1.0.8/P5 | LC-NF-1.0.8-P5-01~06 | 요구 추적·현재/사용자/지원 문서·환경 schema·봉인 validator·최종 CI·개발/정식 인수 | 1.0.8 P4 `72af9f9` | 2026-09-11T12:55:00+09:00 | review |
+| Codex | 1.0.8/P4 | LC-NF-1.0.8-P4-01~06 | 실제 DB·두 탭/응답 역전·offline/reconnect·지원 browser·개발 서비스 재시작 회귀 | 1.0.8 P3 `fd8b44b` | 2026-09-11T12:15:00+09:00 | complete |
 | Codex | 1.0.8/P3 | LC-NF-1.0.8-P3-01~06 | 곡 drag handle·버튼/키보드 이동·manual URL·실패 원복/409 최신화·PC/mobile E2E | 1.0.8 P2 `0f9e61a` | 2026-09-11T10:50:00+09:00 | complete |
 | Codex | 1.0.8/P2 | LC-NF-1.0.8-P2-01~06 | domain 계약·1002 rank/state/request migration·song store/API·DB/단위 회귀 | 1.0.8 P1 `994070d` | 2026-09-11T09:50:00+09:00 | complete |
 | Codex | 1.0.8/P1 | LC-NF-1.0.8-P1-01~06 | 곡 사용자정렬 계약·실패 입력·domain/database/web 담당·호환/rollback 경계 | v1.0.7 release `a7bf38c` | 2026-09-11T09:45:00+09:00 | complete |
