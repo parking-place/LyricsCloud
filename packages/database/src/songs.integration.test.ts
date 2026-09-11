@@ -63,7 +63,7 @@ describe.runIf(enabled)("song command and list store", () => {
     expect(await store!.setFavorite(bob, created.song.id, false)).toBeNull();
   });
 
-  it("combines literal search, status filters, five stable keyset sorts, and total count", async () => {
+  it("combines literal search, status filters, six stable keyset sorts, and total count", async () => {
     const [alice, bob] = users as [string, string];
     const marker = randomUUID().slice(0, 8);
     const fixtures = [
@@ -94,7 +94,7 @@ describe.runIf(enabled)("song command and list store", () => {
     expect(withoutLyrics.totalCount).toBe(fixtures.length - 1);
     expect(withoutLyrics.items.map(({ id }) => id)).not.toContain(created[0]!.id);
 
-    for (const sort of ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"] satisfies SongSort[]) {
+    for (const sort of ["manual", "updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"] satisfies SongSort[]) {
       const items = await collectPages(alice, { search: marker, work: "all", sort, limit: 2 });
       expect(items).toHaveLength(fixtures.length);
       expect(new Set(items.map(({ id }) => id)).size).toBe(fixtures.length);
@@ -102,7 +102,7 @@ describe.runIf(enabled)("song command and list store", () => {
     }
     const firstPage = await store!.listSongs(alice, listInput({ search: marker, limit: 2 }));
     expect(firstPage.totalCount).toBe(fixtures.length);
-    expect(firstPage.capabilities).toEqual({ lyricsSearch: true, linkedResourceFilters: true });
+    expect(firstPage.capabilities).toEqual({ lyricsSearch: true, linkedResourceFilters: true, manualOrder: true });
     await expect(store!.listSongs(alice, listInput({ cursor: "not-a-cursor" }))).rejects.toBeInstanceOf(SongCursorError);
   });
 

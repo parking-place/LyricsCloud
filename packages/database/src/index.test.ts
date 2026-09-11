@@ -3,7 +3,7 @@ import { classifyDatabaseError, CURRENT_SCHEMA_VERSION, DatabaseHealthError } fr
 
 describe("database health diagnostics", () => {
   it("requires the 1.0.7 library view settings migration", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("1001_library_view_settings.sql");
+    expect(CURRENT_SCHEMA_VERSION).toBe("1002_library_manual_order.sql");
   });
 
   it.each([

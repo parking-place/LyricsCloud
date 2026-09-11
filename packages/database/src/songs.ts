@@ -3,6 +3,7 @@ import type {
   CreateSongInput,
   ResourceColor,
   SongListInput,
+  SongMoveInput,
   SongLinkListInput,
   SongLinkMutationInput,
   SongLinkResourceType,
@@ -16,6 +17,7 @@ import { createDatabasePool } from "./pool.js";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PIN_RANK = "case when r.is_pinned then 0 else 1 end";
 const PIN_KEY = "coalesce(r.pin_order, 2147483647)";
+const ORDER_GAP = 1_048_576n;
 
 export interface SongRecord {
   readonly id: string;
@@ -47,7 +49,17 @@ export interface SongListResult {
   readonly items: readonly SongRecord[];
   readonly totalCount: number;
   readonly nextCursor: string | null;
-  readonly capabilities: { readonly lyricsSearch: true; readonly linkedResourceFilters: true };
+  readonly orderVersion: number;
+  readonly capabilities: { readonly lyricsSearch: true; readonly linkedResourceFilters: true; readonly manualOrder: true };
+}
+
+export interface SongMoveResult {
+  readonly itemId: string;
+  readonly beforeId: string | null;
+  readonly afterId: string | null;
+  readonly orderVersion: number;
+  readonly changed: boolean;
+  readonly replayed: boolean;
 }
 
 export interface SongLinkItem {
@@ -74,6 +86,22 @@ export class SongCursorError extends Error {
   constructor() { super("SONG_CURSOR_INVALID"); this.name = "SongCursorError"; }
 }
 
+export class SongOrderConflictError extends Error {
+  constructor(readonly currentVersion: number) { super("SONG_ORDER_VERSION_CONFLICT"); this.name = "SongOrderConflictError"; }
+}
+
+export class SongOrderNotFoundError extends Error {
+  constructor() { super("SONG_ORDER_ITEM_NOT_FOUND"); this.name = "SongOrderNotFoundError"; }
+}
+
+export class SongOrderPinGroupError extends Error {
+  constructor() { super("SONG_ORDER_PIN_GROUP_MISMATCH"); this.name = "SongOrderPinGroupError"; }
+}
+
+export class SongOrderRequestReuseError extends Error {
+  constructor() { super("SONG_ORDER_REQUEST_REUSED"); this.name = "SongOrderRequestReuseError"; }
+}
+
 interface SongRow extends QueryResultRow {
   id: string;
   title: string;
@@ -91,13 +119,15 @@ interface SongRow extends QueryResultRow {
   work_notes: string;
   sort_title: string;
   lyric_count: string;
+  manual_rank: string | null;
 }
 
 interface SongCursor {
-  readonly version: 1;
+  readonly version: 1 | 2;
   readonly sort: SongSort;
   readonly pinRank: number;
-  readonly pinKey: number;
+  readonly pinKey?: number;
+  readonly orderVersion?: number;
   readonly favoriteRank?: number;
   readonly value: string;
   readonly id: string;
@@ -138,6 +168,8 @@ export class PostgresSongStore {
         where request.owner_id = $1 and request.request_id = $2`, [ownerId, input.requestId]);
       if (existing.rows[0]) return { song: mapSong(existing.rows[0]), replayed: true };
 
+      await lockSongOrder(client, ownerId);
+      await ensureSongOrder(client, ownerId);
       const resourceId = randomUUID();
       await client.query(`
         insert into resources(id, owner_id, type, title, is_favorite, is_pinned, pin_order, color)
@@ -151,6 +183,7 @@ export class PostgresSongStore {
         insert into song_create_requests(owner_id, request_id, resource_id)
         values ($1, $2, $3)
       `, [ownerId, input.requestId, resourceId]);
+      await appendSongOrderItem(client, ownerId, resourceId, input.isPinned);
       const created = await selectSong(client, ownerId, resourceId, false);
       if (!created) throw new Error("SONG_CREATE_READBACK_FAILED");
       return { song: created, replayed: false };
@@ -198,10 +231,23 @@ export class PostgresSongStore {
 
   setPin(ownerId: string, resourceId: string, value: boolean, pinOrder: number | null): Promise<SongRecord | null> {
     return this.#withUser(ownerId, async (client) => {
+      await lockSongOrder(client, ownerId);
+      await ensureSongOrder(client, ownerId);
+      const current = await client.query<{ is_pinned: boolean }>(`select is_pinned from resources
+        where id=$1 and owner_id=$2 and type='song' and deleted_at is null for update`, [resourceId, ownerId]);
+      if (!current.rows[0]) return null;
       const result = await client.query(`
         update resources set is_pinned = $3, pin_order = $4
         where id = $1 and owner_id = $2 and type = 'song' and deleted_at is null returning id
       `, [resourceId, ownerId, value, pinOrder]);
+      if (current.rows[0].is_pinned !== value) {
+        const maximum = await client.query<{ rank: string }>(`select coalesce(max(sort_rank),0)::text rank
+          from library_order_items where owner_id=$1 and resource_type='song' and pin_group=$2`, [ownerId, value]);
+        await client.query(`update library_order_items set pin_group=$3,sort_rank=$4,updated_at=clock_timestamp()
+          where owner_id=$1 and resource_type='song' and resource_id=$2`,
+        [ownerId, resourceId, value, (BigInt(maximum.rows[0]?.rank ?? "0") + ORDER_GAP).toString()]);
+        await bumpSongOrderVersion(client, ownerId);
+      }
       return result.rowCount === 1 ? selectSong(client, ownerId, resourceId, true) : null;
     });
   }
@@ -219,6 +265,8 @@ export class PostgresSongStore {
 
   listSongs(ownerId: string, input: SongListInput): Promise<SongListResult> {
     return this.#withUser(ownerId, async (client) => {
+      await lockSongOrder(client, ownerId);
+      const orderVersion = await ensureSongOrder(client, ownerId);
       const values: unknown[] = [ownerId];
       const conditions = ["r.owner_id = $1", "r.type = 'song'", "r.deleted_at is null"];
       if (input.search) {
@@ -270,7 +318,7 @@ export class PostgresSongStore {
       `, values);
 
       if (input.cursor) {
-        const cursor = decodeCursor(input.cursor, input.sort);
+        const cursor = decodeCursor(input.cursor, input.sort, orderVersion);
         conditions.push(cursorCondition(cursor, values));
       }
       values.push(input.limit + 1);
@@ -285,9 +333,73 @@ export class PostgresSongStore {
       return {
         items: pageRows.map(mapSong),
         totalCount: Number(count.rows[0]?.count ?? 0),
-        nextCursor: hasMore && last ? encodeCursor(makeCursor(last, input.sort)) : null,
-        capabilities: { lyricsSearch: true, linkedResourceFilters: true }
+        nextCursor: hasMore && last ? encodeCursor(makeCursor(last, input.sort, orderVersion)) : null,
+        orderVersion,
+        capabilities: { lyricsSearch: true, linkedResourceFilters: true, manualOrder: true }
       };
+    });
+  }
+
+  moveSong(ownerId: string, input: SongMoveInput): Promise<SongMoveResult> {
+    return this.#withUser(ownerId, async (client) => {
+      await lockSongOrder(client, ownerId);
+      await ensureSongOrder(client, ownerId);
+      const requestHash = createHash("sha256").update(JSON.stringify(input)).digest("hex");
+      const replay = await client.query<{ request_sha256: string; result_version: string; changed: boolean }>(`
+        select request_sha256,result_version,changed from library_order_move_requests
+        where owner_id=$1 and resource_type='song' and request_id=$2`, [ownerId, input.requestId]);
+      if (replay.rows[0]) {
+        if (replay.rows[0].request_sha256 !== requestHash) throw new SongOrderRequestReuseError();
+        return { itemId: input.itemId, beforeId: input.beforeId, afterId: input.afterId,
+          orderVersion: Number(replay.rows[0].result_version), changed: replay.rows[0].changed, replayed: true };
+      }
+
+      const state = await client.query<{ row_version: string }>(`select row_version from library_order_states
+        where owner_id=$1 and resource_type='song' for update`, [ownerId]);
+      const currentVersion = Number(state.rows[0]!.row_version);
+      if (currentVersion !== input.expectedVersion) throw new SongOrderConflictError(currentVersion);
+
+      const requestedIds = [input.itemId, input.beforeId, input.afterId].filter((id): id is string => id !== null);
+      const requested = await client.query<{ id: string; is_pinned: boolean }>(`select id,is_pinned from resources
+        where owner_id=$1 and type='song' and deleted_at is null and id=any($2::uuid[]) for update`, [ownerId, requestedIds]);
+      if (requested.rowCount !== new Set(requestedIds).size) throw new SongOrderNotFoundError();
+      const groups = new Set(requested.rows.map((row) => row.is_pinned));
+      if (groups.size !== 1) throw new SongOrderPinGroupError();
+      const pinGroup = requested.rows[0]!.is_pinned;
+
+      const ordered = await client.query<{ resource_id: string; sort_rank: string }>(`select resource_id,sort_rank::text
+        from library_order_items where owner_id=$1 and resource_type='song' and pin_group=$2
+        order by sort_rank,resource_id for update`, [ownerId, pinGroup]);
+      const original = ordered.rows.map((row) => row.resource_id);
+      const without = original.filter((id) => id !== input.itemId);
+      const beforeIndex = input.beforeId === null ? -1 : without.indexOf(input.beforeId);
+      const afterIndex = input.afterId === null ? -1 : without.indexOf(input.afterId);
+      if ((input.beforeId !== null && beforeIndex < 0) || (input.afterId !== null && afterIndex < 0)) throw new SongOrderNotFoundError();
+      if (beforeIndex >= 0 && afterIndex >= 0 && afterIndex >= beforeIndex) throw new SongOrderConflictError(currentVersion);
+      const insertionIndex = beforeIndex >= 0 ? beforeIndex : afterIndex + 1;
+      const nextOrder = [...without.slice(0, insertionIndex), input.itemId, ...without.slice(insertionIndex)];
+      const changed = nextOrder.some((id, index) => id !== original[index]);
+      let resultVersion = currentVersion;
+      if (changed) {
+        let previousRank = insertionIndex === 0 ? 0n : BigInt(ordered.rows.find((row) => row.resource_id === without[insertionIndex - 1])!.sort_rank);
+        let nextRank = insertionIndex === without.length ? previousRank + ORDER_GAP * 2n
+          : BigInt(ordered.rows.find((row) => row.resource_id === without[insertionIndex])!.sort_rank);
+        if (nextRank - previousRank <= 1n) {
+          await rebalanceSongOrderGroup(client, ownerId, pinGroup, nextOrder);
+        } else {
+          await client.query(`update library_order_items set sort_rank=$4,updated_at=clock_timestamp()
+            where owner_id=$1 and resource_type='song' and resource_id=$2 and pin_group=$3`,
+          [ownerId, input.itemId, pinGroup, ((previousRank + nextRank) / 2n).toString()]);
+        }
+        resultVersion = await bumpSongOrderVersion(client, ownerId);
+      }
+      await client.query(`insert into library_order_move_requests(
+        owner_id,resource_type,request_id,request_sha256,item_id,before_id,after_id,expected_version,result_version,changed
+      ) values($1,'song',$2,$3,$4,$5,$6,$7,$8,$9)`,
+      [ownerId, input.requestId, requestHash, input.itemId, input.beforeId, input.afterId,
+        input.expectedVersion, resultVersion, changed]);
+      return { itemId: input.itemId, beforeId: input.beforeId, afterId: input.afterId,
+        orderVersion: resultVersion, changed, replayed: false };
     });
   }
 
@@ -390,10 +502,74 @@ const SONG_SELECT = `
          to_char(r.created_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as created_cursor,
          to_char(r.updated_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as updated_cursor,
          s.status, s.description, s.work_notes, lower(r.title) as sort_title,
+         manual_order.sort_rank::text as manual_rank,
          (select count(*)::text from lyrics l join resources lr on lr.id = l.resource_id and lr.owner_id = l.owner_id
           where l.song_id = r.id and l.owner_id = r.owner_id and lr.type = 'lyrics' and lr.deleted_at is null) as lyric_count
   from resources r join songs s on s.resource_id = r.id and s.owner_id = r.owner_id
+  left join library_order_items manual_order on manual_order.resource_id=r.id
+    and manual_order.owner_id=r.owner_id and manual_order.resource_type='song'
 `;
+
+async function lockSongOrder(client: PoolClient, ownerId: string): Promise<void> {
+  await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [`library-order:${ownerId}:song`]);
+}
+
+async function ensureSongOrder(client: PoolClient, ownerId: string): Promise<number> {
+  await client.query(`insert into library_order_states(owner_id,resource_type) values($1,'song') on conflict do nothing`, [ownerId]);
+  const inserted = await client.query<{ count: string }>(`with missing as (
+      select r.id,r.is_pinned,row_number() over(partition by r.is_pinned order by r.pin_order nulls last,r.updated_at desc,r.id desc) sequence
+      from resources r left join library_order_items item on item.owner_id=r.owner_id
+        and item.resource_type='song' and item.resource_id=r.id
+      where r.owner_id=$1 and r.type='song' and item.resource_id is null
+    ), maxima as (
+      select pin_group,coalesce(max(sort_rank),0) maximum from library_order_items
+      where owner_id=$1 and resource_type='song' group by pin_group
+    ), added as (
+      insert into library_order_items(owner_id,resource_type,resource_id,pin_group,sort_rank)
+      select $1,'song',missing.id,missing.is_pinned,
+        coalesce(maxima.maximum,0) + missing.sequence * 1048576
+      from missing left join maxima on maxima.pin_group=missing.is_pinned
+      returning 1
+    ) select count(*)::text count from added`, [ownerId]);
+  const added = Number(inserted.rows[0]?.count ?? 0);
+  if (added) await client.query(`update library_order_states set row_version=row_version+$2,updated_at=clock_timestamp()
+    where owner_id=$1 and resource_type='song'`, [ownerId, added]);
+  const state = await client.query<{ row_version: string }>(`select row_version from library_order_states
+    where owner_id=$1 and resource_type='song'`, [ownerId]);
+  return Number(state.rows[0]!.row_version);
+}
+
+async function appendSongOrderItem(client: PoolClient, ownerId: string, resourceId: string, pinGroup: boolean): Promise<void> {
+  const maximum = await client.query<{ rank: string }>(`select coalesce(max(sort_rank),0)::text rank
+    from library_order_items where owner_id=$1 and resource_type='song' and pin_group=$2`, [ownerId, pinGroup]);
+  await client.query(`insert into library_order_items(owner_id,resource_type,resource_id,pin_group,sort_rank)
+    values($1,'song',$2,$3,$4)`, [ownerId, resourceId, pinGroup,
+    (BigInt(maximum.rows[0]?.rank ?? "0") + ORDER_GAP).toString()]);
+  await bumpSongOrderVersion(client, ownerId);
+}
+
+async function bumpSongOrderVersion(client: PoolClient, ownerId: string): Promise<number> {
+  const result = await client.query<{ row_version: string }>(`update library_order_states
+    set row_version=row_version+1,updated_at=clock_timestamp()
+    where owner_id=$1 and resource_type='song' returning row_version::text`, [ownerId]);
+  return Number(result.rows[0]!.row_version);
+}
+
+async function rebalanceSongOrderGroup(
+  client: PoolClient,
+  ownerId: string,
+  pinGroup: boolean,
+  orderedIds: readonly string[]
+): Promise<void> {
+  await client.query("set constraints library_order_items_group_rank deferred");
+  await client.query(`update library_order_items item set sort_rank=ranked.sort_rank,updated_at=clock_timestamp()
+    from (
+      select id,(ordinality * 1048576)::bigint sort_rank
+      from unnest($3::uuid[]) with ordinality as sequence(id,ordinality)
+    ) ranked
+    where item.owner_id=$1 and item.resource_type='song' and item.pin_group=$2 and item.resource_id=ranked.id`,
+  [ownerId, pinGroup, orderedIds]);
+}
 
 async function selectSong(client: PoolClient, ownerId: string, resourceId: string, activeOnly: boolean): Promise<SongRecord | null> {
   const result = await client.query<SongRow>(`${SONG_SELECT}
@@ -459,6 +635,7 @@ async function selectDashboardCounts(
 }
 
 function sortOrder(sort: SongSort): string {
+  if (sort === "manual") return `${PIN_RANK} asc, manual_order.sort_rank asc, r.id asc`;
   const prefix = `${PIN_RANK} asc, ${PIN_KEY} asc`;
   if (sort === "created_desc") return `${prefix}, r.created_at desc, r.id desc`;
   if (sort === "created_asc") return `${prefix}, r.created_at asc, r.id asc`;
@@ -467,7 +644,11 @@ function sortOrder(sort: SongSort): string {
   return `${prefix}, r.updated_at desc, r.id desc`;
 }
 
-function makeCursor(row: SongRow, sort: SongSort): SongCursor {
+function makeCursor(row: SongRow, sort: SongSort, orderVersion: number): SongCursor {
+  if (sort === "manual") return {
+    version: 2, sort, pinRank: row.is_pinned ? 0 : 1, orderVersion,
+    value: row.manual_rank ?? "0", id: row.id
+  };
   return {
     version: 1,
     sort,
@@ -485,23 +666,34 @@ function encodeCursor(cursor: SongCursor): string {
   return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
 }
 
-function decodeCursor(value: string, sort: SongSort): SongCursor {
+function decodeCursor(value: string, sort: SongSort, orderVersion: number): SongCursor {
   try {
     const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as Partial<SongCursor>;
     const validValue = typeof parsed.value === "string" && parsed.value.length > 0;
-    if (parsed.version !== 1 || parsed.sort !== sort || ![0, 1].includes(parsed.pinRank as number)
-      || !Number.isInteger(parsed.pinKey) || !validValue || typeof parsed.id !== "string" || !UUID.test(parsed.id)) {
+    const expectedCursorVersion = sort === "manual" ? 2 : 1;
+    if (parsed.version !== expectedCursorVersion || parsed.sort !== sort || ![0, 1].includes(parsed.pinRank as number)
+      || (sort !== "manual" && !Number.isInteger(parsed.pinKey)) || !validValue
+      || typeof parsed.id !== "string" || !UUID.test(parsed.id)) {
       throw new SongCursorError();
     }
+    if (sort === "manual" && parsed.orderVersion !== orderVersion) throw new SongOrderConflictError(orderVersion);
     if (sort === "favorite_first" && ![0, 1].includes(parsed.favoriteRank as number)) throw new SongCursorError();
     return parsed as SongCursor;
   } catch (error) {
-    if (error instanceof SongCursorError) throw error;
+    if (error instanceof SongCursorError || error instanceof SongOrderConflictError) throw error;
     throw new SongCursorError();
   }
 }
 
 function cursorCondition(cursor: SongCursor, values: unknown[]): string {
+  if (cursor.sort === "manual") {
+    values.push(cursor.pinRank, cursor.value, cursor.id);
+    const pin = `$${values.length - 2}`;
+    const rank = `$${values.length - 1}`;
+    const id = `$${values.length}`;
+    return `(${PIN_RANK} > ${pin} or (${PIN_RANK} = ${pin} and
+      (manual_order.sort_rank > ${rank}::bigint or (manual_order.sort_rank = ${rank}::bigint and r.id > ${id}))))`;
+  }
   values.push(cursor.pinRank, cursor.pinKey);
   const rank = `$${values.length - 1}`;
   const pin = `$${values.length}`;

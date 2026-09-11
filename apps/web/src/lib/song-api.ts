@@ -1,6 +1,12 @@
 import { AuthError } from "@lyricscloud/auth";
 import { SongValidationError } from "@lyricscloud/domain";
-import { SongCursorError } from "@lyricscloud/database";
+import {
+  SongCursorError,
+  SongOrderConflictError,
+  SongOrderNotFoundError,
+  SongOrderPinGroupError,
+  SongOrderRequestReuseError
+} from "@lyricscloud/database";
 import { getAuthContext, RequestAuthError } from "./auth-context.js";
 import { errorResponse, privateResponseHeaders } from "./http-response.js";
 
@@ -16,6 +22,11 @@ export function songApiError(error: unknown): Response {
   if (error instanceof SongValidationError) return errorResponse("VALIDATION_FAILED", 400, undefined, error.issues);
   if (error instanceof SongCursorError) {
     return errorResponse("VALIDATION_FAILED", 400, undefined, [{ field: "cursor", code: "invalid" }]);
+  }
+  if (error instanceof SongOrderConflictError) return errorResponse("VERSION_CONFLICT", 409);
+  if (error instanceof SongOrderNotFoundError) return errorResponse("NOT_FOUND", 404);
+  if (error instanceof SongOrderPinGroupError || error instanceof SongOrderRequestReuseError) {
+    return errorResponse("CONFLICT", 409);
   }
   if (error instanceof SyntaxError) return errorResponse("VALIDATION_FAILED", 400);
   return errorResponse("DEPENDENCY_UNAVAILABLE", 503);

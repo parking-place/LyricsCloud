@@ -238,6 +238,36 @@ export const libraryViewSettings = pgTable("library_view_settings", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => [primaryKey({ columns: [table.ownerId, table.resourceType] })]);
 
+export const libraryOrderStates = pgTable("library_order_states", {
+  ownerId: uuid("owner_id").notNull(),
+  resourceType: text("resource_type").$type<"song" | "rhyme_note" | "prompt">().notNull(),
+  rowVersion: bigint("row_version", { mode: "number" }).notNull().default(0),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.resourceType] })]);
+
+export const libraryOrderItems = pgTable("library_order_items", {
+  ownerId: uuid("owner_id").notNull(),
+  resourceType: text("resource_type").$type<"song" | "rhyme_note" | "prompt">().notNull(),
+  resourceId: uuid("resource_id").notNull(),
+  pinGroup: boolean("pin_group").notNull(),
+  sortRank: bigint("sort_rank", { mode: "bigint" }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.resourceType, table.resourceId] })]);
+
+export const libraryOrderMoveRequests = pgTable("library_order_move_requests", {
+  ownerId: uuid("owner_id").notNull(),
+  resourceType: text("resource_type").$type<"song" | "rhyme_note" | "prompt">().notNull(),
+  requestId: uuid("request_id").notNull(),
+  requestSha256: text("request_sha256").notNull(),
+  itemId: uuid("item_id").notNull(),
+  beforeId: uuid("before_id"),
+  afterId: uuid("after_id"),
+  expectedVersion: bigint("expected_version", { mode: "number" }).notNull(),
+  resultVersion: bigint("result_version", { mode: "number" }).notNull(),
+  changed: boolean("changed").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [primaryKey({ columns: [table.ownerId, table.resourceType, table.requestId] })]);
+
 export const lyricDisplaySettings = pgTable("lyric_display_settings", {
   lyricId: uuid("lyric_id").primaryKey(),
   ownerId: uuid("owner_id").notNull(),
