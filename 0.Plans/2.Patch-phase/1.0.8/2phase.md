@@ -1,6 +1,6 @@
 # 1.0.8 Phase 2 — 핵심 기반·저장과 서버
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`, 2026-09-11)
 - 단계 목적: 곡 사용자정렬·이동 명령의 핵심 기반·저장과 서버을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -40,12 +40,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.0.8-P2-01` 구현 전 `1.0.8` 수용 사례의 실패 테스트를 작성한다. 제안 위치는 `tests/new-feature/1.0.8.contract.test.ts`이며 runner 포함 여부를 확인한 뒤 실패 이유를 기록한다.
-- [ ] `LC-NF-1.0.8-P2-02` 곡 순서의 rank/유일성·owner scope·추가 migration과 정상 default를 구현한다.
-- [ ] `LC-NF-1.0.8-P2-03` 이동 요청에서 owner·활성 자료·anchor·중복/순환 입력을 검증한다.
-- [ ] `LC-NF-1.0.8-P2-04` 동시 이동·새 곡 생성·soft delete/restore의 순서 갱신을 원자 처리한다.
-- [ ] `LC-NF-1.0.8-P2-05` 같은 정렬로 paging할 때 중복/누락을 막고 rank 재분배 비용을 측정한다.
-- [ ] `LC-NF-1.0.8-P2-06` 추가 schema가 있으면 실제 테스트 DB의 빈 설치·이전 schema 업그레이드·권한·되돌림을 검사한다. 원인 수정 후 동일 실패 테스트와 기존 관련 회귀를 다시 실행한다.
+- [x] `LC-NF-1.0.8-P2-01` runner에 포함한 `tests/new-feature/1.0.8.contract.test.ts`의 미구현 export 실패를 확인하고 닫힌 이동 계약 구현 뒤 재통과했다.
+- [x] `LC-NF-1.0.8-P2-02` owner+song별 state/item/request ledger, pin group별 sparse rank·유일성·RLS와 신규 곡 기본 위치를 `1002` migration으로 구현했다.
+- [x] `LC-NF-1.0.8-P2-03` 인증 이동 API가 owner·활성 자료·visible anchor·pin group·멱등 request 재사용을 검증하도록 구현했다.
+- [x] `LC-NF-1.0.8-P2-04` advisory lock·CAS로 동시 이동을 직렬화하고 생성·soft delete/restore에서 rank를 보존했다.
+- [x] `LC-NF-1.0.8-P2-05` version 2 manual cursor가 순서 버전을 묶으며 gap 소진 시 현재 pin group만 3초 예산 안에서 재분배하는 실제 DB 회귀를 통과했다.
+- [x] `LC-NF-1.0.8-P2-06` PostgreSQL 18에서 빈 설치·반복·이전 schema 업그레이드·forced RLS·rollback 후 재적용과 기존 migration 19개를 모두 검증했다.
 
 ## 구체적 검증
 
@@ -64,12 +64,12 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드·실행 증거와 후보 SHA `9f5d5aabd28922c28cae548d6239692bab9a392a`가 [P2 인수 기록](../../../docs/runbooks/1.0.8-phase2-song-order-store.md)에 연결되어 있다.
+- [x] owner/RLS·CAS·멱등 복구·400/403/404/409 오류와 정상 이동을 함께 검증했다.
+- [x] 목록 drag/button UI와 물리 기기 검증이 P3/P4 책임임을 기록했다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 로컬/실제 DB, Actions 전체 CI `34551269832`, 후보와 동일 SHA 개발 API 인수를 갖췄다. 완료 문서 commit은 push 뒤 다시 배포한다.
+- [x] P2에서 main·Release·릴리스 서버를 변경하지 않았다.
 
 ## 산출물
 
@@ -80,3 +80,5 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 ## 다음 Phase 인계
 
 [1.0.8 P3](3phase.md)에 입력·실행 결과·호환 및 중단 조건을 넘긴다. 다음 단계의 승인이 없거나 선행 증거가 부족하면 자동 진행하지 않는다. 문서 작성으로 runtime version을 바꾸지 않는다.
+
+P3는 `orderVersion`과 보이는 같은 pin group 이웃만 사용해 drag handle·키보드·터치 버튼을 연결한다. 실패 시 낙관 순서를 원복하고 동일 request ID 재시도 또는 409 최신 manual 목록 재조회로 수렴해야 한다.
