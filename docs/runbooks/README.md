@@ -105,6 +105,13 @@
 - [`1.0.10 Phase 5 최종 후보 인수`](./1.0.10-phase5-final-acceptance.md)
 - [`1.0.10 정식 릴리스 실행`](./1.0.10-release.md)
 - [`1.0.10 정식 릴리스 체크리스트`](./1.0.10-release-checklist.md)
+- [`1.0.12 Phase 1 통합 안정화 계약`](./1.0.12-phase1-stabilization-contract.md)
+- [`1.0.12 Phase 2 목록 위치 계산`](./1.0.12-phase2-list-position.md)
+- [`1.0.12 Phase 3 개인 창작 수직 흐름`](./1.0.12-phase3-vertical-flow.md)
+- [`1.0.12 Phase 4 개인 창작 교차 회귀`](./1.0.12-phase4-regression.md)
+- [`1.0.12 Phase 5 최종 후보 인수`](./1.0.12-phase5-final-acceptance.md)
+- [`1.0.12 정식 릴리스 실행`](./1.0.12-release.md)
+- [`1.0.12 정식 릴리스 체크리스트`](./1.0.12-release-checklist.md)
 - [`0.7.0 Phase 3 최근 작업·위치 복원 검증`](./0.7.0-phase3-validation.md)
 
 ## 개발 서버 운영

@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.12] - 2026-09-12
+
+### Changed
+
+- 곡·라임 노트·프롬프트 목록의 pin 그룹 위치 계산을 결과 동등 O(n) 공통 utility로 통합
+- desktop/mobile 곡→가사→연결 라임→문장형 프롬프트 exact copy→Suno 수동 링크의 개인 수직 흐름 회귀 고정
+
+### Security and recovery
+
+- 다른 owner 자료 404, 작업 자료 503 뒤 원문 유지·재시도, PWA build cache와 서비스 재시작 지속성 재검증
+- 공유 owner/actor·RLS·capability는 도입하지 않고 1.1.0 자동 시작을 차단
+
+### Validation
+
+- 실제 PostgreSQL 전체 Vitest 330 PASS·조건부 beta signup 4 skip
+- Actions P4 push `34632758817`·PR `34632766602` 전체 verify와 동일 SHA 개발 공개 수직 흐름·owner 격리·재시작 PASS
+- 10,000개 합성 목록 p95 482.97 ms→3.2895 ms, 결과 동등
+
+P5 전체 CI와 동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다. Known limitations: 실제 물리 기기는 새로 실행하지 않았고 `NF-REQ-032` 자동 metadata와 `OPS-100-001` 외부 backup 예외를 유지한다.
+
 ## [1.0.10] - 2026-09-12
 
 ### Added

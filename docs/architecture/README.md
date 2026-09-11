@@ -33,3 +33,4 @@
 - [`1.0.8 곡 사용자정렬 최종 추적`](./1.0.8-FINAL-TRACEABILITY.md)
 - [`1.0.9 라임·프롬프트 사용자정렬 최종 추적`](./1.0.9-FINAL-TRACEABILITY.md)
 - [`1.0.10 Suno 수동 작업공간 최종 추적`](./1.0.10-FINAL-TRACEABILITY.md)
+- [`1.0.12 개인 창작 흐름 통합 최종 추적`](./1.0.12-FINAL-TRACEABILITY.md)

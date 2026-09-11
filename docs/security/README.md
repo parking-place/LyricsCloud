@@ -19,3 +19,5 @@
 1.0.9의 라임·프롬프트 사용자정렬은 같은 테이블을 사용하되 owner+resource type을 복합 경계로 유지한다. 고정 type API는 URL의 자료 유형만 소비하고 body가 유형을 바꾸지 못하며, 이동 대상과 anchor의 소유권·pin group을 함께 검사한다. 프롬프트 카드 rank는 `tokens`·`plainText`·copy payload를 변경하지 않고 라임 long-press와 drag는 별도 동작이다. 제목·본문·검색어·자료 ID 배열은 로그에 추가하지 않는다.
 
 1.0.10의 Suno 작업공간은 세션 owner와 곡 parent를 서버에서 결정하고 forced RLS·aggregate CAS·request idempotency를 적용한다. URL은 HTTPS와 `suno.com`/`www.suno.com`의 song 또는 짧은 공유 path만 허용하고 userinfo·비표준 port·다른 host/path를 거부한다. 외부 fetch·scraping·삭제 요청은 없으며 모델·URL·수동 제목·메모·곡 ID 배열을 로그나 관측에 추가하지 않는다. 다른 owner와 삭제된 parent는 404로 숨기고 export도 같은 owner snapshot만 사용한다.
+
+1.0.12는 인증·저장·schema 경계를 바꾸지 않는다. 세 목록의 pin 그룹 위치를 한 번에 계산하는 O(n) map은 이미 owner 검사를 통과한 화면 입력만 소비하며 제목·본문·자료 ID 배열을 로그에 추가하지 않는다. 중복 ID는 거부하고 기존 rank·pin·copy/export·Suno·RLS·CAS 계약을 유지한다. 공개 회귀에서 다른 owner 자료는 404였고 서비스 재시작 뒤 원문과 연결 자료가 보존됐다.
