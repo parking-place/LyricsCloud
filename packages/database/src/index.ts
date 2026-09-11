@@ -18,6 +18,7 @@ export * from "./saved-resources.js";
 export * from "./templates.js";
 export * from "./display-settings.js";
 export * from "./library-view-settings.js";
+export * from "./library-order.js";
 export * from "./lifecycle.js";
 export * from "./export.js";
 export * from "./pool.js";
