@@ -15,6 +15,14 @@ try {
   await admin.query(`create database "${databaseName}"`);
   migrate(); migrate();
   const target = new Pool({ connectionString: url.href, max: 2 });
+  target.on("error", (error) => {
+    // PostgreSQL can deliver the forced disposable-database cleanup after
+    // pool.end() has begun. Treat only that administrator termination as an
+    // expected cleanup event; any other idle-client error must fail the run.
+    if (error && typeof error === "object" && "code" in error && error.code === "57P01") return;
+    process.exitCode = 1;
+    console.error(error);
+  });
   try {
     const alice = (await target.query("insert into app_users default values returning id")).rows[0].id;
     const bob = (await target.query("insert into app_users default values returning id")).rows[0].id;
