@@ -24,9 +24,10 @@ const sandbox = {
   Request,
   fetch
 };
-vm.runInNewContext(`${sourceWorker}\nthis.__staticAssetUrl = staticAssetUrl;`, sandbox);
-const allowed = sandbox.__staticAssetUrl;
+vm.runInNewContext(`${sourceWorker}\nthis.__cacheableAssetUrl = cacheableAssetUrl;`, sandbox);
+const allowed = sandbox.__cacheableAssetUrl;
 assert.equal(allowed("https://lyrics.example/_next/static/chunks/app-1234abcd.js"), true);
+assert.equal(allowed("https://lyrics.example/fonts/NotoSansKR-Regular.69975a0a.otf"), true);
 for (const rejected of [
   "https://lyrics.example/_next/static/chunks/runtime.js",
   "https://lyrics.example/_next/static/chunks/app-1234abcd.js?private=1",
