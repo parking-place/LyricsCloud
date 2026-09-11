@@ -15,9 +15,9 @@
 ### Validation
 
 - 실제 PostgreSQL 309건, Chromium desktop/mobile 322건과 조건부 36 skip, 5-project 신규 기능 15건 통과
-- Actions `34580072855` P4 전체 verify·네 dev image 게시/서명과 동일 SHA 개발 공개 이동·재시작 순서 복원 통과
+- Actions `34583462005` P5 전체 verify·네 dev image 게시/서명과 동일 SHA 개발 공개 이동·재진입·재시작 순서 복원 통과
 
-P5 최종 CI·동일 SHA 개발 인수 뒤 사용자가 승인한 정식 릴리스를 실행한다. Known limitations: 실제 물리 기기는 이번 후보에서 새로 실행하지 않았고 `OPS-100-001` 외부 backup 예외를 유지한다.
+P1~P5 후보 인수를 완료했고 사용자가 승인한 정식 릴리스를 실행한다. Known limitations: 실제 물리 기기는 이번 후보에서 새로 실행하지 않았고 `OPS-100-001` 외부 backup 예외를 유지한다.
 
 ## [1.0.8] - 2026-09-11
 
