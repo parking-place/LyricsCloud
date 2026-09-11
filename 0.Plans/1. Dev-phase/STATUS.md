@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.11"
-current_phase: "../2.Patch-phase/1.0.11/1phase.md"
-state: "in_progress"
+current_phase: "../2.Patch-phase/1.0.11/2phase.md"
+state: "blocked"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.0.11 P1에서 Suno 공식 metadata 제공 경로와 금지 경계를 증거로 판정하고 go/no-go를 기록한다"
+next_action: "1.0.11 P1 no-go를 인수하고 공식 provider 계약 부재로 P2~P5·제품 tag를 보류한 뒤 1.0.12 안정화로 이동한다"
 ```
 
 ## 승인과 기준
@@ -92,13 +92,14 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.10 P4 | complete | 실제 DB 7건·5-project 기능 20건, Actions `34610699744` 전체 CI·네 dev image와 동일 SHA 공개 재시작 인수 완료 |
 | 1.0.10 P5 | complete | Actions `34614794684` 전체 CI·네 dev image 게시/서명·동일 SHA 공개 저장/재진입·삭제복원·재시작 인수 완료 |
 | 1.0.10 Release | complete | main/tag `c15387f`, main CI `34617948504`·tag CI `34621241499`, exact digest 운영 배포·공개 재시작/영속성 smoke·GitHub Release 완료 |
-| 1.0.11 P1 | in_progress | 공식 Suno metadata 계약·허가 경로·실패/중단 조건 판정 중 |
+| 1.0.11 P1 | complete (no-go) | 공식 Platform은 생성 API만 공개 안내하며 기존 링크 metadata 계약은 확인되지 않음. 약관상 scraping 우회 금지, `AC-1.0.11-04` PASS |
+| 1.0.11 P2~P5 | blocked | 공식 provider 계약·표시/재배포 권한·rate limit/비용 확보 전 착수 금지. `NF-REQ-032` 미완료, 빈 제품 tag 금지 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.11/P1 | LC-NF-1.0.11-P1-01~06 | 공식 Suno metadata 제공/허가 경로·실패 입력·go/no-go 증거 | v1.0.10 release `c15387f` | 2026-09-12T01:05:00+09:00 | in_progress |
+| Codex | 1.0.11/P1 | LC-NF-1.0.11-P1-01~06 | 공식 Suno metadata 제공/허가 경로·실패 입력·go/no-go 증거 | v1.0.10 release `c15387f` | 2026-09-12T01:05:00+09:00 | complete (no-go) |
 | Codex | 1.0.10/P5 | LC-NF-1.0.10-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.0.10 P4 `386c37a` | 2026-09-11T23:57:00+09:00 | complete |
 | Codex | 1.0.10/P4 | LC-NF-1.0.10-P4-01~06 | 실제 DB·수용 사례·권한/오프라인/재접속·서비스 재시작·지원 browser 회귀 | 1.0.10 P3 `fdfb6da` | 2026-09-11T22:40:00+09:00 | complete |
 | Codex | 1.0.10/P3 | LC-NF-1.0.10-P3-01~06 | song dashboard·Suno model/link panel·draft/실패 복구·PC/mobile E2E | 1.0.10 P2 `fa402c2` | 2026-09-11T22:05:00+09:00 | complete |

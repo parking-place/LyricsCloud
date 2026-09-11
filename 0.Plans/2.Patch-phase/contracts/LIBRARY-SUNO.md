@@ -1,6 +1,6 @@
 # 목록·개인 순서·Suno 작업 자료 계약
 
-상태: **1.0.7 보기·1.0.8 곡 순서·1.0.9 라임/프롬프트 순서·1.0.10 수동 Suno 작업 자료 계약 Accepted**, Suno 자동 metadata 계약은 1.0.11 P1에서 구현 전 확정한다. 이미 구현된 핀/필터/자료 관계를 임의로 단순화하지 않는다.
+상태: **1.0.7 보기·1.0.8 곡 순서·1.0.9 라임/프롬프트 순서·1.0.10 수동 Suno 작업 자료 계약 Accepted**, Suno 자동 metadata는 1.0.11 P1에서 공식 제공 계약 부재로 no-go/보류했다. 이미 구현된 핀/필터/자료 관계를 임의로 단순화하지 않는다.
 
 ## 목록 사용자정렬
 
@@ -43,6 +43,8 @@ aggregate 조회는 `GET /api/songs/:songId/suno-workspace`, mutation은 `POST /
 `song_suno_workspaces`, `song_suno_links`, `song_suno_command_requests`는 additive `1003_song_suno_workspaces.sql`과 강제 RLS로 추가한다. soft delete는 행을 보존하고 active API만 숨기며 restore 뒤 같은 값·순서를 다시 제공한다. 링크 제거는 LyricsCloud 내부 행만 제거한다. hard purge/계정 삭제만 cascade한다. JSON과 사용자용 TXT/Markdown export에 수동 model/link를 포함하되 로그·telemetry에는 URL·제목·메모를 넣지 않는다. 현재 곡 복제 기능은 범위 밖이며 향후 도입 시 새 aggregate로 독립 복사한다.
 
 metadata는 **명시적 갱신 버튼**에서 승인된 provider 경계로 요청한다. 새로운 자동 조회 수단을 검증하기 전에는 공식 API·무제한 crawling이 있다고 전제하지 않는다. source가 주지 않는 정보는 unknown/수동 값으로 표시한다. '제목·시간·thumbnail 자동 표시' 요구의 실패를 수동 placeholder만으로 완료 처리하지 않는다. provider 제약으로 불가능하면 사용자에게 명시 대안 승인을 요청해야 한다.
+
+2026-09-12 P1 조사에서는 기존 Suno 공유 링크의 제목·시간·thumbnail을 취득하는 공식 공개 API 계약과 재배포 조건을 확인하지 못했다. 이용약관이 의도적으로 제공되지 않은 접근과 scraping/data-mining을 금지하므로 HTML·내부 endpoint·브라우저 cookie·비공식 API는 provider로 사용하지 않는다. `NF-REQ-032`는 미완료이며 공식 계약 또는 서면 허가가 생길 때까지 outbound 조회를 구현하지 않는다.
 
 자동 metadata의 제목·시간·thumbnail·source/fetchedAt/failure는 1.0.11의 별도 파생 필드다. 어떤 성공/실패 응답도 1.0.10의 수동 제목·메모·URL·model을 덮어쓰거나 곡 저장을 막지 않는다.
 

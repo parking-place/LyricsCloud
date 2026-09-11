@@ -1,9 +1,9 @@
 # ADR-NF-002 — Suno 링크 metadata 취득 경계
 
-- 상태: **Proposed**
+- 상태: **Deferred / 1.0.11 P1 no-go**
 - 작성일: 2026-09-09
 - 결정 Phase: 1.0.11 P1
-- 승인자/시각: **미승인 — 해당 Phase에서 사용자/지정 결정권자의 승인을 기록한다.**
+- 승인자/시각: 사용자 범위 승인 아래 Codex가 공식 제공 조건을 판정, 2026-09-12. 자동 metadata 구현은 승인하지 않고 공식 계약 확보 전 보류한다.
 - 범위 원본: 사용자의 1.0.1 필수 및 후속 1.x 계획 요청.
 
 ## 해결할 질문
@@ -28,6 +28,14 @@
 
 provider의 실제 제공 능력을 먼저 증명하고 두 번째 안을 제한적으로 사용한다. 불가하면 수동 대체를 미해결 요구와 함께 승인받는다.
 
+## 2026-09-12 제공 조건 판정
+
+- Suno의 공개 Platform 안내는 인증 뒤 음악 생성 REST API를 제공한다고 설명하지만, 기존 `suno.com/song/...` 또는 `suno.com/s/...` 링크에서 제목·재생시간·썸네일을 읽는 공개 metadata 계약·스코프·요금·재배포 권한은 확인할 수 없었다.
+- 현행 [Suno 이용약관](https://suno.com/terms)은 의도적으로 제공되지 않은 수단으로 정보에 접근하는 행위와 scraping/data-mining을 금지한다.
+- 따라서 대안 2의 필수 증거가 없고 대안 3은 계약상·보안상 금지된다. 1.0.11은 `AC-1.0.11-04` no-go로 판정하며 `AC-1.0.11-01`과 `NF-REQ-032`를 미완료로 유지한다.
+- 1.0.10의 수동 URL·제목·메모·새 탭 열기는 그대로 유지한다. outbound provider, queue, cache, schema, worker, UI, secret, 운영 설정은 추가하지 않는다.
+- 재개 조건은 Suno가 기존 링크 metadata용 공식 API 문서, 인증 scope, 이용/표시·thumbnail 재배포 조건, rate limit·비용을 공개하거나 LyricsCloud가 서면 허가를 확보하는 것이다.
+
 ## 영향받는 작업·화면·schema·운영
 
 곡 link schema·metadata worker/API·HTTP/DNS/redirect/image 경계·사용자 안내·공유 필드 범위.
@@ -39,6 +47,8 @@ provider의 실제 제공 능력을 먼저 증명하고 두 번째 안을 제한
 ## 되돌림 또는 대체 비용
 
 외부 조회 flag만 끄고 저장한 URL/수동 metadata는 보존한다. provider 변경은 출처/갱신 이력으로 추적한다.
+
+이번 no-go는 제품 코드와 데이터를 변경하지 않았으므로 되돌릴 runtime 변경이 없다.
 
 ## 범위 밖과 관련 결정
 
