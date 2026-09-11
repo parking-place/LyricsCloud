@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.12"
-current_phase: "../2.Patch-phase/1.0.12/1phase.md"
+current_phase: "../2.Patch-phase/1.0.12/2phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.0.12 P1에서 1.0.3~1.0.10 통합 회귀 범위와 장문 목록 성능 병목의 측정·호환·rollback 계약을 확정한다"
+next_action: "1.0.12 P2에서 세 목록의 O(n²) 위치 계산 실패 시험과 공통 O(n) precompute를 구현하고 결과 동등성·실제 DB 통합을 검증한다"
 ```
 
 ## 승인과 기준
@@ -95,13 +95,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.11 P1 | complete (no-go) | 공식 Platform은 생성 API만 공개 안내하며 기존 링크 metadata 계약은 확인되지 않음. 약관상 scraping 우회 금지, `AC-1.0.11-04` PASS |
 | 1.0.11 P2~P4 | blocked | 공식 provider 계약·표시/재배포 권한·rate limit/비용 확보 전 착수 금지. `NF-REQ-032` 미완료 |
 | 1.0.11 P5/no-go | complete | 공식 근거·미완료 요구·재개 조건·1.0.12 인계 기록. 제품 변경이 없어 빈 `v1.0.11` tag·image·운영 배포 미발행 |
-| 1.0.12 P1 | in_progress | 기존 1.0.3~1.0.10 통합 계약과 장문 목록 성능 병목의 입력·측정·담당 경계 확정 중 |
+| 1.0.12 P1 | complete | 세 목록 O(n²) group position 계산을 확인하고 2,500/10,000개 baseline·선형 후보 exact-equivalence, 불변 API/DB/권한과 rollback 계약 확정 |
+| 1.0.12 P2 | in_progress | 공통 O(n) position map 실패 시험·구현과 세 목록 소비·실제 DB 통합 검증 중 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.12/P1 | LC-NF-1.0.12-P1-01~06 | 통합 회귀 입력·장문 목록 성능 측정·호환/rollback·담당 경계 | 1.0.11 no-go `a75c88a` | 2026-09-12T01:30:00+09:00 | in_progress |
+| Codex | 1.0.12/P2 | LC-NF-1.0.12-P2-01~06 | position map 실패 시험·공통 선형 precompute·세 목록 소비·DB/단위 회귀 | 1.0.12 P1 `db02084` | 2026-09-12T01:50:00+09:00 | in_progress |
+| Codex | 1.0.12/P1 | LC-NF-1.0.12-P1-01~06 | 통합 회귀 입력·장문 목록 성능 측정·호환/rollback·담당 경계 | 1.0.11 no-go `a75c88a` | 2026-09-12T01:30:00+09:00 | complete |
 | Codex | 1.0.11/P1 | LC-NF-1.0.11-P1-01~06 | 공식 Suno metadata 제공/허가 경로·실패 입력·go/no-go 증거 | v1.0.10 release `c15387f` | 2026-09-12T01:05:00+09:00 | complete (no-go) |
 | Codex | 1.0.10/P5 | LC-NF-1.0.10-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.0.10 P4 `386c37a` | 2026-09-11T23:57:00+09:00 | complete |
 | Codex | 1.0.10/P4 | LC-NF-1.0.10-P4-01~06 | 실제 DB·수용 사례·권한/오프라인/재접속·서비스 재시작·지원 browser 회귀 | 1.0.10 P3 `fdfb6da` | 2026-09-11T22:40:00+09:00 | complete |
