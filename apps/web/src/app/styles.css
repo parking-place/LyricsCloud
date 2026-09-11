@@ -238,8 +238,8 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .song-order-controls button:disabled { opacity: .4; cursor: default; }
 .song-order-controls .song-drag-handle { color: var(--acid); font-size: 1rem; cursor: grab; touch-action: none; }
 .song-order-controls .song-drag-handle:active { cursor: grabbing; }
-.song-card.is-moving { opacity: .68; border-color: var(--acid); }
-.song-card.drag-active { transition: border-color 100ms ease, transform 100ms ease; }
+.song-card.is-moving, .rhyme-card.is-moving, .prompt-card.is-moving { opacity: .68; border-color: var(--acid); }
+.song-card.drag-active, .rhyme-card.drag-active, .prompt-card.drag-active { transition: border-color 100ms ease, transform 100ms ease; }
 .song-card h2 { margin: 0; overflow-wrap: anywhere; font-size: clamp(1.2rem, 2vw, 1.55rem); letter-spacing: -.035em; }
 .song-note { display: -webkit-box; margin: 0; overflow: hidden; color: var(--muted); font-size: .8rem; line-height: 1.65; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 .song-note.is-empty { color: var(--subtle); font-style: italic; }
