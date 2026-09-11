@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.0.7"
-current_phase: "../2.Patch-phase/1.0.7/5phase.md"
+current_version: "1.0.8"
+current_phase: "../2.Patch-phase/1.0.8/1phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-11"
-next_action: "1.0.7 Phase PR을 main에 순서대로 병합하고 최종 main CI·annotated tag·정식 image·릴리스 서버 인수를 실행한다"
+next_action: "1.0.8 P1 계약 commit·PR·동일 SHA 개발 인수 뒤 P2 실패 fixture와 1002 migration/store/API를 구현한다"
 ```
 
 ## 승인과 기준
@@ -76,11 +76,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.7 P3 | complete | 세 목록 네 보기·개인/유형 저장·실패 원복·320px/200%와 PC/mobile 10건·저장/IME 30건·동일 SHA 공개 UI 인수 완료 |
 | 1.0.7 P4 | complete | PostgreSQL 283건·Chromium 전체 340건·5-project 신규 30건·stale/offline/재시작 동일 SHA 개발 인수 완료 |
 | 1.0.7 P5 | complete | Actions `34533353553` 전체 verify·네 dev image·동일 SHA 공개 설정 저장/재시작 인수 완료 |
+| 1.0.8 P1 | complete | owner+song 별도 rank·visible anchor·CAS/idempotency·핀/복원/paging·rollback 계약을 설계-only로 확정 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.8/P1 | LC-NF-1.0.8-P1-01~06 | 곡 사용자정렬 계약·실패 입력·domain/database/web 담당·호환/rollback 경계 | v1.0.7 release `a7bf38c` | 2026-09-11T09:45:00+09:00 | complete |
 | Codex | 1.0.7/P4 | LC-NF-1.0.7-P4-01~06 | stale/실패·기존 목록 layout 회귀·실제 DB·지원 browser·개발 서비스 재시작 | 1.0.7 P3 `6f0a556` | 2026-09-11T06:00:00+09:00 | complete |
 | Codex | 1.0.7/P5 | LC-NF-1.0.7-P5-01~06 | 최종 추적·사용자/운영 문서·봉인 artifact·전체 CI·동일 SHA 개발 인수 | 1.0.7 P4 `f096bb5` | 2026-09-11T06:20:00+09:00 | complete |
 | Codex | 1.0.7/P3 | LC-NF-1.0.7-P3-01~06 | 공통 보기 selector/hook·세 목록 grid/CSS·PC/mobile E2E·runtime metadata | 1.0.7 P2 `eef83ec` | 2026-09-11T05:40:00+09:00 | complete |

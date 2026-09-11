@@ -1,16 +1,20 @@
 # 목록·개인 순서·Suno 작업 자료 계약
 
-상태: **1.0.7 보기 계약 Accepted**, 순서·Suno 계약은 각 1.0.8/1.0.11 P1에서 구현 전 확정한다. 이미 구현된 핀/필터/자료 관계를 임의로 단순화하지 않는다.
+상태: **1.0.7 보기·1.0.8 곡 순서 계약 Accepted**, 라임/프롬프트 순서·Suno 계약은 각 1.0.9/1.0.11 P1에서 구현 전 확정한다. 이미 구현된 핀/필터/자료 관계를 임의로 단순화하지 않는다.
 
 ## 목록 사용자정렬
 
-소유자+자료유형마다 manual order를 저장한다. 드래그/키보드 이동이 서버에서 성공하면 정렬이 사용자정렬로 바뀐다. 보기 선택만으로 정렬을 바꾸지 않는다. 서버 실패 시 낙관적 UI를 되돌리고 원인/재시도 안내를 제공한다.
+소유자+자료유형마다 manual order를 저장한다. 1.0.8은 곡만 소비하며 내부 자료 유형은 기존 `song`을 쓴다. 드래그/키보드 이동이 서버에서 성공하면 URL과 화면 정렬이 `manual`로 바뀐다. 보기 선택만으로 정렬을 바꾸지 않는다. 서버 실패 시 낙관적 UI를 되돌리고 원인/재시도 안내를 제공한다.
 
-필터 안에서 순서 변경은 visible neighbor anchor를 사용한다. 예를 들어 전체 `A,B,C,D,E`, 필터 `A,C,E`에서 E를 C 앞에 두면 `A,B,E,C,D`처럼 이동한 대상만 새 위치에 삽입하고 나머지 상대 순서를 유지한다. 다른 정책을 택하면 구체 예시와 승인을 남긴다. 검색 query 때문에 숨긴 자료를 삭제/재순위하지 않는다. pagination에서 로드하지 않은 자료를 배열에서 빼서 저장하는 API는 금지한다.
+필터 안에서 순서 변경은 visible neighbor anchor를 사용한다. 예를 들어 전체 `A,B,C,D,E`, 필터 `A,C,E`에서 E를 C 앞에 두면 client는 `afterId=A`, `beforeId=C`를 보내고 서버는 C의 전체 순서상 직전 위치에 E를 삽입해 `A,B,E,C,D`를 만든다. `beforeId`가 있으면 그 항목 바로 앞, 끝 이동처럼 `beforeId`가 없고 `afterId`만 있으면 그 항목 바로 뒤가 실제 삽입 경계다. 두 anchor가 모두 있으면 대상 제거 후 같은 핀 그룹에서 after가 before보다 앞서는지도 검증한다. 검색 query 때문에 숨긴 자료를 삭제/재순위하지 않는다. pagination에서 로드하지 않은 자료를 배열에서 빼서 저장하는 API는 금지한다.
 
-기존 핀 정렬은 별개 축으로 유지한다. 기본안은 핀 그룹 우선→각 그룹의 기존 pin/manual 정책→안정 ID tie-break다. 그룹 간 drag가 핀을 암묵 변경하지 않게 하고 필요 시 '핀 해제 후 이동'을 명시한다. 사용자정렬과 global favorites pin-order의 scope 차이를 도움말에 적는다.
+기존 핀 정렬은 별개 축으로 유지한다. 비사용자 정렬에서는 기존 `is_pinned → pin_order → 선택 정렬 → id`를 유지하고, 사용자정렬에서는 `is_pinned → manual rank → id`를 사용한다. manual rank 변경은 `pin_order`를 쓰거나 지우지 않는다. 그룹 간 drag는 `PIN_GROUP_MISMATCH`로 거부하고 `핀을 먼저 설정/해제한 뒤 이동하세요.`를 안내한다. 핀 변경 자체는 새 핀 그룹 끝의 manual rank로 함께 옮겨 두 축의 데이터가 어긋나지 않게 한다. 사용자정렬과 global favorites pin-order의 scope 차이를 도움말에 적는다.
 
-새 자료/복제는 해당 그룹 끝에 append, 삭제는 순위 tombstone 보존, 복원은 가능한 원래 위치 또는 충돌 시 가까운 anchor로 복구하는 안을 권장한다. CAS expected version·bounded rank rebalance·동시 이동 충돌·다른 owner anchor를 검사한다. rank 내부 표현은 fractional/정수 gap 등 대안을 측정하여 선택하고 사용자 의미와 분리한다.
+새 자료/복제는 해당 핀 그룹 끝에 append한다. soft delete는 순위 행을 tombstone처럼 보존하고 restore는 같은 rank를 재사용하며, hard purge만 FK cascade로 제거한다. 구버전/누락 행은 해당 그룹 끝에 보충한다. rank는 signed `bigint`와 `1,048,576` 간격을 사용하며 사이 정수 공간이 없을 때 현재 owner+type+핀 그룹만 안정 순서로 재분배한다. rank는 UI 의미가 아니며 response에 노출하지 않는다.
+
+이동 명령은 `POST /api/songs/order/moves`와 `{requestId,itemId,beforeId,afterId,expectedVersion}`만 사용한다. 앞/뒤 anchor는 nullable UUID이고 둘 다 null인 요청, 대상과 같은 anchor, 같은 anchor 두 번, 전체 ID 배열과 알 수 없는 필드는 거부한다. 서버는 owner+type advisory lock과 order-state CAS 안에서 active 대상/anchor, 같은 핀 그룹, anchor 순서를 검증한다. 다른 owner ID는 존재 여부를 숨긴 404로 응답하고 어느 계정도 변경하지 않는다. 동일 request ID·동일 payload 재전송은 저장된 결과를 재생하며, 같은 ID의 다른 payload는 409다.
+
+`sort=manual` 목록은 `orderVersion`을 돌려준다. manual cursor에는 query signature, 핀 그룹, rank, stable ID, order version을 결합하고, 이동으로 version이 바뀐 이전 cursor는 409 후 첫 페이지 재조회한다. 성공한 이동만 version을 1 증가시키고 이미 같은 경계인 새 요청은 순서를 바꾸거나 version을 올리지 않는다. 두 탭의 같은 expected version에서는 먼저 lock을 얻은 하나만 성공하고 나머지는 최신 version과 함께 409를 받아 재조회한다.
 
 ## 네 가지 보기
 
