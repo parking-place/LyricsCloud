@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.0.9"
-current_phase: "../2.Patch-phase/1.0.9/1phase.md"
+current_phase: "../2.Patch-phase/1.0.9/4phase.md"
 state: "implementation"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-11"
-next_action: "진행 중인 v1.0.8 tag image를 exact digest로 릴리스 서버에 배포하면서 1.0.9 P1 계약을 P2 저장/API 구현에 인계한다"
+next_action: "1.0.9 P2/P3/P4 원격 CI와 정확한 SHA 개발 배포·재시작 회귀를 완료한 뒤 P5 봉인·정식 릴리스로 이동한다"
 ```
 
 ## 승인과 기준
@@ -82,11 +82,17 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.8 P4 | complete | 실제 PostgreSQL 298건·Chromium 316건·5-project 기능 30건, Actions `34558503310` 전체 CI·네 dev image와 동일 SHA 공개 재시작/순서 복원 인수 완료 |
 | 1.0.8 P5 | complete | Actions `34560691621` 전체 CI·네 dev image 게시/서명·동일 SHA 공개 desktop/mobile 이동/재진입 인수 완료 |
 | 1.0.9 P1 | complete | 기존 1002를 재사용한 owner+라임/프롬프트 독립 순서·고정 type API·CAS/idempotency·copy/gesture·복구 계약 확정 |
+| 1.0.9 P2 | implementation | 기존 1002의 라임/프롬프트 state·rank·request, store/API·권한 inventory 구현 완료; 수정된 전체 CI 대기 |
+| 1.0.9 P3 | implementation | 라임/프롬프트 버튼·키보드·drag·manual URL·실패 원복/재시도 UI와 PC/mobile 회귀 완료; 수정된 전체 CI 대기 |
+| 1.0.9 P4 | implementation | 실제 DB 5건·Chromium 전체 322건·5-project 기능 15건 PASS; 동일 SHA CI·개발 재시작 인수 대기 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.9/P4 | LC-NF-1.0.9-P4-01~06 | 실제 DB copy/즐겨찾기 복원/세 유형 독립·전체 Chromium·지원 엔진·개발 재시작 회귀 | 1.0.9 P3 `c22c4cb` | 2026-09-11T14:35:00+09:00 | implementation |
+| Codex | 1.0.9/P3 | LC-NF-1.0.9-P3-01~06 | 라임/프롬프트 order controls·drag/long-press 분리·manual URL·실패 복구·PC/mobile E2E | 1.0.9 P2 `07e4c4c` | 2026-09-11T14:20:00+09:00 | implementation |
+| Codex | 1.0.9/P2 | LC-NF-1.0.9-P2-01~06 | domain/store·1002 라임/프롬프트 순서·API·보안 inventory·DB/단위 회귀 | 1.0.9 P1 `44f3a11` | 2026-09-11T14:10:00+09:00 | implementation |
 | Codex | 1.0.9/P1 | LC-NF-1.0.9-P1-01~06 | 라임/프롬프트 사용자정렬 계약·실패 입력·domain/database/web 담당·호환/rollback 경계 | 1.0.8 main/tag `5388bbf` | 2026-09-11T14:04:00+09:00 | complete |
 | Codex | 1.0.8/P5 | LC-NF-1.0.8-P5-01~06 | 요구 추적·현재/사용자/지원 문서·환경 schema·봉인 validator·최종 CI·개발/정식 인수 | 1.0.8 P4 `72af9f9` | 2026-09-11T12:55:00+09:00 | complete |
 | Codex | 1.0.8/P4 | LC-NF-1.0.8-P4-01~06 | 실제 DB·두 탭/응답 역전·offline/reconnect·지원 browser·개발 서비스 재시작 회귀 | 1.0.8 P3 `fd8b44b` | 2026-09-11T12:15:00+09:00 | complete |
