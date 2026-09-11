@@ -34,6 +34,23 @@ describe.runIf(enabled)("song manual order store", () => {
     expect(ordered.items.map(({ title }) => title.slice(-1))).toEqual(["A", "B", "E", "C", "D"]);
   });
 
+  it("applies successive front moves against the latest sparse order", async () => {
+    const owner = await createUser();
+    const marker = randomUUID().slice(0, 8);
+    const ids: string[] = [];
+    for (const name of ["A", "B", "C"]) ids.push(await createSong(owner, `${marker}-${name}`));
+    const [a, b, c] = ids;
+    const initial = await store!.listSongs(owner, listInput(marker, 20));
+    const first = await store!.moveSong(owner, moveInput(c!, a!, null, initial.orderVersion));
+    expect(first.changed).toBe(true);
+    const afterFirst = await store!.listSongs(owner, listInput(marker, 20));
+    expect(afterFirst.items.map(({ title }) => title.slice(-1))).toEqual(["C", "A", "B"]);
+    const second = await store!.moveSong(owner, moveInput(b!, c!, null, first.orderVersion));
+    expect(second.changed).toBe(true);
+    const final = await store!.listSongs(owner, listInput(marker, 20));
+    expect(final.items.map(({ title }) => title.slice(-1))).toEqual(["B", "C", "A"]);
+  });
+
   it("serializes concurrent versions, rejects foreign and cross-pin anchors, and invalidates cursors", async () => {
     const owner = await createUser();
     const stranger = await createUser();
