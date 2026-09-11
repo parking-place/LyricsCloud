@@ -79,6 +79,31 @@ describe.runIf(enabled)("song manual order store", () => {
       .toEqual(before.rows[0]);
   });
 
+  it("rebalances only the exhausted pin group within a bounded transaction", async () => {
+    const owner = await createUser();
+    const marker = randomUUID().slice(0, 8);
+    const ids: string[] = [];
+    for (const name of ["A", "B", "C"]) ids.push(await createSong(owner, `${marker}-${name}`));
+    const pinned = await createSong(owner, `${marker}-P`);
+    await store!.setPin(owner, pinned, true, 0);
+    for (let index = 0; index < ids.length; index += 1) {
+      await rootPool!.query(`update library_order_items set sort_rank=$3
+        where owner_id=$1 and resource_type='song' and resource_id=$2`, [owner, ids[index], index + 1]);
+    }
+    const pinnedRank = (await rootPool!.query<{ sort_rank: string }>(`select sort_rank::text from library_order_items
+      where owner_id=$1 and resource_type='song' and resource_id=$2`, [owner, pinned])).rows[0]!.sort_rank;
+    const current = await store!.listSongs(owner, listInput(marker, 20));
+    const started = performance.now();
+    await store!.moveSong(owner, moveInput(ids[2]!, ids[1]!, ids[0]!, current.orderVersion));
+    expect(performance.now() - started).toBeLessThan(3_000);
+    const ranks = await rootPool!.query<{ resource_id: string; sort_rank: string }>(`select resource_id,sort_rank::text
+      from library_order_items where owner_id=$1 and resource_type='song' and pin_group=false order by sort_rank`, [owner]);
+    expect(ranks.rows.map(({ resource_id }) => resource_id)).toEqual([ids[0], ids[2], ids[1]]);
+    expect(ranks.rows.map(({ sort_rank }) => sort_rank)).toEqual(["1048576", "2097152", "3145728"]);
+    expect((await rootPool!.query<{ sort_rank: string }>(`select sort_rank::text from library_order_items
+      where owner_id=$1 and resource_type='song' and resource_id=$2`, [owner, pinned])).rows[0]!.sort_rank).toBe(pinnedRank);
+  });
+
   afterAll(async () => {
     if (rootPool && users.length) await rootPool.query("delete from app_users where id=any($1::uuid[])", [users]);
     await store?.close(); await rootPool?.end();
