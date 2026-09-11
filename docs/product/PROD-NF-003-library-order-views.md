@@ -1,9 +1,9 @@
 # PROD-NF-003 — 개인 순서·목록 보기
 
-- 상태: **1.0.7 보기 범위 Accepted; 1.0.8~1.0.9 순서 범위 Proposed**
+- 상태: **1.0.7 보기·1.0.8 곡 순서 범위 Accepted; 1.0.9 라임/프롬프트 순서 Proposed**
 - 작성일: 2026-09-09
 - 결정 Phase: 1.0.7 P1, 1.0.8 P1, 1.0.9 소비
-- 승인: 2026-09-11 사용자의 1.0.14까지 전체 Phase·버전별 릴리스 실행 지시에 따라 1.0.7 P1 보기 범위를 승인했다. 개인 순서의 rank/anchor 세부는 1.0.8 P1 전까지 승인하지 않는다.
+- 승인: 2026-09-11 사용자의 1.0.14까지 전체 Phase·버전별 릴리스 실행 지시에 따라 1.0.7 P1 보기 범위와 1.0.8 P1 곡 순서 범위를 승인했다. 1.0.9의 라임/프롬프트 적용은 곡 인수 결과를 먼저 소비한다.
 
 ## 해결할 질문
 
@@ -30,11 +30,22 @@
 
 ## 영향과 검증
 
-보기 범위는 계정/자료유형 격리·동시 글꼴 저장·필터/페이지 불변·좁은 화면을 검증한다. 순서 범위는 필터 밖 자료 보존·동시 이동·복원·계정 격리·prompt 카드와 내부 토큰 순서 분리를 후속 Phase에서 결정한다. 실제 source SHA·변경 파일·schema·자동/수동 증거를 해당 Phase 인수표에 기록한다. 새 문서가 있다는 사실만으로 기존 Accepted 결정을 폐기하지 않는다.
+보기 범위는 계정/자료유형 격리·동시 글꼴 저장·필터/페이지 불변·좁은 화면을 검증한다. 1.0.8 곡 순서는 다음 계약을 따른다.
+
+- 별도 order state와 item rank를 `owner_id + resource_type`으로 격리한다. 기존 자료 `row_version`, 보기 설정, `pin_order`를 재사용하지 않는다.
+- `song` rank는 핀/미핀 그룹별 signed bigint gap으로 저장하며 안정 ID는 최종 tie-break다. 공간 소진 시 해당 owner/type/group만 재분배한다.
+- 비사용자 정렬은 기존 핀/정렬 규칙을 유지하고 `manual`만 핀 그룹 뒤 manual rank를 사용한다. 이동은 `pin_order`를 변경하지 않으며 그룹 교차는 명시적으로 거부한다.
+- 이동 body는 UUID request/item/before/after와 expected order version만 받는다. 전체 배열, client owner, rank, 필터 query는 받지 않는다.
+- `beforeId`가 있으면 전체 목록에서 그 anchor 바로 앞에 삽입한다. 없으면 `afterId` 바로 뒤에 삽입한다. 둘 다 있으면 대상 제거 후 같은 그룹에서 after가 before보다 앞서야 한다.
+- owner/type lock, CAS, 요청 payload hash/결과 저장으로 동시 요청과 응답 역전을 수렴시킨다. 동일 요청 재전송은 version/rank를 다시 변경하지 않는다.
+- 새 곡·복제는 현재 핀 그룹 끝에 붙고 soft delete는 rank를 보존한다. restore는 원래 rank를 쓰며 hard purge만 순서 행을 제거한다. 핀 변경은 새 그룹 끝으로 원자 이동한다.
+- manual paging cursor는 query signature와 order version을 포함한다. version이 바뀐 cursor는 충돌로 중단하고 첫 페이지를 새로 읽는다.
+
+P2는 migration/store/API와 실제 DB 실패 fixture, P3는 drag·키보드/버튼·실패 원복 UI, P4는 필터 밖 자료·동시 이동·owner 격리·복원·브라우저/재시작을 검증한다. 라임/프롬프트 순서와 prompt 내부 token 순서는 1.0.9에서 분리해 결정한다. 실제 source SHA·변경 파일·schema·자동/수동 증거를 해당 Phase 인수표에 기록한다. 새 문서가 있다는 사실만으로 기존 Accepted 결정을 폐기하지 않는다.
 
 ## 되돌림·비용
 
-보기 UI/API를 숨겨도 기존 목록은 기본 list로 동작한다. 새 테이블은 기존 원문·자료·`user_settings`와 분리되어 기능 rollback에 schema 삭제가 필요 없다. migration 역방향은 테이블만 drop하되 저장된 선호 소실을 명시하고 정식 운영에서는 별도 승인한다. 형식/권한을 되돌릴 때 미전송 선택·구버전 client의 호환을 확인한다.
+보기 UI/API를 숨겨도 기존 목록은 기본 list로 동작한다. 순서 UI/API를 숨기고 `manual` 요청을 기존 `updated_desc`로 되돌리면 구버전 정렬은 계속 동작한다. 순서 테이블은 원문·자료·보기 설정과 분리되어 application-first rollback에 삭제할 필요가 없다. migration 역방향은 order state/item/request만 drop하되 저장된 개인 순서가 사라지므로 정식 운영에서는 별도 승인한다. 기능을 다시 켤 때 migration/backfill을 멱등 확인하고, 미전송 이동·구버전 client·핀 순서를 검사한다.
 
 ## 범위 밖
 

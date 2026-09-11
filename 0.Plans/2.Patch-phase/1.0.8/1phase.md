@@ -1,6 +1,6 @@
 # 1.0.8 Phase 1 — 계약·실패 사례·담당 경계
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`, 2026-09-11)
 - 단계 목적: 곡 사용자정렬·이동 명령의 계약·실패 사례·담당 경계을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -40,12 +40,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.0.8-P1-01` owner+자료 유형별 사용자 순서와 현재 핀 순서를 분리한다.
-- [ ] `LC-NF-1.0.8-P1-02` 필터된 목록의 이동은 보이는 이웃 anchor를 기준으로 하며 숨은 자료를 유실하지 않는다.
-- [ ] `LC-NF-1.0.8-P1-03` 이동 API는 beforeId/afterId와 버전/멱등 키를 사용하고 전체 ID 배열을 신뢰하지 않는다.
-- [ ] `LC-NF-1.0.8-P1-04` 관련 구현·테스트 경로를 읽고 위 요구/수용 사례를 정상·오류·권한·복구 입력표로 고정한다. 원인 미확정 항목은 가설과 증거 수준을 표시한다.
-- [ ] `LC-NF-1.0.8-P1-05` 저장 형식·API·순서·copy·권한 중 변경되는 인터페이스와 호환/되돌림을 결정 문서에 기록하고 최초 소비 전에 승인한다.
-- [ ] `LC-NF-1.0.8-P1-06` 각 변경 파일 담당자와 실제 최종 source SHA를 기록한다. 해당 패치 밖의 기능이나 아직 선택하지 않은 아이디어를 섞지 않는다.
+- [x] `LC-NF-1.0.8-P1-01` 별도 order state/item rank로 owner+`song` 사용자 순서와 기존 `pin_order`를 분리하고, manual/non-manual 정렬의 우선순위를 고정했다.
+- [x] `LC-NF-1.0.8-P1-02` 필터된 목록은 보이는 after/before anchor만 보내며 다음 anchor 바로 앞에 삽입해 숨은 자료의 상대 순서·핀을 보존하도록 [P1 인수 기록](../../../docs/runbooks/1.0.8-phase1-song-order-contract.md)에 고정했다.
+- [x] `LC-NF-1.0.8-P1-03` `POST /api/songs/order/moves`의 다섯 필드, owner/type lock, expected version, request hash replay와 전체 ID/rank/owner 입력 금지를 승인했다.
+- [x] `LC-NF-1.0.8-P1-04` 기존 song parser/store/keyset cursor·resource pin·목록 UI·API·lifecycle 경로를 읽고 정상·오류·권한·복구 입력표와 아직 미실행인 P2~P4 증거 수준을 기록했다.
+- [x] `LC-NF-1.0.8-P1-05` bigint gap·그룹 한정 rebalance·manual cursor version·soft-delete tombstone·application-first rollback을 결정/세부 계약에 기록하고 승인했다. copy/IME/원문은 불변이다.
+- [x] `LC-NF-1.0.8-P1-06` P2/P3 담당 경로와 출발 source SHA `a7bf38c03c392475a8f9adea68c675471069d0e5`를 연결하고 1.0.9 라임/프롬프트 순서를 섞지 않았다.
 
 ## 구체적 검증
 
@@ -64,12 +64,12 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 설계·검토 증거·출발 SHA가 연결되어 있다.
+- [x] owner 권한·필터 밖 자료 보존·CAS/idempotency·복구·오류 기대를 정상 흐름과 함께 입력표로 고정했다. runtime 검증은 P2~P4 책임이다.
+- [x] 아직 미실행인 DB/API/browser/실기기와 1.0.9 순서 계약을 숨김없이 기록했다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 설계-only Phase는 2026-09-11 사용자의 전체 실행 승인과 범위 확정 증거를 갖췄다.
+- [x] P1에서 main·Release·운영을 변경하지 않았다.
 
 ## 산출물
 
@@ -80,3 +80,5 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 ## 다음 Phase 인계
 
 [1.0.8 P2](2phase.md)에 입력·실행 결과·호환 및 중단 조건을 넘긴다. 다음 단계의 승인이 없거나 선행 증거가 부족하면 자동 진행하지 않는다. 문서 작성으로 runtime version을 바꾸지 않는다.
+
+P2는 [인수 기록](../../../docs/runbooks/1.0.8-phase1-song-order-contract.md)의 migration `1002`, bigint gap/rank, anchor/CAS/idempotency, manual cursor와 실패 우선 fixture를 소비한다. P1 문서 자체에는 runtime PASS를 기록하지 않는다.
