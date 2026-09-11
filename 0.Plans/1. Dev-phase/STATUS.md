@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.0.10"
-current_phase: "../2.Patch-phase/1.0.10/5phase.md"
-state: "complete"
+current_version: "1.0.11"
+current_phase: "../2.Patch-phase/1.0.11/1phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "완료된 1.0.10 P1~P5를 main에 순차 병합하고 annotated tag·정식 image·릴리스 서버 공개 인수를 실행한다"
+next_action: "1.0.11 P1에서 Suno 공식 metadata 제공 경로와 금지 경계를 증거로 판정하고 go/no-go를 기록한다"
 ```
 
 ## 승인과 기준
@@ -91,11 +91,14 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.10 P3 | complete | 모델/복수 링크 UI·새 탭 보호·탭 초안/실패 복구, 전체 CI와 공개 desktop/mobile 인수 완료 |
 | 1.0.10 P4 | complete | 실제 DB 7건·5-project 기능 20건, Actions `34610699744` 전체 CI·네 dev image와 동일 SHA 공개 재시작 인수 완료 |
 | 1.0.10 P5 | complete | Actions `34614794684` 전체 CI·네 dev image 게시/서명·동일 SHA 공개 저장/재진입·삭제복원·재시작 인수 완료 |
+| 1.0.10 Release | complete | main/tag `c15387f`, main CI `34617948504`·tag CI `34621241499`, exact digest 운영 배포·공개 재시작/영속성 smoke·GitHub Release 완료 |
+| 1.0.11 P1 | in_progress | 공식 Suno metadata 계약·허가 경로·실패/중단 조건 판정 중 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.0.11/P1 | LC-NF-1.0.11-P1-01~06 | 공식 Suno metadata 제공/허가 경로·실패 입력·go/no-go 증거 | v1.0.10 release `c15387f` | 2026-09-12T01:05:00+09:00 | in_progress |
 | Codex | 1.0.10/P5 | LC-NF-1.0.10-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.0.10 P4 `386c37a` | 2026-09-11T23:57:00+09:00 | complete |
 | Codex | 1.0.10/P4 | LC-NF-1.0.10-P4-01~06 | 실제 DB·수용 사례·권한/오프라인/재접속·서비스 재시작·지원 browser 회귀 | 1.0.10 P3 `fdfb6da` | 2026-09-11T22:40:00+09:00 | complete |
 | Codex | 1.0.10/P3 | LC-NF-1.0.10-P3-01~06 | song dashboard·Suno model/link panel·draft/실패 복구·PC/mobile E2E | 1.0.10 P2 `fa402c2` | 2026-09-11T22:05:00+09:00 | complete |
