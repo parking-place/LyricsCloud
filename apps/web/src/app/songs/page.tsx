@@ -15,7 +15,7 @@ export default async function SongsPage({
   if (!user) redirect("/auth");
   const query = await searchParams;
   const statuses = ["idea", "writing_lyrics", "revising", "suno_generating", "mixing", "completed", "on_hold"];
-  const sorts = ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first"];
+  const sorts = ["updated_desc", "created_desc", "created_asc", "title_asc", "favorite_first", "manual"];
   const workFilters = ["all", "has_linked_resources", "no_lyrics"];
   const initialQuery: SongListQuery = {
     search: (query.search ?? "").slice(0, 200),
