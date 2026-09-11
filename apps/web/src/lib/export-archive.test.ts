@@ -7,7 +7,10 @@ describe("export archive", () => {
     const snapshot = {
       exportedAt: new Date("2026-09-07T12:00:00Z"),
       async *records() { yield { section: "resources", data: { id: "one" } }; },
-      async *readableResources() { yield { id: "11111111-2222-4333-8444-555555555555", type: "lyrics", title: "가사/하나", deletedAt: null, songId: "song", status: "draft", description: "", workNotes: "", body: "한글 본문", memo: "메모", plainText: "" }; },
+      async *readableResources() {
+        yield { id: "11111111-2222-4333-8444-555555555555", type: "lyrics", title: "가사/하나", deletedAt: null, songId: "song", status: "draft", description: "", workNotes: "", body: "한글 본문", memo: "메모", plainText: "", sunoModelLabel: null, sunoLinks: [] };
+        yield { id: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee", type: "song", title: "Suno 곡", deletedAt: null, songId: null, status: "idea", description: "", workNotes: "", body: "", memo: "", plainText: "", sunoModelLabel: "custom-v6", sunoLinks: [{ id: "link", url: "https://suno.com/s/export11", title: "수동 링크", note: "메모", position: 0, rowVersion: 1, createdAt: "", updatedAt: "" }] };
+      },
       async *readableTemplates() {}, async settings() { return { theme: "dark" }; },
       async close(success: boolean) { closed = success; }
     };
@@ -18,6 +21,7 @@ describe("export archive", () => {
     expect(archive.includes(Buffer.from("lyricscloud-export.json"))).toBe(true);
     expect(archive.includes(Buffer.from("lyrics/가사_하나--11111111.txt"))).toBe(true);
     expect(archive.includes(Buffer.from("한글 본문"))).toBe(true);
+    expect(archive.includes(Buffer.from("https://suno.com/s/export11"))).toBe(true);
     expect(archive.readUInt32LE(archive.length - 22)).toBe(0x06054b50);
     expect(closed).toBe(true);
   });
