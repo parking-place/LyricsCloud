@@ -116,6 +116,7 @@
 | 2026-09-11 1.0.9 P2 구현 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `44f3a11` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 기존 1002에서 라임/프롬프트 독립 state/rank/request, 고정 type move API, create/duplicate/pin/restore와 token copy 불변까지만 구현 | 1.0.9 P1 완료 push 전 행 |
 | 2026-09-11 1.0.9 P3 구현 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `07e4c4c` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 라임/프롬프트 drag handle·키보드/버튼 대안·manual URL·실패 원복/재시도와 prompt long-press copy 분리 UI만 구현 | 1.0.9 P2 구현 후보 push 전 행 |
 | 2026-09-11 1.0.9 P3 전체 CI 재실행 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `eef68ae1d58b42e317e4805b9574139722ebb3a1` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 정식 manifest 부재 개발 후보의 봉인 검증 유예를 반영해 동일 UI 후보 전체 원격 검증을 재실행 | 1.0.9 P3 구현 후보 push 전 행 |
+| 2026-09-11 1.0.9 P3 최종 봉인 step 경계 수정 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `1a7b7ce4b1685a42ec53b0a697034e08be178534` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 직접 봉인 CI step을 현재 버전 manifest 존재 조건에 맞춰 동일 UI 후보 전체 검증을 재실행 | 1.0.9 P3 전체 CI 재실행 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
