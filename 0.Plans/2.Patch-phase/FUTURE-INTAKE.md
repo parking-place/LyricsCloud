@@ -117,6 +117,7 @@
 | 2026-09-11 1.0.9 P3 구현 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `07e4c4c` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 라임/프롬프트 drag handle·키보드/버튼 대안·manual URL·실패 원복/재시도와 prompt long-press copy 분리 UI만 구현 | 1.0.9 P2 구현 후보 push 전 행 |
 | 2026-09-11 1.0.9 P4 회귀 후보 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `170148da5a7dceaad6ce858a83e95e03fedf6a7e` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 실제 DB copy/즐겨찾기 복원/세 유형 독립, 전체 Chromium과 5-project 엔진 회귀·후보 문서만 수행 | 1.0.9 P3 구현 후보 push 전 행 |
 | 2026-09-11 1.0.9 P4 최종 봉인 step 경계 수정 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `42f8c85a123fb6142d10e24bd78c397c47ff3e27` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 현재 version manifest가 없는 P4 후보에서 정식 봉인 step만 유예하고 전체 제품·운영 검증은 유지 | 1.0.9 P4 회귀 후보 push 전 행 |
+| 2026-09-11 1.0.9 P4 disposable DB 종료 경합 수정 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `f4a6cb056ac1e077e1815e0b366d8b4df69fecf8` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 성공 뒤 임시 DB 강제 cleanup의 예상 57P01만 처리하고 로컬 migration 5회 반복 PASS 뒤 P4 전체 CI 재실행 | 1.0.9 P4 최종 봉인 step 경계 수정 push 전 행 |
 
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
