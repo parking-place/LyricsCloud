@@ -52,6 +52,12 @@ test.describe("1.1.1 public-link lyric reading", () => {
       await expect(publicPage.getByRole("status")).toContainText("실시간으로 연결됨", { timeout: 15_000 });
       expect((await publicContext.request.get(`/api/lyrics/${lyricId}`)).status()).toBe(401);
       expect((await publicContext.request.get(`/api/shared/lyrics/${lyricId}`)).status()).toBe(401);
+      expect((await publicContext.request.get(`/api/lyrics/${lyricId}/resources?tab=lyrics`)).status()).toBe(401);
+      expect((await publicContext.request.get("/api/export")).status()).toBe(401);
+
+      await visibleShareButton(ownerPage).click();
+      await expect(dialog.locator(".sharing-presence")).toContainText("현재 이 가사를 보는 공유 사용자가 없습니다.");
+      await dialog.getByRole("button", { name: "닫기" }).click();
 
       if (info.project.name === "chromium-desktop") {
         await publicPage.reload();
@@ -97,6 +103,48 @@ test.describe("1.1.1 public-link lyric reading", () => {
     for (const target of ["/shared/public", "/shared/public#invalid-link-value"]) {
       await page.goto(target);
       await expect(page.getByRole("heading", { name: "공유 가사를 열 수 없습니다" })).toBeVisible();
+    }
+  });
+
+  test("keeps the last safe body offline, reconnects with the capability and rejects it after revoke", async ({ browser }, info) => {
+    test.skip(info.project.name !== "chromium-desktop", "one real offline/reconnect path stays within the public handshake budget");
+    const ownerContext = await browser.newContext({ baseURL: origin, viewport: { width: 1440, height: 1000 } });
+    const publicContext = await browser.newContext({ baseURL: origin, viewport: { width: 1440, height: 1000 } });
+    const owner = await account(ownerContext, "오프라인 공개 소유자");
+    const ownerPage = await ownerContext.newPage();
+    const publicPage = await publicContext.newPage();
+    try {
+      const songResponse = await ownerContext.request.post("/api/songs", { headers, data: { requestId: randomUUID(), title: "오프라인 공개 곡" } });
+      const songId = ((await songResponse.json()) as { song: { id: string } }).song.id;
+      const lyricResponse = await ownerContext.request.post(`/api/songs/${songId}/lyrics`, { headers, data: {
+        requestId: randomUUID(), title: "오프라인 공개 가사", body: "연결 전 공개 본문", memo: "공개 금지"
+      } });
+      const lyricId = ((await lyricResponse.json()) as { lyric: { id: string } }).lyric.id;
+      await ownerPage.goto(`/lyrics/${lyricId}`);
+      const editor = ownerPage.getByLabel("가사 본문");
+      await expect(editor).toBeVisible({ timeout: 15_000 });
+      const issueResponse = await ownerContext.request.post(`/api/lyrics/${lyricId}/public-link`, { headers, data: {
+        requestId: randomUUID(), expiresInDays: 1, fields: { ownerDisplayName: false, status: false, updatedAt: false }
+      } });
+      const issued = await issueResponse.json() as { url: string; link: { id: string } };
+      await publicPage.goto(issued.url);
+      await expect(publicPage.getByRole("status")).toContainText("실시간으로 연결됨", { timeout: 15_000 });
+
+      await publicContext.setOffline(true);
+      await expect(publicPage.getByRole("status")).toContainText("오프라인", { timeout: 10_000 });
+      await editor.fill("연결 후 공개 본문");
+      await expect(publicPage.getByLabel("공유된 가사 본문")).toContainText("연결 전 공개 본문");
+      await expect(publicPage.getByLabel("공유된 가사 본문")).not.toContainText("연결 후 공개 본문");
+
+      await publicContext.setOffline(false);
+      await expect(publicPage.getByRole("status")).toContainText("실시간으로 연결됨", { timeout: 15_000 });
+      await expect(publicPage.getByLabel("공유된 가사 본문")).toContainText("연결 후 공개 본문", { timeout: 15_000 });
+      await ownerContext.request.delete(`/api/lyrics/${lyricId}/public-link/${issued.link.id}`, { headers });
+      await expect(publicPage.getByRole("heading", { name: "공유 가사를 열 수 없습니다" })).toBeVisible({ timeout: 10_000 });
+    } finally {
+      await publicContext.setOffline(false).catch(() => undefined);
+      await Promise.all([ownerContext.close(), publicContext.close()]);
+      await removeAccounts([owner.userId]);
     }
   });
 });
