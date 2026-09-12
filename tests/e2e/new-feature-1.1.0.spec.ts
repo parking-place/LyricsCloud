@@ -43,8 +43,7 @@ test.describe("1.1.0 selected-account lyric sharing", () => {
 
       await ownerPage.goto(`/lyrics/${lyricId}`);
       await expect(ownerPage.getByLabel("가사 본문")).toBeVisible({ timeout: 15_000 });
-      await visibleShareButton(ownerPage).click();
-      const dialog = ownerPage.getByRole("dialog", { name: "가사 공유" });
+      const dialog = await openSharingDialog(ownerPage);
       await expect(dialog).toContainText("작업 메모, 연결 자료, 버전 기록");
       await expect(dialog).not.toContainText("소유자만 보는 비밀 메모");
       await dialog.getByLabel("공유할 계정 코드").fill(reader.sharingId);
@@ -68,7 +67,7 @@ test.describe("1.1.0 selected-account lyric sharing", () => {
       await expect(readerPage.getByText("소유자만 보는 비밀 메모")).toHaveCount(0);
       await expect(readerPage.getByRole("button", { name: /수정|삭제|권한/ })).toHaveCount(0);
 
-      await visibleShareButton(ownerPage).click();
+      await openSharingDialog(ownerPage);
       await expect(dialog.locator(".sharing-presence")).toContainText("선택 독자", { timeout: 10_000 });
       await dialog.getByRole("button", { name: "닫기" }).click();
 
@@ -82,7 +81,7 @@ test.describe("1.1.0 selected-account lyric sharing", () => {
       await editor.click(); await ownerPage.keyboard.press("End"); await ownerPage.keyboard.type(" 비수신");
       await expect(readerPage.getByLabel("공유된 가사 본문")).not.toContainText("비수신");
 
-      await visibleShareButton(ownerPage).click();
+      await openSharingDialog(ownerPage);
       await dialog.getByRole("button", { name: "권한 회수" }).click();
       await expect(dialog.getByRole("status")).toContainText("권한을 회수");
       await readerContext.setOffline(false);
@@ -103,6 +102,15 @@ test.describe("1.1.0 selected-account lyric sharing", () => {
 
 function visibleShareButton(page: import("@playwright/test").Page) {
   return page.locator("button:visible", { hasText: /^공유$/ }).first();
+}
+
+async function openSharingDialog(page: import("@playwright/test").Page) {
+  const dialog = page.getByRole("dialog", { name: "가사 공유" });
+  await expect(async () => {
+    if (!(await dialog.isVisible())) await visibleShareButton(page).click();
+    await expect(dialog).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 10_000 });
+  return dialog;
 }
 
 async function account(context: BrowserContext, displayName: string) {
