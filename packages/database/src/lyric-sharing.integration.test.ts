@@ -49,7 +49,7 @@ describe.runIf(enabled)("selected lyric read sharing", () => {
     await expect(lyrics!.updateLyricCurrent(reader, lyric.id, { rowVersion: lyric.rowVersion, body: "침범" })).resolves.toBeNull();
     await expect(sharing!.getSharedLyric(reader, lyric.id)).resolves.toEqual(expect.objectContaining({
       id: lyric.id, title: "공유 제목", body: "공유 본문", ownerDisplayName: "소유자",
-      access: { mode: "read", permissionEpoch: 1 }
+      access: expect.objectContaining({ mode: "read", permissionEpoch: 1, writeEpoch: 1 })
     }));
     expect(JSON.stringify(await sharing!.getSharedLyric(reader, lyric.id))).not.toContain("절대 비공개 메모");
     await expect(sharing!.getSharedLyric(stranger, lyric.id)).resolves.toBeNull();
@@ -87,6 +87,35 @@ describe.runIf(enabled)("selected lyric read sharing", () => {
     await pool!.query("update app_users set status='active' where id=$1", [reader]);
     await pool!.query("update lyric_read_grants set expires_at=now()-interval '1 second' where id=$1", [regranted!.grant.id]);
     await expect(sharing!.getSharedLyric(reader, lyric.id)).resolves.toBeNull();
+  });
+
+  it("changes selected access idempotently while preserving write as a subset of read", async () => {
+    const song = (await songs!.createSong(owner, parseCreateSongInput({ title: "쓰기 권한 곡", requestId: randomUUID() }))).song;
+    const lyric = (await lyrics!.createLyric(owner, parseCreateLyricInput({ title: "쓰기 권한 가사", body: "초기", requestId: randomUUID() }, song.id)))!.lyric;
+    const granted = (await sharing!.grantRead(owner, lyric.id, readerSharingId, randomUUID()))!.grant;
+    expect(granted).toMatchObject({ access: "read", writeEpoch: 1 });
+
+    const requestId = randomUUID();
+    const enabled = await sharing!.setGrantAccess(owner, lyric.id, granted.id, "write", requestId);
+    expect(enabled).toMatchObject({ replayed: false, changed: true,
+      grant: { access: "write", permissionEpoch: granted.permissionEpoch } });
+    expect(enabled!.grant.writeEpoch).toBeGreaterThan(granted.writeEpoch);
+    await expect(sharing!.setGrantAccess(owner, lyric.id, granted.id, "write", requestId))
+      .resolves.toMatchObject({ replayed: true, changed: false, grant: { writeEpoch: enabled!.grant.writeEpoch } });
+    await expect(sharing!.setGrantAccess(owner, lyric.id, granted.id, "read", requestId))
+      .rejects.toBeInstanceOf(SharingConflictError);
+    await expect(sharing!.setGrantAccess(reader, lyric.id, granted.id, "read", randomUUID())).resolves.toBeNull();
+    await expect(sharing!.getSharedLyric(reader, lyric.id)).resolves.toEqual(expect.objectContaining({
+      access: expect.objectContaining({ mode: "write", grantId: granted.id,
+        permissionEpoch: granted.permissionEpoch, writeEpoch: enabled!.grant.writeEpoch })
+    }));
+
+    const disabled = await sharing!.setGrantAccess(owner, lyric.id, granted.id, "read", randomUUID());
+    expect(disabled).toMatchObject({ replayed: false, changed: true, grant: { access: "read" } });
+    expect(disabled!.grant.writeEpoch).toBeGreaterThan(enabled!.grant.writeEpoch);
+    await expect(sharing!.getSharedLyric(reader, lyric.id)).resolves.toEqual(expect.objectContaining({
+      access: expect.objectContaining({ mode: "read", writeEpoch: disabled!.grant.writeEpoch })
+    }));
   });
 });
 

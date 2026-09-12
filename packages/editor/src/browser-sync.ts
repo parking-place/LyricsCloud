@@ -23,7 +23,7 @@ export interface BrowserLyricSync {
 export interface SharingParticipant {
   readonly participantId: string;
   readonly displayName: string;
-  readonly role: "owner" | "read";
+  readonly role: "owner" | "read" | "write";
 }
 export type SharedLyricSyncState = "connecting" | "live" | "offline" | "revoked" | "error";
 export interface BrowserSharedLyricSync { destroy(): void; retry(): void }
@@ -569,7 +569,7 @@ function parseSharingParticipants(value: unknown): readonly SharingParticipant[]
     const participant = item as Record<string, unknown>;
     if (typeof participant.participantId !== "string" || !/^[0-9a-f-]{36}$/i.test(participant.participantId)
       || typeof participant.displayName !== "string" || !participant.displayName.trim()
-      || (participant.role !== "owner" && participant.role !== "read")) return [];
+      || (participant.role !== "owner" && participant.role !== "read" && participant.role !== "write")) return [];
     return [{ participantId: participant.participantId, displayName: participant.displayName.slice(0, 80), role: participant.role }];
   });
 }

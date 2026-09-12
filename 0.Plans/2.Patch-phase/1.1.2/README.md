@@ -1,6 +1,6 @@
 # 1.1.2 — 지정 사용자 쓰기·공동 편집
 
-상태: **P1 완료 / P2 진행**. active read grant 안의 write 상태·두 epoch·actor receipt·원자 ACK·rejected 복구함·presence/cursor 계약을 확정했고 저장/서버 기반을 구현한다.
+상태: **P1~P2 완료 / P3 진행**. selected write의 1120 schema·W⊆R·actor/epoch 원자 ACK·rejected 복구함·server-auth awareness 기반을 동일 SHA 개발 인수했고 PC·모바일 owner/writer 흐름을 구현한다.
 
 ## 목표
 

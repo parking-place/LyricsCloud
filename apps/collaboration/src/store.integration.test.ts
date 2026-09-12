@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { parseCreateLyricInput, parseCreatePromptInput, parseCreateRhymeNoteInput, parseCreateSongInput } from "@lyricscloud/domain";
-import { PostgresLyricStore, PostgresPromptStore, PostgresRhymeStore, PostgresSongStore } from "@lyricscloud/database";
+import { PostgresLyricSharingStore, PostgresLyricStore, PostgresPromptStore, PostgresRhymeStore, PostgresSongStore } from "@lyricscloud/database";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as Y from "yjs";
@@ -14,12 +14,17 @@ const songs = enabled ? new PostgresSongStore(databaseUrl, 2) : null;
 const lyrics = enabled ? new PostgresLyricStore(databaseUrl, 2) : null;
 const rhymes = enabled ? new PostgresRhymeStore(databaseUrl, 2) : null;
 const prompts = enabled ? new PostgresPromptStore(databaseUrl, 2) : null;
+const sharing = enabled ? new PostgresLyricSharingStore(databaseUrl, 2) : null;
 const users: string[] = [];
 
 describe.runIf(enabled)("durable owner-only collaboration state", () => {
   beforeAll(async () => {
     if (!pool || !/lyricscloud_test(?:\?|$)/.test(databaseUrl)) throw new Error("collaboration integration requires lyricscloud_test");
-    for (let index = 0; index < 2; index++) users.push((await pool.query<{ id: string }>("insert into app_users default values returning id")).rows[0]!.id);
+    for (let index = 0; index < 2; index++) {
+      const id = (await pool.query<{ id: string }>("insert into app_users default values returning id")).rows[0]!.id;
+      users.push(id);
+      await pool.query("insert into user_profiles(owner_id,display_name) values($1,$2)", [id, `협업 사용자 ${index + 1}`]);
+    }
   });
 
   it("deduplicates updates, projects UTF-8 text, compacts and recovers after restart", async () => {
@@ -160,9 +165,60 @@ describe.runIf(enabled)("durable owner-only collaboration state", () => {
     expect(await prompts!.getPrompt(alice, prompt.id)).toMatchObject({ mode: "sentence", sentenceText: raw, plainText: raw });
     document.destroy();
   });
+
+  it("commits selected-writer updates with actor epochs and recovers an ACK after downgrade", async () => {
+    const [owner, writer] = users as [string, string];
+    const writerSharingId = (await pool!.query<{ sharing_id: string }>(
+      "select sharing_id from user_profiles where owner_id=$1", [writer])).rows[0]!.sharing_id;
+    const song = (await songs!.createSong(owner, parseCreateSongInput({ title: "선택 쓰기 곡", requestId: randomUUID() }))).song;
+    const lyric = (await lyrics!.createLyric(owner, parseCreateLyricInput({ title: "선택 쓰기", body: "처음", requestId: randomUUID() }, song.id)))!.lyric;
+    const mapping = (await sync!.ensureDocument(owner, lyric.id))!;
+    const grant = (await sharing!.grantRead(owner, lyric.id, writerSharingId, randomUUID()))!.grant;
+    const writeGrant = (await sharing!.setGrantAccess(owner, lyric.id, grant.id, "write", randomUUID()))!.grant;
+    const loaded = (await sync!.loadDocumentForActor(writer, mapping.document_key))!;
+    expect(loaded.access).toMatchObject({ actorId: writer, ownerId: owner, accessMode: "write",
+      grantId: grant.id, permissionEpoch: grant.permissionEpoch, writeEpoch: writeGrant.writeEpoch });
+
+    const writerDoc = materialize(loaded.snapshot, loaded.updates);
+    const vector = Y.encodeStateVector(writerDoc);
+    writerDoc.getText("body").insert(writerDoc.getText("body").length, "\n공동 작성");
+    const payload = Y.encodeStateAsUpdate(writerDoc, vector);
+    const updateId = randomUUID();
+    const accepted = await sync!.applyUpdateForActor(loaded.access, mapping.document_key, updateId, payload);
+    expect(accepted).toMatchObject({ duplicate: false, sequence: expect.any(Number) });
+    expect((await lyrics!.getLyric(owner, lyric.id))!.body).toBe("처음\n공동 작성");
+    const audit = (await pool!.query(`select u.actor_id,u.access_mode,u.grant_id,u.permission_epoch::text,u.write_epoch::text,
+      r.accepted_sequence::text from sync_updates u join sync_update_receipts r
+      on r.document_key=u.document_key and r.update_id=u.update_id where u.document_key=$1 and u.update_id=$2`,
+    [mapping.document_key, updateId])).rows[0];
+    expect(audit).toEqual({ actor_id: writer, access_mode: "write", grant_id: grant.id,
+      permission_epoch: String(grant.permissionEpoch), write_epoch: String(writeGrant.writeEpoch),
+      accepted_sequence: String(accepted!.sequence) });
+
+    const downgraded = (await sharing!.setGrantAccess(owner, lyric.id, grant.id, "read", randomUUID()))!.grant;
+    expect((await sync!.loadDocumentForActor(writer, mapping.document_key))!.access).toMatchObject({ accessMode: "read",
+      writeEpoch: downgraded.writeEpoch });
+    await expect(sync!.applyUpdateForActor(loaded.access, mapping.document_key, updateId, payload))
+      .resolves.toMatchObject({ duplicate: true, sequence: accepted!.sequence });
+    await expect(sync!.applyUpdateForActor(loaded.access, mapping.document_key, updateId, Uint8Array.of(1, 2)))
+      .rejects.toThrow("SYNC_UPDATE_ID_REUSED");
+    await expect(sync!.applyUpdateForActor(loaded.access, mapping.document_key, randomUUID(), payload)).resolves.toBeNull();
+
+    const reenabled = (await sharing!.setGrantAccess(owner, lyric.id, grant.id, "write", randomUUID()))!.grant;
+    expect(reenabled.writeEpoch).toBeGreaterThan(downgraded.writeEpoch);
+    const refreshed = (await sync!.loadDocumentForActor(writer, mapping.document_key))!;
+    const refreshedDoc = materialize(refreshed.snapshot, refreshed.updates);
+    const refreshedVector = Y.encodeStateVector(refreshedDoc);
+    refreshedDoc.getText("body").insert(refreshedDoc.getText("body").length, "\n다시 허용");
+    await expect(sync!.applyUpdateForActor(refreshed.access, mapping.document_key, randomUUID(),
+      Y.encodeStateAsUpdate(refreshedDoc, refreshedVector))).resolves.toMatchObject({ duplicate: false });
+    expect((await lyrics!.getLyric(owner, lyric.id))!.body).toBe("처음\n공동 작성\n다시 허용");
+    refreshedDoc.destroy();
+    writerDoc.destroy();
+  });
 });
 
 afterAll(async () => {
   if (pool && users.length) await pool.query("delete from app_users where id=any($1::uuid[])", [users]);
-  await Promise.all([sync?.close(), songs?.close(), lyrics?.close(), rhymes?.close(), prompts?.close(), pool?.end()]);
+  await Promise.all([sync?.close(), songs?.close(), lyrics?.close(), rhymes?.close(), prompts?.close(), sharing?.close(), pool?.end()]);
 });

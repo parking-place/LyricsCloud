@@ -18,8 +18,10 @@ interface DocumentRows {
 export interface DocumentAccess {
   readonly ownerId: string;
   readonly actorId: string;
-  readonly accessMode: "owner" | "read";
+  readonly accessMode: "owner" | "read" | "write";
   readonly permissionEpoch: number;
+  readonly grantId?: string;
+  readonly writeEpoch?: number;
   readonly displayName: string;
 }
 
@@ -94,11 +96,12 @@ export class CollaborationStore {
   async loadDocumentForActor(actorId: string, documentKey: string) {
     return this.#owned(actorId, async (client) => {
       const result = await client.query<DocumentRows & { deleted_at: Date | null; prompt_mode: PromptMode | null;
-        access_mode: "owner" | "read"; permission_epoch: string; display_name: string }>(`select
+        access_mode: "owner" | "read" | "write"; permission_epoch: string; grant_id: string | null;
+        write_epoch: string | null; display_name: string }>(`select
         d.document_key,d.resource_id,d.owner_id,d.resource_type,d.snapshot,d.snapshot_sequence::text,
         d.projection_error_code,r.deleted_at,p.mode prompt_mode,
-        case when d.owner_id=$2 then 'owner' else 'read' end access_mode,
-        coalesce(g.permission_epoch,0)::text permission_epoch,identity.display_name
+        case when d.owner_id=$2 then 'owner' when g.write_enabled then 'write' else 'read' end access_mode,
+        coalesce(g.permission_epoch,0)::text permission_epoch,g.id grant_id,g.write_epoch::text,identity.display_name
         from sync_documents d join resources r on r.id=d.resource_id and r.owner_id=d.owner_id
         left join prompts p on p.resource_id=r.id and p.owner_id=r.owner_id
         left join lyric_read_grants g on g.resource_id=d.resource_id and g.owner_id=d.owner_id
@@ -115,7 +118,9 @@ export class CollaborationStore {
         snapshot: new Uint8Array(row.snapshot), updates: updates.rows.map((item) => new Uint8Array(item.payload)),
         projectionPending: row.projection_error_code !== null,
         access: { ownerId: row.owner_id, actorId, accessMode: row.access_mode,
-          permissionEpoch: Number(row.permission_epoch), displayName: row.display_name } satisfies DocumentAccess };
+          permissionEpoch: Number(row.permission_epoch), grantId: row.grant_id ?? undefined,
+          writeEpoch: row.write_epoch === null ? undefined : Number(row.write_epoch),
+          displayName: row.display_name } satisfies DocumentAccess };
     });
   }
 
@@ -161,38 +166,96 @@ export class CollaborationStore {
       await client.query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [documentKey]);
       const loaded = await this.#loadLocked(client, ownerId, documentKey, true);
       if (!loaded) return null;
-      const hash = createHash("sha256").update(payload).digest("hex");
-      const receipt = await client.query<{ payload_sha256: string }>("select payload_sha256 from sync_update_receipts where document_key=$1 and update_id=$2", [documentKey, updateId]);
-      if (receipt.rows[0]) {
-        if (receipt.rows[0].payload_sha256 !== hash) throw new Error("SYNC_UPDATE_ID_REUSED");
-        return { duplicate: true, snapshot: loaded.snapshot, projectionPending: loaded.projectionPending };
-      }
-      const document = materialize(loaded.snapshot, loaded.updates);
-      Y.applyUpdate(document, payload);
-      const content = documentContent(document, loaded.resourceType);
-      if ([...content].length > 100_000) { document.destroy(); throw new Error("SYNC_DOCUMENT_TOO_LARGE"); }
-      await client.query("insert into sync_update_receipts(document_key,update_id,payload_sha256) values($1,$2,$3)", [documentKey, updateId, hash]);
-      await client.query("insert into sync_updates(document_key,update_id,payload) values($1,$2,$3)", [documentKey, updateId, Buffer.from(payload)]);
-      let projectionPending = false;
-      await client.query("savepoint project_plaintext");
-      try {
-        await projectDocument(client, loaded.resourceType, loaded.resourceId, ownerId, document);
-        await client.query("update sync_documents set projected_at=statement_timestamp(),projection_error_code=null,updated_at=statement_timestamp() where document_key=$1", [documentKey]);
-        await client.query("release savepoint project_plaintext");
-      } catch {
-        await client.query("rollback to savepoint project_plaintext");
-        await client.query("update sync_documents set projection_error_code='SYNC_PROJECTION_FAILED',updated_at=statement_timestamp() where document_key=$1", [documentKey]);
-        projectionPending = true;
-      }
-      const stats = await client.query<{ count: string; bytes: string; sequence: string }>(`select count(*)::text count,coalesce(sum(octet_length(payload)),0)::text bytes,coalesce(max(sequence),0)::text sequence from sync_updates where document_key=$1`, [documentKey]);
-      const compact = Number(stats.rows[0]!.count) >= 100 || Number(stats.rows[0]!.bytes) >= 1_048_576;
-      const snapshot = Y.encodeStateAsUpdate(document);
-      if (compact) {
-        await client.query("update sync_documents set snapshot=$2,snapshot_sequence=$3,updated_at=statement_timestamp() where document_key=$1", [documentKey, Buffer.from(snapshot), stats.rows[0]!.sequence]);
-        await client.query("delete from sync_updates where document_key=$1 and sequence <= $2", [documentKey, stats.rows[0]!.sequence]);
-      }
-      document.destroy(); return { duplicate: false, snapshot, projectionPending };
+      return this.#applyUpdateLocked(client, loaded, ownerId, documentKey, updateId, payload,
+        { actorId: ownerId, accessMode: "owner" });
     });
+  }
+
+  async applyUpdateForActor(access: DocumentAccess, documentKey: string, updateId: string, payload: Uint8Array) {
+    if (access.accessMode === "owner") return this.applyUpdate(access.actorId, documentKey, updateId, payload);
+    if (access.accessMode !== "write" || !access.grantId || !access.writeEpoch) return null;
+    return this.#owned(access.actorId, async (client) => {
+      const payloadSha256 = createHash("sha256").update(payload).digest("hex");
+      const receipt = (await client.query<{ authorized_owner_id: string; authorized_resource_id: string;
+        payload_sha256: string; accepted_sequence: string }>(
+        "select authorized_owner_id,authorized_resource_id,payload_sha256,accepted_sequence::text from app_selected_lyric_write_receipt($1,$2,$3,$4,$5)",
+        [documentKey, updateId, access.grantId, access.permissionEpoch, access.writeEpoch])).rows[0];
+      if (receipt) {
+        if (receipt.payload_sha256 !== payloadSha256) throw new Error("SYNC_UPDATE_ID_REUSED");
+        await client.query("select set_config('app.user_id',$1,true)", [receipt.authorized_owner_id]);
+        await client.query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [documentKey]);
+        const loaded = await this.#loadLocked(client, receipt.authorized_owner_id, documentKey, true);
+        if (!loaded || loaded.resourceId !== receipt.authorized_resource_id) return null;
+        return { duplicate: true, sequence: Number(receipt.accepted_sequence),
+          snapshot: loaded.snapshot, projectionPending: loaded.projectionPending };
+      }
+      const authorized = (await client.query<{ authorized_owner_id: string; authorized_resource_id: string }>(
+        "select * from app_authorize_selected_lyric_write($1,$2,$3,$4)",
+        [documentKey, access.grantId, access.permissionEpoch, access.writeEpoch])).rows[0];
+      if (!authorized || authorized.authorized_owner_id !== access.ownerId) return null;
+      await client.query("select set_config('app.user_id',$1,true)", [authorized.authorized_owner_id]);
+      await client.query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [documentKey]);
+      const loaded = await this.#loadLocked(client, authorized.authorized_owner_id, documentKey, true);
+      if (!loaded || loaded.resourceId !== authorized.authorized_resource_id || loaded.resourceType !== "lyrics") return null;
+      return this.#applyUpdateLocked(client, loaded, authorized.authorized_owner_id, documentKey, updateId, payload,
+        { actorId: access.actorId, accessMode: "write", grantId: access.grantId,
+          permissionEpoch: access.permissionEpoch, writeEpoch: access.writeEpoch });
+    });
+  }
+
+  async #applyUpdateLocked(client: PoolClient, loaded: NonNullable<Awaited<ReturnType<CollaborationStore["loadDocument"]>>>,
+    ownerId: string, documentKey: string, updateId: string, payload: Uint8Array,
+    audit: { actorId: string; accessMode: "owner" | "write"; grantId?: string; permissionEpoch?: number; writeEpoch?: number }) {
+    const hash = createHash("sha256").update(payload).digest("hex");
+    const receipt = await client.query<{ payload_sha256: string; accepted_sequence: string | null }>(
+      "select payload_sha256,accepted_sequence::text from sync_update_receipts where document_key=$1 and update_id=$2",
+      [documentKey, updateId]);
+    if (receipt.rows[0]) {
+      if (receipt.rows[0].payload_sha256 !== hash) throw new Error("SYNC_UPDATE_ID_REUSED");
+      return { duplicate: true, sequence: Number(receipt.rows[0].accepted_sequence ?? 0),
+        snapshot: loaded.snapshot, projectionPending: loaded.projectionPending };
+    }
+    const document = materialize(loaded.snapshot, loaded.updates);
+    Y.applyUpdate(document, payload);
+    const content = documentContent(document, loaded.resourceType);
+    if ([...content].length > 100_000) { document.destroy(); throw new Error("SYNC_DOCUMENT_TOO_LARGE"); }
+    const inserted = await client.query<{ sequence: string }>(`insert into sync_updates
+      (document_key,update_id,payload,actor_id,access_mode,grant_id,permission_epoch,write_epoch)
+      values($1,$2,$3,$4,$5,$6,$7,$8) returning sequence::text`,
+    [documentKey, updateId, Buffer.from(payload), audit.actorId, audit.accessMode,
+      audit.grantId ?? null, audit.permissionEpoch ?? null, audit.writeEpoch ?? null]);
+    const sequence = Number(inserted.rows[0]!.sequence);
+    await client.query(`insert into sync_update_receipts
+      (document_key,update_id,payload_sha256,accepted_sequence,actor_id,access_mode,grant_id,permission_epoch,write_epoch)
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [documentKey, updateId, hash, sequence, audit.actorId,
+      audit.accessMode, audit.grantId ?? null, audit.permissionEpoch ?? null, audit.writeEpoch ?? null]);
+    let projectionPending = false;
+    await client.query("savepoint project_plaintext");
+    try {
+      await projectDocument(client, loaded.resourceType, loaded.resourceId, ownerId, document);
+      await client.query(`update sync_documents set projected_at=statement_timestamp(),projection_error_code=null,
+        last_actor_id=$2,last_access_mode=$3,updated_at=statement_timestamp() where document_key=$1`,
+      [documentKey, audit.actorId, audit.accessMode]);
+      await client.query("release savepoint project_plaintext");
+    } catch {
+      await client.query("rollback to savepoint project_plaintext");
+      await client.query(`update sync_documents set projection_error_code='SYNC_PROJECTION_FAILED',
+        last_actor_id=$2,last_access_mode=$3,updated_at=statement_timestamp() where document_key=$1`,
+      [documentKey, audit.actorId, audit.accessMode]);
+      projectionPending = true;
+    }
+    const stats = await client.query<{ count: string; bytes: string; sequence: string }>(`select count(*)::text count,
+      coalesce(sum(octet_length(payload)),0)::text bytes,coalesce(max(sequence),0)::text sequence
+      from sync_updates where document_key=$1`, [documentKey]);
+    const compact = Number(stats.rows[0]!.count) >= 100 || Number(stats.rows[0]!.bytes) >= 1_048_576;
+    const snapshot = Y.encodeStateAsUpdate(document);
+    if (compact) {
+      await client.query("update sync_documents set snapshot=$2,snapshot_sequence=$3,updated_at=statement_timestamp() where document_key=$1",
+        [documentKey, Buffer.from(snapshot), stats.rows[0]!.sequence]);
+      await client.query("delete from sync_updates where document_key=$1 and sequence <= $2", [documentKey, stats.rows[0]!.sequence]);
+    }
+    document.destroy();
+    return { duplicate: false, sequence, snapshot, projectionPending };
   }
 
   async retryProjection(ownerId: string, documentKey: string) {

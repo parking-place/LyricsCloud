@@ -1,6 +1,6 @@
 {
   "name": "lyricscloud",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "private": true,
   "packageManager": "pnpm@11.25.0",
   "engines": {
@@ -41,6 +41,7 @@
     "test:migration:1004": "node scripts/verify-1004-migration.mjs",
     "test:migration:1100": "node scripts/verify-1100-migration.mjs",
     "test:migration:1110": "node scripts/verify-1110-migration.mjs",
+    "test:migration:1120": "node scripts/verify-1120-migration.mjs",
     "test:beta-admin:0900": "pnpm --filter @lyricscloud/database exec tsx ../../scripts/verify-0900-beta-admin.ts",
     "test:beta-signup:0901": "BETA_SIGNUP_DATABASE_INTEGRATION=true vitest run packages/database/src/beta-signup.integration.test.ts",
     "test:audit:0901": "node scripts/validate-0901-ui-audit.mjs",

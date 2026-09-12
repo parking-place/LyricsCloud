@@ -21,6 +21,7 @@ try {
   migrate();
   const target = new Pool({ connectionString: temporaryUrl.href, max: 1 });
   try {
+    await target.query(await readFile(resolve("packages/database/rollback/1120_selected_lyric_write.sql"), "utf8"));
     await target.query(await readFile(resolve("packages/database/rollback/1110_public_lyric_read_links.sql"), "utf8"));
     await target.query(await readFile(resolve("packages/database/rollback/1100_selected_lyric_sharing.sql"), "utf8"));
     await assertApplied(target);

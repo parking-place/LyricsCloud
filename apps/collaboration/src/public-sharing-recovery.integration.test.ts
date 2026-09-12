@@ -79,7 +79,7 @@ describe.runIf(process.env.AUTH_DATABASE_INTEGRATION === "true")("public reader 
 
     function start() {
       const process = spawn("apps/collaboration/node_modules/.bin/tsx", ["apps/collaboration/src/server.ts"], {
-        cwd: globalThis.process.cwd(), env: { ...globalThis.process.env, DATABASE_URL: databaseUrl, APP_VERSION: "1.1.1",
+        cwd: globalThis.process.cwd(), env: { ...globalThis.process.env, DATABASE_URL: databaseUrl, APP_VERSION: "1.1.2",
           BUILD_ID: "synthetic", APP_CHANNEL: "dev", APP_PHASE: "p4", COLLABORATION_PORT: String(port), APP_ORIGIN: origin }
       });
       process.stdout.on("data", (data: Buffer) => { output += data.toString(); });

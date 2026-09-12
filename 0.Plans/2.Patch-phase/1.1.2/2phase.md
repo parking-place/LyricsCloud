@@ -1,6 +1,6 @@
 # 1.1.2 Phase 2 — 핵심 기반·저장과 서버
 
-- 상태: **진행 중** (`in_progress`, 실패 계약·저장/서버 기반 구현)
+- 상태: **완료** (`complete`, 후보 `41db8ff9385a329dc960695eb054acb7c617a8b9` 개발 인수)
 - 단계 목적: 지정 사용자 쓰기·공동 편집의 핵심 기반·저장과 서버을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -40,14 +40,14 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.2-P2-01` 구현 전 `1.1.2` 수용 사례의 실패 테스트를 작성한다. 제안 위치는 `tests/new-feature/1.1.2.contract.test.ts`이며 runner 포함 여부를 확인한 뒤 실패 이유를 기록한다.
-- [ ] `LC-NF-1.1.2-P2-02` 인증된 actor의 쓰기 grant를 매 mutation/WS message에 적용한다.
-- [ ] `LC-NF-1.1.2-P2-03` Yjs update·receipt·projection·revision은 owner 자료와 writer attribution을 구별한다.
-- [ ] `LC-NF-1.1.2-P2-04` 권한 회수와 pending update 경쟁을 원자 처리하고 이미 거부된 update를 재연결 때 적용하지 않는다.
-- [ ] `LC-NF-1.1.2-P2-05` offline writer가 직접 작성한 미전송 내용을 별도 로컬 초안으로 보존하되 서버 private 자료를 새로 읽지 않는다.
-- [ ] `LC-NF-1.1.2-P2-06` 추가 schema가 있으면 실제 테스트 DB의 빈 설치·이전 schema 업그레이드·권한·되돌림을 검사한다. 원인 수정 후 동일 실패 테스트와 기존 관련 회귀를 다시 실행한다.
+- [x] `LC-NF-1.1.2-P2-01` 구현 전 `1.1.2` 수용 사례의 실패 테스트를 작성한다. 제안 위치는 `tests/new-feature/1.1.2.contract.test.ts`이며 runner 포함 여부를 확인한 뒤 실패 이유를 기록한다.
+- [x] `LC-NF-1.1.2-P2-02` 인증된 actor의 쓰기 grant를 매 mutation/WS message에 적용한다.
+- [x] `LC-NF-1.1.2-P2-03` Yjs update·receipt·projection·revision은 owner 자료와 writer attribution을 구별한다.
+- [x] `LC-NF-1.1.2-P2-04` 권한 회수와 pending update 경쟁을 원자 처리하고 이미 거부된 update를 재연결 때 적용하지 않는다.
+- [x] `LC-NF-1.1.2-P2-05` offline writer가 직접 작성한 미전송 내용을 별도 로컬 초안으로 보존하되 서버 private 자료를 새로 읽지 않는다.
+- [x] `LC-NF-1.1.2-P2-06` 추가 schema가 있으면 실제 테스트 DB의 빈 설치·이전 schema 업그레이드·권한·되돌림을 검사한다. 원인 수정 후 동일 실패 테스트와 기존 관련 회귀를 다시 실행한다.
 
-- [ ] `LC-NF-1.1.2-P2-07` 서로 다른 writer의 동시 변경과 상대 cursor/selection을 현재 CRDT 문서에 연결한다. spoofed actor·읽기/쓰기 범위 밖 awareness를 서버에서 거부한다.
+- [x] `LC-NF-1.1.2-P2-07` 서로 다른 writer의 동시 변경과 상대 cursor/selection을 현재 CRDT 문서에 연결한다. spoofed actor·읽기/쓰기 범위 밖 awareness를 서버에서 거부한다.
 
 ## 구체적 검증
 
@@ -66,12 +66,20 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
+- [x] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+
+## 완료 증거
+
+- 인수 기록: [1.1.2 P2 지정 사용자 쓰기 기반](../../../docs/runbooks/1.1.2-phase2-selected-write-foundation.md)
+- 후보 source SHA: `41db8ff9385a329dc960695eb054acb7c617a8b9`
+- GitHub Actions: push `34710725889`, PR `34710727914` 전체 성공과 네 개발 이미지 발행·서명.
+- 동일 SHA 개발 서버: `1.1.2` / `dev` / `p2`, schema `1120_selected_lyric_write.sql`, 네 서비스 healthy.
+- 공개 스모크: read 기본·owner-only write·writer projection/discovery·downgrade·revoke·stranger 격리 모두 PASS; 합성 fixture 제거.
 
 ## 산출물
 

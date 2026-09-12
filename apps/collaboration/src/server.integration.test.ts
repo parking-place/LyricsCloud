@@ -25,7 +25,7 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
   beforeAll(async () => {
     if (!pool || !/lyricscloud_test(?:\?|$)/.test(databaseUrl)) throw new Error("collaboration integration requires lyricscloud_test");
     processHandle = spawn("apps/collaboration/node_modules/.bin/tsx", ["apps/collaboration/src/server.ts"], {
-      cwd: process.cwd(), env: { ...process.env, DATABASE_URL: databaseUrl, APP_VERSION: "1.0.0", BUILD_ID: "synthetic", COLLABORATION_PORT: String(port), APP_ORIGIN: "http://localhost:8080" }
+      cwd: process.cwd(), env: { ...process.env, DATABASE_URL: databaseUrl, APP_VERSION: "1.1.2", BUILD_ID: "synthetic", COLLABORATION_PORT: String(port), APP_ORIGIN: "http://localhost:8080" }
     });
     processHandle.stdout.on("data", (chunk) => { output += chunk.toString(); });
     processHandle.stderr.on("data", (chunk) => { output += chunk.toString(); });
@@ -88,7 +88,7 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
     expect(output).not.toContain(lyric.id);
   }, 15_000);
 
-  it("admits a selected reader as read-only, publishes minimal presence and closes on revoke", async () => {
+  it("keeps read on write downgrade, authenticates writer awareness and closes only on read revoke", async () => {
     const [ownerId, readerId, strangerId] = await Promise.all(["공유 소유자", "공유 독자", "무관 사용자"].map(async (name) => {
       const id = (await pool!.query<{ id: string }>("insert into app_users default values returning id")).rows[0]!.id;
       users.push(id); await pool!.query("insert into user_profiles(owner_id,display_name) values($1,$2)", [id, name]); return id;
@@ -121,12 +121,44 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
     expect(JSON.stringify(presence)).not.toContain(readerId);
 
     readerSocket.send(JSON.stringify({ type: "update", updateId: randomUUID(), payload: Buffer.from([0]).toString("base64") }));
-    expect((await once(readerSocket, "close"))[0]).toBe(4403);
+    expect(await nextJson(readerSocket, "rejected")).toMatchObject({ code: "SYNC_WRITE_REVOKED", access: "read" });
+    expect(readerSocket.readyState).toBe(WebSocket.OPEN);
+
+    const writerPermission = nextJson(readerSocket, "permission");
+    const writeGrant = (await sharing!.setGrantAccess(ownerId, lyric.id, granted!.grant.id, "write", randomUUID()))!.grant;
+    expect(await writerPermission).toMatchObject({ access: "write", grantId: granted!.grant.id,
+      permissionEpoch: granted!.grant.permissionEpoch, writeEpoch: writeGrant.writeEpoch });
+    const readerDoc = new Y.Doc(); Y.applyUpdate(readerDoc, Buffer.from(readerSnapshot.payload as string, "base64"));
+    const relative = Buffer.from(Y.encodeRelativePosition(
+      Y.createRelativePositionFromTypeIndex(readerDoc.getText("body"), 3))).toString("base64url");
+    const awareness = nextJson(ownerSocket, "awareness");
+    readerSocket.send(JSON.stringify({ type: "awareness", selection: { anchor: relative, head: relative } }));
+    expect(await awareness).toMatchObject({ displayName: "공유 독자", role: "write",
+      selection: { anchor: relative, head: relative } });
+    const vector = Y.encodeStateVector(readerDoc);
+    readerDoc.getText("body").insert(readerDoc.getText("body").length, "\nwriter update");
+    const writerUpdate = Buffer.from(Y.encodeStateAsUpdate(readerDoc, vector)).toString("base64");
+    const writerUpdateId = randomUUID(); const ownerBroadcast = nextJson(ownerSocket, "update");
+    readerSocket.send(JSON.stringify({ type: "update", updateId: writerUpdateId, payload: writerUpdate,
+      grantId: granted!.grant.id, permissionEpoch: granted!.grant.permissionEpoch, writeEpoch: writeGrant.writeEpoch }));
+    expect(await nextJson(readerSocket, "ack")).toMatchObject({ updateId: writerUpdateId, duplicate: false,
+      permissionEpoch: granted!.grant.permissionEpoch, writeEpoch: writeGrant.writeEpoch });
+    expect(await ownerBroadcast).toMatchObject({ updateId: writerUpdateId, payload: writerUpdate });
+    expect((await lyrics!.getLyric(ownerId, lyric.id))!.body).toContain("writer update");
+
+    const readPermission = nextJson(readerSocket, "permission");
+    const downgraded = (await sharing!.setGrantAccess(ownerId, lyric.id, granted!.grant.id, "read", randomUUID()))!.grant;
+    expect(await readPermission).toMatchObject({ access: "read", writeEpoch: downgraded.writeEpoch });
+    readerSocket.send(JSON.stringify({ type: "update", updateId: randomUUID(), payload: writerUpdate,
+      grantId: granted!.grant.id, permissionEpoch: granted!.grant.permissionEpoch, writeEpoch: writeGrant.writeEpoch }));
+    expect(await nextJson(readerSocket, "rejected")).toMatchObject({ code: "SYNC_WRITE_REVOKED", access: "read" });
+    readerDoc.destroy();
 
     const revokedSocket = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: readerHeaders });
     await nextJson(revokedSocket, "snapshot");
     const revokedClose = once(revokedSocket, "close");
     expect(await sharing!.revokeRead(ownerId, lyric.id, granted!.grant.id)).toBe(true);
+    expect((await Promise.race([once(readerSocket, "close"), new Promise((_, reject) => setTimeout(() => reject(new Error("active revoke timeout")), 3_000))]) as [number])[0]).toBe(4404);
     expect((await Promise.race([revokedClose, new Promise((_, reject) => setTimeout(() => reject(new Error("revoke timeout")), 3_000))]) as [number])[0]).toBe(4404);
     expect((await fetch(`http://127.0.0.1:${port}/shared-documents/${lyric.id}`, { headers: readerHeaders })).status).toBe(404);
 

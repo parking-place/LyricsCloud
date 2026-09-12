@@ -13,7 +13,7 @@ interface LyricReadGrant {
   readonly state: "active" | "revoked";
   readonly expiresAt: string | null;
 }
-interface Participant { readonly participantId: string; readonly displayName: string; readonly role: "owner" | "read" }
+interface Participant { readonly participantId: string; readonly displayName: string; readonly role: "owner" | "read" | "write" }
 interface PublicLyricLink {
   readonly id: string;
   readonly state: "active" | "revoked";
@@ -125,7 +125,7 @@ export function LyricShareManager({ lyric, participants }: { lyric: LyricRecord;
   function closeDialog() { setOpen(false); setConfirmingPublic(false); setOneTimePublicUrl(null); }
 
   const activeItems = items.filter((item) => item.state === "active" && (!item.expiresAt || new Date(item.expiresAt).getTime() > Date.now()));
-  const readerParticipants = participants.filter((item) => item.role === "read");
+  const readerParticipants = participants.filter((item) => item.role === "read" || item.role === "write");
   const activePublic = publicItems.find((item) => item.state === "active" && new Date(item.expiresAt).getTime() > Date.now());
   const shareUrl = typeof window === "undefined" ? `/shared/lyrics/${lyric.id}` : `${window.location.origin}/shared/lyrics/${lyric.id}`;
 
@@ -155,7 +155,7 @@ export function LyricShareManager({ lyric, participants }: { lyric: LyricRecord;
                 <div><button type="button" disabled={busy} onClick={() => setConfirmingPublic(false)}>취소</button><button type="button" className="primary-link" disabled={busy} onClick={() => void issuePublicLink()}>{busy ? "처리 중…" : "확인하고 공개"}</button></div>
               </div>}
           </section>
-          <section className="sharing-presence" aria-labelledby="sharing-presence-title"><h3 id="sharing-presence-title">현재 보는 사람</h3>{readerParticipants.length ? <ul>{readerParticipants.map((item) => <li key={item.participantId}><span aria-hidden="true" />{item.displayName}<small>읽기 전용</small></li>)}</ul> : <p>현재 이 가사를 보는 공유 사용자가 없습니다.</p>}</section>
+          <section className="sharing-presence" aria-labelledby="sharing-presence-title"><h3 id="sharing-presence-title">현재 보는 사람</h3>{readerParticipants.length ? <ul>{readerParticipants.map((item) => <li key={item.participantId}><span aria-hidden="true" />{item.displayName}<small>{item.role === "write" ? "공동 작성" : "읽기 전용"}</small></li>)}</ul> : <p>현재 이 가사를 보는 공유 사용자가 없습니다.</p>}</section>
         </>}
         {notice ? <p className="sharing-notice" role="status">{notice}</p> : null}
       </section>
