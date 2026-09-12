@@ -1,16 +1,18 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.0.14"
-current_phase: "../2.Patch-phase/1.0.14/5phase.md"
-state: "complete"
+current_version: "1.1.0"
+current_phase: "../2.Patch-phase/1.1.0/2phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.0.14 정식 릴리스 완료. OPS-NF-002 owner/actor 권한 모델의 명시적 승인 전에는 1.1.0 공유를 시작하지 않는다"
+next_action: "1.1.0 P1 selected-read 계약 승인 완료. P2에서 실패 시험부터 grant/RLS/API/read-only WebSocket 기반을 구현한다"
 ```
 
 ## 승인과 기준
+
+2026-09-12 사용자가 1.1.6까지 각 버전의 계획된 모든 Phase와 개별 정식 릴리스를 실행하도록 승인했다. 착수 전에 고지한 권장 모델에 따라 1.1.0은 owner를 유지하고 actor와 자료별 grant를 분리한 지정 사용자 읽기부터 시작한다. 공개 링크·선택/공개 쓰기·guest와 디자인 적용은 각 담당 버전 P1의 명시 계약과 실패/복구 경계를 먼저 확정한다. 버전별 P5와 동일 SHA 개발 인수가 끝난 뒤에만 main·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·GitHub Release를 수행한다. 기존 DB volume·secret·beta allowlist와 사용자가 승인한 `OPS-100-001` 위험 예외를 보존한다.
 
 2026-09-11 사용자가 1.0.14까지 모든 버전을 실행하고 각 버전을 개별 정식 릴리스하도록 명시적으로 승인했다. 현재 실행 범위는 1.0.6부터 1.0.14까지 각 버전의 계획된 Phase, Phase별 개발 서버 인수, 버전별 main 병합·annotated tag·정식 image·릴리스 서버 migrate/배포/공개 smoke다. 각 P1의 기존 권장안은 최초 소비 전에 범위·실패·복구 경계를 문서로 확정하며, 외부 제공 조건이 충족되지 않는 기능은 우회 구현하거나 완료로 가장하지 않는다. 기존 DB volume·secret과 사용자가 승인한 `OPS-100-001` 위험 예외를 보존한다.
 
@@ -110,11 +112,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.14 P4 | complete | 후보 `1753ee0`, Actions `34656715638`·`34656718443`, Chromium 340 PASS·네 dev image·동일 SHA 공개 200줄/차단 font 저장·재진입 인수. 실제 세 OS 폰트 전환 미실행 위험 명시 |
 | 1.0.14 P5 | complete | 후보 `a11e1b5`, Actions `34658944912`·`34658954668`, 네 dev image·동일 SHA 공개 장문/차단 font 인수와 OFL 봉인, OPS-NF-002 공유 NO-GO 완료 |
 | 1.0.14 Release | complete | main/tag `d093ff2`, main CI `34660678199`·tag CI `34662523402`, exact digest 운영 배포·공개 재시작/영속성 smoke·GitHub Release 완료 |
+| 1.1.0 P1 | complete | 기준 `6d4921f`, owner/actor/resource grant·최소 공개 필드·reader presence·회수/rollback을 selected-read 범위로 승인 |
+| 1.1.0 P2 | in_progress | grant/RLS·owner 관리 API·viewer read·read-only WebSocket 실패 시험과 핵심 기반 구현 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.0/P2 | LC-NF-1.1.0-P2-01~06 | migration·DB store·HTTP grant/viewer·collaboration actor/read 권한·계약 시험 | 1.1.0 P1, 기준 `6d4921f` | 2026-09-12 | in_progress |
+| Codex | 1.1.0/P1 | LC-NF-1.1.0-P1-01~06 | sharing 계약·결정 문서·수용 입력·담당/rollback | v1.0.14 + evidence `6d4921f` | 2026-09-12 | complete |
 | Codex | 1.0.14/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.0.14 P5 `a11e1b5` | 2026-09-12T09:10:00+09:00 | complete |
 | Codex | 1.0.14/P5 | LC-NF-1.0.14-P5-01~03 | OFL/지원·fallback 고지·최종 봉인·OPS-NF-002 공유 진입 판정 | 1.0.14 P4 `1753ee0` | 2026-09-12T08:35:00+09:00 | complete |
 | Codex | 1.0.14/P4 | LC-NF-1.0.14-P4-01~03 | 실제/합성 IME 경계·slow/offline·저사양 성능·개인 흐름 통합 회귀 | 1.0.14 P3 `ffcf97f` | 2026-09-12T06:53:00+09:00 | complete |

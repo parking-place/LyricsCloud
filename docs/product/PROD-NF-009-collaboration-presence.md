@@ -1,13 +1,15 @@
 # PROD-NF-009 — 여러 사용자 동시 작업과 위치 표시
 
-- 상태: **Proposed**
+- 상태: **Accepted for 1.1.0 reader presence**
 - 작성일: 2026-09-09
 - 최초 결정/소비: 1.1.0 P1; 1.1.2 P1 확장
-- 승인자/시각: 미승인. 기술·표시 대안과 실제 검증 근거를 해당 Phase에서 기록한다.
+- 승인자/시각: 사용자, 2026-09-12. 1.1.0은 서버 인증 reader 표시 이름·일시 색상·연결 상태만 승인한다. cursor/selection과 writer 표시는 1.1.2에서 재승인한다.
 
 ## 질문·대안·결정 gate
 
 읽기 참가자와 writer의 현재 작업 위치/cursor·selection, 표시 이름/색상·idle/연결 상태를 정한다. 서버 actor를 신뢰하며 read/write 권한 철회·재구독·문서 전환 때 정보 제거와 자기 초안 보존을 수용한다.
+
+1.1.0에서는 reader의 문서 참여 여부만 일시 presence로 전송한다. 이메일·내부 ID·타 문서 참가자·클라이언트가 주장한 identity는 노출하지 않으며, read 회수·disconnect·문서 전환 때 제거한다. reader의 cursor/selection이나 편집 활동처럼 보이는 정보는 전송하지 않는다.
 
 ## 영향과 수용
 
