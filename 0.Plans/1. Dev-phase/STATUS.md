@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.2"
-current_phase: "../2.Patch-phase/1.1.2/2phase.md"
+current_phase: "../2.Patch-phase/1.1.2/3phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-13"
-next_action: "1.1.2 P1에서 active read grant의 write 상태·grant/read/write epoch·actor receipt·원자 ACK·rejected 복구함·presence/cursor 계약 승인. P2에서 1120 migration과 DB/API/WS/local queue 실패 시험·기반을 구현한다"
+next_action: "1.1.2 P2 후보 41db8ff에서 전체 CI 두 경로·네 dev image·동일 SHA 개발 공개 selected-write 인수 완료. P3에서 owner 권한 토글, writer 편집/상태, 회수 뒤 로컬 복구함과 두 사용자 PC·모바일 흐름을 구현한다"
 ```
 
 ## 승인과 기준
@@ -125,13 +125,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.1 P5 | complete | 후보 `f013154`, Actions `34701755594`·`34701763143`, 네 dev image·26 migration 봉인·동일 SHA 공개 재시작/회수 인수 완료 |
 | 1.1.1 Release | complete | main/tag `d4c82b3`, main CI `34703250472`·tag CI `34704609566`, exact digest 운영 배포·공개 링크/회수/재시작 smoke·GitHub Release 완료 |
 | 1.1.2 P1 | complete | 기준 `d4c82b3`, active read grant의 write 상태·두 epoch·actor receipt·원자 ACK·rejected 복구함·presence/cursor·rollback 계약 승인 |
-| 1.1.2 P2 | in_progress | 1120 additive schema·W⊆R·owner access API·actor/epoch 원자 update/ACK·rejected local queue 기반 구현 |
+| 1.1.2 P2 | complete | 후보 `41db8ff`, Actions `34710725889`·`34710727914`, 1120 schema·원자 actor/epoch ACK·rejected queue·네 dev image와 동일 SHA 공개 개발 인수 완료 |
+| 1.1.2 P3 | in_progress | owner 권한 토글·writer 편집/상태·회수 복구함·두 사용자 selection/IME/undo·PC/mobile 흐름 구현 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.2/P2 | LC-NF-1.1.2-P2-01~07 | 1120 schema·W⊆R·actor/epoch 원자 update/ACK·local rejected queue·awareness 기반 | 1.1.2 P1, 기준 `d4c82b3` | 2026-09-13 | in_progress |
+| Codex | 1.1.2/P3 | LC-NF-1.1.2-P3-01~07 | owner access UI·writer CodeMirror/상태·rejected 복구·selection/IME/undo·PC/mobile | 1.1.2 P2 `41db8ff` | 2026-09-13 | in_progress |
+| Codex | 1.1.2/P2 | LC-NF-1.1.2-P2-01~07 | 1120 schema·W⊆R·actor/epoch 원자 update/ACK·local rejected queue·awareness 기반 | 1.1.2 P1, 기준 `d4c82b3` | 2026-09-13 | complete |
 | Codex | 1.1.2/P1 | LC-NF-1.1.2-P1-01~07 | selected write W⊆R·writer 경계·epoch/ACK/attribution·undo/복구·presence/cursor 계약 | v1.1.1 `d4c82b3` | 2026-09-13 | complete |
 | Codex | 1.1.1/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.1 P5 `f013154` | 2026-09-13 | complete |
 | Codex | 1.1.1/P5 | LC-NF-1.1.1-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.1 P4 `b920049` | 2026-09-13 | complete |
@@ -219,6 +221,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.2 P2 후보 `41db8ff9385a329dc960695eb054acb7c617a8b9`는 1120 additive schema, active read 안의 owner-only write 전환, actor/epoch별 원자 update·receipt·commit ACK, 중복 ACK 복구, read 강등/회수와 local-only rejected 원문, server-auth presence/selection 기반을 완성했다. Node 24 관련 계약·실제 PostgreSQL·migration/rollback·security·전체 Vitest 351 PASS·4 조건부 skip, PWA 2 PASS와 5-browser selected-read 5 PASS를 통과했다. Actions push `34710725889`와 PR `34710727914`의 전체 verify, 네 dev image 게시/서명을 통과했고 같은 SHA 개발 서버의 `1.1.2`·`dev`·`p2`, schema `1120_selected_lyric_write.sql`, 네 서비스 healthy를 확인했다. 공개 합성 read 기본·owner write 승격·writer projection/discovery·read 강등·revoke·stranger 격리가 PASS했고 fixture를 제거했다. 실제 물리 기기는 새로 실행하지 않았으며 P3가 owner/writer UI·IME/undo·복구함을 담당한다.
 
 1.1.1은 PR #97 merge 뒤 main과 annotated `v1.1.1`이 `d4c82b30fb54e2a50b92b167c017aa44f7e6bbd6`을 가리킨다. main Actions `34703250472`와 tag Actions `34704609566`의 전체 verify와 네 정식 image 서명·provenance·SBOM을 통과했다. 최초 tag verify에서 기존 selected-reader presence 시험 한 건이 첫 순간 snapshot 순서 경합으로 실패했으나 같은 시험의 실제 PostgreSQL 로컬 5회 연속 PASS와 불변 tag 실패 job 재실행 전체 PASS로 분류했다. 서비스별 `1.1.1`·`Release`·`latest`·`Release-latest`의 동일 digest를 확인하고 운영 서버에 migrate 우선 exact digest 배포해 `1.1.1`·`release`·phase `null`, schema `1110_public_lyric_read_links.sql`, 네 서비스 healthy를 확인했다. 공개 운영에서 collaboration 재시작 뒤 공개 projection 지속·회수·private API 차단과 owner 확인·일회 링크·fragment 제거·mobile 비로그인 읽기·live update·빈 가사 최초 공개가 PASS했고 합성 fixture를 제거했다. 기존 DB volume·secret·HMAC allowlist와 beta code를 보존하고 GitHub Release를 발행했다. 실제 OS/물리 기기 미실행과 `OPS-100-001` backup 예외는 유지한다.
 

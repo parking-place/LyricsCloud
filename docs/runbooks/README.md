@@ -130,6 +130,7 @@
 - [`1.1.0 정식 릴리스 체크리스트`](./1.1.0-release-checklist.md)
 - [`1.1.1 Phase 1 공개 링크 읽기 계약`](./1.1.1-phase1-public-link-read-contract.md)
 - [`1.1.2 Phase 1 지정 사용자 쓰기 계약`](./1.1.2-phase1-selected-write-contract.md)
+- [`1.1.2 Phase 2 지정 사용자 쓰기 기반`](./1.1.2-phase2-selected-write-foundation.md)
 - [`1.1.1 Phase 2 공개 링크 서버 기반`](./1.1.1-phase2-public-link-foundation.md)
 - [`1.1.1 Phase 3 공개 링크 사용자 흐름`](./1.1.1-phase3-public-reader-ui.md)
 - [`1.1.1 Phase 4 공개 공유 권한·복구 회귀`](./1.1.1-phase4-public-sharing-regression.md)
