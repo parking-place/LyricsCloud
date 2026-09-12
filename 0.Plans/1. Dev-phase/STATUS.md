@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.2"
-current_phase: "../2.Patch-phase/1.1.2/3phase.md"
+current_phase: "../2.Patch-phase/1.1.2/4phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-13"
-next_action: "1.1.2 P2 후보 41db8ff에서 전체 CI 두 경로·네 dev image·동일 SHA 개발 공개 selected-write 인수 완료. P3에서 owner 권한 토글, writer 편집/상태, 회수 뒤 로컬 복구함과 두 사용자 PC·모바일 흐름을 구현한다"
+next_action: "1.1.2 P3 후보 f8f2dbd의 전체 CI 두 경로·네 dev image·동일 SHA 개발 공개 writer UI 인수 완료. P4에서 W⊆R·3계정·epoch 경합·offline/reconnect·서비스 재시작 회귀를 수행한다"
 ```
 
 ## 승인과 기준
@@ -126,13 +126,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.1 Release | complete | main/tag `d4c82b3`, main CI `34703250472`·tag CI `34704609566`, exact digest 운영 배포·공개 링크/회수/재시작 smoke·GitHub Release 완료 |
 | 1.1.2 P1 | complete | 기준 `d4c82b3`, active read grant의 write 상태·두 epoch·actor receipt·원자 ACK·rejected 복구함·presence/cursor·rollback 계약 승인 |
 | 1.1.2 P2 | complete | 후보 `41db8ff`, Actions `34710725889`·`34710727914`, 1120 schema·원자 actor/epoch ACK·rejected queue·네 dev image와 동일 SHA 공개 개발 인수 완료 |
-| 1.1.2 P3 | in_progress | owner 권한 토글·writer 편집/상태·회수 복구함·두 사용자 selection/IME/undo·PC/mobile 흐름 구현 |
+| 1.1.2 P3 | complete | 후보 `f8f2dbd`, Actions `34718575157`·`34718576675`, 실제 DB 8 PASS·5-browser 5 PASS·동일 SHA 공개 권한 토글/수렴/강등/재허용/회수 인수 완료 |
+| 1.1.2 P4 | in_progress | W⊆R·3계정 동시 한글·epoch 경합·관리 권한 차단·offline/reconnect·서비스 재시작 회귀 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.2/P3 | LC-NF-1.1.2-P3-01~07 | owner access UI·writer CodeMirror/상태·rejected 복구·selection/IME/undo·PC/mobile | 1.1.2 P2 `41db8ff` | 2026-09-13 | in_progress |
+| Codex | 1.1.2/P4 | LC-NF-1.1.2-P4-01~07 | W⊆R·3계정 동시 편집·epoch 경쟁·권한/복구·offline/reconnect·서비스 재시작 | 1.1.2 P3 `f8f2dbd` | 2026-09-13 | in_progress |
+| Codex | 1.1.2/P3 | LC-NF-1.1.2-P3-01~07 | owner access UI·writer CodeMirror/상태·rejected 복구·selection/IME/undo·PC/mobile | 1.1.2 P2 `41db8ff` | 2026-09-13 | complete |
 | Codex | 1.1.2/P2 | LC-NF-1.1.2-P2-01~07 | 1120 schema·W⊆R·actor/epoch 원자 update/ACK·local rejected queue·awareness 기반 | 1.1.2 P1, 기준 `d4c82b3` | 2026-09-13 | complete |
 | Codex | 1.1.2/P1 | LC-NF-1.1.2-P1-01~07 | selected write W⊆R·writer 경계·epoch/ACK/attribution·undo/복구·presence/cursor 계약 | v1.1.1 `d4c82b3` | 2026-09-13 | complete |
 | Codex | 1.1.1/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.1 P5 `f013154` | 2026-09-13 | complete |
@@ -221,6 +223,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.2 P3 후보 `f8f2dbda5ac8924f9a5c5b70fdcf48adcaf5ebba`는 owner read/write 토글, writer CodeMirror와 저장/연결 상태, actor/epoch durable outbox, 강등·회수 뒤 local-only rejected 복구함, 동시 한글·undo, 서버 인증 presence/selection·idle·중복 탭을 완성했다. 서버 snapshot보다 앞선 복원 cursor가 durable update 채널을 닫던 경계를 pending awareness로 보류하고 ACK 뒤 재전송하도록 수정했다. Node 24 check/build·Vitest 247 PASS/109 skip, 실제 PostgreSQL 8 PASS, 오프라인 desktop/mobile 6/6 반복, 5-browser 5 PASS와 관련 편집/동기화 34 PASS를 통과했다. Actions push `34718575157`과 PR `34718576675`의 전체 verify와 네 dev image 게시/서명을 통과했고 같은 SHA 개발 서버의 `1.1.2`·`dev`·`p3`, schema `1120_selected_lyric_write.sql`, 네 서비스 healthy를 확인했다. 공개 합성 owner/writer/stranger의 권한 토글·저장 수렴·강등·ACL 차단·재허용·회수·메모 격리가 PASS했고 fixture를 제거했다. 실제 물리 기기는 새로 실행하지 않았으며 P4가 W⊆R·3계정·epoch 경합·offline/reconnect·서비스 재시작 회귀를 담당한다.
 
 1.1.2 P2 후보 `41db8ff9385a329dc960695eb054acb7c617a8b9`는 1120 additive schema, active read 안의 owner-only write 전환, actor/epoch별 원자 update·receipt·commit ACK, 중복 ACK 복구, read 강등/회수와 local-only rejected 원문, server-auth presence/selection 기반을 완성했다. Node 24 관련 계약·실제 PostgreSQL·migration/rollback·security·전체 Vitest 351 PASS·4 조건부 skip, PWA 2 PASS와 5-browser selected-read 5 PASS를 통과했다. Actions push `34710725889`와 PR `34710727914`의 전체 verify, 네 dev image 게시/서명을 통과했고 같은 SHA 개발 서버의 `1.1.2`·`dev`·`p2`, schema `1120_selected_lyric_write.sql`, 네 서비스 healthy를 확인했다. 공개 합성 read 기본·owner write 승격·writer projection/discovery·read 강등·revoke·stranger 격리가 PASS했고 fixture를 제거했다. 실제 물리 기기는 새로 실행하지 않았으며 P3가 owner/writer UI·IME/undo·복구함을 담당한다.
 
