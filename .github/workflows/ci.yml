@@ -47,7 +47,7 @@ jobs:
       APP_VERSION: 1.1.0
       BUILD_ID: ${{ github.sha }}
       APP_CHANNEL: dev
-      APP_PHASE: p3
+      APP_PHASE: p4
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -196,6 +196,10 @@ jobs:
         env:
           E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
         run: pnpm test:e2e
+      - name: 1.1.0 selected-read sharing browser matrix
+        env:
+          E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
+        run: pnpm exec playwright test --config=playwright.release.config.ts tests/e2e/new-feature-1.1.0.spec.ts
       - name: Release candidate browser matrix
         env:
           E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test

@@ -9,7 +9,7 @@ test.describe("1.1.0 selected-account lyric sharing", () => {
   test.skip(!process.env.E2E_DATABASE_URL, "requires isolated E2E database");
 
   test("grants a selected reader, streams read-only updates, shows minimal presence and revokes access", async ({ browser }, info) => {
-    const mobile = info.project.name === "mobile";
+    const mobile = info.project.name.includes("mobile");
     const contextOptions = { baseURL: origin, viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 }, isMobile: mobile, hasTouch: mobile };
     const ownerContext = await browser.newContext(contextOptions);
     const readerContext = await browser.newContext(contextOptions);
@@ -26,6 +26,11 @@ test.describe("1.1.0 selected-account lyric sharing", () => {
         requestId: randomUUID(), title: "선택 공유 가사", body: "[Verse]\n공유 원문", memo: "소유자만 보는 비밀 메모"
       } });
       const lyricId = ((await lyricResponse.json()) as { lyric: { id: string } }).lyric.id;
+      const privateLyricResponse = await ownerContext.request.post(`/api/songs/${songId}/lyrics`, { headers, data: {
+        requestId: randomUUID(), title: "공유하지 않은 가사", body: "선택되지 않은 본문", memo: "선택되지 않은 메모"
+      } });
+      const privateLyricId = ((await privateLyricResponse.json()) as { lyric: { id: string } }).lyric.id;
+      expect((await readerContext.request.get(`/api/shared/lyrics/${lyricId}`)).status()).toBe(404);
 
       const anonymousContext = await browser.newContext(contextOptions);
       try {
@@ -48,6 +53,13 @@ test.describe("1.1.0 selected-account lyric sharing", () => {
       await expect(dialog.locator(".sharing-grants")).toContainText("선택 독자");
       await dialog.getByRole("button", { name: "닫기" }).click();
 
+      expect((await readerContext.request.get(`/api/shared/lyrics/${privateLyricId}`)).status()).toBe(404);
+      expect((await readerContext.request.get(`/api/lyrics/${lyricId}`)).status()).toBe(404);
+      expect((await readerContext.request.get(`/api/lyrics/${lyricId}/shares`)).status()).toBe(404);
+      const deniedDelete = await readerContext.request.delete(`/api/lyrics/${lyricId}`, { headers });
+      expect(deniedDelete.status()).toBe(200);
+      expect(await deniedDelete.json()).toEqual({ deleted: false });
+
       await readerPage.goto(`/shared/lyrics/${lyricId}`);
       await expect(readerPage.getByRole("heading", { name: "선택 공유 가사" })).toBeVisible();
       await expect(readerPage.getByLabel("공유된 가사 본문")).toContainText("공유 원문");
@@ -56,14 +68,24 @@ test.describe("1.1.0 selected-account lyric sharing", () => {
       await expect(readerPage.getByText("소유자만 보는 비밀 메모")).toHaveCount(0);
       await expect(readerPage.getByRole("button", { name: /수정|삭제|권한/ })).toHaveCount(0);
 
+      await visibleShareButton(ownerPage).click();
+      await expect(dialog.locator(".sharing-presence")).toContainText("선택 독자", { timeout: 10_000 });
+      await dialog.getByRole("button", { name: "닫기" }).click();
+
       const editor = ownerPage.getByLabel("가사 본문");
       await editor.click(); await ownerPage.keyboard.press("End"); await ownerPage.keyboard.type(" 갱신");
       await expect(readerPage.getByLabel("공유된 가사 본문")).toContainText("공유 원문 갱신", { timeout: 15_000 });
 
+      await readerContext.setOffline(true);
+      await expect(readerPage.getByRole("status")).toContainText("오프라인", { timeout: 10_000 });
+      await expect(readerPage.getByLabel("공유된 가사 본문")).toContainText("공유 원문 갱신");
+      await editor.click(); await ownerPage.keyboard.press("End"); await ownerPage.keyboard.type(" 비수신");
+      await expect(readerPage.getByLabel("공유된 가사 본문")).not.toContainText("비수신");
+
       await visibleShareButton(ownerPage).click();
-      await expect(dialog.locator(".sharing-presence")).toContainText("선택 독자", { timeout: 10_000 });
       await dialog.getByRole("button", { name: "권한 회수" }).click();
       await expect(dialog.getByRole("status")).toContainText("권한을 회수");
+      await readerContext.setOffline(false);
       await expect(readerPage.getByRole("heading", { name: "이 가사를 더 이상 열 수 없습니다" })).toBeVisible({ timeout: 10_000 });
       expect((await readerContext.request.get(`/api/shared/lyrics/${lyricId}`)).status()).toBe(404);
       expect((await strangerContext.request.get(`/api/shared/lyrics/${lyricId}`)).status()).toBe(404);
@@ -72,6 +94,7 @@ test.describe("1.1.0 selected-account lyric sharing", () => {
       await expect(strangerPage.getByRole("heading", { name: "공유 가사를 열 수 없습니다" })).toBeVisible();
       await expect(strangerPage.getByText("선택 공유 가사")).toHaveCount(0);
     } finally {
+      await readerContext.setOffline(false).catch(() => undefined);
       await Promise.all([ownerContext.close(), readerContext.close(), strangerContext.close()]);
       await removeAccounts([owner.userId, reader.userId, stranger.userId]);
     }

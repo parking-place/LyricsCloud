@@ -54,6 +54,8 @@ describe.runIf(enabled)("selected lyric read sharing", () => {
     expect(JSON.stringify(await sharing!.getSharedLyric(reader, lyric.id))).not.toContain("절대 비공개 메모");
     await expect(sharing!.getSharedLyric(stranger, lyric.id)).resolves.toBeNull();
     await expect(sharing!.getSharedLyric(reader, song.id)).resolves.toBeNull();
+    await expect(sharing!.listGrants(reader, lyric.id)).resolves.toBeNull();
+    await expect(sharing!.revokeRead(reader, lyric.id, first!.grant.id)).resolves.toBeNull();
 
     await expect(sharing!.grantRead(owner, lyric.id, readerSharingId, requestId)).resolves.toMatchObject({ replayed: true });
     await expect(sharing!.grantRead(owner, lyric.id, ownerSharingId, randomUUID())).resolves.toBeNull();

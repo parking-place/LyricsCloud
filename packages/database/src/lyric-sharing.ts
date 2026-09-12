@@ -173,7 +173,8 @@ export class PostgresLyricSharingStore {
 }
 
 async function ownsActiveLyric(client: PoolClient, resourceId: string): Promise<boolean> {
-  const result = await client.query("select 1 from resources where id=$1 and type='lyrics' and deleted_at is null", [resourceId]);
+  const result = await client.query(`select 1 from resources
+    where id=$1 and owner_id=app_current_user_id() and type='lyrics' and deleted_at is null`, [resourceId]);
   return result.rowCount === 1;
 }
 
