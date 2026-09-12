@@ -25,3 +25,5 @@
 1.0.14의 Noto Sans KR는 same-origin 정적 hash 자산이며 외부 CDN이나 원문 전송을 사용하지 않는다. 폰트 선택은 기존 owner-only 표시 설정·forced RLS·CAS를 재사용하고 `1004` migration은 허용값만 확장한다. OTF 실패는 system fallback으로 처리해 인증·저장·CRDT·copy를 우회하지 않는다. 공유 actor 권한은 추가하지 않았고 `OPS-NF-002` 승인 전 NO-GO다.
 
 1.1.0은 owner와 actor를 분리한 `1100_selected_lyric_sharing.sql` forced RLS와 자료별 read grant를 사용한다. sharing ID는 무작위 비열거 식별자이고 공개 응답에는 제한된 표시 이름만 포함한다. reader가 보는 필드는 지정 가사의 제목·본문·상태와 최소 presence이며 메모·연결 자료·다른 버전·revision·owner API는 차단한다. read socket의 write는 4403, 회수·만료·삭제와 다른 actor 접근은 일반화된 404/4404로 끝나며 permission epoch를 재검증한다. public link·guest·write는 1.1.0에서 비활성이다.
+
+1.1.1의 `1110_public_lyric_read_links.sql`은 256비트 raw capability의 SHA-256 digest만 저장하고 owner·resource·공개 필드·만료·회수 epoch를 묶는다. raw token은 URL fragment에서 즉시 탭 저장소로 옮기며 query·서버 로그·DB·HTML·OG·cache에 넣지 않는다. 공개 API는 same-origin 고정 POST와 IP rate limit, no-store/noindex/no-referrer를 사용하고 지정 필드 외 private API·revision·메모·export·presence·write를 기본 거부한다. 만료·rotation·회수는 열린 socket도 4404로 종료한다.

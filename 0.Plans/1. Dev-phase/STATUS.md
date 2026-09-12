@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.1"
 current_phase: "../2.Patch-phase/1.1.1/5phase.md"
-state: "in_progress"
+state: "review"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-13"
-next_action: "1.1.1 P4 후보 b920049의 전체 CI 두 run·네 개발 image·동일 SHA 공개 권한·offline/reconnect·restart·presence 인수 완료. P5 최종 문서·봉인·개발 인수를 수행한다"
+next_action: "1.1.1 P5 후보 f013154의 전체 CI 두 run·네 개발 image·동일 SHA 공개 인수 완료. 승인된 main·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke를 실행한다"
 ```
 
 ## 승인과 기준
@@ -122,13 +122,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.1 P2 | complete | 후보 `571398d`, Actions `34692185838`·`34692188575`, 1110 schema·digest-only capability·owner/public API·read-only WS와 동일 SHA 개발 인수 완료 |
 | 1.1.1 P3 | complete | 후보 `175fd74`, Actions `34695985847`·`34695987903`, 5-browser 10 PASS·네 dev image와 동일 SHA 공개 owner/mobile/live/revoke/empty 인수 완료 |
 | 1.1.1 P4 | complete | 후보 `b920049`, Actions `34697600730`·`34697608114`, 실제 DB·5-browser·동일 SHA 공개 restart/reconnect/revoke/private 격리 인수 완료 |
-| 1.1.1 P5 | in_progress | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·동일 SHA 개발 인수 수행 |
+| 1.1.1 P5 | complete | 후보 `f013154`, Actions `34701755594`·`34701763143`, 네 dev image·26 migration 봉인·동일 SHA 공개 재시작/회수 인수 완료 |
+| 1.1.1 Release | in_progress | 승인된 main/tag·정식 image·릴리스 서버 exact digest·공개 smoke·GitHub Release 실행 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.1/P5 | LC-NF-1.1.1-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.1 P4 `b920049` | 2026-09-13 | in_progress |
+| Codex | 1.1.1/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.1 P5 `f013154` | 2026-09-13 | in_progress |
+| Codex | 1.1.1/P5 | LC-NF-1.1.1-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.1 P4 `b920049` | 2026-09-13 | complete |
 | Codex | 1.1.1/P4 | LC-NF-1.1.1-P4-01~07 | AC 전체·revision/메모 차단·offline/reconnect·restart·public presence·지원 browser 회귀 | 1.1.1 P3 `175fd74` | 2026-09-12 | complete |
 | Codex | 1.1.1/P3 | LC-NF-1.1.1-P3-01~06 | owner 공개 링크 관리·비로그인 reader·fragment 제거·read-only live·PC/mobile E2E | 1.1.1 P2 `571398d` | 2026-09-12 | complete |
 | Codex | 1.1.1/P2 | LC-NF-1.1.1-P2-01~06 | 실패 계약·1110 schema·capability·owner/public API·read-only WS·cache/log 경계 | 1.1.1 P1, 기준 `068679d` | 2026-09-12 | complete |

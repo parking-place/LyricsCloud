@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.1.1] - 2026-09-13
+
+### Added
+
+- owner 확인 뒤 발급하는 256비트 공개 읽기 링크, 선택 필드와 1·7·30일 만료, 일회성 복사·교체·회수
+- 로그인 없는 PC/mobile 읽기 화면, fragment 즉시 제거와 탭 한정 capability 보관, read-only live update
+- `1110_public_lyric_read_links.sql` digest-only 저장·forced RLS·owner/public API·WebSocket 권한 경계
+
+### Security
+
+- 공개 링크는 workspace·메모·연결 자료·다른 가사·revision·export·ACL·presence·write 권한을 상속하지 않음
+- 만료·회수·rotation 때 열린 socket과 이후 요청을 차단하고 no-store/noindex/no-referrer·IP handshake 제한 유지
+- 실제 DB에서 token 비출력, public presence 비노출, collaboration 재시작 지속성, offline/reconnect·private API 거부 검증
+
+### Validation
+
+- P4 Actions `34697600730`·`34697608114`, 네 dev image, 실제 PostgreSQL 권한/복구 통합과 5-browser 공개 링크 행렬 PASS
+- 동일 SHA 개발 환경에서 owner 확인·fragment 제거·mobile 비로그인 읽기·live update·열린 탭 회수·빈 가사 최초 공개·서비스 재시작 PASS
+
+P5 전체 CI와 동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다. Known limitations: public write·guest identity·공동 cursor는 후속 버전 범위이고 실제 OS/물리 기기는 새로 실행하지 않았으며 `OPS-100-001` 외부 backup 예외를 유지한다.
+
 ## [1.1.0] - 2026-09-12
 
 ### Added
