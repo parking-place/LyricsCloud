@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.1"
-current_phase: "../2.Patch-phase/1.1.1/3phase.md"
+current_phase: "../2.Patch-phase/1.1.1/4phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.1.1 P2 후보 571398d의 전체 CI 두 run·네 개발 image·동일 SHA 공개 capability 인수 완료. P3 owner 공개 링크 UI와 비로그인 PC·모바일 reader 흐름을 구현한다"
+next_action: "1.1.1 P3 후보 175fd74의 전체 CI 두 run·네 개발 image·동일 SHA 공개 PC·mobile 사용자 흐름 인수 완료. P4 권한·offline/reconnect·restart·presence 교차 회귀를 수행한다"
 ```
 
 ## 승인과 기준
@@ -120,13 +120,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.0 Release | complete | main/tag `068679d`, main CI `34688148947`·tag CI `34689321743`, exact digest 운영 배포·공개 권한/재시작/오프라인 smoke·GitHub Release 완료 |
 | 1.1.1 P1 | complete | 기준 `068679d`, 256비트 fragment token·digest-only 저장·필드/만료/회수·fixed POST/WS·cache/noindex·호환/rollback 계약 승인 |
 | 1.1.1 P2 | complete | 후보 `571398d`, Actions `34692185838`·`34692188575`, 1110 schema·digest-only capability·owner/public API·read-only WS와 동일 SHA 개발 인수 완료 |
-| 1.1.1 P3 | in_progress | owner 공개 필드/만료/회수/복사 UI와 비로그인 PC·모바일 reader·실시간 읽기 흐름 구현 |
+| 1.1.1 P3 | complete | 후보 `175fd74`, Actions `34695985847`·`34695987903`, 5-browser 10 PASS·네 dev image와 동일 SHA 공개 owner/mobile/live/revoke/empty 인수 완료 |
+| 1.1.1 P4 | in_progress | 공개 capability의 권한·offline/reconnect·restart·presence·지원 브라우저 복구 회귀 수행 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.1/P3 | LC-NF-1.1.1-P3-01~06 | owner 공개 링크 관리·비로그인 reader·fragment 제거·read-only live·PC/mobile E2E | 1.1.1 P2 `571398d` | 2026-09-12 | in_progress |
+| Codex | 1.1.1/P4 | LC-NF-1.1.1-P4-01~07 | AC 전체·revision/메모 차단·offline/reconnect·restart·public presence·지원 browser 회귀 | 1.1.1 P3 `175fd74` | 2026-09-12 | in_progress |
+| Codex | 1.1.1/P3 | LC-NF-1.1.1-P3-01~06 | owner 공개 링크 관리·비로그인 reader·fragment 제거·read-only live·PC/mobile E2E | 1.1.1 P2 `571398d` | 2026-09-12 | complete |
 | Codex | 1.1.1/P2 | LC-NF-1.1.1-P2-01~06 | 실패 계약·1110 schema·capability·owner/public API·read-only WS·cache/log 경계 | 1.1.1 P1, 기준 `068679d` | 2026-09-12 | complete |
 | Codex | 1.1.1/P1 | LC-NF-1.1.1-P1-01~06 | public-link read capability·token·회수·cache/OG·호환/rollback·담당 경계 | v1.1.0 `068679d` | 2026-09-12 | complete |
 | Codex | 1.1.0/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.0 P5 `aa4d07f` | 2026-09-12 | complete |
