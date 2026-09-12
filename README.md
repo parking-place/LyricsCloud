@@ -11,7 +11,7 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 개인 창작용 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합과 온라인 우선 PWA를 지원한다.
 
-현재 운영 서버의 정식 릴리스는 `v1.0.12`이며 소스는 `1.0.14` Phase 5 후보다. 1.0.13은 공식 NAVER 세 언어 사전 제공·권리 경로가 없어 no-go로 종결했고, 1.0.14는 외부 사전과 독립적인 자체 호스팅 Noto Sans KR를 제공한다.
+현재 운영 서버의 정식 릴리스는 [`v1.0.14`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.0.14)다. 1.0.13은 공식 NAVER 세 언어 사전 제공·권리 경로가 없어 no-go로 종결했고, 1.0.14는 외부 사전과 독립적인 자체 호스팅 Noto Sans KR를 제공한다.
 
 ## 주요 기능
 
@@ -35,10 +35,10 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 | 항목 | 상태 |
 |---|---|
 | 소스·runtime version | `1.0.14` |
-| 현재 작업 | [1.0.14 Phase 5 — 고지·개발 인수·공유 진입](<./0.Plans/2.Patch-phase/1.0.14/5phase.md>) |
+| 현재 작업 | 1.0.14 P1~P5와 정식 릴리스 완료; 공유 1.1.0은 권한 모델 승인 전 NO-GO |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
-| 정식 릴리스 | `v1.0.12`, main/tag `b051d5d`, exact digest 운영 배포·공개 재시작/영속성 smoke 완료 |
-| 개발 인수 | 1.0.14 P1~P4 완료; P5 최종 봉인·동일 SHA 개발 인수 진행 |
+| 정식 릴리스 | `v1.0.14`, main/tag `d093ff2`, exact digest 운영 배포·공개 재시작/영속성 smoke 완료 |
+| 개발 인수 | 1.0.14 P1~P5 동일 SHA 개발 인수 완료 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.0.14는 Noto Sans KR Regular를 OFL 전문과 함께 자체 호스팅하고 계정/가사별 선택을 저장한다. 느린·차단·offline font에서도 system fallback과 저장을 유지한다. 1.0.13의 사전 tooltip은 공식 provider 계약 전까지 제공하지 않으며, 공유는 owner/actor 권한 모델 승인 전 NO-GO다.
@@ -115,4 +115,4 @@ LyricsCloud betacode refresh
 | `scripts/` | 검증·migration·배포 보조 명령 |
 | `0.Plans/` | 보호된 기획·목업·기술 결정과 Phase 상태 |
 
-Suno 자동 메타데이터·사전·공유·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있다. 현재 작업은 외부 사전 provider와 독립적인 1.0.14 자체 호스팅 폰트 범위다.
+Suno 자동 메타데이터·사전·공유·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있다. 1.0.14 자체 호스팅 폰트 범위는 정식 릴리스까지 완료됐고, 공유는 승인된 owner/actor 권한 모델 전까지 시작하지 않는다.

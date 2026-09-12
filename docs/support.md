@@ -1,4 +1,4 @@
-# LyricsCloud 1.0.14 후보 지원 정책
+# LyricsCloud 1.0.14 지원 정책
 
 ## 지원 환경
 
@@ -23,7 +23,7 @@
 
 1.0.1 P4 실제 Google 신규 가입, P5 Windows Chrome·Edge 한글 IME 저장·재진입, P6 light/dark 핵심 action, P7 로고·runtime metadata 인수는 완료됐다. 자동 브라우저와 사용자 실기기 결과는 서로 구분해 보존한다.
 
-1.0.3은 태그형/문장형 mode·raw 분리와 명시 변환·복원·구버전 capability 차단을 포함한 현재 정식 버전이다. 가입·저장·PWA 복구 순서는 [1.0.2 복구 안내](./runbooks/1.0.2-user-recovery.md)에 있다.
+1.0.3에서 태그형/문장형 mode·raw 분리와 명시 변환·복원·구버전 capability 차단을 도입했다. 가입·저장·PWA 복구 순서는 [1.0.2 복구 안내](./runbooks/1.0.2-user-recovery.md)에 있다.
 
 1.0.4 후보는 문장형 프롬프트를 ASCII 마침표 포함 lossless 구간으로 표시하고, 모든 최종 복사 경로에서 Unicode code point 1,000자 초과를 안내하되 복사를 막지 않는다. 실제 PostgreSQL, Chromium desktop/mobile 전수와 Chromium/Firefox/WebKit 기능 행렬, 동일 SHA 개발 collaboration 재시작을 통과했다. P5 전체 CI 전에는 정식 지원 버전이나 릴리스 서버 배포로 보지 않는다.
 
@@ -44,6 +44,8 @@
 1.0.13의 NAVER 세 언어 사전 tooltip은 공식 뜻풀이 API와 표시·캐시·재배포 권리를 확인하지 못해 제공하지 않는다. 백과사전 검색·scraping·비공식 endpoint로 대체하지 않으며, 정식 계약 확보 전 `NF-REQ-043`은 미완료다.
 
 1.0.14는 Noto Sans KR 2.004 Regular를 OFL 전문과 함께 same-origin으로 제공한다. Latin·한글 완성형/자모·Kana·포함된 Han/기호를 지원하며 누락 글리프·emoji는 system fallback을 사용한다. 설정과 가사별 선택, 세 편집기 원문/copy·slow/blocked/offline·200줄 저장/재진입은 자동·공개 환경에서 PASS했다. 실제 Windows 한글 IME·Android/iOS 키보드에서의 1.0.14 폰트 전환과 물리 저사양 기기는 미실행이다. 글자가 비면 `시스템 기본`으로 전환하고 [폰트 문제 해결](./third-party-fonts.md)을 따른다.
+
+정식 main/tag `d093ff2`, main CI `34660678199`, tag CI `34662523402`, 네 exact digest 운영 배포를 완료했다. 공개 HTTPS에서 저장·재진입, owner 격리, font hash/cache와 서비스 재시작 지속성이 PASS했다. 기존 DB volume·secret·HMAC allowlist는 보존했으며 외부 backup은 `OPS-100-001` 승인 예외로 여전히 미구축이다.
 
 미해결 P0/P1은 0건이다. 저장 수렴 실패, 다른 사용자의 자료 노출, 인증 우회, 핵심 모바일 불능, 복구 불가능 증거가 생기면 즉시 P0/P1으로 재분류하고 배포를 중단한다.
 
