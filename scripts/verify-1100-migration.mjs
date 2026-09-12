@@ -10,6 +10,8 @@ const databaseName = `lyricscloud_1100_${randomUUID().replaceAll("-", "")}`;
 const url = new URL(source); url.pathname = `/${databaseName}`;
 const admin = new Pool({ connectionString: source.href, max: 1 });
 const rollback = await readFile("packages/database/rollback/1100_selected_lyric_sharing.sql", "utf8");
+const publicLinkRollback = await readFile("packages/database/rollback/1110_public_lyric_read_links.sql", "utf8");
+const selectedWriterRollback = await readFile("packages/database/rollback/1120_selected_lyric_write.sql", "utf8");
 
 try {
   await admin.query(`create database "${databaseName}"`);
@@ -35,6 +37,8 @@ try {
     await asUser(target, owner, (client) => client.query("update lyric_read_grants set state='revoked',permission_epoch=permission_epoch+1,revoked_at=now() where id=$1", [grant]));
     assert.equal((await asUser(target, reader, (client) => client.query("select body from lyrics where resource_id=$1", [lyric]))).rowCount, 0);
 
+    await target.query(selectedWriterRollback);
+    await target.query(publicLinkRollback);
     await target.query(rollback);
     assert.equal((await target.query("select exists(select 1 from information_schema.columns where table_name='user_profiles' and column_name='sharing_id') present")).rows[0].present, false);
     assert.equal((await target.query("select to_regclass('public.lyric_read_grants') present")).rows[0].present, null);
