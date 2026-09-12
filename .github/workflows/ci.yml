@@ -202,6 +202,10 @@ jobs:
         env:
           E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
         run: pnpm exec playwright test --config=playwright.release.config.ts tests/e2e/new-feature-1.1.0.spec.ts
+      - name: 1.1.1 public-link sharing browser matrix
+        env:
+          E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
+        run: pnpm exec playwright test --config=playwright.release.config.ts tests/e2e/new-feature-1.1.1.spec.ts
       - name: Release candidate browser matrix
         env:
           E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test

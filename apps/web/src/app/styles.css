@@ -174,7 +174,7 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .sharing-mode { display: flex; align-items: center; gap: .7rem; padding: .8rem; border: 1px solid var(--line); border-radius: .65rem; background: var(--surface); }
 .sharing-mode span { padding: .3rem .55rem; border-radius: 999px; color: var(--acid-ink); background: var(--acid); font-size: .72rem; font-weight: 850; }
 .sharing-mode span.private { color: var(--muted); background: var(--surface-raised); }
-.sharing-preview, .sharing-identity, .sharing-grants, .sharing-presence { display: grid; gap: .75rem; padding: 1rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--surface); }
+.sharing-preview, .sharing-identity, .sharing-grants, .sharing-presence, .sharing-public { display: grid; gap: .75rem; padding: 1rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--surface); }
 .sharing-preview dl { display: grid; gap: .5rem; margin: 0; }
 .sharing-preview dl > div { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: .7rem; }
 .sharing-preview dt { color: var(--subtle); font-size: .72rem; font-weight: 750; }
@@ -194,6 +194,27 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .sharing-presence li > span, .shared-viewers li > span, .shared-live-state > span { width: .48rem; height: .48rem; flex: none; border-radius: 50%; background: var(--acid); }
 .sharing-presence li small, .shared-viewers li small { margin-left: auto; }
 .sharing-notice, .sharing-loading { margin: 0; padding: .7rem .8rem; border-radius: .55rem; color: var(--ink); background: var(--surface-raised); }
+.sharing-public > div:first-child, .sharing-public-confirm > div, .public-shared-lyric > header, .public-shared-lyric > footer { display: flex; align-items: flex-start; justify-content: space-between; gap: .8rem; }
+.sharing-public > div:first-child > div { display: grid; gap: .2rem; }
+.sharing-public h3, .sharing-public p { margin: 0; }
+.sharing-public > p, .sharing-public-active span, .sharing-public-once p, .sharing-public-confirm > p { color: var(--muted); font-size: .78rem; line-height: 1.55; }
+.sharing-public > div:first-child > span { padding: .3rem .55rem; border-radius: 999px; color: var(--muted); background: var(--surface-raised); font-size: .72rem; font-weight: 850; }
+.sharing-public > div:first-child > span.public-active { color: var(--acid-ink); background: var(--acid); }
+.sharing-public-active, .sharing-public-once, .sharing-public-confirm { display: grid; gap: .65rem; padding: .8rem; border: 1px solid var(--line); border-radius: .55rem; background: var(--panel); }
+.sharing-public-active button { justify-self: start; }
+.sharing-public-once { border-color: var(--acid); }
+.sharing-public-once button { justify-self: start; }
+.sharing-public-confirm label { display: grid; gap: .3rem; color: var(--muted); font-size: .75rem; font-weight: 750; }
+.sharing-public-confirm select { min-height: 2.55rem; padding: .5rem .6rem; border: 1px solid var(--line); border-radius: .5rem; color: var(--ink); background: var(--surface); }
+.sharing-public-confirm fieldset { display: flex; flex-wrap: wrap; gap: .7rem 1rem; padding: .75rem; border: 1px solid var(--line); border-radius: .5rem; }
+.sharing-public-confirm legend { padding: 0 .3rem; color: var(--muted); font-size: .72rem; font-weight: 750; }
+.sharing-public-confirm fieldset label { display: flex; align-items: center; gap: .35rem; color: var(--ink); font-weight: 600; }
+.public-shared-lyric { display: grid; gap: 1rem; }
+.public-shared-lyric h1 { margin: .35rem 0 .55rem; font-size: clamp(2rem, 6vw, 4.25rem); letter-spacing: -.055em; overflow-wrap: anywhere; }
+.public-shared-lyric header p:last-child, .public-shared-lyric footer span, .public-shared-lyric footer small { color: var(--muted); }
+.public-shared-lyric footer > div { display: grid; gap: .2rem; }
+.public-shared-lyric footer button { min-height: 2.5rem; padding: .5rem .75rem; border: 1px solid var(--line); border-radius: .5rem; color: var(--ink); background: var(--surface); cursor: pointer; }
+.public-share-unavailable { text-align: center; }
 
 .shared-lyric-page { width: min(100% - 2rem, 64rem); display: grid; gap: 1rem; padding: clamp(1rem, 3vw, 2.5rem); margin: 0 auto; }
 .shared-lyric-header { padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
@@ -224,6 +245,7 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
   .sharing-identity { display: grid; }
   .sharing-identity > div:last-child { min-width: 0; }
   .sharing-identity code { min-width: 0; }
+  .public-shared-lyric > header, .public-shared-lyric > footer { display: grid; }
   .shared-lyric-page { width: 100%; padding: 1rem .75rem 6rem; }
   .shared-lyric-header, .shared-lyric-footer { display: grid; }
   .shared-read-badge { width: 100%; }

@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { isResourceId, type LyricStatus } from "@lyricscloud/domain";
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
+import * as Y from "yjs";
 import { createDatabasePool } from "./pool.js";
 
 export interface PublicLinkFields {
@@ -83,6 +84,8 @@ export class PostgresPublicLyricSharingStore {
         return link ? { link, replayed: true } : null;
       }
       if (!await ownsActiveLyric(client, resourceId)) return null;
+      await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [resourceId]);
+      if (!await ensurePublicLyricDocument(client, ownerId, resourceId)) return null;
       await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [`public-link:${resourceId}`]);
       const previousEpoch = Number((await client.query<{ epoch: string }>(
         "select coalesce(max(permission_epoch),0)::text epoch from lyric_public_read_links where resource_id=$1",
@@ -154,6 +157,23 @@ export class PostgresPublicLyricSharingStore {
 async function ownsActiveLyric(client: PoolClient, resourceId: string): Promise<boolean> {
   return (await client.query(`select 1 from resources where id=$1 and owner_id=app_current_user_id()
     and type='lyrics' and deleted_at is null`, [resourceId])).rowCount === 1;
+}
+
+async function ensurePublicLyricDocument(client: PoolClient, ownerId: string, resourceId: string): Promise<boolean> {
+  if ((await client.query("select 1 from sync_documents where resource_id=$1 and owner_id=$2", [resourceId, ownerId])).rowCount) return true;
+  const source = (await client.query<{ body: string }>(`select l.body from lyrics l
+    join resources r on r.id=l.resource_id and r.owner_id=l.owner_id
+    where r.id=$1 and r.owner_id=$2 and r.type='lyrics' and r.deleted_at is null for update of r`, [resourceId, ownerId])).rows[0];
+  if (!source) return false;
+  const body = source.body.replace(/\r\n?/g, "\n");
+  const document = new Y.Doc();
+  if (body) document.getText("body").insert(0, body);
+  try {
+    await client.query(`insert into sync_documents(resource_id,owner_id,resource_type,snapshot,projected_at,revision_body_sha256)
+      values($1,$2,'lyrics',$3,statement_timestamp(),$4)`, [resourceId, ownerId,
+      Buffer.from(Y.encodeStateAsUpdate(document)), createHash("sha256").update(body).digest("hex")]);
+    return true;
+  } finally { document.destroy(); }
 }
 
 async function selectLink(client: PoolClient, id: string): Promise<PublicLyricLink | null> {
