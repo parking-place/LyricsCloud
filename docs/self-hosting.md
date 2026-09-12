@@ -1,4 +1,4 @@
-# LyricsCloud 1.1.0 정식·1.1.1 후보 셀프호스팅
+# LyricsCloud 1.1.1 정식·1.1.2 후보 셀프호스팅
 
 이 문서는 새 Linux 호스트 한 대에 단일 web replica, PostgreSQL 18, collaboration, worker를 Docker Compose로 실행하는 지원 경로다. 다중 web replica는 현재 메모리 기반 rate limiter와 실시간 presence를 공유하지 않으므로 지원 범위가 아니다.
 
@@ -11,18 +11,18 @@
 
 ## 1. 고정 source와 환경 준비
 
-현재 정식 설치 기준은 불변 `v1.1.0` tag다. 1.1.1 후보 검토는 승인된 전체 40자리 commit SHA만 사용한다. moving alias나 branch 이름을 운영 checkout 기준으로 쓰지 않는다.
+현재 정식 설치 기준은 불변 `v1.1.1` tag다. 1.1.2 후보 검토는 승인된 전체 40자리 commit SHA만 사용한다. moving alias나 branch 이름을 운영 checkout 기준으로 쓰지 않는다.
 
 ```bash
 git clone https://github.com/parking-place/LyricsCloud.git
 cd LyricsCloud
-APPROVED_REF=v1.1.0
+APPROVED_REF=v1.1.1
 git checkout --detach "$APPROVED_REF"
 cp .env.example .env
 cp .test_users.example .test_users
 ```
 
-`.env`의 모든 `CHANGE_ME`를 바꾼다. `NODE_ENV=production`, `APP_VERSION=1.1.0`, `BUILD_ID=068679d3542a15a7c1f486d95dbe3b6e9b8270a3`, `APP_CHANNEL=release`, `APP_ORIGIN=https://<호스트>`로 설정하고 release에서는 `APP_PHASE`를 비운다. 개발 후보만 `APP_CHANNEL=dev`, `APP_PHASE=p<N>`을 사용한다. `DATABASE_URL`의 사용자·비밀번호·DB명은 같은 파일의 PostgreSQL 값과 일치해야 한다. `SESSION_SECRET`은 32바이트 이상의 무작위 값이어야 한다. 실제 값은 채팅·Issue·Git·image build argument에 넣지 않는다.
+`.env`의 모든 `CHANGE_ME`를 바꾼다. `NODE_ENV=production`, `APP_VERSION=1.1.1`, `BUILD_ID=d4c82b30fb54e2a50b92b167c017aa44f7e6bbd6`, `APP_CHANNEL=release`, `APP_ORIGIN=https://<호스트>`로 설정하고 release에서는 `APP_PHASE`를 비운다. 개발 후보만 `APP_CHANNEL=dev`, `APP_PHASE=p<N>`을 사용한다. `DATABASE_URL`의 사용자·비밀번호·DB명은 같은 파일의 PostgreSQL 값과 일치해야 한다. `SESSION_SECRET`은 32바이트 이상의 무작위 값이어야 한다. 실제 값은 채팅·Issue·Git·image build argument에 넣지 않는다.
 
 `.test_users`에 허용할 Google 이메일을 한 줄에 하나씩 적은 뒤, 릴리스 환경 전용 keyring과 암호화 rollback key를 만들고 HMAC JSONL로 전환한다. 아래 backup 경로는 새 파일이어야 하며 기존 파일을 덮어쓰지 않는다.
 
@@ -44,7 +44,7 @@ git check-ignore -v .env .test_users .private/runtime/auth_allowed_emails .priva
 
 환경별 keyring은 공유하지 않는다. HMAC은 익명화가 아니며 rollback backup은 기존 계정 로그인과 복원을 검증한 뒤 정한 보존 기한까지 별도 보호한다. 자세한 회전·복원 절차는 [P3 운영 인수](./runbooks/1.0.1-phase3-hmac-allowlist.md)를 따른다.
 
-정식 환경 이름·형식의 기준은 봉인된 [1.1.0 environment schema](../config/environment-schema.1.1.0.json)다. 1.1.1 후보는 [1.1.1 environment schema](../config/environment-schema.1.1.1.json)에서 `APP_VERSION=1.1.1`, `APP_CHANNEL=dev`, `APP_PHASE=p5`, `BUILD_ID=<후보 SHA>`로 검증한다. Google 설정은 아래 OAuth 절차를 먼저 마친다. 릴리스 적용 전에는 해당 tag에 포함된 schema로 web·collaboration·worker·migrate·admin 설정을 각각 검사한다.
+정식 환경 이름·형식의 기준은 봉인된 [1.1.1 environment schema](../config/environment-schema.1.1.1.json)다. 1.1.2 후보는 [1.1.2 environment schema](../config/environment-schema.1.1.2.json)에서 `APP_VERSION=1.1.2`, `APP_CHANNEL=dev`, `APP_PHASE=p5`, `BUILD_ID=<후보 SHA>`로 검증한다. Google 설정은 아래 OAuth 절차를 먼저 마친다. 릴리스 적용 전에는 해당 tag에 포함된 schema로 web·collaboration·worker·migrate·admin 설정을 각각 검사한다.
 
 ## 2. 구성 검사, 기동과 health
 
@@ -56,7 +56,7 @@ curl --fail --silent http://127.0.0.1:8080/api/health/live
 curl --fail --silent http://127.0.0.1:8080/api/health/ready
 ```
 
-두 endpoint는 200이어야 하고 1.1.0 ready 응답의 `version`, `build.id`, `channel`, `phase`, `database.latestMigration`은 각각 `1.1.0`, `068679d3542a15a7c1f486d95dbe3b6e9b8270a3`, `release`, `null`, `1100_selected_lyric_sharing.sql`이어야 한다. 1.1.1 후보는 `1.1.1`, 후보 SHA, `dev`, `p5`, `1110_public_lyric_read_links.sql`이어야 한다. `/api/health/metrics` 같은 공개 metrics 경로는 제공하지 않는다. 보호 API는 비로그인 요청을 거부해야 한다. reverse proxy는 hash OTF cache header와 `/collaboration/*`의 HTTP·WebSocket upgrade, origin·cookie 전달을 보존한다.
+두 endpoint는 200이어야 하고 1.1.1 ready 응답의 `version`, `build.id`, `channel`, `phase`, `database.latestMigration`은 각각 `1.1.1`, `d4c82b30fb54e2a50b92b167c017aa44f7e6bbd6`, `release`, `null`, `1110_public_lyric_read_links.sql`이어야 한다. 1.1.2 후보는 `1.1.2`, 후보 SHA, `dev`, `p5`, `1120_selected_lyric_write.sql`이어야 한다. `/api/health/metrics` 같은 공개 metrics 경로는 제공하지 않는다. 보호 API는 비로그인 요청을 거부해야 한다. reverse proxy는 hash OTF cache header와 `/collaboration/*`의 HTTP·WebSocket upgrade, origin·cookie 전달을 보존한다.
 
 `docker compose down`은 컨테이너만 내리고 DB volume을 보존한다. `docker compose down --volumes`는 운영·개발 자료를 영구 삭제하므로 이 문서의 정상 운영 명령이 아니다.
 
