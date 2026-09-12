@@ -19,7 +19,7 @@
 - P4 Actions `34697600730`·`34697608114`, 네 dev image, 실제 PostgreSQL 권한/복구 통합과 5-browser 공개 링크 행렬 PASS
 - 동일 SHA 개발 환경에서 owner 확인·fragment 제거·mobile 비로그인 읽기·live update·열린 탭 회수·빈 가사 최초 공개·서비스 재시작 PASS
 
-P5 전체 CI와 동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다. Known limitations: public write·guest identity·공동 cursor는 후속 버전 범위이고 실제 OS/물리 기기는 새로 실행하지 않았으며 `OPS-100-001` 외부 backup 예외를 유지한다.
+P5 CI `34701755594`·`34701763143`, main CI `34703250472`, tag CI `34704609566`과 동일 SHA 개발/운영 공개 인수를 통과했다. main/annotated tag `d4c82b3`의 정식 네 image를 exact digest로 배포하고 GitHub Release를 공개했다. Known limitations: public write·guest identity·공동 cursor는 후속 버전 범위이고 실제 OS/물리 기기는 새로 실행하지 않았으며 `OPS-100-001` 외부 backup 예외를 유지한다.
 
 ## [1.1.0] - 2026-09-12
 
