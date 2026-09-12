@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.1.2] - 2026-09-13
+
+### Added
+
+- 활성 selected-read grant 안의 지정 사용자에게만 허용하는 가사 본문 공동 편집과 owner 전용 쓰기 토글
+- 서버가 확인한 writer cursor·online/idle presence, 두 writer의 CRDT 수렴과 계정·actor·자료·grant·epoch별 거부 원문 복구함
+- `1120_selected_lyric_write.sql`의 write 상태·별도 epoch·actor update receipt/audit와 중복 ACK
+
+### Security and recovery
+
+- W⊆R을 활성 read grant로 구조화하고 writer의 ACL·메타데이터·revision·삭제·소유권·계정 관리 권한을 기본 거부
+- 강등 뒤 읽기는 유지하되 새 쓰기·cursor는 중단하고, 회수는 열린 연결과 재접속을 차단
+- 거부 원문은 브라우저에 보존하되 재허용 뒤 자동 replay하지 않고 public reader에는 identity presence를 노출하지 않음
+
+### Validation
+
+- P4 Actions `34721549799`·`34721572892`, Vitest 353 PASS·4 skip, 전체 E2E 347 PASS·38 skip, selected-write 5-browser 5/5 PASS
+- 동일 SHA 개발 환경에서 3계정 live 수렴·writer 강등/회수·offline rejected 복구·재허용 비자동 적용·메모 격리·서비스 재시작 PASS
+
+P5 전체 CI와 동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다. Known limitations: public-link write·guest identity는 후속 버전 범위이고 실제 OS/물리 기기는 새로 실행하지 않았으며 `OPS-100-001` 외부 backup 예외를 유지한다.
+
 ## [1.1.1] - 2026-09-13
 
 ### Added

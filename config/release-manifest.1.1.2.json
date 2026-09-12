@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "lyricscloud.release-manifest.v1",
+  "releaseVersion": "1.1.2",
+  "releaseChannel": "release",
+  "productionAuthorized": true,
+  "source": {
+    "repository": "https://github.com/parking-place/LyricsCloud",
+    "commit": "$GIT_SHA",
+    "lockfile": "pnpm-lock.yaml",
+    "lockfileSha256": "15207c0dde9080119fce4a60574ca1b42ecfc3c33eaea64eac184546f7f52e44",
+    "builtAt": "$BUILT_AT",
+    "sourceDateEpoch": "$SOURCE_DATE_EPOCH"
+  },
+  "artifactPolicy": {
+    "registry": "Docker Hub",
+    "platform": "linux/amd64",
+    "deployByDigestOnly": true,
+    "signature": "Sigstore keyless GitHub Actions OIDC",
+    "certificateIssuer": "https://token.actions.githubusercontent.com",
+    "certificateIdentity": "https://github.com/parking-place/LyricsCloud/.github/workflows/ci.yml@$GIT_REF",
+    "provenance": "SLSA BuildKit mode=max",
+    "sbom": "BuildKit SPDX attestation",
+    "ciRun": "$CI_RUN"
+  },
+  "images": {
+    "web": { "repository": "parkingplace/lyricscloud-web", "digest": "$WEB_DIGEST", "dockerfile": "infra/docker/Dockerfile.web", "target": "runtime", "user": "65532", "health": "/api/health/ready" },
+    "collaboration": { "repository": "parkingplace/lyricscloud-collaboration", "digest": "$COLLABORATION_DIGEST", "dockerfile": "infra/docker/Dockerfile.service", "target": "collaboration", "user": "65532", "health": "/health/ready" },
+    "worker": { "repository": "parkingplace/lyricscloud-worker", "digest": "$WORKER_DIGEST", "dockerfile": "infra/docker/Dockerfile.service", "target": "worker", "user": "65532", "health": "/health/ready" },
+    "migrate": { "repository": "parkingplace/lyricscloud-migrate", "digest": "$MIGRATE_DIGEST", "dockerfile": "infra/docker/Dockerfile.service", "target": "migrate", "user": "65532", "health": "one-shot exit 0" }
+  },
+  "attestations": {
+    "signatureVerified": true,
+    "provenanceVerified": true,
+    "sbomAttached": true,
+    "dependencyAudit": "no high-or-critical blocker",
+    "containerScan": "no fixable high-or-critical blocker",
+    "secretScan": "no finding"
+  },
+  "database": {
+    "manifest": "config/migrations.1.1.2.json",
+    "manifestSha256": "efdbb27b0bbc5578aa2f3dd934355ff976b397a0dd96aded66db93629cba022c",
+    "applyOrder": ["migrate", "collaboration", "worker", "web"],
+    "requiredLatestSchema": "1120_selected_lyric_write.sql"
+  },
+  "environment": {
+    "schema": "config/environment-schema.1.1.2.json",
+    "schemaSha256": "f00c485ce53dd27a9b803a6ef581d6e4b05521887ee697d273213f45de66aafe"
+  },
+  "licenses": {
+    "inventory": "config/licenses.1.1.2.json",
+    "inventorySha256": "7957a14d7e4e0f26dbe99b56b9fb8c2899af1134b90a60efb0c3504da969fba6",
+    "unknownOrBlocked": 0
+  },
+  "persistentBoundaries": {
+    "postgres": "named volume or explicit host mount at /var/lib/postgresql",
+    "backup": "external mount at /backup/repository, distinct from checkout and PostgreSQL",
+    "applicationImages": "stateless read-only root filesystem with tmpfs /tmp"
+  },
+  "approval": {
+    "technicalGate": "pending final tag CI",
+    "approvedDigests": ["web", "collaboration", "worker", "migrate"],
+    "productionDeployment": "explicitly authorized by the user for 1.1.2 after Phase 5 completion",
+    "backupException": "OPS-100-001 remains open by explicit user exception"
+  }
+}

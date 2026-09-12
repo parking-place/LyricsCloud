@@ -37,3 +37,4 @@
 - [`1.0.14 자체 호스팅 웹폰트 최종 추적`](./1.0.14-FINAL-TRACEABILITY.md)
 - [`1.1.0 지정 사용자 읽기 공유 최종 추적`](./1.1.0-FINAL-TRACEABILITY.md)
 - [`1.1.1 공개 링크 읽기 최종 추적`](./1.1.1-FINAL-TRACEABILITY.md)
+- [`1.1.2 지정 사용자 공동 편집 최종 추적`](./1.1.2-FINAL-TRACEABILITY.md)
