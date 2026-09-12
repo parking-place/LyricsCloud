@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage } from "node:http";
 import { readRuntimeConfig } from "@lyricscloud/config";
 import { checkDatabase, DatabaseHealthError, PostgresAuthStore } from "@lyricscloud/database";
@@ -16,6 +16,7 @@ const documents = new CollaborationStore(config.databaseUrl);
 const telemetry = observabilityFromEnvironment("collaboration");
 const sockets = new Map<string, Set<WebSocket>>();
 const contexts = new WeakMap<WebSocket, ConnectionContext>();
+const alive = new WeakMap<WebSocket, boolean>();
 const projectionRetry = setInterval(async () => {
   const result = await documents.retryPendingProjections().catch(() => ({ attempted: 0, recovered: 0 }));
   if (result.attempted) telemetry.record({ signal: "metric", event: "sync_projection_retry",
@@ -33,8 +34,15 @@ const projectionRetry = setInterval(async () => {
 projectionRetry.unref();
 const reauthenticate = setInterval(() => {
   for (const peers of sockets.values()) for (const peer of peers) void authorized(peer, true);
-}, 5 * 60_000);
+}, 1_000);
 reauthenticate.unref();
+const heartbeat = setInterval(() => {
+  for (const peers of sockets.values()) for (const peer of peers) {
+    if (!alive.get(peer)) peer.terminate();
+    else { alive.set(peer, false); peer.ping(); }
+  }
+}, 30_000);
+heartbeat.unref();
 let maintainingRevisions = false;
 const revisionMaintenance = setInterval(async () => {
   if (maintainingRevisions) return;
@@ -78,6 +86,15 @@ const server = createServer(async (request, response) => {
     const document = await documents.ensureDocument(session.userId, documentRequest[1]!, capability);
     if (!document) return unavailable(response, 404, requestId);
     return response.end(JSON.stringify({ documentKey: document.document_key }));
+  }
+  const sharedDocumentRequest = request.method === "GET" && request.url?.match(/^\/shared-documents\/([0-9a-f-]{36})$/i);
+  if (sharedDocumentRequest) {
+    const session = await authenticate(request);
+    if (!session) return unavailable(response, 401, requestId);
+    const document = await documents.findSharedDocument(session.userId, sharedDocumentRequest[1]!);
+    if (!document || document.access.accessMode !== "read") return unavailable(response, 404, requestId);
+    return response.end(JSON.stringify({ documentKey: document.documentKey,
+      permissionEpoch: document.access.permissionEpoch }));
   }
   const revisionRequest = request.url?.match(/^\/documents\/([0-9a-f-]{36})\/revisions(?:\/([0-9a-f-]{36})(\/restore)?)?$/i);
   if (revisionRequest) {
@@ -132,7 +149,7 @@ server.on("upgrade", async (request, socket, head) => {
     const requestUrl = new URL(request.url ?? "/", "http://collaboration.local");
     const match = request.headers.origin === appOrigin && requestUrl.pathname.match(/^\/sync\/([0-9a-f-]{36})$/i);
     const session = match ? await authenticate(request) : null;
-    const loaded = match && session ? await documents.loadDocument(session.userId, match[1]!) : null;
+    const loaded = match && session ? await documents.loadDocumentForActor(session.userId, match[1]!) : null;
     const capable = requestUrl.searchParams.get("capability") === "prompt-mode-v1";
     if (!match || !session || !loaded || (loaded.resourceType === "prompt" && loaded.promptMode === "sentence" && !capable)) {
       const status = loaded?.resourceType === "prompt" && loaded.promptMode === "sentence" && !capable ? "409 Conflict" : "404 Not Found";
@@ -141,7 +158,9 @@ server.on("upgrade", async (request, socket, head) => {
       return;
     }
     websocket.handleUpgrade(request, socket, head, (client) => {
-      contexts.set(client, { documentKey: match[1]!, ownerId: session.userId, request, promptModeCapable: capable });
+      contexts.set(client, { documentKey: match[1]!, actorId: session.userId, ownerId: loaded.access.ownerId,
+        accessMode: loaded.access.accessMode, permissionEpoch: loaded.access.permissionEpoch,
+        displayName: loaded.access.displayName, participantId: randomUUID(), request, promptModeCapable: capable });
       websocket.emit("connection", client, request);
     });
   } catch {
@@ -153,23 +172,30 @@ server.on("upgrade", async (request, socket, head) => {
 websocket.on("connection", (client, request) => {
   const context = contexts.get(client);
   if (!context) return closeUnavailable(client);
+  alive.set(client, true);
+  client.on("pong", () => alive.set(client, true));
   const peers = sockets.get(context.documentKey) ?? new Set<WebSocket>();
   peers.add(client);
   sockets.set(context.documentKey, peers);
   // Join broadcasts first, then take a consistent snapshot so an update during
   // the HTTP upgrade cannot fall between the snapshot and the subscription.
-  void documents.loadDocument(context.ownerId, context.documentKey).then((loaded) => {
+  void documents.loadDocumentForActor(context.actorId, context.documentKey).then((loaded) => {
     if (!loaded) return closeUnavailable(client);
     if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({ type: "snapshot",
-      payload: Buffer.from(merge(loaded.snapshot, loaded.updates)).toString("base64"), projection: loaded.projectionPending ? "pending" : "current" }));
+      payload: Buffer.from(merge(loaded.snapshot, loaded.updates)).toString("base64"),
+      access: context.accessMode, permissionEpoch: context.permissionEpoch,
+      projection: loaded.projectionPending ? "pending" : "current" }));
+    void broadcastPresence(context.documentKey);
   }).catch(() => client.close(1013, "SYNC_TEMPORARILY_UNAVAILABLE"));
   client.on("message", async (raw, binary) => {
     if (binary) return closeProtocol(client, "SYNC_UPDATE_INVALID");
     try {
       const session = await authenticate(request);
-      if (!session || session.userId !== context.ownerId) return closeUnavailable(client);
-      const current = await documents.loadDocument(session.userId, context.documentKey);
+      if (!session || session.userId !== context.actorId) return closeUnavailable(client);
+      const current = await documents.loadDocumentForActor(session.userId, context.documentKey);
       if (!current) return closeUnavailable(client);
+      if (current.access.accessMode !== context.accessMode || current.access.permissionEpoch !== context.permissionEpoch) return closeUnavailable(client);
+      if (context.accessMode !== "owner") return client.close(4403, "SYNC_WRITE_FORBIDDEN");
       if (current.resourceType === "prompt" && current.promptMode === "sentence" && !context.promptModeCapable) {
         return client.close(4409, "PROMPT_MODE_CAPABILITY_REQUIRED");
       }
@@ -177,7 +203,7 @@ websocket.on("connection", (client, request) => {
       if (input.type !== "update" || typeof input.payload !== "string") throw new Error("SYNC_UPDATE_INVALID");
       const payload = Buffer.from(input.payload, "base64");
       const envelope = parseSyncUpdateEnvelope({ updateId: input.updateId, payload: new Uint8Array(payload) });
-      const result = await documents.applyUpdate(session.userId, context.documentKey, envelope.updateId, envelope.payload);
+      const result = await documents.applyUpdate(context.ownerId, context.documentKey, envelope.updateId, envelope.payload);
       if (!result) return closeUnavailable(client);
       client.send(JSON.stringify({ type: "ack", updateId: envelope.updateId, duplicate: result.duplicate,
         projection: result.projectionPending ? "pending" : "current" }));
@@ -195,6 +221,7 @@ websocket.on("connection", (client, request) => {
   client.on("close", () => {
     peers.delete(client);
     if (peers.size === 0) sockets.delete(context.documentKey);
+    else void broadcastPresence(context.documentKey);
   });
 });
 
@@ -204,19 +231,33 @@ server.listen(port, "0.0.0.0", () => telemetry.record({ signal: "log", event: "s
 for (const signal of ["SIGINT", "SIGTERM"] as const) process.on(signal, () => {
   clearInterval(projectionRetry);
   clearInterval(reauthenticate);
+  clearInterval(heartbeat);
   clearInterval(revisionMaintenance);
   for (const peers of sockets.values()) for (const peer of peers) peer.close(1012, "SYNC_RESTARTING");
   server.close(async () => { await Promise.all([auth.close(), documents.close()]); process.exit(0); });
 });
 
-interface ConnectionContext { documentKey: string; ownerId: string; request: IncomingMessage; promptModeCapable: boolean }
+interface ConnectionContext {
+  documentKey: string;
+  actorId: string;
+  ownerId: string;
+  accessMode: "owner" | "read";
+  permissionEpoch: number;
+  displayName: string;
+  participantId: string;
+  request: IncomingMessage;
+  promptModeCapable: boolean;
+}
 
 async function authorized(client: WebSocket, checkDocument = false): Promise<boolean> {
   const context = contexts.get(client);
   try {
     const session = context ? await authenticate(context.request) : null;
-    if (!context || !session || session.userId !== context.ownerId
-      || (checkDocument && !await documents.loadDocument(context.ownerId, context.documentKey))) {
+    const loaded = context && session && session.userId === context.actorId && checkDocument
+      ? await documents.loadDocumentForActor(context.actorId, context.documentKey) : undefined;
+    if (!context || !session || session.userId !== context.actorId
+      || (checkDocument && (!loaded || loaded.access.accessMode !== context.accessMode
+        || loaded.access.permissionEpoch !== context.permissionEpoch))) {
       closeUnavailable(client);
       return false;
     }
@@ -263,6 +304,17 @@ function unavailable(response: import("node:http").ServerResponse, status: numbe
 
 function closeUnavailable(client: WebSocket) { client.close(4404, "SYNC_DOCUMENT_UNAVAILABLE"); }
 function closeProtocol(client: WebSocket, code: string) { client.close(4400, code.slice(0, 120)); }
+
+async function broadcastPresence(documentKey: string): Promise<void> {
+  const peers = [...(sockets.get(documentKey) ?? [])];
+  const participants = peers.flatMap((peer) => {
+    const context = contexts.get(peer);
+    return context && peer.readyState === WebSocket.OPEN ? [{ participantId: context.participantId,
+      displayName: context.displayName, role: context.accessMode }] : [];
+  });
+  const payload = JSON.stringify({ type: "presence", participants });
+  for (const peer of peers) if (await authorized(peer, true) && peer.readyState === WebSocket.OPEN) peer.send(payload);
+}
 
 function merge(snapshot: Uint8Array, updates: readonly Uint8Array[]) {
   return updates.length ? Y.mergeUpdates([snapshot, ...updates]) : snapshot;
