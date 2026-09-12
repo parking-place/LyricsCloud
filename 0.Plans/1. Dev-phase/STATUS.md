@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.0"
-current_phase: "../2.Patch-phase/1.1.0/2phase.md"
+current_phase: "../2.Patch-phase/1.1.0/3phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.1.0 P1 selected-read 계약 승인 완료. P2에서 실패 시험부터 grant/RLS/API/read-only WebSocket 기반을 구현한다"
+next_action: "1.1.0 P2 후보 046a98c의 전체 CI·동일 SHA 개발 인수 완료. P3 owner 공유 관리와 reader PC·모바일 읽기 전용 흐름을 검증한다"
 ```
 
 ## 승인과 기준
@@ -113,13 +113,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.14 P5 | complete | 후보 `a11e1b5`, Actions `34658944912`·`34658954668`, 네 dev image·동일 SHA 공개 장문/차단 font 인수와 OFL 봉인, OPS-NF-002 공유 NO-GO 완료 |
 | 1.0.14 Release | complete | main/tag `d093ff2`, main CI `34660678199`·tag CI `34662523402`, exact digest 운영 배포·공개 재시작/영속성 smoke·GitHub Release 완료 |
 | 1.1.0 P1 | complete | 기준 `6d4921f`, owner/actor/resource grant·최소 공개 필드·reader presence·회수/rollback을 selected-read 범위로 승인 |
-| 1.1.0 P2 | in_progress | grant/RLS·owner 관리 API·viewer read·read-only WebSocket 실패 시험과 핵심 기반 구현 |
+| 1.1.0 P2 | complete | 후보 `046a98c`, Actions `34675587605`·`34675589373`, grant/RLS·owner API·reader read-only WS/presence와 동일 SHA 개발 인수 완료 |
+| 1.1.0 P3 | in_progress | owner selected-read 관리·reader 읽기 전용 desktop/mobile·인증 복귀·presence·회수 UX 검증 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.0/P2 | LC-NF-1.1.0-P2-01~06 | migration·DB store·HTTP grant/viewer·collaboration actor/read 권한·계약 시험 | 1.1.0 P1, 기준 `6d4921f` | 2026-09-12 | in_progress |
+| Codex | 1.1.0/P3 | LC-NF-1.1.0-P3-01~07 | owner 공유 관리·reader view·auth return·read-only sync/presence·PC/mobile E2E | 1.1.0 P2 `046a98c` | 2026-09-12 | in_progress |
+| Codex | 1.1.0/P2 | LC-NF-1.1.0-P2-01~07 | migration·DB store·HTTP grant/viewer·collaboration actor/read 권한·계약 시험 | 1.1.0 P1, 기준 `6d4921f` | 2026-09-12 | complete |
 | Codex | 1.1.0/P1 | LC-NF-1.1.0-P1-01~06 | sharing 계약·결정 문서·수용 입력·담당/rollback | v1.0.14 + evidence `6d4921f` | 2026-09-12 | complete |
 | Codex | 1.0.14/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.0.14 P5 `a11e1b5` | 2026-09-12T09:10:00+09:00 | complete |
 | Codex | 1.0.14/P5 | LC-NF-1.0.14-P5-01~03 | OFL/지원·fallback 고지·최종 봉인·OPS-NF-002 공유 진입 판정 | 1.0.14 P4 `1753ee0` | 2026-09-12T08:35:00+09:00 | complete |

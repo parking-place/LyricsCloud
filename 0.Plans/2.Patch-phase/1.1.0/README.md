@@ -1,6 +1,6 @@
 # 1.1.0 — 지정 사용자 읽기 공유 기반
 
-상태: **P1 완료 / P2 착수 준비**. 2026-09-12 selected-read 권한·필드·회수·rollback 계약을 승인했다. 번호는 미발행 작업 배정이며 배포 완료 표시는 아니다.
+상태: **P1·P2 완료 / P3 진행**. selected-read 계약에 따라 grant/RLS·owner API·reader 조회·read-only WebSocket/presence를 구현하고 후보 `046a98c`의 전체 CI와 동일 SHA 개발 서버 인수를 완료했다. public link·write·guest는 계속 비활성이다.
 
 ## 목표
 
