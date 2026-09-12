@@ -21,6 +21,7 @@ try {
   migrate();
   const target = new Pool({ connectionString: temporaryUrl.href, max: 1 });
   try {
+    await target.query(await readFile(resolve("packages/database/rollback/1100_selected_lyric_sharing.sql"), "utf8"));
     await assertApplied(target);
     await target.query(await readFile(resolve("packages/database/fixtures/0200_resources_songs.sql"), "utf8"));
     const before = await songState(target);
