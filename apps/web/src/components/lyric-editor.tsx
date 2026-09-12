@@ -13,6 +13,7 @@ import {
   type CodeMirrorTextEditor,
   type BrowserLyricSync,
   type LocalSyncState,
+  type SharingParticipant,
   type SaveState,
   type SongFormNavigationState,
   type PortableTextSource,
@@ -47,6 +48,7 @@ import { LyricHistory } from "./lyric-history.js";
 import { LyricResourcePanel } from "./lyric-resource-panel.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 import { LyricDisplaySettings } from "./lyric-display-settings.js";
+import { LyricShareManager } from "./lyric-share-manager.js";
 
 interface LyricEditorDraft {
   readonly title: string;
@@ -122,6 +124,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const [commandBusy, setCommandBusy] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [sharingParticipants, setSharingParticipants] = useState<readonly SharingParticipant[]>([]);
   const copyFeedback = useCopyFeedback();
   const router = useRouter();
   const lyricReturnSuffix = `?returnTo=${encodeURIComponent(returnTo)}`;
@@ -271,7 +274,8 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         }
       },
       onLegacyConflict(conflict) { if (active) setLegacyConflict(conflict); },
-      onStateChange(state) { if (active) setLocalSyncState(state); }
+      onStateChange(state) { if (active) setLocalSyncState(state); },
+      onPresenceChange(participants) { if (active) setSharingParticipants(participants); }
     }).then((sync) => { if (active) localSyncRef.current = sync; else void sync.destroy(); })
       .catch(() => { if (active) setLocalSyncState("error"); });
     const finishInput = () => {
@@ -808,6 +812,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
           onClick={toggleResourcePanel}>{desktopResourcesOpen ? "자료 패널 접기" : "자료 패널 펼치기"}</button>
         <button type="button" onClick={() => setHistoryOpen(true)}>버전 비교</button>
         <button type="button" aria-haspopup="dialog" aria-expanded={displaySettingsOpen} onClick={() => setDisplaySettingsOpen(true)}>표시 설정</button>
+        <LyricShareManager lyric={{ ...initialLyric, title, body: bodyRef.current, memo, status, isFavorite, isPinned, pinOrder: pinOrderRef.current }} participants={sharingParticipants} />
         <button type="button" onClick={copyWhole} title="Alt+Shift+C" aria-label="전체 복사" aria-keyshortcuts="Alt+Shift+C">Suno용 복사</button>
         <span className={`lyric-copy-length${wholeCopyView.exceedsRecommendedLimit ? " over" : ""}`}>{wholeCopyView.codePointCount.toLocaleString("ko-KR")}자</span>
         <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} title="Alt+Shift+F" aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 모드 종료" : "집중 모드"}</button>
@@ -862,6 +867,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         onClick={() => { restoreSongFormFocusRef.current = false; setMobileSongFormOpen(true); }}>☷ 송폼 <span>{songForm.sections.length}</span></button>
       <button type="button" onClick={copyWhole} aria-label="전체 복사" aria-keyshortcuts="Alt+Shift+C">⧉ Suno용 <small aria-hidden="true">{wholeCopyView.codePointCount.toLocaleString("ko-KR")}자</small></button>
       <button type="button" aria-haspopup="dialog" aria-expanded={mobileResourcesOpen} onClick={() => setMobileResourcesOpen(true)}>≋ 다른 가사 <span>{songLyrics.length}</span> · 자료</button>
+      <LyricShareManager lyric={{ ...initialLyric, title, body: bodyRef.current, memo, status, isFavorite, isPinned, pinOrder: pinOrderRef.current }} participants={sharingParticipants} />
       <button type="button" onClick={() => setHistoryOpen(true)}>기록·비교</button>
       <button type="button" aria-pressed={focusMode} onClick={toggleFocusMode} aria-keyshortcuts="Alt+Shift+F">{focusMode ? "집중 종료" : "집중 모드"}</button>
     </div>

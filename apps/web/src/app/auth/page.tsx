@@ -4,8 +4,9 @@ import { resolvePageUser } from "../../lib/page-auth.js";
 
 export const dynamic = "force-dynamic";
 
-export default async function AuthPage({ searchParams }: { searchParams: Promise<{ error?: string; requestId?: string; flow?: string }> }) {
-  if (await resolvePageUser()) redirect("/workspace");
+export default async function AuthPage({ searchParams }: { searchParams: Promise<{ error?: string; requestId?: string; flow?: string; returnTo?: string }> }) {
   const query = await searchParams;
-  return <AuthScreen errorCode={query.error} requestId={query.requestId} flow={query.flow} />;
+  const returnTo = /^\/shared\/lyrics\/[0-9a-f-]{36}$/i.test(query.returnTo ?? "") ? query.returnTo! : "/workspace";
+  if (await resolvePageUser()) redirect(returnTo);
+  return <AuthScreen errorCode={query.error} requestId={query.requestId} flow={query.flow} returnTo={returnTo} />;
 }

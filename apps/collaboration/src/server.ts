@@ -310,7 +310,7 @@ async function broadcastPresence(documentKey: string): Promise<void> {
   const participants = peers.flatMap((peer) => {
     const context = contexts.get(peer);
     return context && peer.readyState === WebSocket.OPEN ? [{ participantId: context.participantId,
-      displayName: context.displayName, role: context.accessMode }] : [];
+      displayName: publicParticipantName(context.displayName), role: context.accessMode }] : [];
   });
   const payload = JSON.stringify({ type: "presence", participants });
   for (const peer of peers) if (await authorized(peer, true) && peer.readyState === WebSocket.OPEN) peer.send(payload);
@@ -318,4 +318,9 @@ async function broadcastPresence(documentKey: string): Promise<void> {
 
 function merge(snapshot: Uint8Array, updates: readonly Uint8Array[]) {
   return updates.length ? Y.mergeUpdates([snapshot, ...updates]) : snapshot;
+}
+
+function publicParticipantName(value: string): string {
+  const name = value.trim().slice(0, 60);
+  return !name || name.includes("@") || /^[0-9a-f-]{36}$/i.test(name) ? "참여자" : name;
 }
