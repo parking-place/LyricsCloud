@@ -98,7 +98,8 @@ describe.runIf(enabled)("selected lyric read sharing", () => {
     const requestId = randomUUID();
     const enabled = await sharing!.setGrantAccess(owner, lyric.id, granted.id, "write", requestId);
     expect(enabled).toMatchObject({ replayed: false, changed: true,
-      grant: { access: "write", permissionEpoch: granted.permissionEpoch } });
+      grant: { displayName: "읽는 사람", sharingId: readerSharingId,
+        access: "write", permissionEpoch: granted.permissionEpoch } });
     expect(enabled!.grant.writeEpoch).toBeGreaterThan(granted.writeEpoch);
     await expect(sharing!.setGrantAccess(owner, lyric.id, granted.id, "write", requestId))
       .resolves.toMatchObject({ replayed: true, changed: false, grant: { writeEpoch: enabled!.grant.writeEpoch } });

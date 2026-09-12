@@ -17,6 +17,7 @@ const documents = new CollaborationStore(config.databaseUrl);
 const telemetry = observabilityFromEnvironment("collaboration");
 const sockets = new Map<string, Set<WebSocket>>();
 const contexts = new WeakMap<WebSocket, ConnectionContext>();
+const pendingPresenceBroadcasts = new Set<string>();
 const alive = new WeakMap<WebSocket, boolean>();
 const publicHandshakeWindows = new Map<string, { startedAt: number; count: number }>();
 const projectionRetry = setInterval(async () => {
@@ -183,7 +184,7 @@ server.on("upgrade", async (request, socket, head) => {
         accessMode: loaded.access.accessMode, permissionEpoch: loaded.access.permissionEpoch,
         grantId: loaded.access.grantId, writeEpoch: loaded.access.writeEpoch,
         displayName: loaded.access.displayName, participantId: randomUUID(), request, promptModeCapable: capable,
-        projectionPending: loaded.projectionPending });
+        projectionPending: loaded.projectionPending, activity: "idle" });
       websocket.emit("connection", client, request);
     });
   } catch {
@@ -225,7 +226,7 @@ websocket.on("connection", (client, request) => {
       }
       const input = JSON.parse(raw.toString()) as { type?: unknown; updateId?: unknown; payload?: unknown;
         grantId?: unknown; permissionEpoch?: unknown; writeEpoch?: unknown; selection?: unknown;
-        actorId?: unknown; participantId?: unknown; displayName?: unknown };
+        activity?: unknown; actorId?: unknown; participantId?: unknown; displayName?: unknown };
       if (input.type === "awareness") {
         if (context.accessMode !== "owner" && context.accessMode !== "write") {
           return closeProtocol(client, "SYNC_AWARENESS_FORBIDDEN");
@@ -233,29 +234,53 @@ websocket.on("connection", (client, request) => {
         if (input.actorId !== undefined || input.participantId !== undefined || input.displayName !== undefined) {
           return closeProtocol(client, "SYNC_AWARENESS_IDENTITY_FORBIDDEN");
         }
-        const selection = validateAwarenessSelection(input.selection, current.snapshot, current.updates);
-        if (!selection) return closeProtocol(client, "SYNC_AWARENESS_INVALID");
-        const awareness = JSON.stringify({ type: "awareness", participantId: context.participantId,
-          displayName: publicParticipantName(context.displayName), role: context.accessMode, selection });
-        for (const peer of peers) {
-          const peerContext = contexts.get(peer);
-          if (peer !== client && peerContext?.accessMode !== "public-read" && await authorized(peer, true)
-            && peer.readyState === WebSocket.OPEN) peer.send(awareness);
-        }
+        if (input.activity !== "active" && input.activity !== "idle") return closeProtocol(client, "SYNC_AWARENESS_INVALID");
+        const awareness = validateAwarenessSelection(input.selection, current.snapshot, current.updates);
+        if (awareness.status === "invalid") return closeProtocol(client, "SYNC_AWARENESS_INVALID");
+        // A reconnecting editor can restore a selection anchored in a durable
+        // local update that is still waiting in the outbox. Keep the optional
+        // cursor private until that update receives its ACK; never disconnect
+        // the document's write channel merely because the server has not seen
+        // the referenced Yjs struct yet.
+        context.selection = awareness.status === "current" ? awareness.selection : undefined;
+        context.activity = input.activity;
+        await broadcastPresence(context.documentKey);
         return;
       }
       if (input.type !== "update" || typeof input.payload !== "string") throw new Error("SYNC_UPDATE_INVALID");
       const payload = Buffer.from(input.payload, "base64");
       const envelope = parseSyncUpdateEnvelope({ updateId: input.updateId, payload: new Uint8Array(payload) });
+      const historicalWriterTuple = context.accessMode !== "owner" && context.accessMode !== "public-read"
+        && typeof input.grantId === "string" && Number.isSafeInteger(input.permissionEpoch)
+        && Number.isSafeInteger(input.writeEpoch) && (context.accessMode === "read"
+          || input.grantId !== context.grantId || input.permissionEpoch !== context.permissionEpoch
+          || input.writeEpoch !== context.writeEpoch);
+      if (historicalWriterTuple) {
+        // A commit may have succeeded before its ACK was lost. The store only
+        // recovers an exact existing receipt for this historical tuple; it
+        // cannot authorize a new write after downgrade or revocation.
+        const duplicate = await documents.applyUpdateForActor({ ownerId: current.access.ownerId,
+          actorId: context.actorId!, accessMode: "write", displayName: context.displayName,
+          grantId: input.grantId as string, permissionEpoch: input.permissionEpoch as number,
+          writeEpoch: input.writeEpoch as number }, context.documentKey, envelope.updateId, envelope.payload);
+        if (duplicate?.duplicate) {
+          client.send(JSON.stringify({ type: "ack", updateId: envelope.updateId, duplicate: true,
+            sequence: duplicate.sequence, permissionEpoch: input.permissionEpoch, writeEpoch: input.writeEpoch,
+            projection: duplicate.projectionPending ? "pending" : "current" }));
+          return;
+        }
+        return rejectUpdate(client, envelope.updateId, context,
+          context.accessMode === "read" ? "SYNC_WRITE_REVOKED" : "SYNC_WRITE_EPOCH_STALE", current);
+      }
       if (context.accessMode === "read" || context.accessMode === "public-read") {
-        return rejectUpdate(client, envelope.updateId, context, "SYNC_WRITE_REVOKED");
+        return rejectUpdate(client, envelope.updateId, context, "SYNC_WRITE_REVOKED", current);
       }
       if (context.accessMode === "write" && (input.grantId !== context.grantId
         || input.permissionEpoch !== context.permissionEpoch || input.writeEpoch !== context.writeEpoch)) {
-        return rejectUpdate(client, envelope.updateId, context, "SYNC_WRITE_EPOCH_STALE");
+        return rejectUpdate(client, envelope.updateId, context, "SYNC_WRITE_EPOCH_STALE", current);
       }
       const result = await documents.applyUpdateForActor(current.access, context.documentKey, envelope.updateId, envelope.payload);
-      if (!result) return rejectUpdate(client, envelope.updateId, context, "SYNC_WRITE_REVOKED");
+      if (!result) return rejectUpdate(client, envelope.updateId, context, "SYNC_WRITE_REVOKED", current);
       context.projectionPending = result.projectionPending;
       client.send(JSON.stringify({ type: "ack", updateId: envelope.updateId, duplicate: result.duplicate,
         sequence: result.sequence, permissionEpoch: context.permissionEpoch, writeEpoch: context.writeEpoch,
@@ -305,6 +330,8 @@ interface ConnectionContext {
   projectionPending: boolean;
   publicLinkId?: string;
   publicTokenDigest?: string;
+  activity: "active" | "idle";
+  selection?: { anchor: string; head: string };
 }
 
 async function authorized(client: WebSocket, checkDocument = false): Promise<boolean> {
@@ -375,26 +402,33 @@ function reconcileSelectedAccess(client: WebSocket, context: ConnectionContext,
   if (context.accessMode !== access.accessMode || context.writeEpoch !== access.writeEpoch) {
     context.accessMode = access.accessMode;
     context.writeEpoch = access.writeEpoch;
+    if (access.accessMode === "read") {
+      context.activity = "idle";
+      context.selection = undefined;
+    }
     if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({ type: "permission", access: access.accessMode,
       grantId: access.grantId, permissionEpoch: access.permissionEpoch, writeEpoch: access.writeEpoch }));
+    schedulePresenceBroadcast(context.documentKey);
   }
   return true;
 }
 
-function rejectUpdate(client: WebSocket, updateId: string, context: ConnectionContext, code: string): void {
+function rejectUpdate(client: WebSocket, updateId: string, context: ConnectionContext, code: string,
+  current?: { snapshot: Uint8Array; updates: readonly Uint8Array[] }): void {
   if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({ type: "rejected", updateId, code,
     access: context.accessMode, grantId: context.grantId,
-    permissionEpoch: context.permissionEpoch, writeEpoch: context.writeEpoch }));
+    permissionEpoch: context.permissionEpoch, writeEpoch: context.writeEpoch,
+    ...(current ? { payload: Buffer.from(merge(current.snapshot, current.updates)).toString("base64") } : {}) }));
 }
 
 function validateAwarenessSelection(value: unknown, snapshot: Uint8Array, updates: readonly Uint8Array[]):
-{ anchor: string; head: string } | null {
-  if (!value || typeof value !== "object") return null;
+  { status: "current"; selection: { anchor: string; head: string } } | { status: "pending" } | { status: "invalid" } {
+  if (!value || typeof value !== "object") return { status: "invalid" };
   const selection = value as Record<string, unknown>;
   if (Object.keys(selection).some((key) => key !== "anchor" && key !== "head")
-    || typeof selection.anchor !== "string" || typeof selection.head !== "string") return null;
+    || typeof selection.anchor !== "string" || typeof selection.head !== "string") return { status: "invalid" };
   if (selection.anchor.length > 2_048 || selection.head.length > 2_048
-    || !/^[A-Za-z0-9_-]+$/.test(selection.anchor) || !/^[A-Za-z0-9_-]+$/.test(selection.head)) return null;
+    || !/^[A-Za-z0-9_-]+$/.test(selection.anchor) || !/^[A-Za-z0-9_-]+$/.test(selection.head)) return { status: "invalid" };
   const document = new Y.Doc();
   try {
     Y.applyUpdate(document, merge(snapshot, updates));
@@ -402,25 +436,44 @@ function validateAwarenessSelection(value: unknown, snapshot: Uint8Array, update
     for (const encoded of [selection.anchor, selection.head]) {
       const position = Y.decodeRelativePosition(Buffer.from(encoded, "base64url"));
       const absolute = Y.createAbsolutePositionFromRelativePosition(position, document);
-      if (!absolute || absolute.type !== body || absolute.index < 0 || absolute.index > body.length) return null;
+      if (!absolute) return { status: "pending" };
+      if (absolute.type !== body || absolute.index < 0 || absolute.index > body.length) return { status: "invalid" };
     }
-    return { anchor: selection.anchor, head: selection.head };
-  } catch { return null; }
+    return { status: "current", selection: { anchor: selection.anchor, head: selection.head } };
+  } catch { return { status: "invalid" }; }
   finally { document.destroy(); }
 }
 
 async function broadcastPresence(documentKey: string): Promise<void> {
   const peers = [...(sockets.get(documentKey) ?? [])];
-  const participants = peers.flatMap((peer) => {
-    const context = contexts.get(peer);
-    return context && context.accessMode !== "public-read" && peer.readyState === WebSocket.OPEN ? [{ participantId: context.participantId,
-      displayName: publicParticipantName(context.displayName), role: context.accessMode }] : [];
-  });
-  const payload = JSON.stringify({ type: "presence", participants });
+  const visiblePeers: WebSocket[] = [];
   for (const peer of peers) {
     const context = contexts.get(peer);
-    if (context?.accessMode !== "public-read" && await authorized(peer, true) && peer.readyState === WebSocket.OPEN) peer.send(payload);
+    if (context?.accessMode !== "public-read" && await authorized(peer, true) && peer.readyState === WebSocket.OPEN) visiblePeers.push(peer);
   }
+  const participants = visiblePeers.flatMap((peer) => {
+    const context = contexts.get(peer);
+    return context ? [{ participantId: context.participantId,
+      displayName: publicParticipantName(context.displayName), role: context.accessMode,
+      activity: context.activity, color: participantColor(context.participantId),
+      ...(context.selection ? { selection: context.selection } : {}) }] : [];
+  });
+  const payload = JSON.stringify({ type: "presence", participants });
+  for (const peer of visiblePeers) if (peer.readyState === WebSocket.OPEN) peer.send(payload);
+}
+
+function participantColor(participantId: string): "lime" | "cyan" | "violet" | "orange" {
+  const colors = ["lime", "cyan", "violet", "orange"] as const;
+  return colors[Number.parseInt(participantId.replaceAll("-", "").slice(-2), 16) % colors.length]!;
+}
+
+function schedulePresenceBroadcast(documentKey: string): void {
+  if (pendingPresenceBroadcasts.has(documentKey)) return;
+  pendingPresenceBroadcasts.add(documentKey);
+  queueMicrotask(() => {
+    pendingPresenceBroadcasts.delete(documentKey);
+    void broadcastPresence(documentKey);
+  });
 }
 
 function setupPublicClient(client: WebSocket): void {
@@ -442,7 +495,8 @@ function setupPublicClient(client: WebSocket): void {
       if (publicCount >= 20) return client.close(4429, "SYNC_TEMPORARILY_UNAVAILABLE");
       contexts.set(client, { documentKey: loaded.documentKey, ownerId: loaded.ownerId,
         accessMode: "public-read", permissionEpoch: loaded.permissionEpoch, displayName: "", participantId: randomUUID(),
-        promptModeCapable: false, projectionPending: false, publicLinkId: input.linkId, publicTokenDigest: digest });
+        promptModeCapable: false, projectionPending: false, publicLinkId: input.linkId, publicTokenDigest: digest,
+        activity: "idle" });
       peers.add(client); sockets.set(loaded.documentKey, peers);
       if (!await authorized(client)) return;
       client.send(JSON.stringify({ type: "snapshot", payload: Buffer.from(merge(loaded.snapshot, loaded.updates)).toString("base64"),

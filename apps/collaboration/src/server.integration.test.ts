@@ -64,6 +64,13 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
     document.once("update", (value) => { update = value; });
     document.getText("body").insert(document.getText("body").length, "\n전송됨 🎵");
     const updateId = randomUUID();
+    const pendingRelative = Buffer.from(Y.encodeRelativePosition(
+      Y.createRelativePositionFromTypeIndex(document.getText("body"), document.getText("body").length))).toString("base64url");
+    // A restored local cursor can reference the update immediately following
+    // it. The optional awareness frame must not close the durable write path
+    // while that Yjs struct is still absent from the server snapshot.
+    first.send(JSON.stringify({ type: "awareness", activity: "active",
+      selection: { anchor: pendingRelative, head: pendingRelative } }));
     const broadcast = nextJson(second, "update");
     first.send(JSON.stringify({ type: "update", updateId, payload: Buffer.from(update).toString("base64") }));
     expect(await nextJson(first, "ack")).toMatchObject({ updateId, duplicate: false });
@@ -128,13 +135,47 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
     const writeGrant = (await sharing!.setGrantAccess(ownerId, lyric.id, granted!.grant.id, "write", randomUUID()))!.grant;
     expect(await writerPermission).toMatchObject({ access: "write", grantId: granted!.grant.id,
       permissionEpoch: granted!.grant.permissionEpoch, writeEpoch: writeGrant.writeEpoch });
+    expect(await nextJson(ownerSocket, "presence")).toMatchObject({ participants: expect.arrayContaining([
+      expect.objectContaining({ displayName: "공유 독자", role: "write", activity: "idle" })
+    ]) });
     const readerDoc = new Y.Doc(); Y.applyUpdate(readerDoc, Buffer.from(readerSnapshot.payload as string, "base64"));
     const relative = Buffer.from(Y.encodeRelativePosition(
       Y.createRelativePositionFromTypeIndex(readerDoc.getText("body"), 3))).toString("base64url");
-    const awareness = nextJson(ownerSocket, "awareness");
-    readerSocket.send(JSON.stringify({ type: "awareness", selection: { anchor: relative, head: relative } }));
-    expect(await awareness).toMatchObject({ displayName: "공유 독자", role: "write",
-      selection: { anchor: relative, head: relative } });
+    const awareness = nextJson(ownerSocket, "presence");
+    readerSocket.send(JSON.stringify({ type: "awareness", activity: "active",
+      selection: { anchor: relative, head: relative } }));
+    expect(await awareness).toMatchObject({ participants: expect.arrayContaining([
+      expect.objectContaining({ displayName: "공유 독자", role: "write", activity: "active",
+        selection: { anchor: relative, head: relative } })
+    ]) });
+    const idlePresence = nextJson(ownerSocket, "presence");
+    readerSocket.send(JSON.stringify({ type: "awareness", activity: "idle",
+      selection: { anchor: relative, head: relative } }));
+    expect(await idlePresence).toMatchObject({ participants: expect.arrayContaining([
+      expect.objectContaining({ displayName: "공유 독자", activity: "idle",
+        selection: { anchor: relative, head: relative } })
+    ]) });
+    const activeAgain = nextJson(ownerSocket, "presence");
+    readerSocket.send(JSON.stringify({ type: "awareness", activity: "active",
+      selection: { anchor: relative, head: relative } }));
+    await activeAgain;
+
+    const duplicateSocket = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: readerHeaders });
+    const duplicateSnapshot = nextJson(duplicateSocket, "snapshot");
+    const latePresence = nextJson(duplicateSocket, "presence");
+    await duplicateSnapshot;
+    const duplicatePresence = await latePresence;
+    const duplicateReaders = (duplicatePresence.participants as Array<Record<string, unknown>>)
+      .filter((participant) => participant.displayName === "공유 독자");
+    expect(duplicateReaders).toHaveLength(2);
+    expect(duplicateReaders).toEqual(expect.arrayContaining([
+      expect.objectContaining({ activity: "active", selection: { anchor: relative, head: relative } }),
+      expect.objectContaining({ activity: "idle" })
+    ]));
+    const duplicateClosed = once(duplicateSocket, "close"); duplicateSocket.close(); await duplicateClosed;
+    expect(await nextJson(ownerSocket, "presence")).toMatchObject({ participants: expect.arrayContaining([
+      expect.objectContaining({ displayName: "공유 독자", activity: "active" })
+    ]) });
     const vector = Y.encodeStateVector(readerDoc);
     readerDoc.getText("body").insert(readerDoc.getText("body").length, "\nwriter update");
     const writerUpdate = Buffer.from(Y.encodeStateAsUpdate(readerDoc, vector)).toString("base64");
@@ -149,9 +190,25 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
     const readPermission = nextJson(readerSocket, "permission");
     const downgraded = (await sharing!.setGrantAccess(ownerId, lyric.id, granted!.grant.id, "read", randomUUID()))!.grant;
     expect(await readPermission).toMatchObject({ access: "read", writeEpoch: downgraded.writeEpoch });
+    readerSocket.send(JSON.stringify({ type: "update", updateId: writerUpdateId, payload: writerUpdate,
+      grantId: granted!.grant.id, permissionEpoch: granted!.grant.permissionEpoch, writeEpoch: writeGrant.writeEpoch }));
+    expect(await nextJson(readerSocket, "ack")).toMatchObject({ updateId: writerUpdateId, duplicate: true,
+      permissionEpoch: granted!.grant.permissionEpoch, writeEpoch: writeGrant.writeEpoch });
     readerSocket.send(JSON.stringify({ type: "update", updateId: randomUUID(), payload: writerUpdate,
       grantId: granted!.grant.id, permissionEpoch: granted!.grant.permissionEpoch, writeEpoch: writeGrant.writeEpoch }));
     expect(await nextJson(readerSocket, "rejected")).toMatchObject({ code: "SYNC_WRITE_REVOKED", access: "read" });
+
+    const reenabledPermission = nextJson(readerSocket, "permission");
+    const reenabled = (await sharing!.setGrantAccess(ownerId, lyric.id, granted!.grant.id, "write", randomUUID()))!.grant;
+    expect(await reenabledPermission).toMatchObject({ access: "write", writeEpoch: reenabled.writeEpoch });
+    readerSocket.send(JSON.stringify({ type: "update", updateId: writerUpdateId, payload: writerUpdate,
+      grantId: granted!.grant.id, permissionEpoch: granted!.grant.permissionEpoch, writeEpoch: writeGrant.writeEpoch }));
+    expect(await nextJson(readerSocket, "ack")).toMatchObject({ updateId: writerUpdateId, duplicate: true,
+      writeEpoch: writeGrant.writeEpoch });
+    readerSocket.send(JSON.stringify({ type: "update", updateId: randomUUID(), payload: writerUpdate,
+      grantId: granted!.grant.id, permissionEpoch: granted!.grant.permissionEpoch, writeEpoch: writeGrant.writeEpoch }));
+    expect(await nextJson(readerSocket, "rejected")).toMatchObject({ code: "SYNC_WRITE_EPOCH_STALE",
+      access: "write", writeEpoch: reenabled.writeEpoch });
     readerDoc.destroy();
 
     const revokedSocket = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: readerHeaders });

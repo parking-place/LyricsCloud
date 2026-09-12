@@ -12,5 +12,5 @@ export default async function SharedLyricPage({ params }: { params: Promise<{ ly
   const user = await resolvePageUser();
   if (!user) redirect(`/auth?returnTo=${encodeURIComponent(`/shared/lyrics/${lyricId}`)}`);
   const lyric = await getAuthContext().lyricSharing.getSharedLyric(user.userId, lyricId).catch(() => null);
-  return <WorkspaceShell profile={user} active="home">{lyric ? <SharedLyricViewer initialLyric={lyric} /> : <SharedAccessUnavailable />}</WorkspaceShell>;
+  return <WorkspaceShell profile={user} active="home">{lyric ? <SharedLyricViewer actorId={user.userId} initialLyric={lyric} /> : <SharedAccessUnavailable />}</WorkspaceShell>;
 }
