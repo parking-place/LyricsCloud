@@ -59,6 +59,7 @@ try {
 
     await target.query("delete from resources where id=$1", [rhyme]);
     await target.query("delete from tags where owner_id=any($1::uuid[])", [[alice, bob]]);
+    await target.query(await readFile("packages/database/rollback/1100_selected_lyric_sharing.sql", "utf8"));
     await target.query(rollback);
     assert.equal((await target.query("select count(*)::int count from sync_documents where document_key=$1", [lyricKey])).rows[0].count, 1);
     assert.equal((await target.query("select body from lyric_revisions where document_key=$1", [lyricKey])).rows[0].body, "보존할 가사");
