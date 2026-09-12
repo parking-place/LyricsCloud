@@ -15,3 +15,4 @@ export * from "./songform-insertion.js";
 export * from "./revision-diff.js";
 export * from "./prompt-browser-sync.js";
 export * from "./position-save.js";
+export type { RejectedWriterDraft } from "./sync-storage.js";

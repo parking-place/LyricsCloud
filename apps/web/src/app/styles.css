@@ -189,9 +189,14 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .sharing-grants ul, .sharing-presence ul, .shared-viewers ul { display: grid; gap: .5rem; padding: 0; margin: 0; list-style: none; }
 .sharing-grants li { display: flex; align-items: center; justify-content: space-between; gap: .7rem; padding-top: .6rem; border-top: 1px solid var(--line); }
 .sharing-grants li > span { display: grid; gap: .15rem; }
+.sharing-grant-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .45rem; }
 .sharing-grants small, .sharing-presence small, .shared-viewers small { color: var(--subtle); font-size: .67rem; }
 .sharing-presence li, .shared-viewers li { display: flex; align-items: center; gap: .45rem; }
 .sharing-presence li > span, .shared-viewers li > span, .shared-live-state > span { width: .48rem; height: .48rem; flex: none; border-radius: 50%; background: var(--acid); }
+.sharing-presence li > span[data-presence-color="cyan"], .shared-viewers li > span[data-presence-color="cyan"] { background: #2dd4bf; }
+.sharing-presence li > span[data-presence-color="violet"], .shared-viewers li > span[data-presence-color="violet"] { background: #a78bfa; }
+.sharing-presence li > span[data-presence-color="orange"], .shared-viewers li > span[data-presence-color="orange"] { background: #fb923c; }
+.sharing-presence li.activity-idle > span, .shared-viewers li.activity-idle > span { opacity: .45; }
 .sharing-presence li small, .shared-viewers li small { margin-left: auto; }
 .sharing-notice, .sharing-loading { margin: 0; padding: .7rem .8rem; border-radius: .55rem; color: var(--ink); background: var(--surface-raised); }
 .sharing-public > div:first-child, .sharing-public-confirm > div, .public-shared-lyric > header, .public-shared-lyric > footer { display: flex; align-items: flex-start; justify-content: space-between; gap: .8rem; }
@@ -223,16 +228,28 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .shared-read-badge { min-width: 10rem; display: grid; grid-template-columns: auto 1fr; gap: .15rem .45rem; padding: .75rem; border: 1px solid rgb(200 255 61 / 28%); border-radius: .65rem; background: rgb(200 255 61 / 7%); }
 .shared-read-badge span { grid-row: span 2; color: var(--acid); }
 .shared-read-badge small { color: var(--muted); font-size: .68rem; }
+.shared-read-badge.access-write { border-color: var(--acid); background: color-mix(in srgb, var(--acid) 12%, var(--panel)); }
 .shared-live-state { display: flex; align-items: center; gap: .45rem; color: var(--muted); font-size: .76rem; }
 .shared-live-state.state-offline > span, .shared-live-state.state-error > span { background: var(--danger); }
 .shared-lyric-document { min-height: 24rem; padding: clamp(1.1rem, 4vw, 3rem); border: 1px solid var(--line); border-radius: .9rem; background: var(--panel); }
+.shared-lyric-document.is-writable { border-color: color-mix(in srgb, var(--acid) 55%, var(--line)); }
+.shared-lyric-editor { min-height: 20rem; }
+.shared-lyric-editor .cm-editor { min-height: 20rem; }
 .shared-lyric-document pre { margin: 0; color: var(--ink); font: 400 1.05rem/1.85 var(--lc-font-noto-sans-kr); overflow-wrap: anywhere; white-space: pre-wrap; }
-.shared-lyric-footer, .shared-viewers { padding: 1rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--surface); }
+.shared-lyric-footer, .shared-viewers, .shared-writer-recovery { padding: 1rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--surface); }
 .shared-lyric-footer > div { display: grid; gap: .2rem; }
 .shared-lyric-footer span, .shared-lyric-footer small, .shared-viewers p { color: var(--muted); }
 .shared-viewers { display: grid; gap: .7rem; }
 .shared-viewers h2 { font-size: 1rem; }
 .shared-viewers p { margin: 0; }
+.shared-writer-recovery { display: grid; gap: .75rem; border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); }
+.shared-writer-recovery h2, .shared-writer-recovery p { margin: 0; }
+.shared-writer-recovery > p { color: var(--muted); line-height: 1.55; }
+.shared-writer-recovery ul { display: grid; gap: .65rem; padding: 0; margin: 0; list-style: none; }
+.shared-writer-recovery li { display: grid; gap: .55rem; padding: .75rem; border: 1px solid var(--line); border-radius: .55rem; background: var(--panel); }
+.shared-writer-recovery li pre { max-height: 12rem; margin: 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.shared-writer-recovery li > div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .45rem; }
+.shared-writer-recovery button { min-height: 2.35rem; padding: .4rem .7rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--surface); cursor: pointer; }
 .shared-access-ended { width: min(calc(100% - 2rem), 38rem); display: grid; gap: 1rem; align-self: center; padding: clamp(1.5rem, 4vw, 3rem); margin: 10vh auto; border: 1px solid var(--line); border-radius: 1rem; background: var(--panel); }
 .shared-access-ended p { margin: 0; color: var(--muted); line-height: 1.7; }
 .shared-access-ended > div { display: flex; flex-wrap: wrap; gap: .7rem; }

@@ -241,6 +241,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       },
       onCompositionStart() { localSyncRef.current?.setComposing(true); },
       onCompositionEnd() { localSyncRef.current?.setComposing(false); },
+      onSelectionChange(selection) { localSyncRef.current?.updateSelection(selection); },
       async beforeLargePaste() {
         const saved = await localSyncRef.current?.checkpoint("large_paste") ?? false;
         if (active) setCommandNotice(saved ? "" : "붙여넣기 전 수정 기록을 저장하지 못했습니다. 연결을 확인한 뒤 다시 붙여넣어 주세요.");

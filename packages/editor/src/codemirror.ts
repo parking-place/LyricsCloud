@@ -36,6 +36,7 @@ export interface CodeMirrorTextEditorOptions {
   readonly onChange: (value: string, context: { readonly composing: boolean }) => void;
   readonly onCompositionEnd: () => void;
   readonly onCompositionStart?: () => void;
+  readonly onSelectionChange?: (selection: { readonly anchor: number; readonly head: number }) => void;
   readonly beforeLargePaste?: () => Promise<boolean>;
   readonly readOnly?: boolean;
   readonly onSongFormNavigationChange?: (state: SongFormNavigationState) => void;
@@ -141,6 +142,10 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       EditorView.clipboardInputFilter.of(normalizeLineEndings),
       songFormPlugin,
       EditorView.updateListener.of((update) => {
+        if (update.selectionSet) options.onSelectionChange?.({
+          anchor: update.state.selection.main.anchor,
+          head: update.state.selection.main.head
+        });
         if (!update.docChanged) return;
         const composing = compositionChanges !== null || update.view.compositionStarted;
         if (compositionChanges) compositionChanges = compositionChanges.compose(update.changes);

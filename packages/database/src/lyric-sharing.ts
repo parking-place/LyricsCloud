@@ -164,13 +164,11 @@ export class PostgresLyricSharingStore {
       if (!current) return null;
       const enabled = access === "write";
       const changed = current.write_enabled !== enabled;
-      const row = changed ? (await client.query<GrantRow>(`update lyric_read_grants
+      const updated = changed ? (await client.query<{ id: string }>(`update lyric_read_grants
         set write_enabled=$4,write_epoch=write_epoch+1,write_updated_at=clock_timestamp()
-        where id=$1 and resource_id=$2 and owner_id=$3
-        returning id,state,permission_epoch::text,write_enabled,write_epoch::text,write_updated_at,created_at,revoked_at,expires_at,
-          (select sharing_id from user_profiles where owner_id=grantee_id) sharing_id,
-          (select display_name from user_profiles where owner_id=grantee_id) display_name`,
-        [grantId, resourceId, ownerId, enabled])).rows[0] : await selectGrantRow(client, grantId);
+        where id=$1 and resource_id=$2 and owner_id=$3 returning id`,
+        [grantId, resourceId, ownerId, enabled])).rows[0] : current;
+      const row = updated ? await selectGrantRow(client, updated.id) : null;
       if (!row) return null;
       await client.query(`insert into lyric_share_access_requests
         (owner_id,request_id,resource_id,grant_id,requested_access,resulting_write_epoch)
