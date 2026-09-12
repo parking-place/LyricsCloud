@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.0.14"
 current_phase: "../2.Patch-phase/1.0.14/5phase.md"
-state: "release_ready"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "승인된 1.0.14 main 병합·최종 CI·annotated tag·정식 image·릴리스 서버 exact digest 배포와 공개 인수를 실행한다"
+next_action: "1.0.14 정식 릴리스 완료. OPS-NF-002 owner/actor 권한 모델의 명시적 승인 전에는 1.1.0 공유를 시작하지 않는다"
 ```
 
 ## 승인과 기준
@@ -109,13 +109,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.14 P3 | complete | 후보 `ffcf97f`, Actions `34649606547`·`34649610060`, 네 dev image와 동일 SHA 공개 저장/재진입·세 편집기 family·undo/원문·overflow 인수 완료 |
 | 1.0.14 P4 | complete | 후보 `1753ee0`, Actions `34656715638`·`34656718443`, Chromium 340 PASS·네 dev image·동일 SHA 공개 200줄/차단 font 저장·재진입 인수. 실제 세 OS 폰트 전환 미실행 위험 명시 |
 | 1.0.14 P5 | complete | 후보 `a11e1b5`, Actions `34658944912`·`34658954668`, 네 dev image·동일 SHA 공개 장문/차단 font 인수와 OFL 봉인, OPS-NF-002 공유 NO-GO 완료 |
-| 1.0.14 Release | in_progress | 승인된 main 병합·최종 CI·annotated tag·정식 image·릴리스 서버 exact digest 배포·공개 smoke 진행 |
+| 1.0.14 Release | complete | main/tag `d093ff2`, main CI `34660678199`·tag CI `34662523402`, exact digest 운영 배포·공개 재시작/영속성 smoke·GitHub Release 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.0.14/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.0.14 P5 `a11e1b5` | 2026-09-12T09:10:00+09:00 | in_progress |
+| Codex | 1.0.14/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.0.14 P5 `a11e1b5` | 2026-09-12T09:10:00+09:00 | complete |
 | Codex | 1.0.14/P5 | LC-NF-1.0.14-P5-01~03 | OFL/지원·fallback 고지·최종 봉인·OPS-NF-002 공유 진입 판정 | 1.0.14 P4 `1753ee0` | 2026-09-12T08:35:00+09:00 | complete |
 | Codex | 1.0.14/P4 | LC-NF-1.0.14-P4-01~03 | 실제/합성 IME 경계·slow/offline·저사양 성능·개인 흐름 통합 회귀 | 1.0.14 P3 `ffcf97f` | 2026-09-12T06:53:00+09:00 | complete |
 | Codex | 1.0.14/P3 | LC-NF-1.0.14-P3-01~03 | 선택 영속·다국어 preview·세 편집기 적용·cursor/undo/IME·모바일 overflow | 1.0.14 P2 `1c97f4c` | 2026-09-12T06:45:00+09:00 | complete |
@@ -189,6 +189,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.0.14는 PR #86 merge 뒤 main과 annotated `v1.0.14`가 `d093ff2a472e59499eebcf151f549f15e9535baa`를 가리킨다. main Actions `34660678199`와 tag Actions `34662523402`의 전체 verify, unit 334 PASS·beta 4 조건부 skip, Chromium 340 PASS·36 skip, release matrix 10 PASS와 네 정식 image 서명·provenance·SBOM을 통과했다. 같은 exact digest를 릴리스 서버에 migrate→서비스 순서로 배포해 `1.0.14`·`release`·phase `null`, schema `1004_web_font_selection.sql`, 네 서비스 healthy를 확인했다. 공개 가사·문장 원문, 연결 자료, owner 격리, Suno workspace, font hash/cache·설정 저장/재진입과 실제 서비스 재시작 지속성이 PASS했고 합성 fixture를 제거했다. 기존 DB volume·secret·HMAC allowlist는 보존했다. `OPS-100-001` backup 예외와 실제 Windows/Android/iOS 폰트 전환 미실행을 유지하며, `OPS-NF-002` 승인 전 1.1.0 공유는 시작하지 않는다.
 
 1.0.14 P5 후보 `a11e1b5cb9b58cc195a0b2c9f2c148f868d74dee`는 OFL·저작권·재배포·지원 문자/fallback·문제 해결 고지와 24개 migration·Noto asset license·환경·release manifest 봉인을 추가하고 `OPS-NF-002` 공유 진입을 NO-GO로 재판정했다. Actions push `34658944912`과 PR `34658954668`의 전체 verify, Chromium 340 PASS·36 skip, release matrix 10 PASS, 네 dev image 게시/서명을 통과했다. 같은 SHA 개발 서버의 `1.0.14`·`dev`·`p5`, schema `1004_web_font_selection.sql`, 네 서비스 healthy와 font hash/크기/cache를 확인하고 공개 계정 font·200줄 composition·차단 fallback 저장/재진입·overflow를 PASS한 뒤 fixture를 제거했다. 실제 Windows/Android/iOS 폰트 전환·물리 저사양 기기와 `OPS-100-001` backup 예외를 숨기지 않은 채 승인된 정식 릴리스로 이동한다.
 

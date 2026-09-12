@@ -18,7 +18,7 @@
 - cold 1회 `4,644,748` bytes, 4배 CPU 최대 73ms, GC heap 증가 최대 329,576 bytes
 - Actions P4 `34656715638`·`34656718443`, 네 dev image와 동일 SHA 공개 200줄·차단 font 저장/재진입 PASS
 
-P5 전체 CI와 동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다. Known limitations: 실제 Windows/Android/iOS의 1.0.14 폰트 전환과 물리 저사양 기기는 미실행이고, 사전 provider·공유 권한 gate와 `OPS-100-001` backup 예외를 유지한다.
+P5 CI `34658944912`·`34658954668`, main CI `34660678199`, tag CI `34662523402`와 동일 SHA 개발/운영 공개 인수를 통과했다. main/annotated tag `d093ff2`의 정식 네 image를 exact digest로 배포하고 GitHub Release를 공개했다. Known limitations: 실제 Windows/Android/iOS의 1.0.14 폰트 전환과 물리 저사양 기기는 미실행이고, 사전 provider·공유 권한 gate와 `OPS-100-001` backup 예외를 유지한다.
 
 ## [1.0.12] - 2026-09-12
 
