@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.0"
-current_phase: "../2.Patch-phase/1.1.0/3phase.md"
+current_phase: "../2.Patch-phase/1.1.0/4phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.1.0 P2 후보 046a98c의 전체 CI·동일 SHA 개발 인수 완료. P3 owner 공유 관리와 reader PC·모바일 읽기 전용 흐름을 검증한다"
+next_action: "1.1.0 P3 후보 e315d4b의 전체 CI·동일 SHA 공개 desktop/mobile 인수 완료. P4 다른 계정·offline/reconnect·restart·지원 browser 권한 회귀를 수행한다"
 ```
 
 ## 승인과 기준
@@ -114,13 +114,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.0.14 Release | complete | main/tag `d093ff2`, main CI `34660678199`·tag CI `34662523402`, exact digest 운영 배포·공개 재시작/영속성 smoke·GitHub Release 완료 |
 | 1.1.0 P1 | complete | 기준 `6d4921f`, owner/actor/resource grant·최소 공개 필드·reader presence·회수/rollback을 selected-read 범위로 승인 |
 | 1.1.0 P2 | complete | 후보 `046a98c`, Actions `34675587605`·`34675589373`, grant/RLS·owner API·reader read-only WS/presence와 동일 SHA 개발 인수 완료 |
-| 1.1.0 P3 | in_progress | owner selected-read 관리·reader 읽기 전용 desktop/mobile·인증 복귀·presence·회수 UX 검증 |
+| 1.1.0 P3 | complete | 후보 `e315d4b`, Actions `34676721051`·`34676727416`, Chromium 342 PASS와 동일 SHA 공개 desktop/mobile grant·live·presence·회수 인수 완료 |
+| 1.1.0 P4 | in_progress | 다른 계정·직전 버전·offline/reconnect·server restart·지원 browser의 selected-read 권한·복구 회귀 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.0/P3 | LC-NF-1.1.0-P3-01~07 | owner 공유 관리·reader view·auth return·read-only sync/presence·PC/mobile E2E | 1.1.0 P2 `046a98c` | 2026-09-12 | in_progress |
+| Codex | 1.1.0/P4 | LC-NF-1.1.0-P4-01~06 | AC 전체·다른 계정·offline/reconnect·restart·지원 browser 권한/복구 회귀 | 1.1.0 P3 `e315d4b` | 2026-09-12 | in_progress |
+| Codex | 1.1.0/P3 | LC-NF-1.1.0-P3-01~07 | owner 공유 관리·reader view·auth return·read-only sync/presence·PC/mobile E2E | 1.1.0 P2 `046a98c` | 2026-09-12 | complete |
 | Codex | 1.1.0/P2 | LC-NF-1.1.0-P2-01~07 | migration·DB store·HTTP grant/viewer·collaboration actor/read 권한·계약 시험 | 1.1.0 P1, 기준 `6d4921f` | 2026-09-12 | complete |
 | Codex | 1.1.0/P1 | LC-NF-1.1.0-P1-01~06 | sharing 계약·결정 문서·수용 입력·담당/rollback | v1.0.14 + evidence `6d4921f` | 2026-09-12 | complete |
 | Codex | 1.0.14/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.0.14 P5 `a11e1b5` | 2026-09-12T09:10:00+09:00 | complete |
