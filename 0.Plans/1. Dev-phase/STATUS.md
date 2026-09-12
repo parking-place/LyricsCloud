@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.2"
 current_phase: "../2.Patch-phase/1.1.2/5phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-13"
-next_action: "1.1.2 P4 후보 b797224의 전체 CI 두 경로·네 dev image·동일 SHA 개발 공개 3계정/복구/재시작 인수 완료. P5에서 요구 추적·현재 문서·봉인 artifact·최종 후보와 release gate를 검증한다"
+next_action: "1.1.2 P5 후보 8ec3cf9의 전체 CI 두 경로·네 dev image·동일 SHA 개발 공개 3계정/복구/재시작 인수 완료. 승인된 main·annotated v1.1.2·정식 image·릴리스 서버 exact digest·공개 smoke·GitHub Release를 실행한다"
 ```
 
 ## 승인과 기준
@@ -128,13 +128,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.2 P2 | complete | 후보 `41db8ff`, Actions `34710725889`·`34710727914`, 1120 schema·원자 actor/epoch ACK·rejected queue·네 dev image와 동일 SHA 공개 개발 인수 완료 |
 | 1.1.2 P3 | complete | 후보 `f8f2dbd`, Actions `34718575157`·`34718576675`, 실제 DB 8 PASS·5-browser 5 PASS·동일 SHA 공개 권한 토글/수렴/강등/재허용/회수 인수 완료 |
 | 1.1.2 P4 | complete | 후보 `b797224`, Actions `34721549799`·`34721572892`, Vitest 353 PASS·E2E 347 PASS·5-browser 5 PASS·동일 SHA 공개 3계정/복구/재시작 인수 완료 |
-| 1.1.2 P5 | in_progress | 요구 추적·사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·동일 SHA 개발/정식 release gate |
+| 1.1.2 P5 | complete | 후보 `8ec3cf9`, Actions `34723513936`·`34723521842`, 네 dev image·27 migration 봉인·동일 SHA 공개 3계정/복구/재시작 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.2/P5 | LC-NF-1.1.2-P5-01~06 | 요구 추적·현재 문서·봉인 artifact·최종 CI·동일 SHA 개발 인수·정식 release gate | 1.1.2 P4 `b797224` | 2026-09-13 | in_progress |
+| Codex | 1.1.2/P5 | LC-NF-1.1.2-P5-01~06 | 요구 추적·현재 문서·봉인 artifact·최종 CI·동일 SHA 개발 인수·정식 release gate | 1.1.2 P4 `b797224` | 2026-09-13 | complete |
 | Codex | 1.1.2/P4 | LC-NF-1.1.2-P4-01~07 | W⊆R·3계정 동시 편집·epoch 경쟁·권한/복구·offline/reconnect·서비스 재시작 | 1.1.2 P3 `f8f2dbd` | 2026-09-13 | complete |
 | Codex | 1.1.2/P3 | LC-NF-1.1.2-P3-01~07 | owner access UI·writer CodeMirror/상태·rejected 복구·selection/IME/undo·PC/mobile | 1.1.2 P2 `41db8ff` | 2026-09-13 | complete |
 | Codex | 1.1.2/P2 | LC-NF-1.1.2-P2-01~07 | 1120 schema·W⊆R·actor/epoch 원자 update/ACK·local rejected queue·awareness 기반 | 1.1.2 P1, 기준 `d4c82b3` | 2026-09-13 | complete |

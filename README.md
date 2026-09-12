@@ -41,7 +41,7 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 | 현재 작업 | [1.1.2 Phase 5 — 최종 후보 인수](<./0.Plans/2.Patch-phase/1.1.2/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.1.1`, main/tag `d4c82b3`, exact digest 운영 배포·공개 링크/회수/재시작 smoke 완료 |
-| 개발 인수 | 1.1.2 P1~P4 완료; P5 전체 CI·동일 SHA 개발 인수 진행 |
+| 개발 인수 | 1.1.2 P1~P5 완료; 후보 `8ec3cf9` 전체 CI·네 dev image·동일 SHA 개발 인수 PASS |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.

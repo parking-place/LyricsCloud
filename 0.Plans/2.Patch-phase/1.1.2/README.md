@@ -1,6 +1,6 @@
 # 1.1.2 — 지정 사용자 쓰기·공동 편집
 
-상태: **P1~P4 완료 / P5 진행**. selected write의 1120 schema·W⊆R·actor/epoch 원자 ACK·rejected 복구함·server-auth awareness, PC·모바일 3계정 흐름과 권한·재시작 회귀를 동일 SHA 개발 인수했고 최종 문서·봉인·릴리스 gate를 검증한다.
+상태: **P1~P5 완료 / 정식 릴리스 gate 개방**. selected write의 1120 schema·W⊆R·actor/epoch 원자 ACK·rejected 복구함·server-auth awareness, PC·모바일 3계정 흐름과 권한·재시작 회귀를 최종 후보 `8ec3cf9`의 전체 CI·네 dev image·동일 SHA 개발 인수로 완료했다.
 
 ## 목표
 
