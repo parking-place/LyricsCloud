@@ -35,6 +35,8 @@
 - `apps/web/src/app`
 - `apps/web/src/components`
 - `apps/web/public`
+- `apps/collaboration/src`
+- `tests/e2e`
 
 경로는 책임 영역이다. 신규 제안 표시는 아직 생성된 파일이 아니며 실제 이름·runner·package export는 P1 인수에서 확정한다. 디렉터리 전체를 리팩터링하라는 권한이 아니다. **입력**은 선행 계약·source SHA·fixture·권한 문맥이고 **출력**은 현 단계의 코드/설계·실행 증거·후속 호환 계약이다.
 
