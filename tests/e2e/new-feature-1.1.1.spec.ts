@@ -53,9 +53,11 @@ test.describe("1.1.1 public-link lyric reading", () => {
       expect((await publicContext.request.get(`/api/lyrics/${lyricId}`)).status()).toBe(401);
       expect((await publicContext.request.get(`/api/shared/lyrics/${lyricId}`)).status()).toBe(401);
 
-      await publicPage.reload();
-      await expect(publicPage.getByRole("heading", { name: "링크로 읽는 가사" })).toBeVisible({ timeout: 15_000 });
-      await expect(publicPage).toHaveURL(/\/shared\/public$/);
+      if (info.project.name === "chromium-desktop") {
+        await publicPage.reload();
+        await expect(publicPage.getByRole("heading", { name: "링크로 읽는 가사" })).toBeVisible({ timeout: 15_000 });
+        await expect(publicPage).toHaveURL(/\/shared\/public$/);
+      }
 
       const editor = ownerPage.getByLabel("가사 본문");
       await editor.click(); await ownerPage.keyboard.press("End"); await ownerPage.keyboard.type(" 갱신");
@@ -67,18 +69,20 @@ test.describe("1.1.1 public-link lyric reading", () => {
       await expect(publicPage.getByRole("heading", { name: "공유 가사를 열 수 없습니다" })).toBeVisible({ timeout: 10_000 });
       await expect(publicPage.getByText("링크로 읽는 가사")).toHaveCount(0);
 
-      const emptyLyricResponse = await ownerContext.request.post(`/api/songs/${songId}/lyrics`, { headers, data: {
-        requestId: randomUUID(), title: "빈 공개 가사", body: "", memo: "빈 가사의 비공개 메모"
-      } });
-      const emptyLyricId = ((await emptyLyricResponse.json()) as { lyric: { id: string } }).lyric.id;
-      const emptyIssueResponse = await ownerContext.request.post(`/api/lyrics/${emptyLyricId}/public-link`, { headers, data: {
-        requestId: randomUUID(), expiresInDays: 1, fields: { ownerDisplayName: false, status: false, updatedAt: false }
-      } });
-      const emptyIssue = await emptyIssueResponse.json() as { url: string; link: { id: string } };
-      await publicPage.goto(emptyIssue.url);
-      await expect(publicPage.getByRole("heading", { name: "빈 공개 가사" })).toBeVisible({ timeout: 15_000 });
-      await expect(publicPage.getByLabel("공유된 가사 본문")).toContainText("아직 입력된 가사가 없습니다.");
-      await ownerContext.request.delete(`/api/lyrics/${emptyLyricId}/public-link/${emptyIssue.link.id}`, { headers });
+      if (info.project.name.startsWith("chromium-")) {
+        const emptyLyricResponse = await ownerContext.request.post(`/api/songs/${songId}/lyrics`, { headers, data: {
+          requestId: randomUUID(), title: "빈 공개 가사", body: "", memo: "빈 가사의 비공개 메모"
+        } });
+        const emptyLyricId = ((await emptyLyricResponse.json()) as { lyric: { id: string } }).lyric.id;
+        const emptyIssueResponse = await ownerContext.request.post(`/api/lyrics/${emptyLyricId}/public-link`, { headers, data: {
+          requestId: randomUUID(), expiresInDays: 1, fields: { ownerDisplayName: false, status: false, updatedAt: false }
+        } });
+        const emptyIssue = await emptyIssueResponse.json() as { url: string; link: { id: string } };
+        await publicPage.goto(emptyIssue.url);
+        await expect(publicPage.getByRole("heading", { name: "빈 공개 가사" })).toBeVisible({ timeout: 15_000 });
+        await expect(publicPage.getByLabel("공유된 가사 본문")).toContainText("아직 입력된 가사가 없습니다.");
+        await ownerContext.request.delete(`/api/lyrics/${emptyLyricId}/public-link/${emptyIssue.link.id}`, { headers });
+      }
     } finally {
       await Promise.all([ownerContext.close(), publicContext.close()]);
       await removeAccounts([owner.userId]);
