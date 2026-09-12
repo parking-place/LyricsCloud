@@ -27,6 +27,7 @@ export interface SharingParticipant {
 }
 export type SharedLyricSyncState = "connecting" | "live" | "offline" | "revoked" | "error";
 export interface BrowserSharedLyricSync { destroy(): void; retry(): void }
+export interface BrowserPublicSharedLyricSync { destroy(): void; retry(): void }
 export type BrowserRhymeSync = BrowserLyricSync;
 export interface CreationSubmission { readonly url: string; readonly body: string }
 export interface RhymeCreationDraft {
@@ -496,6 +497,68 @@ export async function createBrowserSharedLyricSync(options: {
   window.addEventListener("online", online);
   window.addEventListener("offline", offline);
   void connect();
+  return { destroy, retry: online };
+}
+
+export async function createBrowserPublicSharedLyricSync(options: {
+  token: string;
+  linkId: string;
+  onBody: (body: string) => void;
+  onStateChange: (state: SharedLyricSyncState) => void;
+}): Promise<BrowserPublicSharedLyricSync> {
+  const document = createLyricDocument();
+  const text = lyricBody(document);
+  let socket: WebSocket | undefined;
+  let retryTimer: ReturnType<typeof setTimeout> | undefined;
+  let retryDelay = 500;
+  let destroyed = false;
+  let connecting = false;
+
+  function state(value: SharedLyricSyncState) { if (!destroyed) options.onStateChange(value); }
+  function revoke() { options.onBody(""); state("revoked"); }
+  function reconnect() {
+    if (destroyed || connecting || retryTimer || !navigator.onLine) return;
+    retryTimer = setTimeout(() => { retryTimer = undefined; void connect(); }, retryDelay);
+    retryDelay = Math.min(30_000, retryDelay * 2);
+  }
+  async function connect() {
+    if (destroyed || connecting || !navigator.onLine || (socket && socket.readyState <= WebSocket.OPEN)) return;
+    connecting = true; state("connecting");
+    try {
+      const url = new URL("/collaboration/public", location.origin);
+      url.protocol = location.protocol === "https:" ? "wss:" : "ws:";
+      const current = new WebSocket(url); socket = current;
+      current.onopen = () => current.send(JSON.stringify({ type: "auth", token: options.token, linkId: options.linkId }));
+      current.onmessage = (event: MessageEvent<string>) => {
+        try {
+          const message = JSON.parse(event.data) as { type?: unknown; payload?: unknown; access?: unknown };
+          if ((message.type !== "snapshot" && message.type !== "update") || typeof message.payload !== "string"
+            || (message.type === "snapshot" && message.access !== "public-read")) {
+            current.close(4400, "SYNC_UPDATE_INVALID"); return;
+          }
+          Y.applyUpdate(document, decode(message.payload), remoteOrigin);
+          options.onBody(text.toString()); retryDelay = 500; state("live");
+        } catch { current.close(4400, "SYNC_UPDATE_INVALID"); }
+      };
+      current.onclose = (event) => {
+        if (socket !== current || destroyed) return;
+        socket = undefined;
+        if (event.code === 4403 || event.code === 4404) return revoke();
+        if (!navigator.onLine) return state("offline");
+        state(event.code === 4400 ? "error" : "connecting"); reconnect();
+      };
+      current.onerror = () => current.close();
+    } catch { if (!destroyed) { state(navigator.onLine ? "error" : "offline"); reconnect(); } }
+    finally { connecting = false; }
+  }
+  function online() { retryDelay = 500; clearTimeout(retryTimer); retryTimer = undefined; void connect(); }
+  function offline() { socket?.close(); state("offline"); }
+  function destroy() {
+    if (destroyed) return;
+    destroyed = true; clearTimeout(retryTimer); socket?.close();
+    window.removeEventListener("online", online); window.removeEventListener("offline", offline); document.destroy();
+  }
+  window.addEventListener("online", online); window.addEventListener("offline", offline); void connect();
   return { destroy, retry: online };
 }
 

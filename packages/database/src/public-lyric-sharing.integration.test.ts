@@ -35,6 +35,7 @@ describe.runIf(enabled)("public lyric read links", () => {
     const [first, replay] = await Promise.all([sharing!.issue(owner, lyric.id, input), sharing!.issue(owner, lyric.id, input)]);
     expect(new Set([first!.link.id, replay!.link.id])).toHaveLength(1);
     expect([first!.replayed, replay!.replayed].sort()).toEqual([false, true]);
+    expect((await pool!.query("select 1 from sync_documents where resource_id=$1", [lyric.id])).rowCount).toBe(1);
     await expect(sharing!.readProjection(firstDigest)).resolves.toMatchObject({ title: "public title", body: "public body",
       ownerDisplayName: "공유자", permissionEpoch: 1 });
     expect(JSON.stringify(await sharing!.readProjection(firstDigest))).not.toContain("private memo");
