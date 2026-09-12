@@ -125,6 +125,9 @@
 - [`1.1.0 Phase 2 공유 서버 기반`](./1.1.0-phase2-sharing-foundation.md)
 - [`1.1.0 Phase 3 공유 사용자 흐름`](./1.1.0-phase3-sharing-ui.md)
 - [`1.1.0 Phase 4 권한·복구 회귀`](./1.1.0-phase4-sharing-regression.md)
+- [`1.1.0 Phase 5 최종 후보 인수`](./1.1.0-phase5-final-acceptance.md)
+- [`1.1.0 정식 릴리스 실행`](./1.1.0-release.md)
+- [`1.1.0 정식 릴리스 체크리스트`](./1.1.0-release-checklist.md)
 - [`0.7.0 Phase 3 최근 작업·위치 복원 검증`](./0.7.0-phase3-validation.md)
 
 ## 개발 서버 운영

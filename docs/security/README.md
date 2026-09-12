@@ -23,3 +23,5 @@
 1.0.12는 인증·저장·schema 경계를 바꾸지 않는다. 세 목록의 pin 그룹 위치를 한 번에 계산하는 O(n) map은 이미 owner 검사를 통과한 화면 입력만 소비하며 제목·본문·자료 ID 배열을 로그에 추가하지 않는다. 중복 ID는 거부하고 기존 rank·pin·copy/export·Suno·RLS·CAS 계약을 유지한다. 공개 회귀에서 다른 owner 자료는 404였고 서비스 재시작 뒤 원문과 연결 자료가 보존됐다.
 
 1.0.14의 Noto Sans KR는 same-origin 정적 hash 자산이며 외부 CDN이나 원문 전송을 사용하지 않는다. 폰트 선택은 기존 owner-only 표시 설정·forced RLS·CAS를 재사용하고 `1004` migration은 허용값만 확장한다. OTF 실패는 system fallback으로 처리해 인증·저장·CRDT·copy를 우회하지 않는다. 공유 actor 권한은 추가하지 않았고 `OPS-NF-002` 승인 전 NO-GO다.
+
+1.1.0은 owner와 actor를 분리한 `1100_selected_lyric_sharing.sql` forced RLS와 자료별 read grant를 사용한다. sharing ID는 무작위 비열거 식별자이고 공개 응답에는 제한된 표시 이름만 포함한다. reader가 보는 필드는 지정 가사의 제목·본문·상태와 최소 presence이며 메모·연결 자료·다른 버전·revision·owner API는 차단한다. read socket의 write는 4403, 회수·만료·삭제와 다른 actor 접근은 일반화된 404/4404로 끝나며 permission epoch를 재검증한다. public link·guest·write는 1.1.0에서 비활성이다.

@@ -22,12 +22,17 @@ const projectionRetry = setInterval(async () => {
   if (result.attempted) telemetry.record({ signal: "metric", event: "sync_projection_retry",
     metric: "sync_projection_retry_count", value: result.attempted, unit: "count",
     outcome: result.recovered ? "recovered" : "success", resourceType: "lyric" });
-  if (result.recovered) {
-    for (const peers of sockets.values()) for (const peer of peers) {
-      const context = contexts.get(peer);
-      if (!context || !await authorized(peer)) continue;
-      const loaded = await documents.loadDocument(context.ownerId, context.documentKey).catch(() => null);
-      if (loaded && peer.readyState === WebSocket.OPEN) peer.send(JSON.stringify({ type: "projection", projection: loaded.projectionPending ? "pending" : "current" }));
+  for (const peers of sockets.values()) for (const peer of peers) {
+    const context = contexts.get(peer);
+    // A reconnect can load the pending snapshot while the repair transaction
+    // commits before this socket is visible to the recovery broadcast. Keep
+    // reconciling connections that have observed a pending projection so that
+    // the ready transition cannot be lost at that boundary.
+    if (!context || (!result.recovered && !context.projectionPending) || !await authorized(peer)) continue;
+    const loaded = await documents.loadDocument(context.ownerId, context.documentKey).catch(() => null);
+    if (loaded && peer.readyState === WebSocket.OPEN) {
+      context.projectionPending = loaded.projectionPending;
+      peer.send(JSON.stringify({ type: "projection", projection: loaded.projectionPending ? "pending" : "current" }));
     }
   }
 }, 5_000);
@@ -120,6 +125,8 @@ const server = createServer(async (request, response) => {
       if (!result) return unavailable(response, 404, requestId);
       const payload = Buffer.from(result.snapshot).toString("base64");
       for (const peer of sockets.get(key) ?? []) if (await authorized(peer, true)) {
+        const context = contexts.get(peer);
+        if (context) context.projectionPending = false;
         peer.send(JSON.stringify({ type: "update", payload }));
         peer.send(JSON.stringify({ type: "projection", projection: "current" }));
       }
@@ -160,7 +167,8 @@ server.on("upgrade", async (request, socket, head) => {
     websocket.handleUpgrade(request, socket, head, (client) => {
       contexts.set(client, { documentKey: match[1]!, actorId: session.userId, ownerId: loaded.access.ownerId,
         accessMode: loaded.access.accessMode, permissionEpoch: loaded.access.permissionEpoch,
-        displayName: loaded.access.displayName, participantId: randomUUID(), request, promptModeCapable: capable });
+        displayName: loaded.access.displayName, participantId: randomUUID(), request, promptModeCapable: capable,
+        projectionPending: loaded.projectionPending });
       websocket.emit("connection", client, request);
     });
   } catch {
@@ -181,6 +189,7 @@ websocket.on("connection", (client, request) => {
   // the HTTP upgrade cannot fall between the snapshot and the subscription.
   void documents.loadDocumentForActor(context.actorId, context.documentKey).then((loaded) => {
     if (!loaded) return closeUnavailable(client);
+    context.projectionPending = loaded.projectionPending;
     if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({ type: "snapshot",
       payload: Buffer.from(merge(loaded.snapshot, loaded.updates)).toString("base64"),
       access: context.accessMode, permissionEpoch: context.permissionEpoch,
@@ -205,6 +214,7 @@ websocket.on("connection", (client, request) => {
       const envelope = parseSyncUpdateEnvelope({ updateId: input.updateId, payload: new Uint8Array(payload) });
       const result = await documents.applyUpdate(context.ownerId, context.documentKey, envelope.updateId, envelope.payload);
       if (!result) return closeUnavailable(client);
+      context.projectionPending = result.projectionPending;
       client.send(JSON.stringify({ type: "ack", updateId: envelope.updateId, duplicate: result.duplicate,
         projection: result.projectionPending ? "pending" : "current" }));
       if (!result.duplicate) for (const peer of peers) if (peer !== client && await authorized(peer) && peer.readyState === WebSocket.OPEN) {
@@ -247,6 +257,7 @@ interface ConnectionContext {
   participantId: string;
   request: IncomingMessage;
   promptModeCapable: boolean;
+  projectionPending: boolean;
 }
 
 async function authorized(client: WebSocket, checkDocument = false): Promise<boolean> {

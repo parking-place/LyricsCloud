@@ -1,6 +1,6 @@
 # 1.1.0 — 지정 사용자 읽기 공유 기반
 
-상태: **P1~P4 완료 / P5 진행**. selected-read 서버·UI에 자료/owner 격리, reader write 차단, offline 회수, collaboration 재시작·만료 회귀를 후보 `3e20728`의 전체 CI와 동일 SHA 공개 개발 인수로 완료했다. public link·write·guest는 계속 비활성이다.
+상태: **P1~P5 완료 / 정식 릴리스 준비됨**. selected-read 서버·UI에 자료/owner 격리, reader write 차단, offline 회수, collaboration 재시작·만료 회귀를 최종 후보 `aa4d07f`의 전체 CI·네 dev image와 동일 SHA 공개 개발 인수로 완료했다. public link·write·guest는 계속 비활성이다.
 
 ## 목표
 

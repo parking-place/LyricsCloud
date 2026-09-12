@@ -1,6 +1,6 @@
-# LyricsCloud 1.0.14 셀프호스팅
+# LyricsCloud 1.0.14 정식·1.1.0 후보 셀프호스팅
 
-이 문서는 새 Linux 호스트 한 대에 단일 web replica, PostgreSQL 18, collaboration, worker를 Docker Compose로 실행하는 1.0 지원 경로다. 다중 web replica는 현재 메모리 기반 rate limiter를 공유하지 않으므로 지원 범위가 아니다.
+이 문서는 새 Linux 호스트 한 대에 단일 web replica, PostgreSQL 18, collaboration, worker를 Docker Compose로 실행하는 지원 경로다. 다중 web replica는 현재 메모리 기반 rate limiter와 실시간 presence를 공유하지 않으므로 지원 범위가 아니다.
 
 ## 요구 조건
 
@@ -11,7 +11,7 @@
 
 ## 1. 고정 source와 환경 준비
 
-현재 정식 설치 기준은 불변 `v1.0.14` tag다. 검토·배포에는 tag가 가리키는 전체 40자리 commit SHA `d093ff2a472e59499eebcf151f549f15e9535baa` 또는 검증된 exact image digest를 사용한다. moving alias나 branch 이름을 운영 checkout 기준으로 쓰지 않는다.
+현재 정식 설치 기준은 불변 `v1.0.14` tag다. 1.1.0 후보 검토는 승인된 전체 40자리 commit SHA만 사용한다. moving alias나 branch 이름을 운영 checkout 기준으로 쓰지 않는다.
 
 ```bash
 git clone https://github.com/parking-place/LyricsCloud.git
@@ -44,7 +44,7 @@ git check-ignore -v .env .test_users .private/runtime/auth_allowed_emails .priva
 
 환경별 keyring은 공유하지 않는다. HMAC은 익명화가 아니며 rollback backup은 기존 계정 로그인과 복원을 검증한 뒤 정한 보존 기한까지 별도 보호한다. 자세한 회전·복원 절차는 [P3 운영 인수](./runbooks/1.0.1-phase3-hmac-allowlist.md)를 따른다.
 
-정식 환경 이름·형식의 기준은 봉인된 [1.0.14 environment schema](../config/environment-schema.1.0.14.json)다. `APP_VERSION=1.0.14`, `APP_CHANNEL=release`, 빈 `APP_PHASE`, `BUILD_ID=d093ff2a472e59499eebcf151f549f15e9535baa`로 검증한다. Google 설정은 아래 OAuth 절차를 먼저 마친다. 릴리스 적용 전에는 해당 tag에 포함된 schema로 web·collaboration·worker·migrate·admin 설정을 각각 검사한다.
+정식 환경 이름·형식의 기준은 봉인된 [1.0.14 environment schema](../config/environment-schema.1.0.14.json)다. 1.1.0 후보는 [1.1.0 environment schema](../config/environment-schema.1.1.0.json)에서 `APP_VERSION=1.1.0`, `APP_CHANNEL=dev`, `APP_PHASE=p5`, `BUILD_ID=<후보 SHA>`로 검증한다. Google 설정은 아래 OAuth 절차를 먼저 마친다. 릴리스 적용 전에는 해당 tag에 포함된 schema로 web·collaboration·worker·migrate·admin 설정을 각각 검사한다.
 
 ## 2. 구성 검사, 기동과 health
 
@@ -56,7 +56,7 @@ curl --fail --silent http://127.0.0.1:8080/api/health/live
 curl --fail --silent http://127.0.0.1:8080/api/health/ready
 ```
 
-두 endpoint는 200이어야 하고 1.0.14 ready 응답의 `version`, `build.id`, `channel`, `phase`, `database.latestMigration`은 각각 `1.0.14`, `d093ff2a472e59499eebcf151f549f15e9535baa`, `release`, `null`, `1004_web_font_selection.sql`이어야 한다. `/api/health/metrics` 같은 공개 metrics 경로는 제공하지 않는다. 보호 API는 비로그인 요청을 거부해야 한다. reverse proxy는 hash OTF의 content type과 1년 immutable cache header를 보존한다.
+두 endpoint는 200이어야 하고 1.0.14 ready 응답의 `version`, `build.id`, `channel`, `phase`, `database.latestMigration`은 각각 `1.0.14`, `d093ff2a472e59499eebcf151f549f15e9535baa`, `release`, `null`, `1004_web_font_selection.sql`이어야 한다. 1.1.0 후보는 `1.1.0`, 후보 SHA, `dev`, `p5`, `1100_selected_lyric_sharing.sql`이어야 한다. `/api/health/metrics` 같은 공개 metrics 경로는 제공하지 않는다. 보호 API는 비로그인 요청을 거부해야 한다. reverse proxy는 hash OTF cache header와 `/collaboration/*`의 HTTP·WebSocket upgrade, origin·cookie 전달을 보존한다.
 
 `docker compose down`은 컨테이너만 내리고 DB volume을 보존한다. `docker compose down --volumes`는 운영·개발 자료를 영구 삭제하므로 이 문서의 정상 운영 명령이 아니다.
 

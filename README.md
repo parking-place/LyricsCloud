@@ -9,9 +9,9 @@
 
 [![CI](https://github.com/parking-place/LyricsCloud/actions/workflows/ci.yml/badge.svg)](https://github.com/parking-place/LyricsCloud/actions/workflows/ci.yml)
 
-LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 개인 창작용 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합과 온라인 우선 PWA를 지원한다.
+LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합, 지정 사용자 읽기 공유와 온라인 우선 PWA를 지원한다.
 
-현재 운영 서버의 정식 릴리스는 [`v1.0.14`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.0.14)다. 1.0.13은 공식 NAVER 세 언어 사전 제공·권리 경로가 없어 no-go로 종결했고, 1.0.14는 외부 사전과 독립적인 자체 호스팅 Noto Sans KR를 제공한다.
+현재 운영 서버의 정식 릴리스는 [`v1.0.14`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.0.14)이며 소스는 `1.1.0` Phase 5 후보다. 1.1.0은 로그인한 지정 사용자에게 특정 가사만 읽기로 공유하는 첫 다중 사용자 경계를 제공한다.
 
 ## 주요 기능
 
@@ -26,22 +26,23 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 - 30일 휴지통, 탈퇴 철회, TXT/Markdown+JSON 전체 ZIP 내보내기
 - 설치형 PWA, light/dark 테마, 접근 가능한 PC·모바일 화면
 - 계정·가사별 Noto Sans KR 선택, same-origin immutable/PWA cache와 system sans fallback
+- 계정별 비열거 공유 코드, 특정 가사 selected-read, 읽기 전용 live update·최소 presence·즉시 권한 회수
 - Google OIDC와 1회성 초대 코드 기반 Private Beta 가입
 
-여러 사용자의 공동 편집, AI 생성, 미디어 업로드는 1.0 범위가 아니다.
+public link·guest·쓰기 공동 편집, AI 생성, 미디어 업로드는 1.1.0 범위가 아니다.
 
 ## 현재 상태
 
 | 항목 | 상태 |
 |---|---|
-| 소스·runtime version | `1.0.14` |
-| 현재 작업 | 1.0.14 P1~P5와 정식 릴리스 완료; 공유 1.1.0은 권한 모델 승인 전 NO-GO |
+| 소스·runtime version | `1.1.0` |
+| 현재 작업 | [1.1.0 Phase 5 — 문서·개발 인수·후속 연결](<./0.Plans/2.Patch-phase/1.1.0/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.0.14`, main/tag `d093ff2`, exact digest 운영 배포·공개 재시작/영속성 smoke 완료 |
-| 개발 인수 | 1.0.14 P1~P5 동일 SHA 개발 인수 완료 |
+| 개발 인수 | 1.1.0 P1~P4 동일 SHA 개발 인수 완료; P5 최종 봉인·개발 인수 진행 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
-1.0.14는 Noto Sans KR Regular를 OFL 전문과 함께 자체 호스팅하고 계정/가사별 선택을 저장한다. 느린·차단·offline font에서도 system fallback과 저장을 유지한다. 1.0.13의 사전 tooltip은 공식 provider 계약 전까지 제공하지 않으며, 공유는 owner/actor 권한 모델 승인 전 NO-GO다.
+1.1.0은 owner와 actor를 분리하고 자료별 read grant를 사용한다. reader는 지정 가사의 제목·본문·상태와 최소 presence만 보며 메모·연결 자료·다른 가사·revision·owner API는 볼 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.
 
 ## 화면
 
@@ -99,7 +100,7 @@ LyricsCloud betacode refresh
 | 인증·베타 운영자 | [Google OAuth](./docs/runbooks/google-oauth-setup.md), [초대 코드 CLI](./docs/runbooks/1.0.1-phase2-beta-admin.md), [HMAC allowlist](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md) |
 | 복구·배포 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md), [개발 배포](./docs/runbooks/development-deploy.md), [Docker Hub 발행](./docs/runbooks/dockerhub-publish.md) |
 | 보안·장애 담당자 | [Security policy](./SECURITY.md), [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
-| 릴리스 검토자 | [1.0.14 release notes](./docs/releases/1.0.14.md), [1.0.14 Phase 5](./docs/runbooks/1.0.14-phase5-final-acceptance.md), [1.0.14 추적](./docs/architecture/1.0.14-FINAL-TRACEABILITY.md), [폰트 고지](./docs/third-party-fonts.md), [CHANGELOG.md](./CHANGELOG.md) |
+| 릴리스 검토자 | [1.1.0 release notes](./docs/releases/1.1.0.md), [1.1.0 Phase 5](./docs/runbooks/1.1.0-phase5-final-acceptance.md), [1.1.0 추적](./docs/architecture/1.1.0-FINAL-TRACEABILITY.md), [CHANGELOG.md](./CHANGELOG.md) |
 | 기여자 | [Agent 지침](./Agent.md), [후속 계획](./0.Plans/2.Patch-phase/README.md), [ADR 색인](./docs/adr/README.md) |
 
 ## 저장소 구조
@@ -115,4 +116,4 @@ LyricsCloud betacode refresh
 | `scripts/` | 검증·migration·배포 보조 명령 |
 | `0.Plans/` | 보호된 기획·목업·기술 결정과 Phase 상태 |
 
-Suno 자동 메타데이터·사전·공유·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있다. 1.0.14 자체 호스팅 폰트 범위는 정식 릴리스까지 완료됐고, 공유는 승인된 owner/actor 권한 모델 전까지 시작하지 않는다.
+Suno 자동 메타데이터·사전·public/write 공유·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있다. 1.1.0은 selected-read만 제공하고 이후 공유 범위는 1.1.1~1.1.4가 단계적으로 담당한다.

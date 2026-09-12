@@ -1,4 +1,4 @@
-# LyricsCloud 1.0.14 지원 정책
+# LyricsCloud 1.0.14 정식·1.1.0 후보 지원 정책
 
 ## 지원 환경
 
@@ -44,6 +44,8 @@
 1.0.13의 NAVER 세 언어 사전 tooltip은 공식 뜻풀이 API와 표시·캐시·재배포 권리를 확인하지 못해 제공하지 않는다. 백과사전 검색·scraping·비공식 endpoint로 대체하지 않으며, 정식 계약 확보 전 `NF-REQ-043`은 미완료다.
 
 1.0.14는 Noto Sans KR 2.004 Regular를 OFL 전문과 함께 same-origin으로 제공한다. Latin·한글 완성형/자모·Kana·포함된 Han/기호를 지원하며 누락 글리프·emoji는 system fallback을 사용한다. 설정과 가사별 선택, 세 편집기 원문/copy·slow/blocked/offline·200줄 저장/재진입은 자동·공개 환경에서 PASS했다. 실제 Windows 한글 IME·Android/iOS 키보드에서의 1.0.14 폰트 전환과 물리 저사양 기기는 미실행이다. 글자가 비면 `시스템 기본`으로 전환하고 [폰트 문제 해결](./third-party-fonts.md)을 따른다.
+
+1.1.0 후보는 로그인한 계정 사이의 특정 가사 selected-read를 지원한다. public link·guest·쓰기 공유는 지원하지 않는다. 공유 화면이 연결되지 않으면 먼저 로그인 계정과 권한 회수·만료 여부를 확인하고, `다시 연결` 또는 새로고침으로 권한을 재검증한다. reader에게 메모·연결 자료·다른 가사·revision·owner 작업이 보이거나 수정/삭제가 성공하면 보안 사고로 취급해 배포를 중단한다. P4의 Linux 5-browser 자동화는 PASS했지만 실제 OS/물리 기기는 새로 실행하지 않았다.
 
 정식 main/tag `d093ff2`, main CI `34660678199`, tag CI `34662523402`, 네 exact digest 운영 배포를 완료했다. 공개 HTTPS에서 저장·재진입, owner 격리, font hash/cache와 서비스 재시작 지속성이 PASS했다. 기존 DB volume·secret·HMAC allowlist는 보존했으며 외부 backup은 `OPS-100-001` 승인 예외로 여전히 미구축이다.
 

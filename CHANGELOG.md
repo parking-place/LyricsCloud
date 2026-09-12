@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.1.0] - 2026-09-12
+
+### Added
+
+- 로그인 계정의 비열거 sharing ID로 특정 가사에만 부여하는 selected-read grant
+- owner 공유 관리, reader 읽기 전용 화면, 실시간 본문·최소 presence, 로그인 return path와 즉시 권한 회수
+
+### Security and recovery
+
+- `1100_selected_lyric_sharing.sql` forced RLS, owner/actor 분리, 메모·연결 자료·다른 가사·revision 비공개 경계
+- reader의 owner API·삭제·CRDT write와 stranger URL/API/WS 차단, permission epoch 기반 회수·만료·재접속 검증
+- owner 전용 grant API가 selected reader에게 자신의 grant를 노출하던 판정 결함 수정
+
+### Validation
+
+- 실제 PostgreSQL Vitest 340 PASS·beta 4건 조건부 skip, Chromium 전체 342 PASS·36 skip
+- Chromium/Firefox/WebKit desktop과 Chromium/WebKit mobile selected-read 5/5 PASS
+- Actions P4 `34679448133`·`34679450056`, 네 dev image와 동일 SHA 공개 collaboration 재시작·자동 재연결·offline 회수 PASS
+
+P5 전체 CI와 동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다. Known limitations: public link·guest·write 공유는 후속 버전 범위이고 실제 OS/물리 기기는 새로 실행하지 않았으며 `OPS-100-001` 외부 backup 예외를 유지한다.
+
 ## [1.0.14] - 2026-09-12
 
 ### Added

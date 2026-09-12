@@ -4,6 +4,10 @@ RUN CGO_ENABLED=0 go install filippo.io/age/cmd/age@v1.3.2 filippo.io/age/cmd/ag
 
 FROM postgres:18-bookworm@sha256:a10c981235b4f635e65df0cfb66a5598064628128505dbc6a3ed4ca303717521
 
+RUN apt-get update \
+  && apt-get upgrade --yes \
+  && rm -rf /var/lib/apt/lists/*
+
 RUN rm -f /usr/local/bin/gosu
 COPY --from=age --chmod=0555 /go/bin/age /go/bin/age-keygen /usr/local/bin/
 COPY --chmod=0555 infra/backup/backup.sh /usr/local/bin/lyricscloud-backup
