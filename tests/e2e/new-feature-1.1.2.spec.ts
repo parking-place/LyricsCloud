@@ -13,12 +13,15 @@ test.describe("1.1.2 selected-account lyric writing", () => {
     const contextOptions = { baseURL: origin, viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 }, isMobile: mobile, hasTouch: mobile };
     const ownerContext = await browser.newContext(contextOptions);
     const writerContext = await browser.newContext(contextOptions);
+    const readerContext = await browser.newContext(contextOptions);
     const strangerContext = await browser.newContext(contextOptions);
     const owner = await account(ownerContext, "공동 작업 소유자");
     const writer = await account(writerContext, "선택 공동 작성자");
+    const reader = await account(readerContext, "선택 읽기 전용 사용자");
     const stranger = await account(strangerContext, "공동 작업 무관 사용자");
     const ownerPage = await ownerContext.newPage();
     const writerPage = await writerContext.newPage();
+    const readerPage = await readerContext.newPage();
     try {
       const songResponse = await ownerContext.request.post("/api/songs", { headers, data: { requestId: randomUUID(), title: "공동 작업 곡" } });
       const songId = ((await songResponse.json()) as { song: { id: string } }).song.id;
@@ -31,13 +34,20 @@ test.describe("1.1.2 selected-account lyric writing", () => {
       } });
       expect(grantResponse.status()).toBe(201);
       const grantId = ((await grantResponse.json()) as { grant: { id: string } }).grant.id;
+      const readerGrantResponse = await ownerContext.request.post(`/api/lyrics/${lyricId}/shares`, { headers, data: {
+        requestId: randomUUID(), sharingId: reader.sharingId
+      } });
+      expect(readerGrantResponse.status()).toBe(201);
+      const readerGrantId = ((await readerGrantResponse.json()) as { grant: { id: string } }).grant.id;
 
       await ownerPage.goto(`/lyrics/${lyricId}`);
       const ownerEditor = ownerPage.getByLabel("가사 본문");
       await expect(ownerEditor).toBeVisible({ timeout: 15_000 });
       const dialog = await openSharingDialog(ownerPage);
       const writerGrant = dialog.locator(".sharing-grants li", { hasText: "선택 공동 작성자" });
+      const readerGrant = dialog.locator(".sharing-grants li", { hasText: "선택 읽기 전용 사용자" });
       await expect(writerGrant).toContainText("읽기 전용");
+      await expect(readerGrant).toContainText("읽기 전용");
       await writerGrant.getByRole("button", { name: "공동 작성 허용" }).click();
       await expect(dialog.getByRole("status")).toContainText("공동 작성자로 변경");
       await expect(writerGrant).toContainText("공동 작성");
@@ -47,9 +57,14 @@ test.describe("1.1.2 selected-account lyric writing", () => {
       const writerEditor = writerPage.getByLabel("공유된 가사 본문");
       await expect(writerPage.locator(".shared-read-badge")).toContainText("공동 작성", { timeout: 15_000 });
       await expect(writerEditor).toHaveAttribute("contenteditable", "true");
+      await readerPage.goto(`/shared/lyrics/${lyricId}`);
+      const readerEditor = readerPage.getByLabel("공유된 가사 본문");
+      await expect(readerPage.locator(".shared-read-badge")).toContainText("읽기 전용", { timeout: 15_000 });
+      await expect(readerEditor).toHaveAttribute("contenteditable", "false");
       await writerEditor.click(); await writerPage.keyboard.press("Control+End"); await writerPage.keyboard.insertText(" 공동작성");
       await expect(writerPage.getByRole("status")).toContainText("모든 변경 저장됨", { timeout: 15_000 });
       await expect(ownerEditor).toContainText("소유자 원문 공동작성", { timeout: 15_000 });
+      await expect(readerEditor).toContainText("소유자 원문 공동작성", { timeout: 15_000 });
 
       await ownerEditor.click(); await ownerPage.keyboard.press("Control+End");
       await writerEditor.click(); await writerPage.keyboard.press("Control+End");
@@ -57,7 +72,7 @@ test.describe("1.1.2 selected-account lyric writing", () => {
         ownerPage.keyboard.insertText(" 소유자동시"),
         writerPage.keyboard.insertText(" 작성자동시")
       ]);
-      for (const target of [ownerEditor, writerEditor]) {
+      for (const target of [ownerEditor, writerEditor, readerEditor]) {
         await expect(target).toContainText("소유자동시", { timeout: 15_000 });
         await expect(target).toContainText("작성자동시", { timeout: 15_000 });
       }
@@ -84,6 +99,7 @@ test.describe("1.1.2 selected-account lyric writing", () => {
       await writerEditor.click(); await writerPage.keyboard.press("Home");
       await openSharingDialog(ownerPage);
       await expect(dialog.locator(".sharing-presence")).toContainText("선택 공동 작성자", { timeout: 10_000 });
+      await expect(dialog.locator(".sharing-presence")).toContainText("선택 읽기 전용 사용자", { timeout: 10_000 });
       await expect(dialog.locator(".sharing-presence")).toContainText("작업 중", { timeout: 10_000 });
 
       const duplicateWriterPage = await writerContext.newPage();
@@ -106,8 +122,19 @@ test.describe("1.1.2 selected-account lyric writing", () => {
         headers, data: { access: "write", requestId: randomUUID() }
       })).status()).toBe(404);
       expect((await writerContext.request.delete(`/api/lyrics/${lyricId}/shares/${grantId}`, { headers })).status()).toBe(404);
+      expect((await writerContext.request.patch(`/api/lyrics/${lyricId}/shares/${readerGrantId}`, {
+        headers, data: { access: "write", requestId: randomUUID() }
+      })).status()).toBe(404);
       const deniedDelete = await writerContext.request.delete(`/api/lyrics/${lyricId}`, { headers });
       expect(await deniedDelete.json()).toEqual({ deleted: false });
+
+      await readerGrant.getByRole("button", { name: "권한 회수" }).click();
+      await expect(readerPage.getByRole("heading", { name: "이 가사를 더 이상 열 수 없습니다" })).toBeVisible({ timeout: 10_000 });
+      expect((await readerContext.request.get(`/api/shared/lyrics/${lyricId}`)).status()).toBe(404);
+      const deniedReaderPage = await readerContext.newPage();
+      await deniedReaderPage.goto(`/shared/lyrics/${lyricId}`);
+      await expect(deniedReaderPage.getByRole("heading", { name: "공유 가사를 열 수 없습니다" })).toBeVisible();
+      await deniedReaderPage.close();
 
       await writerGrant.getByRole("button", { name: "공동 작성 허용" }).click();
       await expect(writerPage.locator(".shared-read-badge")).toContainText("공동 작성", { timeout: 10_000 });
@@ -143,8 +170,8 @@ test.describe("1.1.2 selected-account lyric writing", () => {
       await expect(writerPage.getByText("공유하지 않는 메모")).toHaveCount(0);
     } finally {
       await writerContext.setOffline(false).catch(() => undefined);
-      await Promise.all([ownerContext.close(), writerContext.close(), strangerContext.close()]);
-      await removeAccounts([owner.userId, writer.userId, stranger.userId]);
+      await Promise.all([ownerContext.close(), writerContext.close(), readerContext.close(), strangerContext.close()]);
+      await removeAccounts([owner.userId, writer.userId, reader.userId, stranger.userId]);
     }
   });
 });
