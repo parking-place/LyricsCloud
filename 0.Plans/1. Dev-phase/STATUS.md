@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.1.0"
-current_phase: "../2.Patch-phase/1.1.0/5phase.md"
-state: "release_ready"
+current_version: "1.1.1"
+current_phase: "../2.Patch-phase/1.1.1/2phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-12"
-next_action: "1.1.0 P5 최종 후보 aa4d07f의 전체 CI·네 dev image·동일 SHA 공개 권한/재시작/오프라인 인수 완료. 승인된 main 병합·main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke를 수행한다"
+next_action: "1.1.1 P1에서 256비트 fragment capability·digest-only 저장·한 가사/명시 필드·최대 30일 만료·회수/rotation epoch·fixed POST/WS·no-store/noindex 계약 승인. P2 실패 시험 뒤 1110 schema·서버 기반을 구현한다"
 ```
 
 ## 승인과 기준
@@ -117,13 +117,17 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.0 P3 | complete | 후보 `e315d4b`, Actions `34676721051`·`34676727416`, Chromium 342 PASS와 동일 SHA 공개 desktop/mobile grant·live·presence·회수 인수 완료 |
 | 1.1.0 P4 | complete | 후보 `3e20728`, Actions `34679448133`·`34679450056`, 실제 DB 340 PASS·5-browser 5 PASS·동일 SHA 공개 restart/reconnect/offline revoke 인수 완료 |
 | 1.1.0 P5 | complete | 후보 `aa4d07f`, Actions `34686935235`·`34686937113`, 네 dev image와 동일 SHA 공개 권한 격리·재시작/재연결·offline 회수 인수 완료 |
-| 1.1.0 Release | in_progress | 승인된 main 병합·main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·GitHub Release 실행 |
+| 1.1.0 Release | complete | main/tag `068679d`, main CI `34688148947`·tag CI `34689321743`, exact digest 운영 배포·공개 권한/재시작/오프라인 smoke·GitHub Release 완료 |
+| 1.1.1 P1 | complete | 기준 `068679d`, 256비트 fragment token·digest-only 저장·필드/만료/회수·fixed POST/WS·cache/noindex·호환/rollback 계약 승인 |
+| 1.1.1 P2 | in_progress | 실패 계약, 1110 public link schema·capability helper·owner/public API·read-only collaboration 기반 구현 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.0/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.0 P5 `aa4d07f` | 2026-09-12 | in_progress |
+| Codex | 1.1.1/P2 | LC-NF-1.1.1-P2-01~06 | 실패 계약·1110 schema·capability·owner/public API·read-only WS·cache/log 경계 | 1.1.1 P1, 기준 `068679d` | 2026-09-12 | in_progress |
+| Codex | 1.1.1/P1 | LC-NF-1.1.1-P1-01~06 | public-link read capability·token·회수·cache/OG·호환/rollback·담당 경계 | v1.1.0 `068679d` | 2026-09-12 | complete |
+| Codex | 1.1.0/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.0 P5 `aa4d07f` | 2026-09-12 | complete |
 | Codex | 1.1.0/P5 | LC-NF-1.1.0-P5-01~06 | 요구 추적·사용자/운영 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.0 P4 `3e20728` | 2026-09-12 | complete |
 | Codex | 1.1.0/P4 | LC-NF-1.1.0-P4-01~06 | AC 전체·다른 계정·offline/reconnect·restart·지원 browser 권한/복구 회귀 | 1.1.0 P3 `e315d4b` | 2026-09-12 | complete |
 | Codex | 1.1.0/P3 | LC-NF-1.1.0-P3-01~07 | owner 공유 관리·reader view·auth return·read-only sync/presence·PC/mobile E2E | 1.1.0 P2 `046a98c` | 2026-09-12 | complete |

@@ -1,8 +1,10 @@
 # 읽기·쓰기 공유의 권한 집합과 데이터 보존
 
-상태: **1.1.0 selected-read Accepted; 후속 확장 Proposed**. 지정 읽기는 1.1.0, 링크 읽기는 1.1.1, 지정 쓰기는 1.1.2, 링크 쓰기는 1.1.3에 배정한다. 1.0.1 Private Beta는 기존 owner-only를 유지한다. 미래 공유를 이유로 현재 RLS를 느슨하게 하지 않는다.
+상태: **1.1.0 selected-read와 1.1.1 public-link read Accepted; 쓰기 확장 Proposed**. 지정 읽기는 1.1.0, 링크 읽기는 1.1.1, 지정 쓰기는 1.1.2, 링크 쓰기는 1.1.3에 배정한다. 1.0.1 Private Beta는 기존 owner-only를 유지한다. 미래 공유를 이유로 현재 RLS를 느슨하게 하지 않는다.
 
 2026-09-12 사용자는 owner 유지·별도 actor·자료별 grant 권장안을 1.1.0 지정 사용자 읽기 범위에 승인했다. 승인된 공개 필드, 전용 API/화면, reader presence, 회수와 rollback은 [P1 인수 기록](../../../docs/runbooks/1.1.0-phase1-sharing-contract.md)에 고정했다. 공개 링크·쓰기·guest는 자동 승인되지 않는다.
+
+2026-09-12 사용자는 1.1.1 공개 링크 읽기에 256비트 fragment capability·digest-only 저장, 가사 한 개와 명시 필드, 최대 30일 만료·회수/재발급 epoch, no-store/noindex/일반 OG, fixed POST/WS 인증을 승인했다. 쓰기·guest workspace·public presence identity는 포함하지 않는다. [1.1.1 P1 인수 기록](../../../docs/runbooks/1.1.1-phase1-public-link-read-contract.md)을 따른다.
 
 ## 권한 집합
 
