@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { once } from "node:events";
 import { parseCreateLyricInput, parseCreateSongInput } from "@lyricscloud/domain";
-import { PostgresLyricStore, PostgresSongStore } from "@lyricscloud/database";
+import { PostgresLyricSharingStore, PostgresLyricStore, PostgresSongStore } from "@lyricscloud/database";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { WebSocket, type RawData } from "ws";
@@ -13,6 +13,7 @@ const databaseUrl = process.env.DATABASE_URL ?? "";
 const pool = enabled ? new Pool({ connectionString: databaseUrl }) : null;
 const songs = enabled ? new PostgresSongStore(databaseUrl, 1) : null;
 const lyrics = enabled ? new PostgresLyricStore(databaseUrl, 1) : null;
+const sharing = enabled ? new PostgresLyricSharingStore(databaseUrl, 2) : null;
 const users: string[] = [];
 const port = 20_000 + Math.floor(Math.random() * 10_000);
 let processHandle: ChildProcessWithoutNullStreams | undefined;
@@ -32,6 +33,7 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
   it("bootstraps, broadcasts after durable ACK and rejects a revoked session without logging content", async () => {
     const ownerId = (await pool!.query<{ id: string }>("insert into app_users default values returning id")).rows[0]!.id;
     users.push(ownerId);
+    await pool!.query("insert into user_profiles(owner_id,display_name) values($1,'소유자')", [ownerId]);
     const song = (await songs!.createSong(ownerId, parseCreateSongInput({ title: "wire 곡", requestId: randomUUID() }))).song;
     const secretBody = `로그금지-${randomUUID()}`;
     const lyric = (await lyrics!.createLyric(ownerId, parseCreateLyricInput({ title: "wire", body: secretBody, requestId: randomUUID() }, song.id)))!.lyric;
@@ -83,6 +85,59 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
     expect(output).not.toContain(ownerId);
     expect(output).not.toContain(lyric.id);
   }, 15_000);
+
+  it("admits a selected reader as read-only, publishes minimal presence and closes on revoke", async () => {
+    const [ownerId, readerId, strangerId] = await Promise.all(["공유 소유자", "공유 독자", "무관 사용자"].map(async (name) => {
+      const id = (await pool!.query<{ id: string }>("insert into app_users default values returning id")).rows[0]!.id;
+      users.push(id); await pool!.query("insert into user_profiles(owner_id,display_name) values($1,$2)", [id, name]); return id;
+    })) as [string, string, string];
+    const song = (await songs!.createSong(ownerId, parseCreateSongInput({ title: "공유 곡", requestId: randomUUID() }))).song;
+    const lyric = (await lyrics!.createLyric(ownerId, parseCreateLyricInput({ title: "공유", body: "reader snapshot", requestId: randomUUID() }, song.id)))!.lyric;
+    const ownerSession = await session(ownerId); const readerSession = await session(readerId); const strangerSession = await session(strangerId);
+    const ownerHeaders = { cookie: `lc_session=${ownerSession}`, origin: "http://localhost:8080" };
+    const bootstrap = await fetch(`http://127.0.0.1:${port}/documents/${lyric.id}`, { method: "POST", headers: ownerHeaders });
+    const { documentKey } = await bootstrap.json() as { documentKey: string };
+    const readerSharingId = (await sharing!.getOwnIdentity(readerId))!.sharingId;
+    const granted = await sharing!.grantRead(ownerId, lyric.id, readerSharingId, randomUUID());
+
+    const readerHeaders = { cookie: `lc_session=${readerSession}`, origin: "http://localhost:8080" };
+    const discover = await fetch(`http://127.0.0.1:${port}/shared-documents/${lyric.id}`, { headers: readerHeaders });
+    expect(discover.status).toBe(200);
+    await expect(discover.json()).resolves.toMatchObject({ documentKey, permissionEpoch: granted!.grant.permissionEpoch });
+
+    const ownerSocket = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: ownerHeaders });
+    const readerSocket = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: readerHeaders });
+    const [ownerSnapshot, readerSnapshot] = await Promise.all([nextJson(ownerSocket, "snapshot"), nextJson(readerSocket, "snapshot")]);
+    expect(ownerSnapshot).toMatchObject({ access: "owner" });
+    expect(readerSnapshot).toMatchObject({ access: "read", permissionEpoch: granted!.grant.permissionEpoch });
+    const presence = await nextJson(readerSocket, "presence");
+    expect(presence.participants).toEqual(expect.arrayContaining([
+      expect.objectContaining({ displayName: "공유 소유자", role: "owner" }),
+      expect.objectContaining({ displayName: "공유 독자", role: "read" })
+    ]));
+    expect(JSON.stringify(presence)).not.toContain(ownerId);
+    expect(JSON.stringify(presence)).not.toContain(readerId);
+
+    readerSocket.send(JSON.stringify({ type: "update", updateId: randomUUID(), payload: Buffer.from([0]).toString("base64") }));
+    expect((await once(readerSocket, "close"))[0]).toBe(4403);
+
+    const revokedSocket = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: readerHeaders });
+    await nextJson(revokedSocket, "snapshot");
+    const revokedClose = once(revokedSocket, "close");
+    expect(await sharing!.revokeRead(ownerId, lyric.id, granted!.grant.id)).toBe(true);
+    expect((await Promise.race([revokedClose, new Promise((_, reject) => setTimeout(() => reject(new Error("revoke timeout")), 3_000))]) as [number])[0]).toBe(4404);
+    expect((await fetch(`http://127.0.0.1:${port}/shared-documents/${lyric.id}`, { headers: readerHeaders })).status).toBe(404);
+
+    const denied = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, {
+      headers: { cookie: `lc_session=${strangerSession}`, origin: "http://localhost:8080" }
+    });
+    const deniedStatus = await new Promise<number>((resolve, reject) => {
+      denied.once("unexpected-response", (_request, response) => resolve(response.statusCode ?? 0));
+      denied.once("error", reject);
+    });
+    expect(deniedStatus).toBe(404);
+    const ownerClosed = once(ownerSocket, "close"); ownerSocket.close(); await ownerClosed;
+  }, 15_000);
 });
 
 afterAll(async () => {
@@ -92,8 +147,15 @@ afterAll(async () => {
     if (processHandle.exitCode === null) processHandle.kill("SIGKILL");
   }
   if (pool && users.length) await pool.query("delete from app_users where id=any($1::uuid[])", [users]);
-  await Promise.all([songs?.close(), lyrics?.close(), pool?.end()]);
+  await Promise.all([songs?.close(), lyrics?.close(), sharing?.close(), pool?.end()]);
 });
+
+async function session(userId: string): Promise<string> {
+  const token = `session-${randomUUID()}`;
+  await pool!.query(`insert into auth_sessions(token_hash,user_id,expires_at,absolute_expires_at)
+    values($1,$2,now()+interval '1 hour',now()+interval '2 hours')`, [createHash("sha256").update(token).digest("base64url"), userId]);
+  return token;
+}
 
 async function waitForReady() {
   for (let attempt = 0; attempt < 100; attempt++) {

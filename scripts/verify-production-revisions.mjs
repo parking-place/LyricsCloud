@@ -14,6 +14,7 @@ const document = new Y.Doc();
 try {
   await pool.query("begin");
   await pool.query("insert into app_users(id,status) values($1,'active')", [owner]);
+  await pool.query("insert into user_profiles(owner_id,display_name) values($1,'Revision Image Smoke')", [owner]);
   await pool.query("insert into auth_sessions(token_hash,user_id,expires_at,absolute_expires_at) values($1,$2,now()+interval '1 hour',now()+interval '2 hours')", [createHash("sha256").update(token).digest("base64url"), owner]);
   await pool.query("insert into resources(id,owner_id,type,title) values($1,$2,'song','synthetic'),($3,$2,'lyrics','synthetic')", [song, owner, lyric]);
   await pool.query("insert into songs(resource_id,owner_id) values($1,$2)", [song, owner]);

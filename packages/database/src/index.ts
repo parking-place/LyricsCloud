@@ -1,6 +1,6 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "1004_web_font_selection.sql";
+export const CURRENT_SCHEMA_VERSION = "1100_selected_lyric_sharing.sql";
 
 export * from "./auth.js";
 export * from "./beta-access.js";
@@ -9,6 +9,7 @@ export * from "./owned.js";
 export * from "./schema.js";
 export * from "./songs.js";
 export * from "./lyrics.js";
+export * from "./lyric-sharing.js";
 export * from "./rhymes.js";
 export * from "./rhyme-insertions.js";
 export * from "./prompts.js";

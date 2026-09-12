@@ -11,8 +11,16 @@ import { createDatabasePool } from "@lyricscloud/database";
 type EditableResourceType = "lyrics" | "rhyme_note" | "prompt";
 
 interface DocumentRows {
-  document_key: string; resource_id: string; resource_type: EditableResourceType;
+  document_key: string; resource_id: string; owner_id: string; resource_type: EditableResourceType;
   snapshot: Buffer; snapshot_sequence: string; projection_error_code?: string | null;
+}
+
+export interface DocumentAccess {
+  readonly ownerId: string;
+  readonly actorId: string;
+  readonly accessMode: "owner" | "read";
+  readonly permissionEpoch: number;
+  readonly displayName: string;
 }
 
 export class CollaborationStore {
@@ -71,6 +79,44 @@ export class CollaborationStore {
     return this.#owned(ownerId, async (client) => {
       await client.query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [documentKey]);
       return this.#loadLocked(client, ownerId, documentKey, false);
+    });
+  }
+
+  async loadDocumentForActor(actorId: string, documentKey: string) {
+    return this.#owned(actorId, async (client) => {
+      const result = await client.query<DocumentRows & { deleted_at: Date | null; prompt_mode: PromptMode | null;
+        access_mode: "owner" | "read"; permission_epoch: string; display_name: string }>(`select
+        d.document_key,d.resource_id,d.owner_id,d.resource_type,d.snapshot,d.snapshot_sequence::text,
+        d.projection_error_code,r.deleted_at,p.mode prompt_mode,
+        case when d.owner_id=$2 then 'owner' else 'read' end access_mode,
+        coalesce(g.permission_epoch,0)::text permission_epoch,identity.display_name
+        from sync_documents d join resources r on r.id=d.resource_id and r.owner_id=d.owner_id
+        left join prompts p on p.resource_id=r.id and p.owner_id=r.owner_id
+        left join lyric_read_grants g on g.resource_id=d.resource_id and g.owner_id=d.owner_id
+          and g.grantee_id=$2 and g.state='active'
+          and (g.expires_at is null or g.expires_at>statement_timestamp())
+        cross join lateral app_sharing_identity($2) identity
+        where d.document_key=$1 and r.deleted_at is null
+          and (d.owner_id=$2 or g.id is not null)`, [documentKey, actorId]);
+      const row = result.rows[0]; if (!row) return null;
+      const updates = await client.query<{ payload: Buffer }>(
+        "select payload from sync_updates where document_key=$1 and sequence>$2 order by sequence",
+        [documentKey, row.snapshot_sequence]);
+      return { documentKey: row.document_key, resourceId: row.resource_id, resourceType: row.resource_type, promptMode: row.prompt_mode,
+        snapshot: new Uint8Array(row.snapshot), updates: updates.rows.map((item) => new Uint8Array(item.payload)),
+        projectionPending: row.projection_error_code !== null,
+        access: { ownerId: row.owner_id, actorId, accessMode: row.access_mode,
+          permissionEpoch: Number(row.permission_epoch), displayName: row.display_name } satisfies DocumentAccess };
+    });
+  }
+
+  async findSharedDocument(actorId: string, resourceId: string) {
+    return this.#owned(actorId, async (client) => {
+      const row = (await client.query<{ document_key: string }>(`select d.document_key
+        from sync_documents d join lyric_read_grants g on g.resource_id=d.resource_id and g.owner_id=d.owner_id
+        where d.resource_id=$1 and g.grantee_id=$2 and g.state='active'
+          and (g.expires_at is null or g.expires_at>statement_timestamp())`, [resourceId, actorId])).rows[0];
+      return row ? this.loadDocumentForActor(actorId, row.document_key) : null;
     });
   }
 
@@ -236,7 +282,7 @@ export class CollaborationStore {
       where d.document_key=$1 and d.owner_id=$2 ${lock ? "for update of r,d" : ""}`, [key, ownerId]);
     const row = result.rows[0]; if (!row || row.deleted_at) return null;
     const updates = await client.query<{ payload: Buffer }>("select payload from sync_updates where document_key=$1 and sequence>$2 order by sequence", [key, row.snapshot_sequence]);
-    return { resourceId: row.resource_id, resourceType: row.resource_type, promptMode: row.prompt_mode,
+      return { documentKey: row.document_key, resourceId: row.resource_id, resourceType: row.resource_type, promptMode: row.prompt_mode,
       snapshot: new Uint8Array(row.snapshot), updates: updates.rows.map((item) => new Uint8Array(item.payload)), projectionPending: row.projection_error_code !== null };
   }
 

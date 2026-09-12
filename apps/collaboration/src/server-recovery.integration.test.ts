@@ -28,6 +28,7 @@ describe.runIf(process.env.AUTH_DATABASE_INTEGRATION === "true")("collaboration 
     const documents: Y.Doc[] = [];
     try {
       await pool.query("insert into app_users(id) values($1)", [userId]);
+      await pool.query("insert into user_profiles(owner_id,display_name) values($1,'복구 소유자')", [userId]);
       await pool.query("insert into auth_sessions(token_hash,user_id,expires_at,absolute_expires_at) values($1,$2,now()+interval '1 hour',now()+interval '2 hours')",
         [createHash("sha256").update(token).digest("base64url"), userId]);
       const song = (await songs.createSong(userId, parseCreateSongInput({ requestId: randomUUID(), title: "crash fixture" }))).song;
