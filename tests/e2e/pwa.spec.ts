@@ -86,7 +86,7 @@ test.describe("0.9.0 installable online-first PWA", () => {
             transaction.onerror = () => { database.close(); reject(new Error("migrated database read failed")); };
           };
         });
-      }, { databaseName })).toEqual({ version: 20, documents: 1, updates: 1, schema: 2 });
+      }, { databaseName })).toEqual({ version: 30, documents: 1, updates: 1, schema: 3 });
 
       await page.evaluate(async () => {
         const registration = await navigator.serviceWorker.ready;
