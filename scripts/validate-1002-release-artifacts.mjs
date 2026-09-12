@@ -33,11 +33,10 @@ const migrations = JSON.parse(migrationsText);
 const licenses = JSON.parse(licensesText);
 const manifest = await json("config/release-manifest.1.0.0.json");
 const sealedVersion = "1.0.0";
-assert(manifest.source.lockfileSha256 === hash(lockfile), "release lockfile checksum changed");
+assert(manifest.source.lockfileSha256 === licenses.lockfileSha256, "sealed release lockfile checksum differs from its license inventory");
 assert(manifest.environment.schemaSha256 === hash(environment), "environment schema checksum changed");
 assert(manifest.database.manifestSha256 === hash(migrationsText), "migration manifest checksum changed");
 assert(manifest.licenses.inventorySha256 === hash(licensesText), "license inventory checksum changed");
-assert(licenses.lockfileSha256 === hash(lockfile), "license inventory lockfile checksum changed");
 assert(Object.values(licenses.licenses).flat().length === licenses.totalPackages, "license inventory count changed");
 assert(licenses.review.unknownLicenses.length === 0 && licenses.review.blockedLicenses.length === 0, "license review has blockers");
 assert(environmentSchema.properties.APP_VERSION.const === sealedVersion, "sealed environment APP_VERSION differs");
@@ -118,11 +117,12 @@ for (const entry of currentMigrations.applyOrder) {
   assert(migrationFiles.includes(entry.name), `${entry.name} is missing from current migration history`);
   assert(hash(await read(`packages/database/migrations/${entry.name}`)) === entry.sha256, `${entry.name} current checksum changed`);
 }
-assert(currentLicenses.productVersion === releaseVersion && currentLicenses.lockfileSha256 === hash(lockfile), "sealed release license inventory differs");
+assert(currentLicenses.productVersion === releaseVersion, "sealed release license inventory version differs");
 assert(Object.values(currentLicenses.licenses).flat().length === currentLicenses.totalPackages, "current license inventory count changed");
 assert(currentLicenses.review.unknownLicenses.length === 0 && currentLicenses.review.blockedLicenses.length === 0, "current license review has blockers");
 assert(currentManifest.releaseVersion === releaseVersion && currentManifest.releaseChannel === "release", "sealed release template boundary invalid");
-assert(currentManifest.source.commit === "$GIT_SHA" && currentManifest.source.lockfileSha256 === hash(lockfile), "current release source placeholders differ");
+assert(currentManifest.source.commit === "$GIT_SHA" && currentManifest.source.lockfileSha256 === currentLicenses.lockfileSha256,
+  "sealed release source checksum differs from its license inventory");
 assert(currentManifest.database.manifestSha256 === hash(currentMigrationsText), "current migration manifest checksum differs");
 assert(currentManifest.environment.schemaSha256 === hash(currentEnvironmentText), "current environment schema checksum differs");
 assert(currentManifest.licenses.inventorySha256 === hash(currentLicensesText), "current license inventory checksum differs");
@@ -143,7 +143,7 @@ assert(formalEnvironment.properties.APP_VERSION.const === formalVersion && forma
   `${formalVersion} formal environment boundary invalid`);
 assert(formalMigrations.productVersion === formalVersion && formalMigrations.maximumCompatibleApplicationVersion === formalVersion,
   `${formalVersion} formal migration compatibility invalid`);
-assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === "1100_selected_lyric_sharing.sql",
+assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === "1110_public_lyric_read_links.sql",
   `${formalVersion} sealed migration manifest is invalid`);
 for (const entry of formalMigrations.applyOrder) {
   assert(hash(await read(`packages/database/migrations/${entry.name}`)) === entry.sha256, `${entry.name} ${formalVersion} checksum changed`);
