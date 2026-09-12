@@ -235,9 +235,14 @@ websocket.on("connection", (client, request) => {
           return closeProtocol(client, "SYNC_AWARENESS_IDENTITY_FORBIDDEN");
         }
         if (input.activity !== "active" && input.activity !== "idle") return closeProtocol(client, "SYNC_AWARENESS_INVALID");
-        const selection = validateAwarenessSelection(input.selection, current.snapshot, current.updates);
-        if (!selection) return closeProtocol(client, "SYNC_AWARENESS_INVALID");
-        context.selection = selection;
+        const awareness = validateAwarenessSelection(input.selection, current.snapshot, current.updates);
+        if (awareness.status === "invalid") return closeProtocol(client, "SYNC_AWARENESS_INVALID");
+        // A reconnecting editor can restore a selection anchored in a durable
+        // local update that is still waiting in the outbox. Keep the optional
+        // cursor private until that update receives its ACK; never disconnect
+        // the document's write channel merely because the server has not seen
+        // the referenced Yjs struct yet.
+        context.selection = awareness.status === "current" ? awareness.selection : undefined;
         context.activity = input.activity;
         await broadcastPresence(context.documentKey);
         return;
@@ -417,13 +422,13 @@ function rejectUpdate(client: WebSocket, updateId: string, context: ConnectionCo
 }
 
 function validateAwarenessSelection(value: unknown, snapshot: Uint8Array, updates: readonly Uint8Array[]):
-{ anchor: string; head: string } | null {
-  if (!value || typeof value !== "object") return null;
+  { status: "current"; selection: { anchor: string; head: string } } | { status: "pending" } | { status: "invalid" } {
+  if (!value || typeof value !== "object") return { status: "invalid" };
   const selection = value as Record<string, unknown>;
   if (Object.keys(selection).some((key) => key !== "anchor" && key !== "head")
-    || typeof selection.anchor !== "string" || typeof selection.head !== "string") return null;
+    || typeof selection.anchor !== "string" || typeof selection.head !== "string") return { status: "invalid" };
   if (selection.anchor.length > 2_048 || selection.head.length > 2_048
-    || !/^[A-Za-z0-9_-]+$/.test(selection.anchor) || !/^[A-Za-z0-9_-]+$/.test(selection.head)) return null;
+    || !/^[A-Za-z0-9_-]+$/.test(selection.anchor) || !/^[A-Za-z0-9_-]+$/.test(selection.head)) return { status: "invalid" };
   const document = new Y.Doc();
   try {
     Y.applyUpdate(document, merge(snapshot, updates));
@@ -431,10 +436,11 @@ function validateAwarenessSelection(value: unknown, snapshot: Uint8Array, update
     for (const encoded of [selection.anchor, selection.head]) {
       const position = Y.decodeRelativePosition(Buffer.from(encoded, "base64url"));
       const absolute = Y.createAbsolutePositionFromRelativePosition(position, document);
-      if (!absolute || absolute.type !== body || absolute.index < 0 || absolute.index > body.length) return null;
+      if (!absolute) return { status: "pending" };
+      if (absolute.type !== body || absolute.index < 0 || absolute.index > body.length) return { status: "invalid" };
     }
-    return { anchor: selection.anchor, head: selection.head };
-  } catch { return null; }
+    return { status: "current", selection: { anchor: selection.anchor, head: selection.head } };
+  } catch { return { status: "invalid" }; }
   finally { document.destroy(); }
 }
 

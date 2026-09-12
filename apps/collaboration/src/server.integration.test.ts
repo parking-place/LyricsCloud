@@ -64,6 +64,13 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
     document.once("update", (value) => { update = value; });
     document.getText("body").insert(document.getText("body").length, "\n전송됨 🎵");
     const updateId = randomUUID();
+    const pendingRelative = Buffer.from(Y.encodeRelativePosition(
+      Y.createRelativePositionFromTypeIndex(document.getText("body"), document.getText("body").length))).toString("base64url");
+    // A restored local cursor can reference the update immediately following
+    // it. The optional awareness frame must not close the durable write path
+    // while that Yjs struct is still absent from the server snapshot.
+    first.send(JSON.stringify({ type: "awareness", activity: "active",
+      selection: { anchor: pendingRelative, head: pendingRelative } }));
     const broadcast = nextJson(second, "update");
     first.send(JSON.stringify({ type: "update", updateId, payload: Buffer.from(update).toString("base64") }));
     expect(await nextJson(first, "ack")).toMatchObject({ updateId, duplicate: false });

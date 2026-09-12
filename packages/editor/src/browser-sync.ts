@@ -259,6 +259,7 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
       inFlight = undefined;
       projectionPending = message.projection === "pending";
       await pump();
+      sendAwareness();
     } else if (message.type === "projection") {
       projectionPending = message.projection === "pending";
       await report();
@@ -676,6 +677,7 @@ export async function createBrowserSharedLyricSync(options: {
       await storage.updates.where("updateId").equals(message.updateId as string).delete();
       inFlight = undefined;
       await pump();
+      sendSharedAwareness();
     } else if (message.type === "permission") {
       const next = parseSharedAccess(message);
       if (!next) throw new Error("SHARED_SYNC_ACCESS_INVALID");
