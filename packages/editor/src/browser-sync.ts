@@ -20,6 +20,13 @@ export interface BrowserLyricSync {
   retry(): void;
   destroy(): Promise<void>;
 }
+export interface SharingParticipant {
+  readonly participantId: string;
+  readonly displayName: string;
+  readonly role: "owner" | "read";
+}
+export type SharedLyricSyncState = "connecting" | "live" | "offline" | "revoked" | "error";
+export interface BrowserSharedLyricSync { destroy(): void; retry(): void }
 export type BrowserRhymeSync = BrowserLyricSync;
 export interface CreationSubmission { readonly url: string; readonly body: string }
 export interface RhymeCreationDraft {
@@ -54,6 +61,7 @@ export type BrowserEditableSyncOptions = {
   onStateChange: (state: LocalSyncState) => void;
   onEditableChange?: (editable: boolean) => void;
   onLegacyConflict?: (draft: { localBody: string; serverBody: string }) => void;
+  onPresenceChange?: (participants: readonly SharingParticipant[]) => void;
 };
 const localOrigin = Symbol("lyricscloud-local");
 const remoteOrigin = Symbol("lyricscloud-remote");
@@ -175,7 +183,7 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
     }
   }
   async function receive(raw: string) {
-    const message = JSON.parse(raw) as { type: string; payload?: string; updateId?: string; projection?: string };
+    const message = JSON.parse(raw) as { type: string; payload?: string; updateId?: string; projection?: string; participants?: unknown };
     if (destroyed || halted) return;
     if (message.type === "snapshot" && message.payload) {
       const update = decode(message.payload);
@@ -204,7 +212,7 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
     } else if (message.type === "projection") {
       projectionPending = message.projection === "pending";
       await report();
-    }
+    } else if (message.type === "presence") options.onPresenceChange?.(parseSharingParticipants(message.participants));
   }
   function reconnect() {
     if (destroyed || halted || !navigator.onLine || retryTimer) return;
@@ -267,6 +275,7 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
     socket?.close();
     channel?.close();
     accountChannel.close();
+    options.onPresenceChange?.([]);
     window.removeEventListener("online", online);
     window.removeEventListener("offline", offline);
     for (const resolve of waiters) resolve(false);
@@ -403,6 +412,103 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
     },
     destroy
   };
+}
+
+export async function createBrowserSharedLyricSync(options: {
+  resourceId: string;
+  onBody: (body: string) => void;
+  onStateChange: (state: SharedLyricSyncState) => void;
+  onPresenceChange: (participants: readonly SharingParticipant[]) => void;
+}): Promise<BrowserSharedLyricSync> {
+  const document = createLyricDocument();
+  const text = lyricBody(document);
+  const abort = new AbortController();
+  let socket: WebSocket | undefined;
+  let retryTimer: ReturnType<typeof setTimeout> | undefined;
+  let retryDelay = 500;
+  let destroyed = false;
+  let connecting = false;
+
+  function state(value: SharedLyricSyncState) { if (!destroyed) options.onStateChange(value); }
+  function clearPrivateView() { options.onPresenceChange([]); options.onBody(""); }
+  function reconnect() {
+    if (destroyed || connecting || retryTimer || !navigator.onLine) return;
+    retryTimer = setTimeout(() => { retryTimer = undefined; void connect(); }, retryDelay);
+    retryDelay = Math.min(30_000, retryDelay * 2);
+  }
+  async function connect() {
+    if (destroyed || connecting || !navigator.onLine || (socket && socket.readyState <= WebSocket.OPEN)) return;
+    connecting = true;
+    state("connecting");
+    try {
+      const response = await fetch(`/collaboration/shared-documents/${options.resourceId}`, {
+        credentials: "same-origin", cache: "no-store",
+        signal: AbortSignal.any([abort.signal, AbortSignal.timeout(10_000)])
+      });
+      if (destroyed) return;
+      if ([401, 403, 404].includes(response.status)) { clearPrivateView(); return state("revoked"); }
+      if (!response.ok) throw new Error("SHARED_SYNC_CONNECT_FAILED");
+      const result = await response.json() as { documentKey?: unknown };
+      if (typeof result.documentKey !== "string" || !/^[0-9a-f-]{36}$/i.test(result.documentKey)) throw new Error("SHARED_SYNC_CONNECT_FAILED");
+      const url = new URL(`/collaboration/sync/${result.documentKey}`, location.origin);
+      url.protocol = location.protocol === "https:" ? "wss:" : "ws:";
+      const current = new WebSocket(url);
+      socket = current;
+      current.onmessage = (event: MessageEvent<string>) => {
+        try {
+          const message = JSON.parse(event.data) as { type?: unknown; payload?: unknown; access?: unknown; participants?: unknown };
+          if ((message.type === "snapshot" || message.type === "update") && typeof message.payload === "string") {
+            if (message.type === "snapshot" && message.access !== "read") { current.close(4404, "SYNC_DOCUMENT_UNAVAILABLE"); return; }
+            Y.applyUpdate(document, decode(message.payload), remoteOrigin);
+            options.onBody(text.toString());
+            retryDelay = 500;
+            state("live");
+          } else if (message.type === "presence") options.onPresenceChange(parseSharingParticipants(message.participants));
+        } catch { current.close(4400, "SYNC_UPDATE_INVALID"); }
+      };
+      current.onclose = (event) => {
+        if (socket !== current || destroyed) return;
+        socket = undefined;
+        options.onPresenceChange([]);
+        if (event.code === 4403 || event.code === 4404) { clearPrivateView(); return state("revoked"); }
+        if (!navigator.onLine) return state("offline");
+        state(event.code === 4400 ? "error" : "connecting");
+        reconnect();
+      };
+      current.onerror = () => current.close();
+    } catch {
+      if (!destroyed) { state(navigator.onLine ? "error" : "offline"); reconnect(); }
+    } finally { connecting = false; }
+  }
+  function online() { retryDelay = 500; clearTimeout(retryTimer); retryTimer = undefined; void connect(); }
+  function offline() { socket?.close(); state("offline"); }
+  function destroy() {
+    if (destroyed) return;
+    destroyed = true;
+    abort.abort();
+    clearTimeout(retryTimer);
+    socket?.close();
+    window.removeEventListener("online", online);
+    window.removeEventListener("offline", offline);
+    options.onPresenceChange([]);
+    document.destroy();
+  }
+  window.addEventListener("online", online);
+  window.addEventListener("offline", offline);
+  void connect();
+  return { destroy, retry: online };
+}
+
+function parseSharingParticipants(value: unknown): readonly SharingParticipant[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const participant = item as Record<string, unknown>;
+    if (typeof participant.participantId !== "string" || !/^[0-9a-f-]{36}$/i.test(participant.participantId)
+      || typeof participant.displayName !== "string" || !participant.displayName.trim()
+      || (participant.role !== "owner" && participant.role !== "read")) return [];
+    return [{ participantId: participant.participantId, displayName: participant.displayName.slice(0, 80), role: participant.role }];
+  });
 }
 
 /** Rhyme notes reuse the owner-scoped text/outbox protocol; the server validates the resource subtype. */

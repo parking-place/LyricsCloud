@@ -1,6 +1,6 @@
 # 1.1.0 — 지정 사용자 읽기 공유 기반
 
-상태: **P1·P2 완료 / P3 진행**. selected-read 계약에 따라 grant/RLS·owner API·reader 조회·read-only WebSocket/presence를 구현하고 후보 `046a98c`의 전체 CI와 동일 SHA 개발 서버 인수를 완료했다. public link·write·guest는 계속 비활성이다.
+상태: **P1~P3 완료 / P4 진행**. selected-read 서버 기반과 owner/reader desktop·mobile UI, auth return, live update·presence·회수를 후보 `e315d4b`의 전체 CI와 동일 SHA 공개 개발 인수로 완료했다. public link·write·guest는 계속 비활성이다.
 
 ## 목표
 

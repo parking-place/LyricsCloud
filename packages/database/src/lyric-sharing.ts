@@ -147,7 +147,7 @@ export class PostgresLyricSharingStore {
         where r.id=$2 and r.type='lyrics' and r.deleted_at is null`, [actorId, resourceId])).rows[0];
       return row ? {
         id: row.id, title: row.title, body: row.body, status: row.status,
-        updatedAt: row.updated_at.toISOString(), ownerDisplayName: row.display_name,
+        updatedAt: row.updated_at.toISOString(), ownerDisplayName: publicDisplayName(row.display_name),
         access: { mode: "read", permissionEpoch: Number(row.permission_epoch) }
       } : null;
     });
@@ -201,4 +201,9 @@ function mapGrant(row: GrantRow): LyricReadGrant {
 
 function validateId(value: string): void {
   if (!isResourceId(value)) throw new SharingInputError();
+}
+
+function publicDisplayName(value: string): string {
+  const name = value.trim().slice(0, 60);
+  return !name || name.includes("@") || /^[0-9a-f-]{36}$/i.test(name) ? "공유자" : name;
 }
