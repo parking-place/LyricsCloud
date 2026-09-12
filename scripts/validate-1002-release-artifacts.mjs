@@ -5,6 +5,7 @@ import { validateEnvironment } from "./check-environment-1002.mjs";
 const read = async (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const json = async (path) => JSON.parse(await read(path));
 const hash = (value) => createHash("sha256").update(value).digest("hex");
+const hashFile = async (path) => createHash("sha256").update(await readFile(new URL(`../${path}`, import.meta.url))).digest("hex");
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 const assertIncludes = (value, expected, message) => assert(value.includes(expected), message);
 
@@ -142,7 +143,7 @@ assert(formalEnvironment.properties.APP_VERSION.const === formalVersion && forma
   `${formalVersion} formal environment boundary invalid`);
 assert(formalMigrations.productVersion === formalVersion && formalMigrations.maximumCompatibleApplicationVersion === formalVersion,
   `${formalVersion} formal migration compatibility invalid`);
-assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === "1003_song_suno_workspaces.sql",
+assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === "1004_web_font_selection.sql",
   `${formalVersion} sealed migration manifest is invalid`);
 for (const entry of formalMigrations.applyOrder) {
   assert(hash(await read(`packages/database/migrations/${entry.name}`)) === entry.sha256, `${entry.name} ${formalVersion} checksum changed`);
@@ -152,6 +153,11 @@ assert(Object.values(formalLicenses.licenses).flat().length === formalLicenses.t
   `${formalVersion} formal license package count changed`);
 assert(formalLicenses.review.unknownLicenses.length === 0 && formalLicenses.review.blockedLicenses.length === 0,
   `${formalVersion} formal license review has blockers`);
+assert(formalLicenses.bundledAssets?.length === 1 && formalLicenses.bundledAssets[0].license === "OFL-1.1",
+  `${formalVersion} bundled font license inventory invalid`);
+const bundledFont = formalLicenses.bundledAssets[0];
+assert(await hashFile(bundledFont.fontPath) === bundledFont.fontSha256, `${formalVersion} bundled font checksum changed`);
+assert(await hashFile(bundledFont.licensePath) === bundledFont.licenseSha256, `${formalVersion} bundled font license checksum changed`);
 assert(formalManifest.releaseVersion === formalVersion && formalManifest.releaseChannel === "release" && formalManifest.productionAuthorized === true,
   `${formalVersion} formal release authorization invalid`);
 assert(formalManifest.source.commit === "$GIT_SHA" && formalManifest.source.lockfileSha256 === hash(lockfile),

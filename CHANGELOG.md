@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.14] - 2026-09-12
+
+### Added
+
+- 공식 Noto Sans KR 2.004 Regular와 OFL 1.1 전문의 자체 호스팅·hash 자산
+- 계정 기본/가사별 폰트 선택 영속과 가사·라임·프롬프트 편집기 공통 적용
+
+### Security and recovery
+
+- 외부 CDN·원문 외부 전송 없이 same-origin immutable/PWA cache와 system sans fallback 유지
+- `1004_web_font_selection.sql` owner RLS·CAS, application-first rollback과 새 선택값의 `sans` 변환
+
+### Validation
+
+- Chromium desktop/mobile 340 PASS·36 skip, release browser matrix 10 PASS
+- cold 1회 `4,644,748` bytes, 4배 CPU 최대 73ms, GC heap 증가 최대 329,576 bytes
+- Actions P4 `34656715638`·`34656718443`, 네 dev image와 동일 SHA 공개 200줄·차단 font 저장/재진입 PASS
+
+P5 전체 CI와 동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다. Known limitations: 실제 Windows/Android/iOS의 1.0.14 폰트 전환과 물리 저사양 기기는 미실행이고, 사전 provider·공유 권한 gate와 `OPS-100-001` backup 예외를 유지한다.
+
 ## [1.0.12] - 2026-09-12
 
 ### Changed
