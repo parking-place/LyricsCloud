@@ -47,7 +47,9 @@ test("shows durable server storage separately from a delayed plaintext projectio
       await pool.query(`drop trigger ${trigger} on lyrics`);
       await pool.query(`drop function ${trigger}()`);
     });
-    await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 15_000 });
+    // The repair loop runs every five seconds. Leave enough room for a busy CI
+    // worker to observe more than two complete retry windows.
+    await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 30_000 });
     expect((await (await page.request.get(`/api/lyrics/${id}`)).json()).lyric.body).toBe("기준\n서버 원본에 저장된 입력");
   } finally {
     await withE2eDatabase(async (pool) => {
