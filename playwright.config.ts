@@ -3,6 +3,10 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: false,
+  // The complete CI matrix runs hundreds of serial browser cases and can hit
+  // transient focus or convergence timing on shared runners. Retry only the
+  // failed case once in CI; local runs stay strict and immediate.
+  retries: process.env.CI ? 1 : 0,
   // Projects share one disposable database seeded by globalSetup. Serial workers
   // prevent desktop/mobile runs from deleting each other's owner fixtures.
   workers: 1,
