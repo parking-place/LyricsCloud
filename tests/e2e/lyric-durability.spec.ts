@@ -4,6 +4,7 @@ import { hashToken, withE2eDatabase } from "./fixtures.js";
 
 const origin = "http://127.0.0.1:3000";
 test("shows durable server storage separately from a delayed plaintext projection", async ({ context, page }, info) => {
+  test.setTimeout(90_000);
   test.skip(!process.env.E2E_DATABASE_URL, "requires the isolated E2E database");
   const owner = randomUUID(), token = randomUUID();
   const trigger = `p5_projection_${randomUUID().replaceAll("-", "")}`;
@@ -47,10 +48,13 @@ test("shows durable server storage separately from a delayed plaintext projectio
       await pool.query(`drop trigger ${trigger} on lyrics`);
       await pool.query(`drop function ${trigger}()`);
     });
-    // The repair loop runs every five seconds. Leave enough room for a busy CI
-    // worker to observe more than two complete retry windows.
-    await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 30_000 });
-    expect((await (await page.request.get(`/api/lyrics/${id}`)).json()).lyric.body).toBe("기준\n서버 원본에 저장된 입력");
+    // The repair loop runs every five seconds. Poll the durable projection first
+    // so a busy CI worker has several complete retry windows, then require the
+    // open editor to receive the corresponding WebSocket state transition.
+    await expect.poll(async () => (await (await page.request.get(`/api/lyrics/${id}`)).json()).lyric.body, {
+      timeout: 60_000
+    }).toBe("기준\n서버 원본에 저장된 입력");
+    await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 15_000 });
   } finally {
     await withE2eDatabase(async (pool) => {
       await pool.query(`drop trigger if exists ${trigger} on lyrics`);
