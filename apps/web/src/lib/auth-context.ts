@@ -1,6 +1,6 @@
 import { AuthService, cookieNames, GoogleOidcAdapter, readCookie, sessionCookie, tokenHash } from "@lyricscloud/auth";
 import { readAuthConfig, readBetaSignupConfig, readRuntimeConfig, type AuthConfig } from "@lyricscloud/config";
-import { PostgresAuthStore, PostgresBetaSignupStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresLyricSharingStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLibraryViewSettingsStore, PostgresLifecycleStore, PostgresExportStore, PostgresSunoWorkspaceStore, type PendingWithdrawalSession } from "@lyricscloud/database";
+import { PostgresAuthStore, PostgresBetaSignupStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresLyricSharingStore, PostgresPublicLyricSharingStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLibraryViewSettingsStore, PostgresLifecycleStore, PostgresExportStore, PostgresSunoWorkspaceStore, type PendingWithdrawalSession } from "@lyricscloud/database";
 
 interface AuthContext {
   readonly config: AuthConfig;
@@ -9,6 +9,7 @@ interface AuthContext {
   readonly songs: PostgresSongStore;
   readonly lyrics: PostgresLyricStore;
   readonly lyricSharing: PostgresLyricSharingStore;
+  readonly publicLyricSharing: PostgresPublicLyricSharingStore;
   readonly rhymes: PostgresRhymeStore;
   readonly rhymeInsertions: PostgresRhymeInsertionStore;
   readonly prompts: PostgresPromptStore;
@@ -47,6 +48,7 @@ export function getAuthContext(): AuthContext {
     songs: new PostgresSongStore(runtime.databaseUrl),
     lyrics: new PostgresLyricStore(runtime.databaseUrl),
     lyricSharing: new PostgresLyricSharingStore(runtime.databaseUrl),
+    publicLyricSharing: new PostgresPublicLyricSharingStore(runtime.databaseUrl),
     rhymes: new PostgresRhymeStore(runtime.databaseUrl),
     rhymeInsertions: new PostgresRhymeInsertionStore(runtime.databaseUrl),
     prompts: new PostgresPromptStore(runtime.databaseUrl),

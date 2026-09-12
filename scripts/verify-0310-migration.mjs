@@ -17,6 +17,7 @@ try {
   migrate(); migrate();
   const target = new Pool({ connectionString: targetUrl.href, max: 1 });
   try {
+    await target.query(await readFile(resolve("packages/database/rollback/1110_public_lyric_read_links.sql"), "utf8"));
     await target.query(await readFile(resolve("packages/database/rollback/1100_selected_lyric_sharing.sql"), "utf8"));
     const schema = await target.query(`select
       to_regclass('public.sync_documents')::text documents,

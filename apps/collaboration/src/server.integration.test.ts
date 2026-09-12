@@ -1,8 +1,9 @@
 import { createHash, randomUUID } from "node:crypto";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { once } from "node:events";
+import { createPublicShareToken, publicShareTokenDigest } from "@lyricscloud/auth";
 import { parseCreateLyricInput, parseCreateSongInput } from "@lyricscloud/domain";
-import { PostgresLyricSharingStore, PostgresLyricStore, PostgresSongStore } from "@lyricscloud/database";
+import { PostgresLyricSharingStore, PostgresLyricStore, PostgresPublicLyricSharingStore, PostgresSongStore } from "@lyricscloud/database";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { WebSocket, type RawData } from "ws";
@@ -14,6 +15,7 @@ const pool = enabled ? new Pool({ connectionString: databaseUrl }) : null;
 const songs = enabled ? new PostgresSongStore(databaseUrl, 1) : null;
 const lyrics = enabled ? new PostgresLyricStore(databaseUrl, 1) : null;
 const sharing = enabled ? new PostgresLyricSharingStore(databaseUrl, 2) : null;
+const publicSharing = enabled ? new PostgresPublicLyricSharingStore(databaseUrl, 2) : null;
 const users: string[] = [];
 const port = 20_000 + Math.floor(Math.random() * 10_000);
 let processHandle: ChildProcessWithoutNullStreams | undefined;
@@ -138,6 +140,41 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
     expect(deniedStatus).toBe(404);
     const ownerClosed = once(ownerSocket, "close"); ownerSocket.close(); await ownerClosed;
   }, 15_000);
+
+  it("authenticates a public capability in the first frame, forbids writes and closes on revoke", async () => {
+    const ownerId = (await pool!.query<{ id: string }>("insert into app_users default values returning id")).rows[0]!.id;
+    users.push(ownerId); await pool!.query("insert into user_profiles(owner_id,display_name) values($1,'공개 소유자')", [ownerId]);
+    const song = (await songs!.createSong(ownerId, parseCreateSongInput({ title: "공개 부모", requestId: randomUUID() }))).song;
+    const lyric = (await lyrics!.createLyric(ownerId, parseCreateLyricInput({ title: "공개", body: "public socket snapshot",
+      memo: "never public", requestId: randomUUID() }, song.id)))!.lyric;
+    const ownerSession = await session(ownerId); const ownerHeaders = { cookie: `lc_session=${ownerSession}`, origin: "http://localhost:8080" };
+    const bootstrap = await fetch(`http://127.0.0.1:${port}/documents/${lyric.id}`, { method: "POST", headers: ownerHeaders });
+    expect(bootstrap.status).toBe(200);
+    const token = createPublicShareToken();
+    const issued = await publicSharing!.issue(ownerId, lyric.id, { requestId: randomUUID(), tokenDigest: publicShareTokenDigest(token),
+      expiresAt: new Date(Date.now() + 86_400_000), fields: { ownerDisplayName: false, status: false, updatedAt: false } });
+
+    const reader = new WebSocket(`ws://127.0.0.1:${port}/public`, { headers: { origin: "http://localhost:8080" } });
+    const snapshot = nextJson(reader, "snapshot");
+    reader.once("open", () => reader.send(JSON.stringify({ type: "auth", token, linkId: issued!.link.id })));
+    expect(await snapshot).toMatchObject({ access: "public-read", permissionEpoch: issued!.link.permissionEpoch });
+    reader.send(JSON.stringify({ type: "update", updateId: randomUUID(), payload: "AA==" }));
+    expect((await once(reader, "close"))[0]).toBe(4403);
+
+    const revoked = new WebSocket(`ws://127.0.0.1:${port}/public`, { headers: { origin: "http://localhost:8080" } });
+    const revokedSnapshot = nextJson(revoked, "snapshot");
+    revoked.once("open", () => revoked.send(JSON.stringify({ type: "auth", token, linkId: issued!.link.id })));
+    await revokedSnapshot;
+    const revokedClose = once(revoked, "close");
+    expect(await publicSharing!.revoke(ownerId, lyric.id, issued!.link.id)).toBe(true);
+    expect((await Promise.race([revokedClose, new Promise((_, reject) => setTimeout(() => reject(new Error("public revoke timeout")), 3_000))]) as [number])[0]).toBe(4404);
+
+    const denied = new WebSocket(`ws://127.0.0.1:${port}/public`, { headers: { origin: "http://localhost:8080" } });
+    const deniedClose = once(denied, "close");
+    denied.once("open", () => denied.send(JSON.stringify({ type: "auth", token, linkId: issued!.link.id })));
+    expect((await deniedClose as [number])[0]).toBe(4404);
+    expect(output).not.toContain(token);
+  }, 15_000);
 });
 
 afterAll(async () => {
@@ -147,7 +184,7 @@ afterAll(async () => {
     if (processHandle.exitCode === null) processHandle.kill("SIGKILL");
   }
   if (pool && users.length) await pool.query("delete from app_users where id=any($1::uuid[])", [users]);
-  await Promise.all([songs?.close(), lyrics?.close(), sharing?.close(), pool?.end()]);
+  await Promise.all([songs?.close(), lyrics?.close(), sharing?.close(), publicSharing?.close(), pool?.end()]);
 });
 
 async function session(userId: string): Promise<string> {

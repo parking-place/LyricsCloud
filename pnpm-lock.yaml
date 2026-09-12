@@ -35,6 +35,9 @@ importers:
 
   apps/collaboration:
     dependencies:
+      '@lyricscloud/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@lyricscloud/config':
         specifier: workspace:*
         version: link:../../packages/config

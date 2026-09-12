@@ -23,6 +23,15 @@ export interface DocumentAccess {
   readonly displayName: string;
 }
 
+export interface PublicDocumentAccess {
+  readonly documentKey: string;
+  readonly resourceId: string;
+  readonly ownerId: string;
+  readonly snapshot: Uint8Array;
+  readonly updates: readonly Uint8Array[];
+  readonly permissionEpoch: number;
+}
+
 export class CollaborationStore {
   readonly #pool: Pool;
   constructor(databaseUrl: string) { this.#pool = createDatabasePool(databaseUrl, 10); }
@@ -118,6 +127,33 @@ export class CollaborationStore {
           and (g.expires_at is null or g.expires_at>statement_timestamp())`, [resourceId, actorId])).rows[0];
       return row ? this.loadDocumentForActor(actorId, row.document_key) : null;
     });
+  }
+
+  async loadPublicDocument(tokenDigest: string, linkId: string): Promise<PublicDocumentAccess | null> {
+    if (!/^[0-9a-f]{64}$/.test(tokenDigest) || !/^[0-9a-f-]{36}$/i.test(linkId)) return null;
+    return this.#public(async (client) => {
+      const row = (await client.query<{ document_key: string; resource_id: string; owner_id: string;
+        snapshot: Buffer; snapshot_sequence: string; permission_epoch: string }>(
+        "select * from app_public_lyric_document($1,$2)", [tokenDigest, linkId])).rows[0];
+      if (!row) return null;
+      const updates = await client.query<{ payload: Buffer }>(
+        "select payload from app_public_lyric_updates($1,$2,$3) where sequence>$4 order by sequence",
+        [tokenDigest, linkId, row.document_key, row.snapshot_sequence]);
+      const valid = (await client.query<{ allowed: boolean }>(
+        "select app_public_lyric_access($1,$2,$3,$4) allowed",
+        [tokenDigest, linkId, row.document_key, row.permission_epoch])).rows[0]?.allowed;
+      return valid ? { documentKey: row.document_key, resourceId: row.resource_id, ownerId: row.owner_id,
+        snapshot: new Uint8Array(row.snapshot), updates: updates.rows.map((item) => new Uint8Array(item.payload)),
+        permissionEpoch: Number(row.permission_epoch) } : null;
+    });
+  }
+
+  async hasPublicAccess(tokenDigest: string, linkId: string, documentKey: string, permissionEpoch: number): Promise<boolean> {
+    if (!/^[0-9a-f]{64}$/.test(tokenDigest) || !/^[0-9a-f-]{36}$/i.test(linkId)
+      || !/^[0-9a-f-]{36}$/i.test(documentKey) || !Number.isSafeInteger(permissionEpoch)) return false;
+    return this.#public(async (client) => Boolean((await client.query<{ allowed: boolean }>(
+      "select app_public_lyric_access($1,$2,$3,$4) allowed",
+      [tokenDigest, linkId, documentKey, permissionEpoch])).rows[0]?.allowed));
   }
 
   async applyUpdate(ownerId: string, documentKey: string, updateId: string, payload: Uint8Array) {
@@ -289,6 +325,12 @@ export class CollaborationStore {
   async #owned<T>(ownerId: string, work: (client: PoolClient) => Promise<T>): Promise<T> {
     const client = await this.#pool.connect();
     try { await client.query("begin"); await client.query("set local role lyricscloud_app"); await client.query("select set_config('app.user_id',$1,true)",[ownerId]); const value=await work(client); await client.query("commit"); return value; }
+    catch(error){ await client.query("rollback").catch(()=>undefined); throw error; } finally { client.release(); }
+  }
+
+  async #public<T>(work: (client: PoolClient) => Promise<T>): Promise<T> {
+    const client = await this.#pool.connect();
+    try { await client.query("begin"); await client.query("set local role lyricscloud_app"); const value=await work(client); await client.query("commit"); return value; }
     catch(error){ await client.query("rollback").catch(()=>undefined); throw error; } finally { client.release(); }
   }
 }
