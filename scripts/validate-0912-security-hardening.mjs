@@ -7,7 +7,7 @@ const read = (relative) => readFile(path.join(root, relative), "utf8");
 const routeRoot = path.join(root, "apps/web/src/app/api");
 const routeFiles = (await filesBelow(routeRoot)).filter((file) => file.endsWith("/route.ts")).sort();
 const routePaths = routeFiles.map((file) => `/api/${path.relative(routeRoot, path.dirname(file)).split(path.sep).join("/")}`);
-assertEqual(routePaths.length, 70, "API route files");
+assertEqual(routePaths.length, 73, "API route files");
 
 const ownership = await read("docs/security/0.9.1-api-ownership-matrix.md");
 for (const routePath of routePaths) {
@@ -26,7 +26,7 @@ for (const routeFile of routeFiles) {
     assert(handler.includes("mutationOriginAllowed(request)"), `${routePaths[routeFiles.indexOf(routeFile)]} ${starts[index][1]} lacks Origin guard`);
   }
 }
-assertEqual(mutationCount, 61, "mutation handlers");
+assertEqual(mutationCount, 64, "mutation handlers");
 
 const migrationRoot = path.join(root, "packages/database/migrations");
 const migrationFiles = (await filesBelow(migrationRoot)).filter((file) => file.endsWith(".sql"));
@@ -35,7 +35,7 @@ for (const migrationFile of migrationFiles) {
   const source = await read(path.relative(root, migrationFile));
   for (const match of source.matchAll(/create table(?: if not exists)?\s+([a-z_][a-z0-9_]*)/gi)) tableNames.add(match[1]);
 }
-assertEqual(tableNames.size, 49, "database tables");
+assertEqual(tableNames.size, 51, "database tables");
 for (const tableName of [...tableNames].sort()) {
   assertCount(ownership, new RegExp("`" + tableName + "`", "g"), 1, `ownership table ${tableName}`);
 }

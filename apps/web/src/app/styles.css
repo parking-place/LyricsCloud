@@ -63,6 +63,11 @@ button { color: inherit; }
 button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
+.public-share-shell { min-height: 100svh; display: grid; place-items: center; padding: clamp(1rem, 5vw, 4rem); }
+.public-share-card { width: min(100%, 52rem); padding: clamp(1.5rem, 5vw, 4rem); border: 1px solid var(--line); border-radius: 1.25rem; background: var(--panel); box-shadow: 0 24px 70px rgb(0 0 0 / 24%); }
+.public-share-card h1 { margin: .65rem 0 1rem; font-size: clamp(2rem, 6vw, 4.25rem); letter-spacing: -.055em; }
+.public-share-card > p:last-child { color: var(--muted); line-height: 1.7; }
+
 .pwa-status { min-height: 2.15rem; display: flex; align-items: center; gap: .65rem; padding: .35rem 1rem; border-bottom: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: .72rem; }
 .pwa-status p { display: inline-flex; align-items: center; gap: .42rem; margin: 0; }
 .pwa-status p > span { width: .5rem; height: .5rem; flex: none; border-radius: 50%; background: var(--acid); box-shadow: 0 0 0 3px rgb(200 255 61 / 10%); }

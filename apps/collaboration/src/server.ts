@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage } from "node:http";
+import { parsePublicShareToken, publicShareTokenDigest } from "@lyricscloud/auth";
 import { readRuntimeConfig } from "@lyricscloud/config";
 import { checkDatabase, DatabaseHealthError, PostgresAuthStore } from "@lyricscloud/database";
 import { isResourceId, parseCheckpointReason, parseRestoreRevisionInput, parseSyncUpdateEnvelope, SYNC_LIMITS } from "@lyricscloud/domain";
@@ -17,6 +18,7 @@ const telemetry = observabilityFromEnvironment("collaboration");
 const sockets = new Map<string, Set<WebSocket>>();
 const contexts = new WeakMap<WebSocket, ConnectionContext>();
 const alive = new WeakMap<WebSocket, boolean>();
+const publicHandshakeWindows = new Map<string, { startedAt: number; count: number }>();
 const projectionRetry = setInterval(async () => {
   const result = await documents.retryPendingProjections().catch(() => ({ attempted: 0, recovered: 0 }));
   if (result.attempted) telemetry.record({ signal: "metric", event: "sync_projection_retry",
@@ -28,7 +30,8 @@ const projectionRetry = setInterval(async () => {
     // commits before this socket is visible to the recovery broadcast. Keep
     // reconciling connections that have observed a pending projection so that
     // the ready transition cannot be lost at that boundary.
-    if (!context || (!result.recovered && !context.projectionPending) || !await authorized(peer)) continue;
+    if (!context || context.accessMode === "public-read"
+      || (!result.recovered && !context.projectionPending) || !await authorized(peer)) continue;
     const loaded = await documents.loadDocument(context.ownerId, context.documentKey).catch(() => null);
     if (loaded && peer.readyState === WebSocket.OPEN) {
       context.projectionPending = loaded.projectionPending;
@@ -154,6 +157,14 @@ const websocket = new WebSocketServer({ noServer: true, maxPayload: Math.ceil(SY
 server.on("upgrade", async (request, socket, head) => {
   try {
     const requestUrl = new URL(request.url ?? "/", "http://collaboration.local");
+    if (request.headers.origin === appOrigin && requestUrl.pathname === "/public") {
+      const address = request.socket.remoteAddress?.slice(0, 128) ?? "unknown";
+      if (!withinPublicHandshakeLimit(address)) {
+        socket.write("HTTP/1.1 429 Too Many Requests\r\nConnection: close\r\n\r\n"); socket.destroy(); return;
+      }
+      websocket.handleUpgrade(request, socket, head, (client) => setupPublicClient(client));
+      return;
+    }
     const match = request.headers.origin === appOrigin && requestUrl.pathname.match(/^\/sync\/([0-9a-f-]{36})$/i);
     const session = match ? await authenticate(request) : null;
     const loaded = match && session ? await documents.loadDocumentForActor(session.userId, match[1]!) : null;
@@ -187,7 +198,7 @@ websocket.on("connection", (client, request) => {
   sockets.set(context.documentKey, peers);
   // Join broadcasts first, then take a consistent snapshot so an update during
   // the HTTP upgrade cannot fall between the snapshot and the subscription.
-  void documents.loadDocumentForActor(context.actorId, context.documentKey).then((loaded) => {
+  void documents.loadDocumentForActor(context.actorId!, context.documentKey).then((loaded) => {
     if (!loaded) return closeUnavailable(client);
     context.projectionPending = loaded.projectionPending;
     if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({ type: "snapshot",
@@ -249,21 +260,29 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) process.on(signal, () => {
 
 interface ConnectionContext {
   documentKey: string;
-  actorId: string;
+  actorId?: string;
   ownerId: string;
-  accessMode: "owner" | "read";
+  accessMode: "owner" | "read" | "public-read";
   permissionEpoch: number;
   displayName: string;
   participantId: string;
-  request: IncomingMessage;
+  request?: IncomingMessage;
   promptModeCapable: boolean;
   projectionPending: boolean;
+  publicLinkId?: string;
+  publicTokenDigest?: string;
 }
 
 async function authorized(client: WebSocket, checkDocument = false): Promise<boolean> {
   const context = contexts.get(client);
   try {
-    const session = context ? await authenticate(context.request) : null;
+    if (context?.accessMode === "public-read") {
+      const allowed = await documents.hasPublicAccess(context.publicTokenDigest!, context.publicLinkId!,
+        context.documentKey, context.permissionEpoch);
+      if (!allowed) { closeUnavailable(client); return false; }
+      return client.readyState === WebSocket.OPEN;
+    }
+    const session = context?.request ? await authenticate(context.request) : null;
     const loaded = context && session && session.userId === context.actorId && checkDocument
       ? await documents.loadDocumentForActor(context.actorId, context.documentKey) : undefined;
     if (!context || !session || session.userId !== context.actorId
@@ -320,11 +339,57 @@ async function broadcastPresence(documentKey: string): Promise<void> {
   const peers = [...(sockets.get(documentKey) ?? [])];
   const participants = peers.flatMap((peer) => {
     const context = contexts.get(peer);
-    return context && peer.readyState === WebSocket.OPEN ? [{ participantId: context.participantId,
+    return context && context.accessMode !== "public-read" && peer.readyState === WebSocket.OPEN ? [{ participantId: context.participantId,
       displayName: publicParticipantName(context.displayName), role: context.accessMode }] : [];
   });
   const payload = JSON.stringify({ type: "presence", participants });
-  for (const peer of peers) if (await authorized(peer, true) && peer.readyState === WebSocket.OPEN) peer.send(payload);
+  for (const peer of peers) {
+    const context = contexts.get(peer);
+    if (context?.accessMode !== "public-read" && await authorized(peer, true) && peer.readyState === WebSocket.OPEN) peer.send(payload);
+  }
+}
+
+function setupPublicClient(client: WebSocket): void {
+  alive.set(client, true);
+  client.on("pong", () => alive.set(client, true));
+  const timer = setTimeout(() => closeUnavailable(client), 5_000); timer.unref();
+  client.once("message", async (raw, binary) => {
+    clearTimeout(timer);
+    const text = raw.toString();
+    if (binary || Buffer.byteLength(text, "utf8") > 4_096) return closeProtocol(client, "SYNC_AUTH_INVALID");
+    try {
+      const input = JSON.parse(text) as { type?: unknown; token?: unknown; linkId?: unknown };
+      if (input.type !== "auth" || typeof input.linkId !== "string" || !isResourceId(input.linkId)) throw new Error();
+      const digest = publicShareTokenDigest(parsePublicShareToken(input.token));
+      const loaded = await documents.loadPublicDocument(digest, input.linkId);
+      if (!loaded) return closeUnavailable(client);
+      const peers = sockets.get(loaded.documentKey) ?? new Set<WebSocket>();
+      const publicCount = [...peers].filter((peer) => contexts.get(peer)?.accessMode === "public-read").length;
+      if (publicCount >= 20) return client.close(4429, "SYNC_TEMPORARILY_UNAVAILABLE");
+      contexts.set(client, { documentKey: loaded.documentKey, ownerId: loaded.ownerId,
+        accessMode: "public-read", permissionEpoch: loaded.permissionEpoch, displayName: "", participantId: randomUUID(),
+        promptModeCapable: false, projectionPending: false, publicLinkId: input.linkId, publicTokenDigest: digest });
+      peers.add(client); sockets.set(loaded.documentKey, peers);
+      if (!await authorized(client)) return;
+      client.send(JSON.stringify({ type: "snapshot", payload: Buffer.from(merge(loaded.snapshot, loaded.updates)).toString("base64"),
+        access: "public-read", permissionEpoch: loaded.permissionEpoch, projection: "current" }));
+      client.on("message", () => client.close(4403, "SYNC_WRITE_FORBIDDEN"));
+      client.on("close", () => { peers.delete(client); if (!peers.size) sockets.delete(loaded.documentKey); });
+    } catch { closeUnavailable(client); }
+  });
+}
+
+function withinPublicHandshakeLimit(key: string, now = Date.now()): boolean {
+  const window = publicHandshakeWindows.get(key);
+  if (!window || now - window.startedAt >= 60_000) {
+    publicHandshakeWindows.set(key, { startedAt: now, count: 1 });
+    if (publicHandshakeWindows.size > 10_000) for (const [candidate, value] of publicHandshakeWindows) {
+      if (now - value.startedAt >= 60_000) publicHandshakeWindows.delete(candidate);
+    }
+    return true;
+  }
+  window.count++;
+  return window.count <= 10;
 }
 
 function merge(snapshot: Uint8Array, updates: readonly Uint8Array[]) {
