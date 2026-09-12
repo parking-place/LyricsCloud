@@ -1,9 +1,9 @@
 # ADR-NF-003 — owner·actor·capability 기반 공유
 
-- 상태: **Proposed**
+- 상태: **Accepted for 1.1.0 selected-read**
 - 작성일: 2026-09-09
 - 결정 Phase: 1.1.0 P1 (읽기), 1.1.2 P1 (쓰기 확장 재승인)
-- 승인자/시각: **미승인 — 해당 Phase에서 사용자/지정 결정권자의 승인을 기록한다.**
+- 승인자/시각: **사용자, 2026-09-12 — owner 유지 + 별도 actor + resource grant 권장안을 1.1.0 지정 사용자 읽기에 승인.**
 - 범위 원본: 사용자의 1.0.1 필수 및 후속 1.x 계획 요청.
 
 ## 해결할 질문
@@ -27,6 +27,10 @@ same-owner 전용 자료를 owner 경계 붕괴 없이 타인/guest와 공유하
 ## 권장 선택과 이유
 
 두 번째 안을 권장한다. 읽기를 먼저 출시하고 writer/guest는 별도 위험·interop 승인 후 확장한다. W⊆R은 실제 집합으로 검사한다.
+
+## 1.1.0 승인 범위
+
+로그인한 지정 사용자에게 특정 가사만 읽게 하는 grant를 채택한다. 기존 owner-only 개인 API는 유지하며 공유 viewer의 HTTP·RLS·WebSocket만 `actor_id`와 활성 grant를 함께 검사한다. reader update, 공개 링크, writer와 guest는 승인 범위 밖이다. 필드·회수·호환·rollback 상세는 [P1 인수 기록](../runbooks/1.1.0-phase1-sharing-contract.md)을 따른다.
 
 ## 영향받는 작업·화면·schema·운영
 

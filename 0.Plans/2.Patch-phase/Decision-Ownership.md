@@ -6,7 +6,7 @@
 |---|---|---|---|---|
 | `ADR-NF-001` | 베타 접근·해시 allowlist·원자 grant | 1.0.1 P1 | Accepted | [결정](../../docs/adr/ADR-NF-001-beta-access.md) |
 | `ADR-NF-002` | 외부 metadata 취득·보안 경계 | 1.0.11 P1 | Deferred / no-go; 공식 계약 확보 시 재개 | [결정](../../docs/adr/ADR-NF-002-external-metadata.md) |
-| `ADR-NF-003` | owner/actor·공유 protocol | 1.1.0 P1; 쓰기 확장 1.1.2~1.1.3 | Proposed | [결정](../../docs/adr/ADR-NF-003-sharing.md) |
+| `ADR-NF-003` | owner/actor·공유 protocol | 1.1.0 P1; 쓰기 확장 1.1.2~1.1.3 | Accepted for 1.1.0 selected-read; write/guest Proposed | [결정](../../docs/adr/ADR-NF-003-sharing.md) |
 | `ADR-NF-004` | Windows 기술·인증·편집 | 1.1.8 P1; 편집 인수 1.1.9 | Proposed | [결정](../../docs/adr/ADR-NF-004-windows-native.md) |
 | `ADR-NF-005` | Android 기술·수명주기 | 1.1.10 P1; 편집 인수 1.1.11 | Proposed | [결정](../../docs/adr/ADR-NF-005-android-native.md) |
 | `PROD-NF-001` | 가입·일회용 코드 동선 | 1.0.1 P1 | Accepted | [결정](../../docs/product/PROD-NF-001-beta-onboarding.md) |
@@ -14,14 +14,14 @@
 | `OPS-NF-001` | 번호·main·정식 별칭 | 1.0.1 P1 | Accepted | [결정](../../docs/operations/OPS-NF-001-version-release.md) |
 | `PROD-NF-003` | 개인 순서·목록 보기 | 1.0.7 P1, 1.0.8 P1, 1.0.9 소비 | Accepted for 1.0.7 views and 1.0.8 song ordering; 1.0.9 ordering Proposed | [결정](../../docs/product/PROD-NF-003-library-order-views.md) |
 | `PROD-NF-004` | 모델 표기·복수 작업 링크 | 1.0.10 P1, 1.0.11 소비 | 1.0.10 수동 workspace Accepted; 자동 metadata Deferred / no-go | [결정](../../docs/product/PROD-NF-004-suno-work-links.md) |
-| `PROD-NF-005` | 공유 수신자와 공개 필드 | 1.1.0 P1, 1.1.1~1.1.3 확장 승인 | Proposed | [결정](../../docs/product/PROD-NF-005-sharing-scope.md) |
+| `PROD-NF-005` | 공유 수신자와 공개 필드 | 1.1.0 P1, 1.1.1~1.1.3 확장 승인 | Accepted for 1.1.0 selected-read fields; later expansion Proposed | [결정](../../docs/product/PROD-NF-005-sharing-scope.md) |
 | `PROD-NF-006` | 디자인 승인·점진 적용 | UX P5, 1.1.5~1.1.6 소비 | Proposed | [결정](../../docs/product/PROD-NF-006-ui-transition.md) |
-| `OPS-NF-002` | 제품 단계 전환·마이너 진입 | 1.0.12 점검; 1.0.14 P5, 1.1.0 P1 | Proposed | [결정](../../docs/operations/OPS-NF-002-minor-entry.md) |
+| `OPS-NF-002` | 제품 단계 전환·마이너 진입 | 1.0.12 점검; 1.0.14 P5, 1.1.0 P1 | Accepted for 1.1.0 selected-read entry | [결정](../../docs/operations/OPS-NF-002-minor-entry.md) |
 | `ADR-NF-006` | 사전 제공 경로·권리·조회 경계 | 1.0.13 P1 | Deferred / no-go; 공식 계약 확보 시 재개 | [결정](../../docs/adr/ADR-NF-006-dictionary-provider.md) |
 | `ADR-NF-007` | 웹폰트 자산·로딩·라이선스 | 1.0.14 P1 | Accepted for 1.0.14 | [결정](../../docs/adr/ADR-NF-007-web-fonts.md) |
 | `PROD-NF-007` | 세 언어 단어 Tooltip | 1.0.13 P1 | Deferred / provider no-go | [결정](../../docs/product/PROD-NF-007-dictionary-tooltip.md) |
 | `PROD-NF-008` | 무료 폰트 선택·다국어 표시 | 1.0.14 P1 | Accepted for 1.0.14 | [결정](../../docs/product/PROD-NF-008-web-fonts.md) |
-| `PROD-NF-009` | 여러 사용자 동시 작업과 위치 표시 | 1.1.0 P1; 1.1.2 P1 확장 | Proposed | [결정](../../docs/product/PROD-NF-009-collaboration-presence.md) |
+| `PROD-NF-009` | 여러 사용자 동시 작업과 위치 표시 | 1.1.0 P1; 1.1.2 P1 확장 | Accepted for 1.1.0 reader presence; writer cursor Proposed | [결정](../../docs/product/PROD-NF-009-collaboration-presence.md) |
 | `ADR-NF-008` | Linux 기술·패키징·수명주기 | 1.1.12 P1~P3 | Proposed | [결정](../../docs/adr/ADR-NF-008-linux-platform.md) |
 | `ADR-NF-009` | macOS 기술·패키징·수명주기 | 1.1.13 P1~P3 | Proposed | [결정](../../docs/adr/ADR-NF-009-macos-platform.md) |
 | `ADR-NF-010` | iOS 기술·패키징·수명주기 | 1.1.14 P1~P3 | Proposed | [결정](../../docs/adr/ADR-NF-010-ios-platform.md) |
