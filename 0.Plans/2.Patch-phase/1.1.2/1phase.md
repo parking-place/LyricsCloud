@@ -1,6 +1,6 @@
 # 1.1.2 Phase 1 — 계약·실패 사례·담당 경계
 
-- 상태: **진행 중** (`in_progress`, 정식 `v1.1.1` 기준 계약 검토)
+- 상태: **완료** (`complete`, selected-user body write 계약 승인)
 - 단계 목적: 지정 사용자 쓰기·공동 편집의 계약·실패 사례·담당 경계을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -40,14 +40,14 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.2-P1-01` W⊆R은 등급 비교가 아니라 실제 사용자 집합 검사다. R={owner,A}, W={owner,B}를 거부한다.
-- [ ] `LC-NF-1.1.2-P1-02` 본문 writer는 ACL 변경·소유권 이전·완전 삭제·계정 관리 권한을 얻지 않는다.
-- [ ] `LC-NF-1.1.2-P1-03` permission epoch·actor attribution·원자 ACK·undo/복구 정책을 새 공유 ADR에서 확정한다.
-- [ ] `LC-NF-1.1.2-P1-04` 관련 구현·테스트 경로를 읽고 위 요구/수용 사례를 정상·오류·권한·복구 입력표로 고정한다. 원인 미확정 항목은 가설과 증거 수준을 표시한다.
-- [ ] `LC-NF-1.1.2-P1-05` 저장 형식·API·순서·copy·권한 중 변경되는 인터페이스와 호환/되돌림을 결정 문서에 기록하고 최초 소비 전에 승인한다.
-- [ ] `LC-NF-1.1.2-P1-06` 각 변경 파일 담당자와 실제 최종 source SHA를 기록한다. 해당 패치 밖의 기능이나 아직 선택하지 않은 아이디어를 섞지 않는다.
+- [x] `LC-NF-1.1.2-P1-01` W⊆R은 등급 비교가 아니라 실제 사용자 집합 검사다. R={owner,A}, W={owner,B}를 거부한다.
+- [x] `LC-NF-1.1.2-P1-02` 본문 writer는 ACL 변경·소유권 이전·완전 삭제·계정 관리 권한을 얻지 않는다.
+- [x] `LC-NF-1.1.2-P1-03` permission epoch·actor attribution·원자 ACK·undo/복구 정책을 새 공유 ADR에서 확정한다.
+- [x] `LC-NF-1.1.2-P1-04` 관련 구현·테스트 경로를 읽고 위 요구/수용 사례를 정상·오류·권한·복구 입력표로 고정한다. 원인 미확정 항목은 가설과 증거 수준을 표시한다.
+- [x] `LC-NF-1.1.2-P1-05` 저장 형식·API·순서·copy·권한 중 변경되는 인터페이스와 호환/되돌림을 결정 문서에 기록하고 최초 소비 전에 승인한다.
+- [x] `LC-NF-1.1.2-P1-06` 각 변경 파일 담당자와 실제 최종 source SHA를 기록한다. 해당 패치 밖의 기능이나 아직 선택하지 않은 아이디어를 섞지 않는다.
 
-- [ ] `LC-NF-1.1.2-P1-07` 동시 편집·보기·presence/cursor의 지연/연결 상태·actor·selection 계약과 PROD-NF-009를 확정한다. 같은 owner 멀티탭과 실제 다사용자 요구를 분리한다.
+- [x] `LC-NF-1.1.2-P1-07` 동시 편집·보기·presence/cursor의 지연/연결 상태·actor·selection 계약과 PROD-NF-009를 확정한다. 같은 owner 멀티탭과 실제 다사용자 요구를 분리한다.
 
 ## 구체적 검증
 
@@ -66,12 +66,16 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
+- [x] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+
+## 완료 증거
+
+정식 `v1.1.1` source `d4c82b30fb54e2a50b92b167c017aa44f7e6bbd6`의 `1100_selected_lyric_sharing.sql`, `lyric-sharing.ts`, collaboration store/server, IndexedDB update queue와 owner/reader 화면·E2E를 읽고 selected-user body write가 추가할 W⊆R·grant/write epoch·actor receipt·원자 ACK·local-only undo·rejected 복구함·presence/cursor와 rollback 경계를 [P1 인수 문서](../../../docs/runbooks/1.1.2-phase1-selected-write-contract.md)에 고정했다. P1은 설계-only라 runtime·CI·서버 배포를 실행하지 않았고 1.1.3 public write·guest와 1.1.5 디자인을 선소비하지 않았다.
 
 ## 산출물
 

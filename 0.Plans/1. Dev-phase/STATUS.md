@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.2"
-current_phase: "../2.Patch-phase/1.1.2/1phase.md"
+current_phase: "../2.Patch-phase/1.1.2/2phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-13"
-next_action: "1.1.1 main/tag d4c82b3·정식 image·릴리스 서버 exact digest·공개 PC/mobile 링크/회수/재시작 인수·GitHub Release 완료. 1.1.2 P1에서 selected write의 W⊆R·permission epoch·actor attribution·원자 ACK·복구 경계를 확정한다"
+next_action: "1.1.2 P1에서 active read grant의 write 상태·grant/read/write epoch·actor receipt·원자 ACK·rejected 복구함·presence/cursor 계약 승인. P2에서 1120 migration과 DB/API/WS/local queue 실패 시험·기반을 구현한다"
 ```
 
 ## 승인과 기준
@@ -124,13 +124,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.1 P4 | complete | 후보 `b920049`, Actions `34697600730`·`34697608114`, 실제 DB·5-browser·동일 SHA 공개 restart/reconnect/revoke/private 격리 인수 완료 |
 | 1.1.1 P5 | complete | 후보 `f013154`, Actions `34701755594`·`34701763143`, 네 dev image·26 migration 봉인·동일 SHA 공개 재시작/회수 인수 완료 |
 | 1.1.1 Release | complete | main/tag `d4c82b3`, main CI `34703250472`·tag CI `34704609566`, exact digest 운영 배포·공개 링크/회수/재시작 smoke·GitHub Release 완료 |
-| 1.1.2 P1 | in_progress | selected write의 W⊆R·writer 비관리 권한·permission epoch·actor attribution·원자 ACK·undo/복구·presence/cursor 계약 확정 |
+| 1.1.2 P1 | complete | 기준 `d4c82b3`, active read grant의 write 상태·두 epoch·actor receipt·원자 ACK·rejected 복구함·presence/cursor·rollback 계약 승인 |
+| 1.1.2 P2 | in_progress | 1120 additive schema·W⊆R·owner access API·actor/epoch 원자 update/ACK·rejected local queue 기반 구현 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.2/P1 | LC-NF-1.1.2-P1-01~07 | selected write W⊆R·writer 경계·epoch/ACK/attribution·undo/복구·presence/cursor 계약 | v1.1.1 `d4c82b3` | 2026-09-13 | in_progress |
+| Codex | 1.1.2/P2 | LC-NF-1.1.2-P2-01~07 | 1120 schema·W⊆R·actor/epoch 원자 update/ACK·local rejected queue·awareness 기반 | 1.1.2 P1, 기준 `d4c82b3` | 2026-09-13 | in_progress |
+| Codex | 1.1.2/P1 | LC-NF-1.1.2-P1-01~07 | selected write W⊆R·writer 경계·epoch/ACK/attribution·undo/복구·presence/cursor 계약 | v1.1.1 `d4c82b3` | 2026-09-13 | complete |
 | Codex | 1.1.1/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.1 P5 `f013154` | 2026-09-13 | complete |
 | Codex | 1.1.1/P5 | LC-NF-1.1.1-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.1 P4 `b920049` | 2026-09-13 | complete |
 | Codex | 1.1.1/P4 | LC-NF-1.1.1-P4-01~07 | AC 전체·revision/메모 차단·offline/reconnect·restart·public presence·지원 browser 회귀 | 1.1.1 P3 `175fd74` | 2026-09-12 | complete |

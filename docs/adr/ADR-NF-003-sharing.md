@@ -1,9 +1,9 @@
 # ADR-NF-003 — owner·actor·capability 기반 공유
 
-- 상태: **Accepted through 1.1.1 public-link read**
+- 상태: **Accepted through 1.1.2 selected-user body write**
 - 작성일: 2026-09-09
 - 결정 Phase: 1.1.0 P1 (지정 읽기), 1.1.1 P1 (링크 읽기), 1.1.2 P1 (쓰기 확장 재승인)
-- 승인자/시각: **사용자, 2026-09-12 — owner 유지 + 별도 actor + resource grant의 1.1.0 지정 읽기와 digest capability의 1.1.1 공개 링크 읽기를 승인.**
+- 승인자/시각: **사용자, 2026-09-13 — 기존 owner/actor 경계를 유지하고 active read grant 안의 selected-user body write·두 epoch·actor ACK/복구를 1.1.2 범위로 승인.**
 - 범위 원본: 사용자의 1.0.1 필수 및 후속 1.x 계획 요청.
 
 ## 해결할 질문
@@ -35,6 +35,10 @@ same-owner 전용 자료를 owner 경계 붕괴 없이 타인/guest와 공유하
 ## 1.1.1 승인 범위
 
 비로그인 링크 소지자에게 가사 한 개의 명시 projection만 읽게 하는 256비트 capability를 채택한다. raw token은 URL fragment로 전달하고 DB에는 digest만 저장하며 HTTP 고정 POST body와 WebSocket 최초 인증 frame 외 경로·query·log·referrer에 넣지 않는다. public reader는 workspace·계정·검색·export·revision·presence identity·write 권한을 얻지 않는다. 만료는 최대 30일이고 재발급은 old token을 즉시 폐기하며 모든 요청/broadcast가 현재 epoch를 재검사한다. 상세는 [1.1.1 P1 인수](../runbooks/1.1.1-phase1-public-link-read-contract.md)를 따른다.
+
+## 1.1.2 승인 범위
+
+활성 selected read grant 자체에 `write_enabled`와 단조 증가 `write_epoch`를 추가해 W⊆R을 구조적으로 유지한다. writer는 가사 본문 CRDT update와 제한된 awareness만 제출하며 ACL·metadata·revision 복원·삭제·소유권은 얻지 않는다. update transaction은 세션 actor, grant ID, read permission epoch와 write epoch를 row lock 아래 재검사하고 receipt·actor attribution·projection을 commit한 뒤에만 sequence ACK를 보낸다. 강등/회수 뒤 구 epoch queue는 서버에 자동 적용하지 않고 계정·actor·자료·grant·epoch별 로컬 복구함으로 격리한다. write만 강등되면 읽기와 read presence는 유지하되 cursor와 쓰기를 제거한다. 상세는 [1.1.2 P1 인수](../runbooks/1.1.2-phase1-selected-write-contract.md)를 따른다. public-link write와 비로그인 guest는 1.1.3 P1 전 비활성이다.
 
 ## 영향받는 작업·화면·schema·운영
 

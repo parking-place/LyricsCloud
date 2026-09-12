@@ -1,15 +1,17 @@
 # PROD-NF-009 — 여러 사용자 동시 작업과 위치 표시
 
-- 상태: **Accepted for 1.1.0 reader presence**
+- 상태: **Accepted through 1.1.2 selected writer presence/cursor**
 - 작성일: 2026-09-09
 - 최초 결정/소비: 1.1.0 P1; 1.1.2 P1 확장
-- 승인자/시각: 사용자, 2026-09-12. 1.1.0은 서버 인증 reader 표시 이름·일시 색상·연결 상태만 승인한다. cursor/selection과 writer 표시는 1.1.2에서 재승인한다.
+- 승인자/시각: 사용자, 2026-09-13. 1.1.0 reader presence에 이어 1.1.2의 서버 인증 writer 표시·relative cursor/selection·idle/재연결·강등 정리를 승인한다.
 
 ## 질문·대안·결정 gate
 
 읽기 참가자와 writer의 현재 작업 위치/cursor·selection, 표시 이름/색상·idle/연결 상태를 정한다. 서버 actor를 신뢰하며 read/write 권한 철회·재구독·문서 전환 때 정보 제거와 자기 초안 보존을 수용한다.
 
 1.1.0에서는 reader의 문서 참여 여부만 일시 presence로 전송한다. 이메일·내부 ID·타 문서 참가자·클라이언트가 주장한 identity는 노출하지 않으며, read 회수·disconnect·문서 전환 때 제거한다. reader의 cursor/selection이나 편집 활동처럼 보이는 정보는 전송하지 않는다.
+
+1.1.2에서 owner와 selected writer는 서버가 결합한 안전한 표시 이름·connection-local participant ID·role·일시 색상과 Yjs relative anchor/head만 같은 문서 참가자에게 보낸다. frame에는 본문·선택 문자열·identity를 넣지 않고 크기·빈도·문서/권한을 매번 제한한다. 같은 사용자 중복 탭은 별도 participant로 표시하되 자기 caret를 remote caret로 중복 렌더링하지 않는다. disconnect·timeout·문서 전환·read 회수는 즉시 제거하고 write만 강등되면 연결을 read로 낮춰 보기/presence는 유지하면서 cursor 송신과 기존 selection을 제거한다. public-link reader에는 identity presence를 노출하지 않는다.
 
 ## 영향과 수용
 
