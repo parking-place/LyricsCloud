@@ -19,6 +19,16 @@ export function parseShareGrantInput(value: unknown): { sharingId: string; reque
   return { sharingId: input.sharingId, requestId: input.requestId, expiresAt };
 }
 
+export function parseShareAccessInput(value: unknown): { requestId: string; access: "read" | "write" } {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new SharingInputError();
+  const input = value as Record<string, unknown>;
+  if (Object.keys(input).some((key) => !["requestId", "access"].includes(key))) throw new SharingInputError();
+  if (typeof input.requestId !== "string" || (input.access !== "read" && input.access !== "write")) {
+    throw new SharingInputError();
+  }
+  return { requestId: input.requestId, access: input.access };
+}
+
 export function sharingApiError(error: unknown): Response {
   if (error instanceof RequestAuthError) return errorResponse("AUTH_REQUIRED", 401);
   if (error instanceof AuthError) return errorResponse(error.code, 401);

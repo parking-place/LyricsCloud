@@ -14,6 +14,9 @@ export interface LyricReadGrant {
   readonly displayName: string;
   readonly state: "active" | "revoked";
   readonly permissionEpoch: number;
+  readonly access: "read" | "write";
+  readonly writeEpoch: number;
+  readonly writeUpdatedAt: string | null;
   readonly createdAt: string;
   readonly revokedAt: string | null;
   readonly expiresAt: string | null;
@@ -26,7 +29,8 @@ export interface SharedLyricRecord {
   readonly status: LyricStatus;
   readonly updatedAt: string;
   readonly ownerDisplayName: string;
-  readonly access: { readonly mode: "read"; readonly permissionEpoch: number };
+  readonly access: { readonly mode: "read" | "write"; readonly grantId: string;
+    readonly permissionEpoch: number; readonly writeEpoch: number };
 }
 
 interface GrantRow extends QueryResultRow {
@@ -35,6 +39,9 @@ interface GrantRow extends QueryResultRow {
   display_name: string;
   state: "active" | "revoked";
   permission_epoch: string;
+  write_enabled: boolean;
+  write_epoch: string;
+  write_updated_at: Date | null;
   created_at: Date;
   revoked_at: Date | null;
   expires_at: Date | null;
@@ -70,7 +77,7 @@ export class PostgresLyricSharingStore {
     return this.#withActor(ownerId, async (client) => {
       if (!await ownsActiveLyric(client, resourceId)) return null;
       const rows = await client.query<GrantRow>(`select g.id,i.sharing_id,i.display_name,g.state,
-        g.permission_epoch::text,g.created_at,g.revoked_at,g.expires_at
+        g.permission_epoch::text,g.write_enabled,g.write_epoch::text,g.write_updated_at,g.created_at,g.revoked_at,g.expires_at
         from lyric_read_grants g
         cross join lateral app_sharing_identity(g.grantee_id) i
         where g.resource_id=$1 and g.owner_id=$2
@@ -127,10 +134,48 @@ export class PostgresLyricSharingStore {
     validateId(resourceId); validateId(grantId);
     return this.#withActor(ownerId, async (client) => {
       if (!await ownsActiveLyric(client, resourceId)) return null;
+      await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [`selected-write:${resourceId}`]);
       const changed = await client.query(`update lyric_read_grants
-        set state='revoked',permission_epoch=permission_epoch+1,revoked_at=clock_timestamp()
+        set state='revoked',permission_epoch=permission_epoch+1,write_enabled=false,
+          write_epoch=write_epoch+1,write_updated_at=clock_timestamp(),revoked_at=clock_timestamp()
         where id=$1 and resource_id=$2 and owner_id=$3 and state='active'`, [grantId, resourceId, ownerId]);
       return changed.rowCount === 1;
+    });
+  }
+
+  setGrantAccess(ownerId: string, resourceId: string, grantId: string, access: "read" | "write", requestId: string):
+  Promise<{ grant: LyricReadGrant; replayed: boolean; changed: boolean } | null> {
+    validateId(resourceId); validateId(grantId); validateId(requestId);
+    if (access !== "read" && access !== "write") throw new SharingInputError();
+    return this.#withActor(ownerId, async (client) => {
+      if (!await ownsActiveLyric(client, resourceId)) return null;
+      await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [`selected-write:${resourceId}`]);
+      const replay = (await client.query<{ resource_id: string; grant_id: string; requested_access: "read" | "write" }>(
+        `select resource_id,grant_id,requested_access from lyric_share_access_requests
+        where owner_id=$1 and request_id=$2`, [ownerId, requestId])).rows[0];
+      if (replay) {
+        if (replay.resource_id !== resourceId || replay.grant_id !== grantId || replay.requested_access !== access) {
+          throw new SharingConflictError();
+        }
+        const grant = await selectGrant(client, grantId);
+        return grant ? { grant, replayed: true, changed: false } : null;
+      }
+      const current = await selectActiveGrantById(client, ownerId, resourceId, grantId, true);
+      if (!current) return null;
+      const enabled = access === "write";
+      const changed = current.write_enabled !== enabled;
+      const row = changed ? (await client.query<GrantRow>(`update lyric_read_grants
+        set write_enabled=$4,write_epoch=write_epoch+1,write_updated_at=clock_timestamp()
+        where id=$1 and resource_id=$2 and owner_id=$3
+        returning id,state,permission_epoch::text,write_enabled,write_epoch::text,write_updated_at,created_at,revoked_at,expires_at,
+          (select sharing_id from user_profiles where owner_id=grantee_id) sharing_id,
+          (select display_name from user_profiles where owner_id=grantee_id) display_name`,
+        [grantId, resourceId, ownerId, enabled])).rows[0] : await selectGrantRow(client, grantId);
+      if (!row) return null;
+      await client.query(`insert into lyric_share_access_requests
+        (owner_id,request_id,resource_id,grant_id,requested_access,resulting_write_epoch)
+        values($1,$2,$3,$4,$5,$6)`, [ownerId, requestId, resourceId, grantId, access, row.write_epoch]);
+      return { grant: mapGrant(row), replayed: false, changed };
     });
   }
 
@@ -138,8 +183,9 @@ export class PostgresLyricSharingStore {
     validateId(resourceId);
     return this.#withActor(actorId, async (client) => {
       const row = (await client.query<{ id: string; title: string; body: string; status: LyricStatus;
-        updated_at: Date; display_name: string; permission_epoch: string }>(`select r.id,r.title,l.body,l.status,r.updated_at,
-        owner_identity.display_name,g.permission_epoch::text
+        updated_at: Date; display_name: string; grant_id: string; permission_epoch: string;
+        write_enabled: boolean; write_epoch: string }>(`select r.id,r.title,l.body,l.status,r.updated_at,
+        owner_identity.display_name,g.id grant_id,g.permission_epoch::text,g.write_enabled,g.write_epoch::text
         from resources r join lyrics l on l.resource_id=r.id and l.owner_id=r.owner_id
         join lyric_read_grants g on g.resource_id=r.id and g.owner_id=r.owner_id and g.grantee_id=$1
           and g.state='active' and (g.expires_at is null or g.expires_at>statement_timestamp())
@@ -148,7 +194,8 @@ export class PostgresLyricSharingStore {
       return row ? {
         id: row.id, title: row.title, body: row.body, status: row.status,
         updatedAt: row.updated_at.toISOString(), ownerDisplayName: publicDisplayName(row.display_name),
-        access: { mode: "read", permissionEpoch: Number(row.permission_epoch) }
+        access: { mode: row.write_enabled ? "write" : "read", grantId: row.grant_id,
+          permissionEpoch: Number(row.permission_epoch), writeEpoch: Number(row.write_epoch) }
       } : null;
     });
   }
@@ -179,24 +226,39 @@ async function ownsActiveLyric(client: PoolClient, resourceId: string): Promise<
 }
 
 async function selectGrant(client: PoolClient, grantId: string): Promise<LyricReadGrant | null> {
-  const row = (await client.query<GrantRow>(`select g.id,i.sharing_id,i.display_name,g.state,
-    g.permission_epoch::text,g.created_at,g.revoked_at,g.expires_at
+  const row = await selectGrantRow(client, grantId);
+  return row ? mapGrant(row) : null;
+}
+
+async function selectGrantRow(client: PoolClient, grantId: string): Promise<GrantRow | undefined> {
+  return (await client.query<GrantRow>(`select g.id,i.sharing_id,i.display_name,g.state,
+    g.permission_epoch::text,g.write_enabled,g.write_epoch::text,g.write_updated_at,g.created_at,g.revoked_at,g.expires_at
     from lyric_read_grants g cross join lateral app_sharing_identity(g.grantee_id) i
     where g.id=$1`, [grantId])).rows[0];
-  return row ? mapGrant(row) : null;
 }
 
 async function selectActiveGrant(client: PoolClient, resourceId: string, granteeId: string): Promise<LyricReadGrant | null> {
   const row = (await client.query<GrantRow>(`select g.id,i.sharing_id,i.display_name,g.state,
-    g.permission_epoch::text,g.created_at,g.revoked_at,g.expires_at
+    g.permission_epoch::text,g.write_enabled,g.write_epoch::text,g.write_updated_at,g.created_at,g.revoked_at,g.expires_at
     from lyric_read_grants g cross join lateral app_sharing_identity(g.grantee_id) i
     where g.resource_id=$1 and g.grantee_id=$2 and g.state='active'`, [resourceId, granteeId])).rows[0];
   return row ? mapGrant(row) : null;
 }
 
+async function selectActiveGrantById(client: PoolClient, ownerId: string, resourceId: string, grantId: string, lock = false) {
+  return (await client.query<GrantRow & { grantee_id: string }>(`select g.id,g.grantee_id,i.sharing_id,i.display_name,g.state,
+    g.permission_epoch::text,g.write_enabled,g.write_epoch::text,g.write_updated_at,g.created_at,g.revoked_at,g.expires_at
+    from lyric_read_grants g cross join lateral app_sharing_identity(g.grantee_id) i
+    where g.id=$1 and g.resource_id=$2 and g.owner_id=$3 and g.state='active'
+      and (g.expires_at is null or g.expires_at>statement_timestamp())${lock ? " for update of g" : ""}`,
+  [grantId, resourceId, ownerId])).rows[0];
+}
+
 function mapGrant(row: GrantRow): LyricReadGrant {
   return { id: row.id, sharingId: row.sharing_id, displayName: row.display_name, state: row.state,
-    permissionEpoch: Number(row.permission_epoch), createdAt: row.created_at.toISOString(),
+    permissionEpoch: Number(row.permission_epoch), access: row.write_enabled ? "write" : "read",
+    writeEpoch: Number(row.write_epoch), writeUpdatedAt: row.write_updated_at?.toISOString() ?? null,
+    createdAt: row.created_at.toISOString(),
     revokedAt: row.revoked_at?.toISOString() ?? null, expiresAt: row.expires_at?.toISOString() ?? null };
 }
 

@@ -46,7 +46,8 @@ describe.runIf(process.env.AUTH_DATABASE_INTEGRATION === "true")("selected reade
       const writableProbe = connect(documentKey, readerHeaders); clients.push(writableProbe);
       await next(writableProbe, "snapshot");
       writableProbe.send(JSON.stringify({ type: "update", updateId: randomUUID(), payload: Buffer.from([0]).toString("base64") }));
-      expect((await once(writableProbe, "close"))[0]).toBe(4403);
+      expect(await next(writableProbe, "rejected")).toMatchObject({ code: "SYNC_WRITE_REVOKED", access: "read" });
+      expect(writableProbe.readyState).toBe(WebSocket.OPEN);
       expect((await lyrics.getLyric(ownerId, lyric.id))!.body).toBe("restart-safe body");
 
       const beforeRestart = connect(documentKey, readerHeaders); clients.push(beforeRestart);
@@ -80,7 +81,7 @@ describe.runIf(process.env.AUTH_DATABASE_INTEGRATION === "true")("selected reade
     function start() {
       startupFailure = "";
       const process = spawn("apps/collaboration/node_modules/.bin/tsx", ["apps/collaboration/src/server.ts"], {
-        cwd: globalThis.process.cwd(), env: { ...globalThis.process.env, DATABASE_URL: databaseUrl, APP_VERSION: "1.1.0",
+        cwd: globalThis.process.cwd(), env: { ...globalThis.process.env, DATABASE_URL: databaseUrl, APP_VERSION: "1.1.2",
           BUILD_ID: "synthetic", APP_CHANNEL: "dev", APP_PHASE: "p4", COLLABORATION_PORT: String(port), APP_ORIGIN: origin }
       });
       process.stdout.resume();

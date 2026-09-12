@@ -12,7 +12,8 @@ interface SharedLyric {
   readonly status: LyricStatus;
   readonly updatedAt: string;
   readonly ownerDisplayName: string;
-  readonly access: { readonly mode: "read"; readonly permissionEpoch: number };
+  readonly access: { readonly mode: "read" | "write"; readonly grantId: string;
+    readonly permissionEpoch: number; readonly writeEpoch: number };
 }
 
 export function SharedLyricViewer({ initialLyric }: { initialLyric: SharedLyric }) {
@@ -38,13 +39,13 @@ export function SharedLyricViewer({ initialLyric }: { initialLyric: SharedLyric 
     <a className="primary-link" href="/workspace">내 작업 공간으로</a>
   </section>;
 
-  const visibleParticipants = participants.filter((item) => item.role === "owner" || item.role === "read");
+  const visibleParticipants = participants.filter((item) => item.role === "owner" || item.role === "read" || item.role === "write");
   return <article className="shared-lyric-page" aria-labelledby="shared-lyric-title">
     <header className="shared-lyric-header"><div><p className="eyebrow">Shared lyrics</p><h1 id="shared-lyric-title">{initialLyric.title}</h1><p>{initialLyric.ownerDisplayName}님이 공유함 · {LYRIC_STATUS_LABELS[initialLyric.status]}</p></div><div className="shared-read-badge"><span aria-hidden="true">◉</span><strong>읽기 전용</strong><small>수정·삭제·권한 변경 불가</small></div></header>
     <div className={`shared-live-state state-${state}`} role="status" aria-live="polite"><span aria-hidden="true" />{state === "live" ? "실시간으로 연결됨" : state === "offline" ? "오프라인 · 마지막으로 받은 내용을 표시 중" : state === "error" ? "실시간 연결을 확인하지 못했습니다" : "최신 내용을 확인하는 중…"}{state === "error" ? <button type="button" onClick={() => sync.current?.retry()}>다시 연결</button> : null}</div>
     <section className="shared-lyric-document" aria-label="공유된 가사 본문"><pre>{body || "아직 입력된 가사가 없습니다."}</pre></section>
     <footer className="shared-lyric-footer"><div><strong>공유된 필드</strong><span>제목 · 본문 · 상태</span><small>작업 메모, 연결 자료, 버전 기록은 포함되지 않습니다.</small></div><button type="button" onClick={() => void copy.copyText(body, "공유 가사", "공유 가사를 복사했습니다")}>가사 복사</button></footer>
-    <aside className="shared-viewers" aria-labelledby="shared-viewers-title"><h2 id="shared-viewers-title">현재 보는 사람</h2>{visibleParticipants.length ? <ul>{visibleParticipants.map((item) => <li key={item.participantId}><span aria-hidden="true" />{item.displayName}<small>{item.role === "owner" ? "소유자" : "읽기 전용"}</small></li>)}</ul> : <p>연결된 참여자를 확인하는 중입니다.</p>}</aside>
+    <aside className="shared-viewers" aria-labelledby="shared-viewers-title"><h2 id="shared-viewers-title">현재 보는 사람</h2>{visibleParticipants.length ? <ul>{visibleParticipants.map((item) => <li key={item.participantId}><span aria-hidden="true" />{item.displayName}<small>{item.role === "owner" ? "소유자" : item.role === "write" ? "공동 작성" : "읽기 전용"}</small></li>)}</ul> : <p>연결된 참여자를 확인하는 중입니다.</p>}</aside>
     <CopyFeedback state={copy} />
   </article>;
 }

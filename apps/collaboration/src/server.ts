@@ -100,9 +100,12 @@ const server = createServer(async (request, response) => {
     const session = await authenticate(request);
     if (!session) return unavailable(response, 401, requestId);
     const document = await documents.findSharedDocument(session.userId, sharedDocumentRequest[1]!);
-    if (!document || document.access.accessMode !== "read") return unavailable(response, 404, requestId);
+    if (!document || (document.access.accessMode !== "read" && document.access.accessMode !== "write")) {
+      return unavailable(response, 404, requestId);
+    }
     return response.end(JSON.stringify({ documentKey: document.documentKey,
-      permissionEpoch: document.access.permissionEpoch }));
+      access: document.access.accessMode, grantId: document.access.grantId,
+      permissionEpoch: document.access.permissionEpoch, writeEpoch: document.access.writeEpoch }));
   }
   const revisionRequest = request.url?.match(/^\/documents\/([0-9a-f-]{36})\/revisions(?:\/([0-9a-f-]{36})(\/restore)?)?$/i);
   if (revisionRequest) {
@@ -178,6 +181,7 @@ server.on("upgrade", async (request, socket, head) => {
     websocket.handleUpgrade(request, socket, head, (client) => {
       contexts.set(client, { documentKey: match[1]!, actorId: session.userId, ownerId: loaded.access.ownerId,
         accessMode: loaded.access.accessMode, permissionEpoch: loaded.access.permissionEpoch,
+        grantId: loaded.access.grantId, writeEpoch: loaded.access.writeEpoch,
         displayName: loaded.access.displayName, participantId: randomUUID(), request, promptModeCapable: capable,
         projectionPending: loaded.projectionPending });
       websocket.emit("connection", client, request);
@@ -204,6 +208,7 @@ websocket.on("connection", (client, request) => {
     if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({ type: "snapshot",
       payload: Buffer.from(merge(loaded.snapshot, loaded.updates)).toString("base64"),
       access: context.accessMode, permissionEpoch: context.permissionEpoch,
+      grantId: context.grantId, writeEpoch: context.writeEpoch,
       projection: loaded.projectionPending ? "pending" : "current" }));
     void broadcastPresence(context.documentKey);
   }).catch(() => client.close(1013, "SYNC_TEMPORARILY_UNAVAILABLE"));
@@ -214,19 +219,46 @@ websocket.on("connection", (client, request) => {
       if (!session || session.userId !== context.actorId) return closeUnavailable(client);
       const current = await documents.loadDocumentForActor(session.userId, context.documentKey);
       if (!current) return closeUnavailable(client);
-      if (current.access.accessMode !== context.accessMode || current.access.permissionEpoch !== context.permissionEpoch) return closeUnavailable(client);
-      if (context.accessMode !== "owner") return client.close(4403, "SYNC_WRITE_FORBIDDEN");
+      if (!reconcileSelectedAccess(client, context, current.access)) return closeUnavailable(client);
       if (current.resourceType === "prompt" && current.promptMode === "sentence" && !context.promptModeCapable) {
         return client.close(4409, "PROMPT_MODE_CAPABILITY_REQUIRED");
       }
-      const input = JSON.parse(raw.toString()) as { type?: unknown; updateId?: unknown; payload?: unknown };
+      const input = JSON.parse(raw.toString()) as { type?: unknown; updateId?: unknown; payload?: unknown;
+        grantId?: unknown; permissionEpoch?: unknown; writeEpoch?: unknown; selection?: unknown;
+        actorId?: unknown; participantId?: unknown; displayName?: unknown };
+      if (input.type === "awareness") {
+        if (context.accessMode !== "owner" && context.accessMode !== "write") {
+          return closeProtocol(client, "SYNC_AWARENESS_FORBIDDEN");
+        }
+        if (input.actorId !== undefined || input.participantId !== undefined || input.displayName !== undefined) {
+          return closeProtocol(client, "SYNC_AWARENESS_IDENTITY_FORBIDDEN");
+        }
+        const selection = validateAwarenessSelection(input.selection, current.snapshot, current.updates);
+        if (!selection) return closeProtocol(client, "SYNC_AWARENESS_INVALID");
+        const awareness = JSON.stringify({ type: "awareness", participantId: context.participantId,
+          displayName: publicParticipantName(context.displayName), role: context.accessMode, selection });
+        for (const peer of peers) {
+          const peerContext = contexts.get(peer);
+          if (peer !== client && peerContext?.accessMode !== "public-read" && await authorized(peer, true)
+            && peer.readyState === WebSocket.OPEN) peer.send(awareness);
+        }
+        return;
+      }
       if (input.type !== "update" || typeof input.payload !== "string") throw new Error("SYNC_UPDATE_INVALID");
       const payload = Buffer.from(input.payload, "base64");
       const envelope = parseSyncUpdateEnvelope({ updateId: input.updateId, payload: new Uint8Array(payload) });
-      const result = await documents.applyUpdate(context.ownerId, context.documentKey, envelope.updateId, envelope.payload);
-      if (!result) return closeUnavailable(client);
+      if (context.accessMode === "read" || context.accessMode === "public-read") {
+        return rejectUpdate(client, envelope.updateId, context, "SYNC_WRITE_REVOKED");
+      }
+      if (context.accessMode === "write" && (input.grantId !== context.grantId
+        || input.permissionEpoch !== context.permissionEpoch || input.writeEpoch !== context.writeEpoch)) {
+        return rejectUpdate(client, envelope.updateId, context, "SYNC_WRITE_EPOCH_STALE");
+      }
+      const result = await documents.applyUpdateForActor(current.access, context.documentKey, envelope.updateId, envelope.payload);
+      if (!result) return rejectUpdate(client, envelope.updateId, context, "SYNC_WRITE_REVOKED");
       context.projectionPending = result.projectionPending;
       client.send(JSON.stringify({ type: "ack", updateId: envelope.updateId, duplicate: result.duplicate,
+        sequence: result.sequence, permissionEpoch: context.permissionEpoch, writeEpoch: context.writeEpoch,
         projection: result.projectionPending ? "pending" : "current" }));
       if (!result.duplicate) for (const peer of peers) if (peer !== client && await authorized(peer) && peer.readyState === WebSocket.OPEN) {
         peer.send(JSON.stringify({ type: "update", updateId: envelope.updateId, payload: input.payload }));
@@ -262,8 +294,10 @@ interface ConnectionContext {
   documentKey: string;
   actorId?: string;
   ownerId: string;
-  accessMode: "owner" | "read" | "public-read";
+  accessMode: "owner" | "read" | "write" | "public-read";
   permissionEpoch: number;
+  grantId?: string;
+  writeEpoch?: number;
   displayName: string;
   participantId: string;
   request?: IncomingMessage;
@@ -286,8 +320,7 @@ async function authorized(client: WebSocket, checkDocument = false): Promise<boo
     const loaded = context && session && session.userId === context.actorId && checkDocument
       ? await documents.loadDocumentForActor(context.actorId, context.documentKey) : undefined;
     if (!context || !session || session.userId !== context.actorId
-      || (checkDocument && (!loaded || loaded.access.accessMode !== context.accessMode
-        || loaded.access.permissionEpoch !== context.permissionEpoch))) {
+      || (checkDocument && (!loaded || !reconcileSelectedAccess(client, context, loaded.access)))) {
       closeUnavailable(client);
       return false;
     }
@@ -334,6 +367,47 @@ function unavailable(response: import("node:http").ServerResponse, status: numbe
 
 function closeUnavailable(client: WebSocket) { client.close(4404, "SYNC_DOCUMENT_UNAVAILABLE"); }
 function closeProtocol(client: WebSocket, code: string) { client.close(4400, code.slice(0, 120)); }
+
+function reconcileSelectedAccess(client: WebSocket, context: ConnectionContext,
+  access: { accessMode: "owner" | "read" | "write"; permissionEpoch: number; grantId?: string; writeEpoch?: number }): boolean {
+  if (context.accessMode === "public-read" || access.permissionEpoch !== context.permissionEpoch
+    || access.grantId !== context.grantId || (context.accessMode === "owner") !== (access.accessMode === "owner")) return false;
+  if (context.accessMode !== access.accessMode || context.writeEpoch !== access.writeEpoch) {
+    context.accessMode = access.accessMode;
+    context.writeEpoch = access.writeEpoch;
+    if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({ type: "permission", access: access.accessMode,
+      grantId: access.grantId, permissionEpoch: access.permissionEpoch, writeEpoch: access.writeEpoch }));
+  }
+  return true;
+}
+
+function rejectUpdate(client: WebSocket, updateId: string, context: ConnectionContext, code: string): void {
+  if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({ type: "rejected", updateId, code,
+    access: context.accessMode, grantId: context.grantId,
+    permissionEpoch: context.permissionEpoch, writeEpoch: context.writeEpoch }));
+}
+
+function validateAwarenessSelection(value: unknown, snapshot: Uint8Array, updates: readonly Uint8Array[]):
+{ anchor: string; head: string } | null {
+  if (!value || typeof value !== "object") return null;
+  const selection = value as Record<string, unknown>;
+  if (Object.keys(selection).some((key) => key !== "anchor" && key !== "head")
+    || typeof selection.anchor !== "string" || typeof selection.head !== "string") return null;
+  if (selection.anchor.length > 2_048 || selection.head.length > 2_048
+    || !/^[A-Za-z0-9_-]+$/.test(selection.anchor) || !/^[A-Za-z0-9_-]+$/.test(selection.head)) return null;
+  const document = new Y.Doc();
+  try {
+    Y.applyUpdate(document, merge(snapshot, updates));
+    const body = document.getText("body");
+    for (const encoded of [selection.anchor, selection.head]) {
+      const position = Y.decodeRelativePosition(Buffer.from(encoded, "base64url"));
+      const absolute = Y.createAbsolutePositionFromRelativePosition(position, document);
+      if (!absolute || absolute.type !== body || absolute.index < 0 || absolute.index > body.length) return null;
+    }
+    return { anchor: selection.anchor, head: selection.head };
+  } catch { return null; }
+  finally { document.destroy(); }
+}
 
 async function broadcastPresence(documentKey: string): Promise<void> {
   const peers = [...(sockets.get(documentKey) ?? [])];

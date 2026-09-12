@@ -44,7 +44,7 @@ jobs:
       NODE_ENV: test
       DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
       AUTH_DATABASE_INTEGRATION: "true"
-      APP_VERSION: 1.1.1
+      APP_VERSION: 1.1.2
       BUILD_ID: ${{ github.sha }}
       APP_CHANNEL: dev
       APP_PHASE: p5
@@ -117,6 +117,8 @@ jobs:
         run: pnpm test:migration:1100
       - name: Verify 1.1.1 public-link sharing migration recovery
         run: pnpm test:migration:1110
+      - name: Verify 1.1.2 selected-writer migration recovery
+        run: pnpm test:migration:1120
       - name: Verify 0.7.0 fresh and 0.6.0 upgrade release paths
         run: pnpm test:migration:0700-release
       - name: Measure 0.7.0 navigation release baseline

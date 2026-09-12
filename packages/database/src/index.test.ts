@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { classifyDatabaseError, CURRENT_SCHEMA_VERSION, DatabaseHealthError } from "./index.js";
 
 describe("database health diagnostics", () => {
-  it("requires the 1.1.1 public lyric link migration", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("1110_public_lyric_read_links.sql");
+  it("requires the 1.1.2 selected lyric write migration", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe("1120_selected_lyric_write.sql");
   });
 
   it.each([

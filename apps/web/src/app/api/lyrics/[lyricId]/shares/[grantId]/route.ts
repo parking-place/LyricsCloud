@@ -1,10 +1,23 @@
 import { getAuthContext, resolveRequestAuth } from "../../../../../../lib/auth-context.js";
 import { errorResponse } from "../../../../../../lib/http-response.js";
 import { mutationOriginAllowed } from "../../../../../../lib/song-api.js";
-import { sharingApiError, sharingResponseHeaders } from "../../../../../../lib/sharing-api.js";
+import { parseShareAccessInput, sharingApiError, sharingResponseHeaders } from "../../../../../../lib/sharing-api.js";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+export async function PATCH(request: Request, context: { params: Promise<{ lyricId: string; grantId: string }> }): Promise<Response> {
+  try {
+    if (!mutationOriginAllowed(request)) return errorResponse("FORBIDDEN", 403);
+    const auth = await resolveRequestAuth(request); const { lyricId, grantId } = await context.params;
+    const input = parseShareAccessInput(await request.json());
+    const result = await getAuthContext().lyricSharing.setGrantAccess(
+      auth.userId, lyricId, grantId, input.access, input.requestId
+    );
+    return result ? Response.json(result, { headers: sharingResponseHeaders(auth.renewalCookie) })
+      : errorResponse("NOT_FOUND", 404);
+  } catch (error) { return sharingApiError(error); }
+}
 
 export async function DELETE(request: Request, context: { params: Promise<{ lyricId: string; grantId: string }> }): Promise<Response> {
   try {
