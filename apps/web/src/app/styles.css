@@ -258,6 +258,10 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .shared-writer-recovery li pre { max-height: 12rem; margin: 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
 .shared-writer-recovery li > div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .45rem; }
 .shared-writer-recovery button { min-height: 2.35rem; padding: .4rem .7rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--surface); cursor: pointer; }
+.sharing-storage-guide { display: grid; gap: .5rem; padding: .85rem 1rem; border: 1px solid color-mix(in srgb, var(--acid) 30%, var(--line)); border-radius: .7rem; background: color-mix(in srgb, var(--acid) 5%, var(--surface)); }
+.sharing-storage-guide strong, .sharing-storage-guide p, .sharing-storage-guide ul { margin: 0; }
+.sharing-storage-guide p, .sharing-storage-guide li { color: var(--muted); font-size: .82rem; line-height: 1.55; }
+.sharing-storage-guide ul { display: grid; gap: .35rem; padding-left: 1.2rem; }
 .shared-access-ended { width: min(calc(100% - 2rem), 38rem); display: grid; gap: 1rem; align-self: center; padding: clamp(1.5rem, 4vw, 3rem); margin: 10vh auto; border: 1px solid var(--line); border-radius: 1rem; background: var(--panel); }
 .shared-access-ended p { margin: 0; color: var(--muted); line-height: 1.7; }
 .shared-access-ended > div { display: flex; flex-wrap: wrap; gap: .7rem; }

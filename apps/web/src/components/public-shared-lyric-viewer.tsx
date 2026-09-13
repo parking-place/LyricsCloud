@@ -7,6 +7,7 @@ import { createBrowserPublicSharedLyricSync, createCodeMirrorTextEditor,
 import { LYRIC_STATUS_LABELS, type LyricStatus } from "@lyricscloud/domain";
 import { useEffect, useRef, useState } from "react";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
+import { SharingStorageGuide } from "./sharing-storage-guide.js";
 
 interface PublicLyric {
   readonly linkId: string;
@@ -203,6 +204,7 @@ export function PublicSharedLyricViewer() {
         : state === "limited" ? "쓰기 제한에 도달했습니다 · 미전송 입력은 아래에서 복구할 수 있습니다"
         : state === "error" ? "실시간 연결을 확인하지 못했습니다" : "최신 내용과 권한을 확인하는 중…"}
       {state === "error" || state === "limited" ? <button type="button" onClick={() => sync.current?.retry()}>다시 연결</button> : null}</div>
+    <SharingStorageGuide audience="public-guest" writable={writable} />
     <section className={`shared-lyric-document ${writable ? "is-writable" : "is-readonly"}`}><div ref={editorParent} className="shared-lyric-editor" /></section>
     <footer><div><strong>공개된 필드</strong><span>제목 · 본문{lyric.status ? " · 상태" : ""}{lyric.ownerDisplayName ? " · 공유자" : ""}{lyric.updatedAt ? " · 수정 시각" : ""}</span>
       <small>작업 메모, 연결 자료, 버전 기록, 계정·자료 목록은 포함되지 않습니다. {new Date(lyric.expiresAt).toLocaleString("ko-KR")}에 링크 만료</small></div>
