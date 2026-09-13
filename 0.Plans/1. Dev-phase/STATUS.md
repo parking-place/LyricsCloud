@@ -7,7 +7,7 @@ state: "complete"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-13"
-next_action: "1.1.2 정식 릴리스 완료. 2026-09-13 사용자의 비로그인 guest 쓰기 승인에 따라 1.1.3 P1 계약을 검증·push한 뒤 P2 runtime 구현을 시작한다"
+next_action: "1.1.3 P1 계약 source 68f694e 원격 확인 완료. P1 PR을 main에 병합한 뒤 P2에서 1130 schema·guest session/지속 예산·owner toggle·public write ACK 기반을 구현한다"
 ```
 
 ## 승인과 기준
@@ -132,13 +132,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.2 P4 | complete | 후보 `b797224`, Actions `34721549799`·`34721572892`, Vitest 353 PASS·E2E 347 PASS·5-browser 5 PASS·동일 SHA 공개 3계정/복구/재시작 인수 완료 |
 | 1.1.2 P5 | complete | 후보 `8ec3cf9`, Actions `34723513936`·`34723521842`, 네 dev image·27 migration 봉인·동일 SHA 공개 3계정/복구/재시작 인수 완료 |
 | 1.1.2 Release | complete | main/tag `eb949b5`, main CI `34724875009` 재실행·tag CI `34726392136`, exact digest 운영 배포·공개 공동 편집/복구/재시작 smoke·GitHub Release 완료 |
-| 1.1.3 P1 | in_progress | 사용자 ``비로그인 guest 쓰기 승인`` 수령, public read 안의 body write·guest session/epoch·지속 제한·owner 중지·복구 계약 검증 중; runtime 미착수 |
+| 1.1.3 P1 | complete | 계약 `68f694e`, 사용자 승인·public read 안 body write·guest session/epoch·지속 제한·owner 중지·복구/rollback 확정; 문서 검증 PASS, runtime 미착수 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.3/P1 | LC-NF-1.1.3-P1-01~06 | 승인 증거·W⊆R·guest session/epoch·지속 제한·owner 중지·복구·호환/rollback 계약 | v1.1.2 `eb949b5` | 2026-09-13 | in_progress |
+| Codex | 1.1.3/P1 | LC-NF-1.1.3-P1-01~06 | 승인 증거·W⊆R·guest session/epoch·지속 제한·owner 중지·복구·호환/rollback 계약 | v1.1.2 `eb949b5`, 계약 `68f694e` | 2026-09-13 | complete |
 | Codex | 1.1.2/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.2 P5 `8ec3cf9` | 2026-09-13 | complete |
 | Codex | 1.1.2/P5 | LC-NF-1.1.2-P5-01~06 | 요구 추적·현재 문서·봉인 artifact·최종 CI·동일 SHA 개발 인수·정식 release gate | 1.1.2 P4 `b797224` | 2026-09-13 | complete |
 | Codex | 1.1.2/P4 | LC-NF-1.1.2-P4-01~07 | W⊆R·3계정 동시 편집·epoch 경쟁·권한/복구·offline/reconnect·서비스 재시작 | 1.1.2 P3 `f8f2dbd` | 2026-09-13 | complete |
