@@ -19,7 +19,7 @@
 - P4 Actions `34721549799`·`34721572892`, Vitest 353 PASS·4 skip, 전체 E2E 347 PASS·38 skip, selected-write 5-browser 5/5 PASS
 - 동일 SHA 개발 환경에서 3계정 live 수렴·writer 강등/회수·offline rejected 복구·재허용 비자동 적용·메모 격리·서비스 재시작 PASS
 
-P5 Actions `34723513936`·`34723521842`, 네 dev image와 동일 SHA 개발 공개 3계정·복구·재시작 인수를 통과했다. 승인된 정식 릴리스를 실행한다. Known limitations: public-link write·guest identity는 후속 버전 범위이고 실제 OS/물리 기기는 새로 실행하지 않았으며 `OPS-100-001` 외부 backup 예외를 유지한다.
+P5 Actions `34723513936`·`34723521842`, main CI `34724875009` 재실행, tag CI `34726392136`과 동일 SHA 개발/운영 공개 인수를 통과했다. main/annotated tag `eb949b5`의 정식 네 image를 exact digest로 배포하고 GitHub Release를 공개했다. Known limitations: public-link write·guest identity는 후속 명시 승인 범위이고 실제 OS/물리 기기는 새로 실행하지 않았으며 `OPS-100-001` 외부 backup 예외를 유지한다.
 
 ## [1.1.1] - 2026-09-13
 
