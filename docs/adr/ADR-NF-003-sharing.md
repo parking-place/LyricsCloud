@@ -1,9 +1,9 @@
 # ADR-NF-003 — owner·actor·capability 기반 공유
 
-- 상태: **Accepted through 1.1.2 selected-user body write**
+- 상태: **Accepted through 1.1.3 public-link guest body write**
 - 작성일: 2026-09-09
-- 결정 Phase: 1.1.0 P1 (지정 읽기), 1.1.1 P1 (링크 읽기), 1.1.2 P1 (쓰기 확장 재승인)
-- 승인자/시각: **사용자, 2026-09-13 — 기존 owner/actor 경계를 유지하고 active read grant 안의 selected-user body write·두 epoch·actor ACK/복구를 1.1.2 범위로 승인.**
+- 결정 Phase: 1.1.0 P1 (지정 읽기), 1.1.1 P1 (링크 읽기), 1.1.2 P1 (지정 쓰기), 1.1.3 P1 (공개 guest 쓰기)
+- 승인자/시각: **사용자, 2026-09-13 — ``비로그인 guest 쓰기 승인``. 기존 owner/actor 경계를 유지하고 active public read capability 안의 guest body write·별도 세션/epoch·지속 남용 제한·owner 중지/복구를 1.1.3 범위로 승인.**
 - 범위 원본: 사용자의 1.0.1 필수 및 후속 1.x 계획 요청.
 
 ## 해결할 질문
@@ -39,6 +39,14 @@ same-owner 전용 자료를 owner 경계 붕괴 없이 타인/guest와 공유하
 ## 1.1.2 승인 범위
 
 활성 selected read grant 자체에 `write_enabled`와 단조 증가 `write_epoch`를 추가해 W⊆R을 구조적으로 유지한다. writer는 가사 본문 CRDT update와 제한된 awareness만 제출하며 ACL·metadata·revision 복원·삭제·소유권은 얻지 않는다. update transaction은 세션 actor, grant ID, read permission epoch와 write epoch를 row lock 아래 재검사하고 receipt·actor attribution·projection을 commit한 뒤에만 sequence ACK를 보낸다. 강등/회수 뒤 구 epoch queue는 서버에 자동 적용하지 않고 계정·actor·자료·grant·epoch별 로컬 복구함으로 격리한다. write만 강등되면 읽기와 read presence는 유지하되 cursor와 쓰기를 제거한다. 상세는 [1.1.2 P1 인수](../runbooks/1.1.2-phase1-selected-write-contract.md)를 따른다. public-link write와 비로그인 guest는 1.1.3 P1 전 비활성이다.
+
+## 1.1.3 승인 범위
+
+기존 공개 읽기 링크 행에 기본 false인 `write_enabled`와 단조 증가 `write_epoch`를 추가한다. 별도 public writer capability를 만들지 않아 같은 link/resource/token/permission epoch/expiry 안에서만 write가 성립하고 W⊆R을 구조적으로 유지한다. owner는 공개 읽기와 구분된 위험 확인 뒤에만 write를 켜며 write만 끄면 read를 유지한 채 write epoch와 열린 writer를 무효화한다. link 회수·만료·교체는 read와 write를 함께 끝낸다.
+
+비로그인 방문자는 raw link token과 별도로 서버가 발급한 최대 12시간의 256비트 opaque guest session을 사용한다. 서버는 두 token의 digest만 저장하고 `guest_session_id`와 서버 생성 `게스트-XXXX` 표시로 attribution한다. guest가 보낸 이름·actor·owner 값은 신뢰하지 않는다. 허용 기능은 해당 가사의 본문 CRDT update와 제한된 awareness뿐이며 workspace·목록·검색·export·다른 자료·메모·연결 자료·revision·ACL·metadata·삭제·소유권·계정 API는 계속 거부한다.
+
+update/byte/socket/session 예산은 PostgreSQL과 현재 socket 집합에서 함께 집행한다. update/문서 절대 상한은 기존 1 MiB/400,000 byte를 유지하고, 분당 guest 240건/4 MiB 및 링크 1,200건/16 MiB, guest 4개/link 20개 socket, session 12시간을 적용한다. owner kill switch, 만료, 회수, rotation, 예산 초과는 새 write를 거부하고 과거 epoch의 미전송 원문을 capability fingerprint+guest session+resource+epoch별 로컬 복구함에 격리한다. 재허용 뒤 자동 replay하지 않는다. 상세는 [1.1.3 P1 인수](../runbooks/1.1.3-phase1-public-write-contract.md)를 따른다.
 
 ## 영향받는 작업·화면·schema·운영
 

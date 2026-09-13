@@ -1,12 +1,14 @@
 # 읽기·쓰기 공유의 권한 집합과 데이터 보존
 
-상태: **1.1.0 selected-read·1.1.1 public-link read·1.1.2 selected write Accepted; public write/guest Proposed**. 지정 읽기는 1.1.0, 링크 읽기는 1.1.1, 지정 쓰기는 1.1.2, 링크 쓰기는 1.1.3에 배정한다. 1.0.1 Private Beta는 기존 owner-only를 유지한다. 미래 공유를 이유로 현재 RLS를 느슨하게 하지 않는다.
+상태: **1.1.0 selected-read·1.1.1 public-link read·1.1.2 selected write·1.1.3 public-link guest body write Accepted**. 지정 읽기는 1.1.0, 링크 읽기는 1.1.1, 지정 쓰기는 1.1.2, 링크 쓰기는 1.1.3에 배정한다. 1.0.1 Private Beta는 기존 owner-only를 유지한다. 미래 공유를 이유로 현재 RLS를 느슨하게 하지 않는다.
 
 2026-09-12 사용자는 owner 유지·별도 actor·자료별 grant 권장안을 1.1.0 지정 사용자 읽기 범위에 승인했다. 승인된 공개 필드, 전용 API/화면, reader presence, 회수와 rollback은 [P1 인수 기록](../../../docs/runbooks/1.1.0-phase1-sharing-contract.md)에 고정했다. 공개 링크·쓰기·guest는 자동 승인되지 않는다.
 
 2026-09-12 사용자는 1.1.1 공개 링크 읽기에 256비트 fragment capability·digest-only 저장, 가사 한 개와 명시 필드, 최대 30일 만료·회수/재발급 epoch, no-store/noindex/일반 OG, fixed POST/WS 인증을 승인했다. 쓰기·guest workspace·public presence identity는 포함하지 않는다. [1.1.1 P1 인수 기록](../../../docs/runbooks/1.1.1-phase1-public-link-read-contract.md)을 따른다.
 
 2026-09-13 사용자는 1.1.2 지정 사용자 본문 쓰기에 active read grant 안의 write 상태, read/write 두 epoch와 grant ID, 세션 actor attribution, row-lock 원자 ACK, local-only undo와 구 epoch rejected 복구함, 서버 인증 presence/cursor를 승인했다. writer의 ACL·metadata·revision 복원·삭제·소유권과 public-link/guest write는 포함하지 않는다. [1.1.2 P1 인수 기록](../../../docs/runbooks/1.1.2-phase1-selected-write-contract.md)을 따른다.
+
+2026-09-13 사용자는 정확히 ``비로그인 guest 쓰기 승인``이라고 명시했다. 1.1.3은 기존 256비트 공개 읽기 capability와 같은 자료·같은 만료 안에서 owner가 별도 위험 확인한 경우에만 비로그인 guest 본문 쓰기를 연다. 서버 발급 익명 guest 세션·별도 write epoch·지속 남용 예산·owner write 중지·거부 원문 복구를 적용하며 계정 가입이나 workspace 권한으로 바꾸지 않는다. [1.1.3 P1 인수 기록](../../../docs/runbooks/1.1.3-phase1-public-write-contract.md)을 따른다.
 
 ## 권한 집합
 
@@ -20,7 +22,7 @@ R은 읽을 수 있는 주체 집합, W는 쓸 수 있는 주체 집합이다. o
 
 selected R={owner,A}, W={owner,B}는 둘 다 selected여도 불가다. 읽기 일부+쓰기 전체도 불가다. selected는 내부 stable user ID로 관리하고 이메일/표시이름 검색 결과의 ID 열거를 막는다. 링크 공개는 인터넷 전체에 자동 게시하거나 검색엔진 색인을 허용한다는 뜻이 아니다.
 
-public-link 쓰기는 사용자가 요청한 '링크를 가진 모두'라는 의미를 유지하는 후보다. **비로그인 guest 쓰기**에는 별도 owner 확인·남용 제한·철회 가능한 한정 capability·보안 승인이 필요하다. 인증 계정만 쓰게 하는 대안도 비교하되 그 대안을 사용자의 public-write 요청을 충족했다고 조용히 바꿔 쓰지 않는다.
+public-link 쓰기는 사용자가 요청한 '링크를 가진 모두'라는 의미에 따라 **비로그인 guest 쓰기**를 포함한다. 로그인 사용자만 쓰게 하는 대안으로 이 요구를 대체하지 않는다. owner가 별도 위험 확인을 완료한 active 공개 읽기 링크에서만 write를 켤 수 있고, write만 끄면 read는 유지하되 write epoch를 증가시켜 열린 writer socket과 과거 queue를 즉시 무효화한다. 링크 회수·만료·교체는 read와 write를 함께 먼저 끝낸다.
 
 ## Beta 접근과 공유 접근
 
@@ -30,7 +32,7 @@ public-link 쓰기는 사용자가 요청한 '링크를 가진 모두'라는 의
 
 공유 대상·필드·자식 자료는 명시한다. 곡을 공유했다고 연결 라임/프롬프트·모든 가사 버전·작업 메모·Suno 비공개 링크·revision·개인 설정을 자동 공유하지 않는다. 초기 정책은 최소 범위이며 추가 자료를 명시 선택하도록 한다. shared 검색/내보내기/복제는 각 경로에 별도 read 필터와 제품 계약이 필요하다.
 
-owner_id는 실제 소유자를 유지한다. writer의 actor_id/guest identity는 별도로 기록한다. 클라이언트가 ownerId를 바꿔 전송해 RLS를 우회하는 형태를 만들지 않는다. 본문 write 권한이 ACL·소유권이전·hard delete·탈퇴 권한으로 확장되지 않는다. owner 외 revision restore/metadata 변경은 명시 허용 목록으로 정의한다.
+owner_id는 실제 소유자를 유지한다. 로그인 writer의 actor_id와 공개 writer의 guest_session_id는 서로 다른 열과 제약으로 기록한다. guest는 서버가 만든 `게스트-XXXX` 표시와 connection-local participant ID만 받으며 이름·actor·owner를 클라이언트가 주장하지 않는다. 클라이언트가 ownerId를 바꿔 전송해 RLS를 우회하는 형태를 만들지 않는다. 본문 write 권한이 ACL·소유권이전·metadata·revision restore·hard delete·탈퇴 권한으로 확장되지 않는다.
 
 ## token·철회·캐시·WebSocket
 
@@ -46,9 +48,9 @@ read API·SSR·WebSocket subscribe·각 write message·revision/export/search에
 
 권한이 회수된 offline writer의 늦은 업데이트는 서버 원본에 적용하지 않는다. 그러나 그 사람이 직접 입력한 미전송 내용은 로컬 격리 초안으로 남기고 복사/다운로드 안내를 한다. 그 안내를 위해 회수 이후 서버 private 데이터를 다시 읽어오지 않는다. guest 초안은 capability/기기 세션 범위로 분리하고 만료·사용자 전환·정리 정책을 고지한다.
 
-owner 복구 checkpoint·revision 비교를 제공하되 악성 writer의 대량 수정·자원 소모·guest identity spoofing·무제한 history 크기를 rate/size/concurrency 예산과 함께 다룬다. 비공개 기본값·owner-only 기본 경로·기존 계정 logout/탈퇴 정책을 회귀에 포함한다.
+owner 복구 checkpoint·revision 비교를 제공하되 악성 writer의 대량 수정·자원 소모·guest identity spoofing·무제한 history 크기를 rate/size/concurrency 예산과 함께 다룬다. 공개 guest는 기존 1 MiB update·400,000 byte 문서 상한 안에서 분당 guest 240건/4 MiB, 링크 1,200건/16 MiB의 PostgreSQL 고정 window, guest당 4개·링크당 20개 socket, 최대 12시간 세션을 적용한다. link expiry가 더 이르면 그 시각을 사용한다. 제한 상태는 재시작 뒤에도 유지하고 raw capability·guest secret·가사 원문은 log/metric key에 넣지 않는다. 비공개 기본값·owner-only 기본 경로·기존 계정 logout/탈퇴 정책을 회귀에 포함한다.
 
-참고: [OWASP Authorization](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html). 집합 관계·guest 정책·판정 범위는 LyricsCloud의 설계 제안이며 승인 전 Accepted로 표시하지 않는다.
+참고: [OWASP Authorization](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html). 집합 관계·guest 정책·판정 범위는 2026-09-13 사용자 승인과 1.1.3 P1 인수 범위에서 Accepted다. 구현·배포 완료 여부는 각 Phase 증거로 별도 판정한다.
 
 ## 단계별 안전성
 
