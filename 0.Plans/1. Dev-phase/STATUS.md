@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.3"
-current_phase: "../2.Patch-phase/1.1.3/3phase.md"
+current_phase: "../2.Patch-phase/1.1.3/4phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-14"
-next_action: "1.1.3 P2 후보 e58dd9c의 전체 CI·동일 SHA 개발 인수와 main 병합 완료. P3 owner 확인·guest PC/mobile 편집/복구 후보를 CI와 동일 SHA 개발 환경에서 인수한다"
+next_action: "1.1.3 P3 후보 167ceb8의 전체 CI 두 경로·네 dev image·동일 SHA 개발 공개 guest 편집/복구 인수 완료. P4 실제 DB·권한·남용 예산·재접속·서비스 재시작·지원 browser 교차 회귀를 수행한다"
 ```
 
 ## 승인과 기준
@@ -134,13 +134,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.2 Release | complete | main/tag `eb949b5`, main CI `34724875009` 재실행·tag CI `34726392136`, exact digest 운영 배포·공개 공동 편집/복구/재시작 smoke·GitHub Release 완료 |
 | 1.1.3 P1 | complete | 계약 `68f694e`, 사용자 승인·public read 안 body write·guest session/epoch·지속 제한·owner 중지·복구/rollback 확정; 문서 검증 PASS, runtime 미착수 |
 | 1.1.3 P2 | complete | 후보 `e58dd9c`, Actions `34761752729`·`34761840822`, 1130 schema·guest session/지속 예산·owner kill switch와 동일 SHA 공개 guest write/격리/log 비노출 인수 완료 |
-| 1.1.3 P3 | in_progress | owner 공개 read/write 비교·위험 확인, guest CodeMirror·분리 복구함·저장 상태와 PC/mobile 흐름 착수 |
+| 1.1.3 P3 | complete | 후보 `167ceb8`, Actions `34765577731`·`34765580164`, 네 dev image·동일 SHA 공개 두 guest 수렴/격리/offline 복구/비자동 replay/전체 회수 인수 완료 |
+| 1.1.3 P4 | in_progress | 실제 DB·읽기/쓰기 불일치·다른 자료 token·지속 제한·owner 중지·재접속·서비스 재시작·지원 browser 교차 회귀 착수 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.3/P3 | LC-NF-1.1.3-P3-01~06 | owner 공개 read/write 비교·위험 확인, guest CodeMirror·분리 복구함·저장 상태·PC/mobile E2E | 1.1.3 P2 `e58dd9c` | 2026-09-13 | in_progress |
+| Codex | 1.1.3/P4 | LC-NF-1.1.3-P4-01~07 | read/write 불일치·token 자료 격리·지속 제한/owner 중지·offline/reconnect·restart·지원 browser 회귀 | 1.1.3 P3 `167ceb8` | 2026-09-14 | in_progress |
+| Codex | 1.1.3/P3 | LC-NF-1.1.3-P3-01~06 | owner 공개 read/write 비교·위험 확인, guest CodeMirror·분리 복구함·저장 상태·PC/mobile E2E | 1.1.3 P2 `e58dd9c`, 후보 `167ceb8` | 2026-09-13 | complete |
 | Codex | 1.1.3/P2 | LC-NF-1.1.3-P2-01~06 | 1130 schema·guest session/지속 예산·owner access API·public write ACK·migration/권한 회귀 | 1.1.3 P1 `68f694e`, 후보 `e58dd9c` | 2026-09-13 | complete |
 | Codex | 1.1.3/P1 | LC-NF-1.1.3-P1-01~06 | 승인 증거·W⊆R·guest session/epoch·지속 제한·owner 중지·복구·호환/rollback 계약 | v1.1.2 `eb949b5`, 계약 `68f694e` | 2026-09-13 | complete |
 | Codex | 1.1.2/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.2 P5 `8ec3cf9` | 2026-09-13 | complete |
