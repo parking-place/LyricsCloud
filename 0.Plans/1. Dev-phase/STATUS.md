@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.1.2"
-current_phase: "../2.Patch-phase/1.1.2/5phase.md"
-state: "complete"
+current_version: "1.1.3"
+current_phase: "../2.Patch-phase/1.1.3/1phase.md"
+state: "review"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-13"
-next_action: "1.1.2 P5 후보 8ec3cf9의 전체 CI 두 경로·네 dev image·동일 SHA 개발 공개 3계정/복구/재시작 인수 완료. 승인된 main·annotated v1.1.2·정식 image·릴리스 서버 exact digest·공개 smoke·GitHub Release를 실행한다"
+next_action: "1.1.2 main/tag eb949b5·정식 image·릴리스 서버 exact digest·공개 공동 편집/복구/재시작 인수·GitHub Release 완료. 1.1.3 P1의 비로그인 guest 공개 쓰기 정책을 사용자가 명시 승인할 때까지 구현하지 않는다"
 ```
 
 ## 승인과 기준
@@ -129,11 +129,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.2 P3 | complete | 후보 `f8f2dbd`, Actions `34718575157`·`34718576675`, 실제 DB 8 PASS·5-browser 5 PASS·동일 SHA 공개 권한 토글/수렴/강등/재허용/회수 인수 완료 |
 | 1.1.2 P4 | complete | 후보 `b797224`, Actions `34721549799`·`34721572892`, Vitest 353 PASS·E2E 347 PASS·5-browser 5 PASS·동일 SHA 공개 3계정/복구/재시작 인수 완료 |
 | 1.1.2 P5 | complete | 후보 `8ec3cf9`, Actions `34723513936`·`34723521842`, 네 dev image·27 migration 봉인·동일 SHA 공개 3계정/복구/재시작 인수 완료 |
+| 1.1.2 Release | complete | main/tag `eb949b5`, main CI `34724875009` 재실행·tag CI `34726392136`, exact digest 운영 배포·공개 공동 편집/복구/재시작 smoke·GitHub Release 완료 |
+| 1.1.3 P1 | review | 비로그인 guest를 포함하는 public-link write 정책의 사용자 명시 승인 대기; 구현 미착수 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.3/P1 | LC-NF-1.1.3-P1-01 | 비로그인 guest public-link write 정책 승인 gate | v1.1.2 `eb949b5` | 2026-09-13 | review |
+| Codex | 1.1.2/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.2 P5 `8ec3cf9` | 2026-09-13 | complete |
 | Codex | 1.1.2/P5 | LC-NF-1.1.2-P5-01~06 | 요구 추적·현재 문서·봉인 artifact·최종 CI·동일 SHA 개발 인수·정식 release gate | 1.1.2 P4 `b797224` | 2026-09-13 | complete |
 | Codex | 1.1.2/P4 | LC-NF-1.1.2-P4-01~07 | W⊆R·3계정 동시 편집·epoch 경쟁·권한/복구·offline/reconnect·서비스 재시작 | 1.1.2 P3 `f8f2dbd` | 2026-09-13 | complete |
 | Codex | 1.1.2/P3 | LC-NF-1.1.2-P3-01~07 | owner access UI·writer CodeMirror/상태·rejected 복구·selection/IME/undo·PC/mobile | 1.1.2 P2 `41db8ff` | 2026-09-13 | complete |
@@ -225,6 +229,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.2는 PR #103 merge 뒤 main과 annotated `v1.1.2`가 `eb949b59022cdd3185dae7349570439eca96b879`을 가리킨다. main Actions `34724875009`은 최초 실행의 performance 절대 예산은 통과했으나 짧은 microbenchmark revision round CV가 일시적으로 기준을 넘었고, 코드 변경 없는 재실행 전체 PASS로 분류했다. tag Actions `34726392136`의 전체 verify와 네 정식 image 서명·provenance·SBOM을 통과했으며 서비스별 `1.1.2`·`Release`·`latest`·`Release-latest`의 동일 digest를 확인했다. 운영 서버에 migrate 우선 exact digest 배포해 `1.1.2`·`release`·phase `null`, schema `1120_selected_lyric_write.sql`, 네 서비스 healthy를 확인했다. 공개 운영에서 owner/writer/reader live 수렴, writer 강등 뒤 읽기, reader/writer 회수, ACL·메모 격리, offline rejected 복구·재허용 비자동 적용과 서비스 재시작 지속성이 PASS했고 합성 fixture를 제거했다. 기존 DB volume·secret·HMAC allowlist·beta code를 보존하고 GitHub Release를 발행했다. 실제 OS/물리 기기 미실행과 `OPS-100-001` backup 예외는 유지한다. 1.1.3은 비로그인 guest를 포함하는 public-link write 정책을 사용자가 명시 승인하기 전에는 구현하지 않는다.
 
 1.1.2 P4 후보 `b79722428c5836e794b74c38c63c404114e00b62`는 W⊆R 불일치 거부·ACL 불변, owner/writer 동시 한글·reader live 보기, actor/epoch duplicate ACK와 stale write 거부, writer 강등 뒤 읽기 유지·local rejected 복구, reader 완전 회수·재접속 차단, collaboration 재시작 수렴을 회귀로 고정했다. Node 24 check/build, 실제 PostgreSQL 집중 5 PASS, 5-browser 5 PASS를 통과했다. Actions push `34721549799`와 PR `34721572892`의 전체 verify에서 Vitest 353 PASS/4 skip, E2E 347 PASS/38 skip, selected-read 5 PASS, public-link 11 PASS/4 skip, selected-write 5 PASS, release matrix 10 PASS와 네 dev image 게시/서명을 완료했다. 같은 SHA 개발 서버의 `1.1.2`·`dev`·`p4`, schema `1120_selected_lyric_write.sql`, 네 서비스 healthy를 확인했다. 공개 4계정의 live·강등·회수·ACL·offline 복구·재허용 비자동 적용·메모 격리와 실제 서비스 재시작 뒤 writer/read 지속성이 PASS했고 fixture를 제거했다. 실제 물리 기기는 새로 실행하지 않았으며 P5가 문서·봉인·최종 release 위험을 담당한다.
 
