@@ -9,9 +9,9 @@
 
 [![CI](https://github.com/parking-place/LyricsCloud/actions/workflows/ci.yml/badge.svg)](https://github.com/parking-place/LyricsCloud/actions/workflows/ci.yml)
 
-LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합, 지정 사용자 공동 편집·공개 링크 읽기 공유와 온라인 우선 PWA를 지원한다.
+LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합, 지정 사용자·공개 링크 공동 편집과 온라인 우선 PWA를 지원한다.
 
-현재 운영 서버의 정식 릴리스는 [`v1.1.2`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.1.2)이다. 다음 `1.1.3`의 비로그인 공개 링크 본문 쓰기 정책과 P1 계약이 승인됐고, P2부터 runtime을 구현한다.
+현재 운영 서버의 정식 릴리스는 [`v1.1.2`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.1.2)이다. `1.1.3`은 비로그인 공개 링크 본문 공동 편집의 P1~P4 인수를 완료하고 최종 후보를 준비한다.
 
 ## 주요 기능
 
@@ -29,19 +29,20 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 - 계정별 비열거 공유 코드, 특정 가사 selected-read, 읽기 전용 live update·최소 presence·즉시 권한 회수
 - selected-read 안의 지정 사용자 본문 쓰기, 서버 검증 cursor/presence, 권한 epoch와 거부 원문 복구함
 - 256비트 공개 링크, 선택 필드·최대 30일 만료·일회 링크 복사, fragment 제거·read-only live·즉시 회수
+- owner 위험 확인 뒤 공개 링크의 비로그인 guest 본문 공동 편집, 탭별 session/presence·지속 제한·중지와 rejected-only 복구
 - Google OIDC와 1회성 초대 코드 기반 Private Beta 가입
 
-공개 링크 쓰기·guest identity, AI 생성, 미디어 업로드는 1.1.2 범위가 아니다.
+AI 생성과 미디어 업로드는 1.1.3 범위가 아니다.
 
 ## 현재 상태
 
 | 항목 | 상태 |
 |---|---|
 | 소스·runtime version | `1.1.3` |
-| 현재 작업 | [1.1.3 Phase 2 — guest 쓰기 저장·서버 기반](<./0.Plans/2.Patch-phase/1.1.3/2phase.md>) |
+| 현재 작업 | [1.1.3 Phase 5 — 최종 후보 인수](<./0.Plans/2.Patch-phase/1.1.3/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.1.2`, main/tag `eb949b5`, exact digest 운영 배포·공개 공동 편집/복구/재시작 smoke 완료 |
-| 개발 인수 | 1.1.3 P1 계약 source `68f694e` 완료; P2 runtime 구현 중 |
+| 개발 인수 | 1.1.3 P1~P4 완료; P5 전체 CI·동일 SHA 개발 인수 진행 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.
@@ -106,7 +107,7 @@ LyricsCloud betacode refresh
 | 인증·베타 운영자 | [Google OAuth](./docs/runbooks/google-oauth-setup.md), [초대 코드 CLI](./docs/runbooks/1.0.1-phase2-beta-admin.md), [HMAC allowlist](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md) |
 | 복구·배포 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md), [개발 배포](./docs/runbooks/development-deploy.md), [Docker Hub 발행](./docs/runbooks/dockerhub-publish.md) |
 | 보안·장애 담당자 | [Security policy](./SECURITY.md), [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
-| 릴리스 검토자 | [1.1.2 release notes](./docs/releases/1.1.2.md), [1.1.2 Phase 5](./docs/runbooks/1.1.2-phase5-final-acceptance.md), [1.1.2 추적](./docs/architecture/1.1.2-FINAL-TRACEABILITY.md), [CHANGELOG.md](./CHANGELOG.md) |
+| 릴리스 검토자 | [1.1.3 release notes](./docs/releases/1.1.3.md), [1.1.3 Phase 5](./docs/runbooks/1.1.3-phase5-final-acceptance.md), [1.1.3 추적](./docs/architecture/1.1.3-FINAL-TRACEABILITY.md), [CHANGELOG.md](./CHANGELOG.md) |
 | 기여자 | [Agent 지침](./Agent.md), [후속 계획](./0.Plans/2.Patch-phase/README.md), [ADR 색인](./docs/adr/README.md) |
 
 ## 저장소 구조
@@ -122,4 +123,4 @@ LyricsCloud betacode refresh
 | `scripts/` | 검증·migration·배포 보조 명령 |
 | `0.Plans/` | 보호된 기획·목업·기술 결정과 Phase 상태 |
 
-Suno 자동 메타데이터·사전·public write·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있다. 1.1.2는 selected-read 안의 로그인 지정 사용자 쓰기까지만 제공하고 public write·guest identity는 1.1.3~1.1.4가 별도 승인 아래 담당한다.
+Suno 자동 메타데이터·사전·native 앱 후보는 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있다. 1.1.3은 active public-read 안의 guest 본문 쓰기까지만 제공하고 장시간·다중 기기 안정화는 1.1.4가 담당한다.

@@ -1,4 +1,4 @@
-# LyricsCloud 1.1.2 정식 지원 정책
+# LyricsCloud 1.1.2 정식·1.1.3 후보 지원 정책
 
 ## 지원 환경
 
@@ -50,6 +50,8 @@
 1.1.1 후보는 로그인 없는 공개 링크 읽기를 지원한다. 주소 fragment는 첫 처리 뒤 제거되며 raw 링크는 다시 조회할 수 없다. 링크가 열리지 않으면 전체 주소가 복사됐는지, 만료·회수·교체됐는지 확인한다. 공개 화면에 workspace·메모·연결 자료·revision·export·presence가 보이거나 쓰기가 성공하거나, 회수 뒤 새 내용이 전달되면 보안 사고로 취급해 배포를 중단한다. P4의 Linux 5-browser·offline/reconnect·서비스 재시작 자동화는 PASS했지만 실제 OS/물리 기기는 새로 실행하지 않았다.
 
 1.1.2는 활성 selected-read grant 안의 지정 사용자에게만 가사 본문 공동 편집을 허용한다. writer는 ACL·제목·상태·메모·연결 자료·revision·삭제·소유권을 바꿀 수 없다. 읽기 전용 강등은 읽기 연결을 유지하면서 새 쓰기와 cursor를 중단하고, 회수는 연결을 종료한다. 권한 epoch 경계에서 거부된 입력은 계정·actor·자료·grant·epoch별 복구함에 남으며 재허용 뒤 자동 적용되지 않는다. 복구 원문이 사라지거나 다른 사용자에게 보이거나, 강등·회수 뒤 새 쓰기가 ACK되거나, writer 권한이 관리 기능으로 확대되면 배포를 중단한다. 실제 PostgreSQL·Linux 5-browser·offline/reconnect·서비스 재시작 자동화와 exact digest 운영 공개 smoke는 PASS했지만 실제 OS/물리 기기는 새로 실행하지 않았다.
+
+1.1.3 후보는 owner가 별도 위험을 확인한 active public-read link에만 비로그인 guest 본문 쓰기를 허용한다. selected reader와 public write는 동시에 활성화할 수 없으며 guest는 탭별 session·표시 이름으로 구분된다. 연결 준비 전 편집은 잠기고 제한·owner 중지·회수로 거부된 자기 입력만 현재 탭 복구함에 남으며 자동 replay하지 않는다. guest가 private API·메모·연결 자료·revision·ACL·삭제·계정 기능에 접근하거나 identity를 위조하거나, 지속 제한·중지·회수 뒤 새 update가 ACK되거나, 복구 원문이 다른 탭/계정에 노출되면 배포를 중단한다. 실제 PostgreSQL 358 PASS·Linux 5-browser·서비스 재시작 전후 자동화는 PASS했지만 실제 OS/물리 기기는 새로 실행하지 않았다.
 
 정식 main/tag `eb949b5`, main CI `34724875009` 재실행, tag CI `34726392136`, 네 exact digest 운영 배포를 완료했다. 공개 HTTPS에서 공동 편집·강등/회수·rejected 복구·private 격리와 서비스 재시작 지속성이 PASS했다. 기존 DB volume·secret·HMAC allowlist·beta code는 보존했으며 외부 backup은 `OPS-100-001` 승인 예외로 여전히 미구축이다.
 
