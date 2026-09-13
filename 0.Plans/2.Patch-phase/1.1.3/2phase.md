@@ -1,6 +1,6 @@
 # 1.1.3 Phase 2 — 핵심 기반·저장과 서버
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`, 후보 `e58dd9c9975bff9147edacbf7314611f2a4beb09`)
 - 단계 목적: 링크 쓰기·게스트 권한 경계의 핵심 기반·저장과 서버을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -40,12 +40,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.3-P2-01` 구현 전 `1.1.3` 수용 사례의 실패 테스트를 작성한다. 제안 위치는 `tests/new-feature/1.1.3.contract.test.ts`이며 runner 포함 여부를 확인한 뒤 실패 이유를 기록한다.
-- [ ] `LC-NF-1.1.3-P2-02` guest principal·capability scope·서명/고엔트로피 token·epoch를 beta 계정 grant와 분리한다.
-- [ ] `LC-NF-1.1.3-P2-03` 읽기 일부+쓰기 전체, 만료된 read+유효 write, 다른 자료 token 조합을 서버에서 차단한다.
-- [ ] `LC-NF-1.1.3-P2-04` 글자/update/연결/시간 예산과 지속 rate limit·owner kill switch를 구현한다.
-- [ ] `LC-NF-1.1.3-P2-05` guest attribution·reconnect·duplicate update·악성 대량 삭제의 보존/복구 경계를 검증한다.
-- [ ] `LC-NF-1.1.3-P2-06` 추가 schema가 있으면 실제 테스트 DB의 빈 설치·이전 schema 업그레이드·권한·되돌림을 검사한다. 원인 수정 후 동일 실패 테스트와 기존 관련 회귀를 다시 실행한다.
+- [x] `LC-NF-1.1.3-P2-01` `tests/new-feature/1.1.3.contract.test.ts`의 미구현 실패 계약을 runner에 등록하고 구현 뒤 전체 suite에서 통과했다.
+- [x] `LC-NF-1.1.3-P2-02` beta 계정 grant와 분리된 digest-only guest session, link/resource/permission/write epoch를 구현했다.
+- [x] `LC-NF-1.1.3-P2-03` W⊆R, 만료·회수·stale epoch와 다른 link/resource 조합을 DB와 collaboration 양쪽에서 차단했다.
+- [x] `LC-NF-1.1.3-P2-04` update/byte/socket 예산, PostgreSQL 지속 minute budget과 owner write kill switch를 구현했다.
+- [x] `LC-NF-1.1.3-P2-05` guest attribution, commit 뒤 ACK, duplicate 단일 차감, 대량 삭제 이력 복구와 stale session 비부활을 검증했다.
+- [x] `LC-NF-1.1.3-P2-06` 실제 PostgreSQL 18에서 1130 빈 설치·반복·1120 업그레이드·강제 RLS·안전 rollback 후 재적용을 통과했다.
 
 ## 구체적 검증
 
@@ -62,14 +62,18 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 [공통 명령·검증](../QUALITY-GATES.md)을 먼저 읽는다. 기존 runner의 영향받은 검사를 우선 사용하고 필요할 때만 회귀를 보강한다. 지원 환경에서 관련 DB/E2E를 선택하며 동일 변경의 full suite는 로컬/CI 중 한 곳과 필수 게이트만 따른다. native은 승인된 SDK/플랫폼 명령을 기록한다. 없는 도구·실제 IME·물리 기기 검증을 모사 결과로 통과시켰다고 표시하지 않는다. 문서-only Phase는 링크·범위·결정·설계 검토로 별도 인수한다.
 
+- 후보 `e58dd9c9975bff9147edacbf7314611f2a4beb09`: Node 24 check/build, PostgreSQL 18 전체 Vitest 357 PASS/조건부 4 skip, 1130 migration·집중 DB/collaboration·Playwright auth 경로 PASS.
+- GitHub Actions `34761752729`, `34761840822`: 같은 후보의 두 독립 전체 CI와 네 development image 게시 PASS.
+- 동일 SHA 개발 환경: build `1.1.3/dev/p2`, schema `1130_public_lyric_guest_write.sql`, 네 서비스 healthy. 공개 HTTPS/WS에서 기본 read, owner-only 전환, guest write, duplicate 단일 차감, attribution, kill switch, stale session, resource 격리, log 비노출 PASS 후 synthetic fixture 제거.
+
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를 갖췄다.
+- [x] P2에서 main·Release·릴리스 서버를 변경하지 않았다.
 
 ## 산출물
 

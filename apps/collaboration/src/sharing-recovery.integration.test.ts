@@ -82,7 +82,7 @@ describe.runIf(process.env.AUTH_DATABASE_INTEGRATION === "true")("selected reade
     function start() {
       startupFailure = "";
       const process = spawn("apps/collaboration/node_modules/.bin/tsx", ["apps/collaboration/src/server.ts"], {
-        cwd: globalThis.process.cwd(), env: { ...globalThis.process.env, DATABASE_URL: databaseUrl, APP_VERSION: "1.1.2",
+        cwd: globalThis.process.cwd(), env: { ...globalThis.process.env, DATABASE_URL: databaseUrl, APP_VERSION: "1.1.3",
           BUILD_ID: "synthetic", APP_CHANNEL: "dev", APP_PHASE: "p4", COLLABORATION_PORT: String(port), APP_ORIGIN: origin }
       });
       process.stdout.resume();
@@ -240,7 +240,7 @@ describe.runIf(process.env.AUTH_DATABASE_INTEGRATION === "true")("selected reade
     function start() {
       startupFailure = "";
       const process = spawn("apps/collaboration/node_modules/.bin/tsx", ["apps/collaboration/src/server.ts"], {
-        cwd: globalThis.process.cwd(), env: { ...globalThis.process.env, DATABASE_URL: databaseUrl, APP_VERSION: "1.1.2",
+        cwd: globalThis.process.cwd(), env: { ...globalThis.process.env, DATABASE_URL: databaseUrl, APP_VERSION: "1.1.3",
           BUILD_ID: "synthetic", APP_CHANNEL: "dev", APP_PHASE: "p4", COLLABORATION_PORT: String(port), APP_ORIGIN: origin }
       });
       process.stdout.resume();

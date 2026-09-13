@@ -59,6 +59,7 @@ try {
 
     await target.query("delete from resources where id=$1", [rhyme]);
     await target.query("delete from tags where owner_id=any($1::uuid[])", [[alice, bob]]);
+    await target.query(await readFile("packages/database/rollback/1130_public_lyric_guest_write.sql", "utf8"));
     await target.query(await readFile("packages/database/rollback/1120_selected_lyric_write.sql", "utf8"));
     await target.query(await readFile("packages/database/rollback/1110_public_lyric_read_links.sql", "utf8"));
     await target.query(await readFile("packages/database/rollback/1100_selected_lyric_sharing.sql", "utf8"));
