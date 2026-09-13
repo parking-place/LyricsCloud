@@ -1,8 +1,8 @@
 # PROD-NF-005 — 공유 수신자와 공개 필드
 
-- 상태: **Accepted through 1.1.3 public-link guest body write**
+- 상태: **Accepted through 1.1.4 restore/delete/account-transition behavior**
 - 작성일: 2026-09-09
-- 결정 Phase: 1.1.0 P1, 1.1.1~1.1.3 확장 승인
+- 결정 Phase: 1.1.0 P1, 1.1.1~1.1.3 확장 승인, 1.1.4 P1 복구 의미
 - 승인: 사용자, 2026-09-12. 1.1.0 지정 사용자는 제목·본문·상태·수정 시각·공유용 owner 표시 이름만 허용하고, 1.1.1 공개 링크는 제목·본문을 필수로 하며 표시 이름·상태·수정 시각을 owner가 각각 선택한다. 사용자, 2026-09-13. ``비로그인 guest 쓰기 승인``으로 1.1.3의 해당 가사 본문 쓰기만 추가 승인했다.
 
 ## 해결할 질문
@@ -30,6 +30,12 @@ R/W 실제 집합과 명시 자료 scope를 권장한다. 곡 연결 자료·메
 ## 1.1.3 공개 guest 쓰기와 확인
 
 owner는 공개 읽기 설정과 별도로 “링크를 가진 비로그인 사용자도 본문을 바꾸고 다른 링크 방문자에게 즉시 보일 수 있으며 악성 변경은 완전히 예방할 수 없다”는 확인을 거쳐야 write를 켤 수 있다. 기본값은 off다. guest는 서버가 만든 익명 표시로 해당 가사 본문과 제한된 cursor만 편집하며 제목·상태·공개 필드·메모·연결 자료·revision·ACL·삭제·소유권·계정·workspace·목록·검색·export·복제를 사용할 수 없다. 공개 write가 꺼지면 read-only로 전환하고 자기 미전송 입력만 복사/다운로드할 수 있다. 링크 회수·만료 뒤에는 새 서버 본문을 내려받지 않는다.
+
+## 1.1.4 복원·삭제·계정 전환
+
+revision 복원 중 같은 epoch의 허가된 offline writer 입력은 복원 목표와 함께 병합한다. owner가 이전 writer 입력을 받지 않으려면 먼저 write를 끄거나 capability를 회수한다. 가사나 부모 곡 삭제는 old selected/public capability를 끝내며 휴지통 복원 뒤 자동 부활하지 않는다. 회수·로그아웃 뒤 다음 계정에는 이전 actor의 snapshot·outbox·복구함·presence를 표시하지 않는다. 화면은 로컬 보관·서버 ACK·projection 완료를 구분하고, 실제 장시간과 물리 기기 증거가 없으면 가속 반복 결과로 대신하지 않는다.
+
+상세 사건 순서와 수용 입력은 [1.1.4 P1 인수](../runbooks/1.1.4-phase1-sharing-stability-contract.md)를 따른다.
 
 ## 영향과 검증
 
