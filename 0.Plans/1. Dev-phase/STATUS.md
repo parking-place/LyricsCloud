@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.3"
-current_phase: "../2.Patch-phase/1.1.3/2phase.md"
+current_phase: "../2.Patch-phase/1.1.3/3phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
-updated_at: "2026-09-13"
-next_action: "1.1.3 P1 PR #106 main 병합 완료. P2에서 1130 schema·guest session/지속 예산·owner toggle·public write ACK 기반과 migration/권한 회귀를 구현·검증한다"
+updated_at: "2026-09-14"
+next_action: "1.1.3 P2 후보 e58dd9c의 전체 CI·동일 SHA 개발 인수와 main 병합 완료. P3 owner 확인·guest PC/mobile 편집/복구 후보를 CI와 동일 SHA 개발 환경에서 인수한다"
 ```
 
 ## 승인과 기준

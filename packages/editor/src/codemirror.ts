@@ -1,6 +1,6 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { Annotation, ChangeSet, Compartment, EditorSelection, EditorState, Transaction } from "@codemirror/state";
-import { Decoration, type DecorationSet, EditorView, keymap, ViewPlugin, type ViewUpdate } from "@codemirror/view";
+import { Decoration, type DecorationSet, EditorView, keymap, placeholder as editorPlaceholder, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import { findSongFormSection, SongFormIndex, type SongFormSection } from "./songform.js";
 import { findSearchLiteralRange, REVISION_POLICY, type LyricResumePosition } from "@lyricscloud/domain";
 
@@ -33,6 +33,7 @@ export interface CodeMirrorTextEditorOptions {
   readonly parent: HTMLElement;
   readonly initialValue: string;
   readonly ariaLabel: string;
+  readonly placeholder?: string;
   readonly onChange: (value: string, context: { readonly composing: boolean }) => void;
   readonly onCompositionEnd: () => void;
   readonly onCompositionStart?: () => void;
@@ -139,6 +140,7 @@ export function createCodeMirrorTextEditor(options: CodeMirrorTextEditorOptions)
       keymap.of([...defaultKeymap, ...historyKeymap]),
       EditorView.lineWrapping,
       EditorView.contentAttributes.of({ "aria-label": options.ariaLabel, spellcheck: "true", tabindex: "0" }),
+      ...(options.placeholder ? [editorPlaceholder(options.placeholder)] : []),
       EditorView.clipboardInputFilter.of(normalizeLineEndings),
       songFormPlugin,
       EditorView.updateListener.of((update) => {

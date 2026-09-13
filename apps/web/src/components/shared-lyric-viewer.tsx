@@ -84,10 +84,11 @@ export function SharedLyricViewer({ actorId, initialLyric }: { actorId: string; 
     <CopyFeedback state={copy} />
   </section>;
 
-  const visibleParticipants = participants.filter((item) => item.role === "owner" || item.role === "read" || item.role === "write");
+  const visibleParticipants = participants.filter((item) => item.role === "owner" || item.role === "read"
+    || item.role === "write" || item.role === "public-write");
   return <article className="shared-lyric-page" aria-labelledby="shared-lyric-title">
     <header className="shared-lyric-header"><div><p className="eyebrow">Shared lyrics</p><h1 id="shared-lyric-title">{initialLyric.title}</h1><p>{initialLyric.ownerDisplayName}님이 공유함 · {LYRIC_STATUS_LABELS[initialLyric.status]}</p></div><div className={`shared-read-badge access-${access.mode}`}><span aria-hidden="true">◉</span><strong>{access.mode === "write" ? "공동 작성" : "읽기 전용"}</strong><small>{access.mode === "write" ? "본문 작성 가능 · 권한 관리는 소유자만" : "수정·삭제·권한 변경 불가"}</small></div></header>
-    <div className={`shared-live-state state-${state}`} role="status" aria-live="polite"><span aria-hidden="true" />{state === "live" ? (access.mode === "write" ? "실시간으로 연결됨 · 모든 변경 저장됨" : "실시간으로 연결됨") : state === "saving-local" ? "이 기기에 입력을 저장하는 중…" : state === "syncing" ? "서버에 변경을 저장하는 중…" : state === "offline" ? (access.mode === "write" ? "오프라인 · 입력은 이 기기에 보관됩니다" : "오프라인 · 마지막으로 받은 내용을 표시 중") : state === "error" ? "실시간 연결을 확인하지 못했습니다" : "최신 내용과 권한을 확인하는 중…"}{state === "error" ? <button type="button" onClick={() => sync.current?.retry()}>다시 연결</button> : null}</div>
+    <div className={`shared-live-state state-${state}`} role="status" aria-live="polite"><span aria-hidden="true" />{state === "live" ? (access.mode === "write" ? "실시간으로 연결됨 · 모든 변경 저장됨" : "실시간으로 연결됨") : state === "saving-local" ? "이 기기에 입력을 저장하는 중…" : state === "syncing" ? "서버에 변경을 저장하는 중…" : state === "offline" ? (access.mode === "write" ? "오프라인 · 입력은 이 기기에 보관됩니다" : "오프라인 · 마지막으로 받은 내용을 표시 중") : state === "limited" ? "쓰기 제한에 도달했습니다" : state === "error" ? "실시간 연결을 확인하지 못했습니다" : "최신 내용과 권한을 확인하는 중…"}{state === "error" || state === "limited" ? <button type="button" onClick={() => sync.current?.retry()}>다시 연결</button> : null}</div>
     <section className={`shared-lyric-document ${access.mode === "write" ? "is-writable" : "is-readonly"}`}><div ref={editorParent} className="shared-lyric-editor" /></section>
     <footer className="shared-lyric-footer"><div><strong>공유된 필드</strong><span>제목 · 본문 · 상태</span><small>작업 메모, 연결 자료, 버전 기록은 포함되지 않습니다.</small></div><button type="button" onClick={() => void copy.copyText(body, "공유 가사", "공유 가사를 복사했습니다")}>가사 복사</button></footer>
     {recovery}
@@ -97,7 +98,8 @@ export function SharedLyricViewer({ actorId, initialLyric }: { actorId: string; 
 }
 
 function participantDetail(item: SharingParticipant): string {
-  const role = item.role === "owner" ? "소유자" : item.role === "write" ? "공동 작성" : "읽기 전용";
+  const role = item.role === "owner" ? "소유자" : item.role === "public-write" ? "공개 게스트"
+    : item.role === "write" ? "공동 작성" : "읽기 전용";
   if (!item.selection) return `${role} · 연결됨`;
   const position = item.selection.from === item.selection.to
     ? `${item.selection.head + 1}번째 글자` : `${item.selection.from + 1}–${item.selection.to + 1}번째 구간`;
