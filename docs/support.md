@@ -1,4 +1,4 @@
-# LyricsCloud 1.1.2 정식·1.1.3 후보 지원 정책
+# LyricsCloud 1.1.3 정식·1.1.4 후보 지원 정책
 
 ## 지원 환경
 
@@ -51,9 +51,11 @@
 
 1.1.2는 활성 selected-read grant 안의 지정 사용자에게만 가사 본문 공동 편집을 허용한다. writer는 ACL·제목·상태·메모·연결 자료·revision·삭제·소유권을 바꿀 수 없다. 읽기 전용 강등은 읽기 연결을 유지하면서 새 쓰기와 cursor를 중단하고, 회수는 연결을 종료한다. 권한 epoch 경계에서 거부된 입력은 계정·actor·자료·grant·epoch별 복구함에 남으며 재허용 뒤 자동 적용되지 않는다. 복구 원문이 사라지거나 다른 사용자에게 보이거나, 강등·회수 뒤 새 쓰기가 ACK되거나, writer 권한이 관리 기능으로 확대되면 배포를 중단한다. 실제 PostgreSQL·Linux 5-browser·offline/reconnect·서비스 재시작 자동화와 exact digest 운영 공개 smoke는 PASS했지만 실제 OS/물리 기기는 새로 실행하지 않았다.
 
-1.1.3 후보는 owner가 별도 위험을 확인한 active public-read link에만 비로그인 guest 본문 쓰기를 허용한다. selected reader와 public write는 동시에 활성화할 수 없으며 guest는 탭별 session·표시 이름으로 구분된다. 연결 준비 전 편집은 잠기고 제한·owner 중지·회수로 거부된 자기 입력만 현재 탭 복구함에 남으며 자동 replay하지 않는다. guest가 private API·메모·연결 자료·revision·ACL·삭제·계정 기능에 접근하거나 identity를 위조하거나, 지속 제한·중지·회수 뒤 새 update가 ACK되거나, 복구 원문이 다른 탭/계정에 노출되면 배포를 중단한다. 실제 PostgreSQL 358 PASS·Linux 5-browser·서비스 재시작 전후 자동화는 PASS했지만 실제 OS/물리 기기는 새로 실행하지 않았다.
+1.1.3은 owner가 별도 위험을 확인한 active public-read link에만 비로그인 guest 본문 쓰기를 허용한다. selected reader와 public write는 동시에 활성화할 수 없으며 guest는 탭별 session·표시 이름으로 구분된다. 연결 준비 전 편집은 잠기고 제한·owner 중지·회수로 거부된 자기 입력만 현재 탭 복구함에 남으며 자동 replay하지 않는다. guest가 private API·메모·연결 자료·revision·ACL·삭제·계정 기능에 접근하거나 identity를 위조하거나, 지속 제한·중지·회수 뒤 새 update가 ACK되거나, 복구 원문이 다른 탭/계정에 노출되면 배포를 중단한다. 실제 PostgreSQL 358 PASS·Linux 5-browser·서비스 재시작 전후 자동화는 PASS했지만 실제 OS/물리 기기는 새로 실행하지 않았다.
 
-정식 main/tag `eb949b5`, main CI `34724875009` 재실행, tag CI `34726392136`, 네 exact digest 운영 배포를 완료했다. 공개 HTTPS에서 공동 편집·강등/회수·rejected 복구·private 격리와 서비스 재시작 지속성이 PASS했다. 기존 DB volume·secret·HMAC allowlist·beta code는 보존했으며 외부 backup은 `OPS-100-001` 승인 예외로 여전히 미구축이다.
+1.1.4 후보는 가사·상위 곡 삭제와 selected/public capability 회수·epoch 증가를 한 transaction으로 묶고 휴지통 복원 뒤 과거 공유를 되살리지 않는다. 같은 epoch의 owner 복원과 offline writer 입력은 둘 다 보존해 수렴하며 browser outbox는 capability별 64건 또는 1 MiB bounded queue 안에서 lossless compact된다. 로그아웃·다른 계정 전환 뒤 이전 actor의 snapshot·outbox·rejected draft·presence가 보이거나, 삭제/복원 뒤 old grant/link가 다시 열리거나, queue 상한 때문에 원문이 사라지거나 잘못 ACK되면 배포를 중단한다. 실제 PostgreSQL 364 PASS·전체 E2E 353 PASS·Linux 5-browser·공개 3계정/2 viewport와 실제 서비스 재시작은 PASS했지만 실제 장시간·OS 절전/IME·물리 기기는 새로 실행하지 않았다.
+
+현재 정식 main/tag `35fa482`, main CI `34773400193`, tag CI `34774978060`, 네 exact digest 운영 배포를 완료했다. 공개 HTTPS에서 guest 공동 편집·중지/회수·rejected 복구·private 격리와 서비스 재시작 지속성이 PASS했다. 기존 DB volume·secret·HMAC allowlist·beta code는 보존했으며 외부 backup은 `OPS-100-001` 승인 예외로 여전히 미구축이다.
 
 미해결 P0/P1은 0건이다. 저장 수렴 실패, 다른 사용자의 자료 노출, 인증 우회, 핵심 모바일 불능, 복구 불가능 증거가 생기면 즉시 P0/P1으로 재분류하고 배포를 중단한다.
 

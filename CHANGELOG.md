@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.1.4] - 2026-09-14
+
+### Added
+
+- 가사·상위 곡 삭제 시 selected/public capability를 함께 회수하고 permission/write epoch를 증가시키는 `1140_sharing_stability.sql`
+- owner revision 복원과 같은 epoch의 offline writer 원문을 함께 보존하는 수렴 회귀
+- actor별 저장·복구 안내, 계정 전환 local store 격리와 capability별 browser outbox 64건/1 MiB lossless compact
+
+### Security and recovery
+
+- 휴지통 복원 뒤 과거 grant/link를 자동 부활시키지 않고 새 capability만 명시적으로 발급
+- 권한 회수·로그아웃·다른 계정 전환 뒤 이전 actor의 snapshot·outbox·복구 원문·selection/presence 비노출
+- queue 상한에서 서로 다른 actor/resource/capability/epoch와 in-flight update를 섞거나 임의 ACK하지 않음
+
+### Validation
+
+- P4 Actions `34783619444`, 실제 PostgreSQL 364 PASS·4 skip, 전체 Playwright 353 PASS·41 skip, 1.1.4 5-browser matrix PASS
+- 동일 SHA 개발 환경에서 3계정·2 viewport 복원/offline writer 병합·queue 상한/배출·reader 회수·계정 전환 격리와 실제 서비스 재시작 전후 PASS
+
+P5 전체 CI·네 dev image·동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다. Known limitations: 실제 장시간 wall-clock soak, 물리 Windows/Linux/macOS/Android/iOS, 실제 OS IME·절전/복귀는 새로 실행하지 않았고 `OPS-100-001` 외부 backup 예외를 유지한다.
+
 ## [1.1.3] - 2026-09-14
 
 ### Added
