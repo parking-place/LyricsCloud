@@ -7,7 +7,7 @@ state: "complete"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-14"
-next_action: "1.1.4 P1 공유 안정화 사건 순서·증거 등급·담당 계약 후보를 문서 검증·원격 SHA로 인수한 뒤 P2 삭제 capability fence와 bounded queue 실패 회귀를 구현한다"
+next_action: "1.1.4 P1 계약 source 6f35313 원격 인수 완료. P2에서 삭제 capability fence·old grant 비부활과 browser outbox/IME bounded queue 실패 회귀를 먼저 작성하고 최소 구현한다"
 ```
 
 ## 승인과 기준
@@ -138,12 +138,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.3 P4 | complete | 후보 `3fd9f0d`, Actions `34769556924`·`34769560151`, 실제 DB 358 PASS·5-browser 5/5·네 dev image와 동일 SHA 공개 재시작 전후 권한/복구 인수 완료 |
 | 1.1.3 P5 | complete | 후보 `8abf21a`, Actions `34771639925`·`34771648925`, 네 dev image·28 migration 봉인·동일 SHA 공개 guest 권한/복구/재시작 인수 완료 |
 | 1.1.3 Release | complete | main/tag `35fa482`, main CI `34773400193`·tag CI `34774978060`, exact digest 운영 배포·공개 guest 권한/복구/재시작 smoke·GitHub Release 완료 |
+| 1.1.4 P1 | complete | 계약 source `6f35313`, restore/delete/reconnect 사건 순서·queue 상한·S0~S5 증거 등급·담당/rollback 계약 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.4/P1 | LC-NF-1.1.4-P1-01~06 | 사건 순서·queue 한도·증거 등급·입력표·호환/rollback·P2/P3/P4 담당 계약 | v1.1.3 `35fa482`, main `0b265d6` | 2026-09-14 | in_progress |
+| Codex | 1.1.4/P1 | LC-NF-1.1.4-P1-01~06 | 사건 순서·queue 한도·증거 등급·입력표·호환/rollback·P2/P3/P4 담당 계약 | v1.1.3 `35fa482`, 계약 `6f35313` | 2026-09-14 | complete |
 | Codex | 1.1.3/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.3 P5 `8abf21a` | 2026-09-14 | complete |
 | Codex | 1.1.3/P5 | LC-NF-1.1.3-P5-01~06 | 요구 추적·현재/사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.3 P4 `3fd9f0d`, 후보 `8abf21a` | 2026-09-14 | complete |
 | Codex | 1.1.3/P4 | LC-NF-1.1.3-P4-01~07 | read/write 불일치·token 자료 격리·지속 제한/owner 중지·offline/reconnect·restart·지원 browser 회귀 | 1.1.3 P3 `167ceb8`, 후보 `3fd9f0d` | 2026-09-14 | complete |
