@@ -3,7 +3,7 @@ import * as Y from "yjs";
 import { parsePublicErrorCode, type CheckpointReason, type CrdtTextSelectionReference, type LyricRevision, type PromptMode, type RestoreRevisionInput, type RevisionHistory } from "@lyricscloud/domain";
 import type { EditorDocumentTransaction, EditorTextChange } from "./codemirror.js";
 import { createLyricDocument, encodeTextRelativePosition, lyricBody, projectPrompt, resolveTextRelativePosition } from "./crdt.js";
-import { SyncStorage, type QueuedUpdate, type RejectedWriterDraft } from "./sync-storage.js";
+import { enqueueRemoteUpdate, SyncStorage, type QueuedUpdate, type RejectedWriterDraft } from "./sync-storage.js";
 
 export type LocalSyncState = "loading" | "saving-local" | "ready" | "local" | "syncing" | "projection" | "offline" | "error" | "unavailable" | "conflict";
 export interface BrowserLyricSync {
@@ -205,7 +205,7 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
     const queued: QueuedUpdate | undefined = update ? { documentKey, updateId: updateId ?? crypto.randomUUID(), payload: update } : undefined;
     pendingWrites++;
     emit("saving-local");
-    writes = writes.then(() => storage.persist({ resourceId: options.resourceId, documentKey, snapshot }, queued))
+    writes = writes.then(() => storage.persist({ resourceId: options.resourceId, documentKey, snapshot }, queued, inFlight))
       .catch(() => { fail("error"); })
       .finally(() => { pendingWrites--; });
     void writes.then(() => pump()).catch(() => fail("error"));
@@ -229,7 +229,7 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
     if (local) channel?.postMessage(update);
   });
   function applyRemote(update: Uint8Array) {
-    if (composing) remoteQueue.push(update);
+    if (composing) enqueueRemoteUpdate(remoteQueue, update);
     else Y.applyUpdate(document, update, remoteOrigin);
   }
   async function pump() {
@@ -604,7 +604,7 @@ export async function createBrowserSharedLyricSync(options: {
     pendingWrites++;
     state("saving-local");
     writes = writes.then(() => storage.persist({ resourceId: options.resourceId, documentKey,
-      snapshot: Y.encodeStateAsUpdate(document) }, queued))
+      snapshot: Y.encodeStateAsUpdate(document) }, queued, inFlight))
       .catch(() => state("error"))
       .finally(() => { pendingWrites--; });
     void writes.then(() => pump()).catch(() => state("error"));
@@ -650,7 +650,7 @@ export async function createBrowserSharedLyricSync(options: {
       snapshot: Y.encodeStateAsUpdate(document) });
   }
   function applyRemote(update: Uint8Array) {
-    if (composing) remoteQueue.push(update);
+    if (composing) enqueueRemoteUpdate(remoteQueue, update);
     else Y.applyUpdate(document, update, remoteOrigin);
   }
   async function pump() {
@@ -961,7 +961,7 @@ export async function createBrowserPublicSharedLyricSync(options: {
     } : undefined;
     pendingWrites++; state("saving-local");
     writes = writes.then(() => storage.persist({ resourceId: options.linkId, documentKey: options.linkId,
-      snapshot: Y.encodeStateAsUpdate(document) }, queued)).catch(() => state("error"))
+      snapshot: Y.encodeStateAsUpdate(document) }, queued, inFlight)).catch(() => state("error"))
       .finally(() => { pendingWrites--; });
     void writes.then(() => pump()).catch(() => state("error"));
   }
@@ -986,7 +986,7 @@ export async function createBrowserPublicSharedLyricSync(options: {
   bindDocument();
   function applyRemote(update: Uint8Array) {
     Y.applyUpdate(acceptedDocument, update, remoteOrigin);
-    if (composing) remoteQueue.push(update); else Y.applyUpdate(document, update, remoteOrigin);
+    if (composing) enqueueRemoteUpdate(remoteQueue, update); else Y.applyUpdate(document, update, remoteOrigin);
   }
   async function resetToServerSnapshot(update: Uint8Array) {
     await writes;

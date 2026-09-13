@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { classifyDatabaseError, CURRENT_SCHEMA_VERSION, DatabaseHealthError } from "./index.js";
 
 describe("database health diagnostics", () => {
-  it("requires the 1.1.3 public guest write migration", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("1130_public_lyric_guest_write.sql");
+  it("requires the 1.1.4 sharing stability migration", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe("1140_sharing_stability.sql");
   });
 
   it.each([

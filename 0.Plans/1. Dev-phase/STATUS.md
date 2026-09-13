@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.1.3"
-current_phase: "../2.Patch-phase/1.1.3/5phase.md"
-state: "complete"
+current_version: "1.1.4"
+current_phase: "../2.Patch-phase/1.1.4/3phase.md"
+state: "in_progress"
 owner: "Codex"
-started_at: "2026-09-11"
+started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.4 P1 계약 source 6f35313 원격 인수 완료. P2에서 삭제 capability fence·old grant 비부활과 browser outbox/IME bounded queue 실패 회귀를 먼저 작성하고 최소 구현한다"
+next_action: "1.1.4 P3에서 actor별 저장·복구 안내, 계정 전환 초안 격리, 모바일 dialog/focus와 PC·mobile 사용자 흐름 실패 회귀를 먼저 작성한다"
 ```
 
 ## 승인과 기준
@@ -139,11 +139,14 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.3 P5 | complete | 후보 `8abf21a`, Actions `34771639925`·`34771648925`, 네 dev image·28 migration 봉인·동일 SHA 공개 guest 권한/복구/재시작 인수 완료 |
 | 1.1.3 Release | complete | main/tag `35fa482`, main CI `34773400193`·tag CI `34774978060`, exact digest 운영 배포·공개 guest 권한/복구/재시작 smoke·GitHub Release 완료 |
 | 1.1.4 P1 | complete | 계약 source `6f35313`, restore/delete/reconnect 사건 순서·queue 상한·S0~S5 증거 등급·담당/rollback 계약 완료 |
+| 1.1.4 P2 | complete | 후보 `3de111f`, Actions `34778131953`, 1140 delete fence·bounded queue·전체 CI·네 dev image·동일 SHA 공개 삭제/복원 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.4/P3 | LC-NF-1.1.4-P3-01~06 | actor 저장/복구 copy·계정 전환 local 격리·모바일 dialog/focus·PC/mobile E2E | 1.1.4 P2 `3de111f` | 2026-09-14 | in_progress |
+| Codex | 1.1.4/P2 | LC-NF-1.1.4-P2-01~06 | 1140 delete fence·selected/public epoch·browser outbox/IME compact·DB/단위/복구 회귀 | 1.1.4 P1 `6f35313`, 후보 `3de111f` | 2026-09-14 | complete |
 | Codex | 1.1.4/P1 | LC-NF-1.1.4-P1-01~06 | 사건 순서·queue 한도·증거 등급·입력표·호환/rollback·P2/P3/P4 담당 계약 | v1.1.3 `35fa482`, 계약 `6f35313` | 2026-09-14 | complete |
 | Codex | 1.1.3/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.3 P5 `8abf21a` | 2026-09-14 | complete |
 | Codex | 1.1.3/P5 | LC-NF-1.1.3-P5-01~06 | 요구 추적·현재/사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.3 P4 `3fd9f0d`, 후보 `8abf21a` | 2026-09-14 | complete |
@@ -335,3 +338,5 @@ P10 후보 `869e32b8a15c2e1e7524a75ab4d8b4428a925c79`는 원격 CI run `34394222
 1.0.5 P4 후보 `d0ad04d9e74e393809318b05134fe4ef0b54ad33`은 격리 PostgreSQL migration·unit/integration 270건, Chromium PC/mobile 전체 316건 중 284 PASS·조건부 32 skip, Chromium/Firefox/WebKit 신규 기능 11건을 통과했다. 최초 전체 실행에서 구 metadata 기대값·mobile copy 접근 이름·공유 IndexedDB test harness 결함 7건을 찾아 최소 수정했고 같은 전체 회귀를 다시 통과했다. 합성 IME 자동화는 실제 조합 상태가 유지되는 Chromium desktop에 한정했으며 실제 물리 기기는 새로 실행하지 않았다. 원격 PR #42와 개발 서버 checkout/build metadata가 같은 SHA였고 공개 suffix·주 이름 탐색·3,001자 exact copy와 collaboration 재시작 전후 document key·DB 원문 보존을 확인한 뒤 합성 자료를 제거했다. 공개 live/ready는 `1.0.5`, `dev`, `p4`, schema `1000_prompt_modes.sql`, 네 서비스 healthy였다.
 
 1.0.5 P5 후보 `78b3f1bc4c240bbceaddcab33e56af1ae0048aae`는 GitHub Actions push run `34487251707`의 전체 verify와 네 dev image 게시·서명을 통과했다. 개발 서버 checkout·환경 `BUILD_ID`·공개 live/ready가 같은 SHA였고 `1.0.5`, channel `dev`, phase `p5`, schema `1000_prompt_modes.sql`, 네 서비스 healthy를 확인했다. 공개 suffix·주 이름 탐색·3,001자 exact copy와 collaboration 재시작 전후 같은 document key·DB 원문 보존이 PASS했고 합성 자료를 제거했다. 신규 P0/P1·원문 유실·인증 우회·교차 owner 노출·무음 저장 실패는 0건이며, 실제 물리 기기 미실행과 `OPS-100-001` 예외를 유지한 채 승인된 정식 릴리스로 이동한다.
+
+1.1.4 P2 후보 `3de111fdaf4f0b79d02b51d311b0c7293e02b67f`는 실제 PostgreSQL 364 unit/integration, 반복 migration/rollback, production build와 Actions `34778131953` 전체 verify·네 dev image 발행/서명을 통과했다. 개발 서버 checkout·공개 live/ready가 같은 SHA였고 `1.1.4`, channel `dev`, phase `p2`, schema `1140_sharing_stability.sql`, 네 서비스 healthy였다. 공개 selected/public 삭제 fence·epoch 증가·trash 복원 뒤 old capability 비부활과 owner 본문 복원을 확인하고 합성 자료를 제거했다. outbox/IME queue는 64건 또는 1 MiB에서 lossless compact하며 S1 가속 측정을 실제 장시간·물리 기기 결과로 취급하지 않는다.
