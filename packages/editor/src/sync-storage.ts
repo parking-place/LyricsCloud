@@ -25,7 +25,7 @@ export interface RejectedWriterDraft {
   permissionEpoch: number;
   writeEpoch: number;
   authoredText: string;
-  reason: "write-revoked" | "read-revoked" | "epoch-stale";
+  reason: "write-revoked" | "read-revoked" | "epoch-stale" | "rate-limited";
   rejectedAt: string;
 }
 

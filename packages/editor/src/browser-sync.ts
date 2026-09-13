@@ -24,12 +24,12 @@ export interface BrowserLyricSync {
 export interface SharingParticipant {
   readonly participantId: string;
   readonly displayName: string;
-  readonly role: "owner" | "read" | "write";
+  readonly role: "owner" | "read" | "write" | "public-write";
   readonly activity: "active" | "idle";
   readonly color: "lime" | "cyan" | "violet" | "orange";
   readonly selection?: { readonly anchor: number; readonly head: number; readonly from: number; readonly to: number };
 }
-export type SharedLyricSyncState = "connecting" | "saving-local" | "syncing" | "live" | "offline" | "revoked" | "error";
+export type SharedLyricSyncState = "connecting" | "saving-local" | "syncing" | "live" | "offline" | "limited" | "revoked" | "error";
 export interface SharedLyricAccess { readonly mode: "read" | "write"; readonly grantId: string; readonly permissionEpoch: number; readonly writeEpoch: number }
 export interface BrowserSharedLyricSync {
   applyLocalTransaction(transaction: EditorDocumentTransaction): void;
@@ -40,7 +40,31 @@ export interface BrowserSharedLyricSync {
   destroy(): Promise<void>;
   retry(): void;
 }
-export interface BrowserPublicSharedLyricSync { destroy(): void; retry(): void }
+export interface PublicGuestSessionAccess {
+  readonly id: string;
+  readonly token: string;
+  readonly recoveryId: string;
+  readonly permissionEpoch: number;
+  readonly writeEpoch: number;
+  readonly displayName: string;
+  readonly expiresAt: string;
+}
+export interface PublicSharedLyricAccess {
+  readonly mode: "read" | "write";
+  readonly permissionEpoch: number;
+  readonly writeEpoch?: number;
+  readonly guestSessionId?: string;
+  readonly displayName?: string;
+}
+export interface BrowserPublicSharedLyricSync {
+  applyLocalTransaction(transaction: EditorDocumentTransaction): void;
+  setComposing(composing: boolean): void;
+  updateSelection(selection: { readonly anchor: number; readonly head: number }): void;
+  listRejectedDrafts(): Promise<readonly RejectedWriterDraft[]>;
+  removeRejectedDraft(updateId: string): Promise<void>;
+  destroy(): Promise<void>;
+  retry(): void;
+}
 export type BrowserRhymeSync = BrowserLyricSync;
 export interface CreationSubmission { readonly url: string; readonly body: string }
 export interface RhymeCreationDraft {
@@ -847,19 +871,215 @@ export async function createBrowserSharedLyricSync(options: {
 export async function createBrowserPublicSharedLyricSync(options: {
   token: string;
   linkId: string;
-  onBody: (body: string) => void;
+  guestSession?: PublicGuestSessionAccess;
+  onBody: (body: string, changes?: readonly EditorTextChange[]) => void;
   onStateChange: (state: SharedLyricSyncState) => void;
+  onAccessChange: (access: PublicSharedLyricAccess) => void;
+  onPresenceChange: (participants: readonly SharingParticipant[]) => void;
+  onRejectedDrafts: (drafts: readonly RejectedWriterDraft[]) => void;
 }): Promise<BrowserPublicSharedLyricSync> {
-  const document = createLyricDocument();
-  const text = lyricBody(document);
+  const storage = options.guestSession
+    ? new SyncStorage(`lyricscloud-public-guest-${options.guestSession.recoveryId}-sync-v1`) : undefined;
+  let document = createLyricDocument();
+  let text = lyricBody(document);
+  let acceptedDocument = createLyricDocument();
   let socket: WebSocket | undefined;
   let retryTimer: ReturnType<typeof setTimeout> | undefined;
+  let ackTimer: ReturnType<typeof setTimeout> | undefined;
   let retryDelay = 500;
   let destroyed = false;
   let connecting = false;
+  let connected = false;
+  let initialized = false;
+  let composing = false;
+  let reconcilingComposition = false;
+  let pumping = false;
+  let pumpAgain = false;
+  let pendingWrites = 0;
+  let inFlight: string | undefined;
+  let rateLimited = false;
+  let access: PublicSharedLyricAccess = options.guestSession
+    ? { mode: "write", permissionEpoch: options.guestSession.permissionEpoch,
+        writeEpoch: options.guestSession.writeEpoch, guestSessionId: options.guestSession.id,
+        displayName: options.guestSession.displayName }
+    : { mode: "read", permissionEpoch: 0 };
+  let awarenessIdleTimer: ReturnType<typeof setTimeout> | undefined;
+  let lastSelection: { readonly anchor: number; readonly head: number } | undefined;
+  let awarenessActivity: "active" | "idle" = "idle";
+  let writes = Promise.resolve();
+  const remoteQueue: Uint8Array[] = [];
+  let participants: readonly SharingParticipant[] = [];
+  const selections = new Map<string, SharingParticipant["selection"]>();
 
   function state(value: SharedLyricSyncState) { if (!destroyed) options.onStateChange(value); }
-  function revoke() { options.onBody(""); state("revoked"); }
+  async function listRejectedDrafts() {
+    return storage ? storage.rejected.where("resourceId").equals(options.linkId).reverse().sortBy("rejectedAt") : [];
+  }
+  async function publishRejectedDrafts() { if (!destroyed) options.onRejectedDrafts(await listRejectedDrafts()); }
+  function publishParticipants(next?: readonly SharingParticipant[]) {
+    if (next) { participants = next; selections.clear(); }
+    options.onPresenceChange(participants.map((item) => ({ ...item,
+      ...(selections.get(item.participantId) ? { selection: selections.get(item.participantId) } : {}) })));
+  }
+  function sendAwareness() {
+    if (!lastSelection || !initialized || access.mode !== "write" || rateLimited || destroyed
+      || socket?.readyState !== WebSocket.OPEN) return;
+    try { socket.send(JSON.stringify({ type: "awareness", activity: awarenessActivity, selection: {
+      anchor: encodeTextRelativePosition(document, lastSelection.anchor),
+      head: encodeTextRelativePosition(document, lastSelection.head)
+    } })); } catch { /* reconnect or the next selection refreshes awareness */ }
+  }
+  function updateAwareness(selection: { readonly anchor: number; readonly head: number }) {
+    lastSelection = selection; awarenessActivity = "active"; sendAwareness();
+    clearTimeout(awarenessIdleTimer);
+    awarenessIdleTimer = setTimeout(() => { awarenessActivity = "idle"; sendAwareness(); }, AWARENESS_IDLE_MS);
+  }
+  async function rejectGuest(reason: RejectedWriterDraft["reason"]) {
+    if (!storage || !options.guestSession) return;
+    await writes;
+    await storage.rejectWriterEpoch(options.linkId, options.linkId, {
+      grantId: options.guestSession.id, permissionEpoch: options.guestSession.permissionEpoch,
+      writeEpoch: options.guestSession.writeEpoch
+    }, reason);
+    await publishRejectedDrafts();
+  }
+  async function report() {
+    if (destroyed || rateLimited) return;
+    if (!initialized) return state("connecting");
+    if (pendingWrites) return state("saving-local");
+    if (!navigator.onLine) return state("offline");
+    if (!connected) return state("connecting");
+    const queued = storage ? await storage.updates.where("documentKey").equals(options.linkId).count() : 0;
+    state(queued ? "syncing" : "live");
+  }
+  function persist(update?: Uint8Array, origin?: LocalCommandOrigin) {
+    if (!storage || !options.guestSession || !initialized || destroyed) return;
+    const queued: QueuedUpdate | undefined = update && access.mode === "write" && !rateLimited ? {
+      documentKey: options.linkId, updateId: origin?.requestId ?? crypto.randomUUID(), payload: update,
+      grantId: options.guestSession.id, permissionEpoch: options.guestSession.permissionEpoch,
+      writeEpoch: options.guestSession.writeEpoch, authoredText: origin?.authoredText ?? ""
+    } : undefined;
+    pendingWrites++; state("saving-local");
+    writes = writes.then(() => storage.persist({ resourceId: options.linkId, documentKey: options.linkId,
+      snapshot: Y.encodeStateAsUpdate(document) }, queued)).catch(() => state("error"))
+      .finally(() => { pendingWrites--; });
+    void writes.then(() => pump()).catch(() => state("error"));
+  }
+  function bindDocument() {
+    text.observe((event, transaction) => {
+      if (!initialized || isLocalOrigin(transaction.origin) || reconcilingComposition) return;
+      let offset = 0;
+      const changes: EditorTextChange[] = [];
+      for (const delta of event.delta) {
+        if (delta.retain) offset += delta.retain;
+        if (delta.delete) { changes.push({ from: offset, to: offset + delta.delete, insert: "" }); offset += delta.delete; }
+        if (typeof delta.insert === "string") changes.push({ from: offset, to: offset, insert: delta.insert });
+      }
+      options.onBody(text.toString(), changes);
+    });
+    document.on("update", (update: Uint8Array, origin: unknown) => {
+      if (!initialized) return;
+      const local = isLocalOrigin(origin);
+      persist(local ? update : undefined, typeof origin === "object" && origin ? origin as LocalCommandOrigin : undefined);
+    });
+  }
+  bindDocument();
+  function applyRemote(update: Uint8Array) {
+    Y.applyUpdate(acceptedDocument, update, remoteOrigin);
+    if (composing) remoteQueue.push(update); else Y.applyUpdate(document, update, remoteOrigin);
+  }
+  async function resetToServerSnapshot(update: Uint8Array) {
+    await writes;
+    initialized = false; composing = false; reconcilingComposition = false; remoteQueue.splice(0);
+    document.destroy(); document = createLyricDocument(); text = lyricBody(document); bindDocument();
+    acceptedDocument.destroy(); acceptedDocument = createLyricDocument();
+    Y.applyUpdate(acceptedDocument, update, remoteOrigin);
+    Y.applyUpdate(document, update, remoteOrigin); initialized = true; participants = []; selections.clear();
+    options.onPresenceChange([]); options.onBody(text.toString());
+    if (storage) {
+      await storage.documents.delete(options.linkId);
+      await storage.persist({ resourceId: options.linkId, documentKey: options.linkId,
+        snapshot: Y.encodeStateAsUpdate(document) });
+    }
+  }
+  async function pump() {
+    if (destroyed || rateLimited || access.mode !== "write" || !storage) return;
+    if (pumping) { pumpAgain = true; return; }
+    pumping = true;
+    try {
+      await writes;
+      if (connected && socket?.readyState === WebSocket.OPEN && !inFlight) {
+        const next = await storage.updates.where("documentKey").equals(options.linkId).first();
+        if (next && socket.readyState === WebSocket.OPEN) {
+          inFlight = next.updateId;
+          socket.send(JSON.stringify({ type: "update", updateId: next.updateId, payload: encode(next.payload),
+            permissionEpoch: next.permissionEpoch, writeEpoch: next.writeEpoch }));
+          ackTimer = setTimeout(() => socket?.close(), 8_000);
+        }
+      }
+      await report();
+    } catch { state("error"); }
+    finally { pumping = false; if (pumpAgain) { pumpAgain = false; void pump(); } }
+  }
+  async function transitionAccess(next: PublicSharedLyricAccess) {
+    const rejectedWrite = access.mode === "write" && next.mode === "read";
+    if (next.mode !== "write") {
+      clearTimeout(awarenessIdleTimer); lastSelection = undefined; awarenessActivity = "idle";
+    }
+    access = next; options.onAccessChange(next);
+    if (rejectedWrite) try { await rejectGuest("write-revoked"); } catch { state("error"); }
+  }
+  async function revoke() {
+    options.onPresenceChange([]); options.onBody(""); state("revoked");
+    try { await rejectGuest("read-revoked"); } catch { /* access is already closed; recovery storage remains isolated */ }
+  }
+  async function receive(raw: string) {
+    const message = JSON.parse(raw) as { type?: unknown; payload?: unknown; updateId?: unknown; access?: unknown;
+      permissionEpoch?: unknown; writeEpoch?: unknown; guestSessionId?: unknown; displayName?: unknown;
+      participants?: unknown; participantId?: unknown; selection?: unknown; code?: unknown };
+    if (message.type === "snapshot" && typeof message.payload === "string") {
+      const next = parsePublicSharedAccess(message);
+      if (!next) throw new Error("PUBLIC_SYNC_ACCESS_INVALID");
+      const rejectedWrite = access.mode === "write" && next.mode === "read";
+      await transitionAccess(next);
+      if (rejectedWrite && initialized) await resetToServerSnapshot(decode(message.payload));
+      else if (!initialized) {
+        const snapshot = decode(message.payload);
+        Y.applyUpdate(acceptedDocument, snapshot, remoteOrigin);
+        Y.applyUpdate(document, snapshot, remoteOrigin); initialized = true;
+        options.onBody(text.toString()); persist();
+      } else applyRemote(decode(message.payload));
+      connected = true; retryDelay = 500; sendAwareness(); await pump(); await report();
+    } else if (message.type === "update" && typeof message.payload === "string") applyRemote(decode(message.payload));
+    else if (message.type === "ack" && message.updateId === inFlight && storage) {
+      clearTimeout(ackTimer);
+      const confirmed = await storage.updates.where("updateId").equals(message.updateId as string).first();
+      if (confirmed) Y.applyUpdate(acceptedDocument, confirmed.payload, remoteOrigin);
+      await storage.updates.where("updateId").equals(message.updateId as string).delete();
+      inFlight = undefined; await pump(); sendAwareness();
+    } else if (message.type === "permission") {
+      const next = parsePublicSharedAccess(message);
+      if (!next) throw new Error("PUBLIC_SYNC_ACCESS_INVALID");
+      const rejectedWrite = access.mode === "write" && next.mode === "read";
+      await transitionAccess(next);
+      if (rejectedWrite) socket?.close(1012, "SYNC_REAUTHORIZE"); else await report();
+    } else if (message.type === "rejected" && typeof message.updateId === "string") {
+      clearTimeout(ackTimer); inFlight = undefined;
+      if (message.code === "SYNC_RATE_LIMITED") {
+        const acceptedSnapshot = Y.encodeStateAsUpdate(acceptedDocument);
+        rateLimited = true; await rejectGuest("rate-limited");
+        await resetToServerSnapshot(acceptedSnapshot); state("limited"); return;
+      }
+      await rejectGuest(message.code === "SYNC_WRITE_EPOCH_STALE" ? "epoch-stale" : "write-revoked");
+      const next = parsePublicSharedAccess(message);
+      if (next) await transitionAccess(next);
+      await report();
+    } else if (message.type === "presence") publishParticipants(parseSharingParticipants(message.participants, document, text));
+    else if (message.type === "awareness" && typeof message.participantId === "string") {
+      const selection = parseAwarenessSelection(message.selection, document, text);
+      if (selection) { selections.set(message.participantId, selection); publishParticipants(); }
+    }
+  }
   function reconnect() {
     if (destroyed || connecting || retryTimer || !navigator.onLine) return;
     retryTimer = setTimeout(() => { retryTimer = undefined; void connect(); }, retryDelay);
@@ -872,22 +1092,16 @@ export async function createBrowserPublicSharedLyricSync(options: {
       const url = new URL("/collaboration/public", location.origin);
       url.protocol = location.protocol === "https:" ? "wss:" : "ws:";
       const current = new WebSocket(url); socket = current;
-      current.onopen = () => current.send(JSON.stringify({ type: "auth", token: options.token, linkId: options.linkId }));
+      current.onopen = () => current.send(JSON.stringify({ type: "auth", token: options.token, linkId: options.linkId,
+        ...(options.guestSession ? { guestSession: options.guestSession.token } : {}) }));
+      let messages = Promise.resolve();
       current.onmessage = (event: MessageEvent<string>) => {
-        try {
-          const message = JSON.parse(event.data) as { type?: unknown; payload?: unknown; access?: unknown };
-          if ((message.type !== "snapshot" && message.type !== "update") || typeof message.payload !== "string"
-            || (message.type === "snapshot" && message.access !== "public-read")) {
-            current.close(4400, "SYNC_UPDATE_INVALID"); return;
-          }
-          Y.applyUpdate(document, decode(message.payload), remoteOrigin);
-          options.onBody(text.toString()); retryDelay = 500; state("live");
-        } catch { current.close(4400, "SYNC_UPDATE_INVALID"); }
+        messages = messages.then(() => receive(event.data)).catch(() => current.close(4400, "SYNC_UPDATE_INVALID"));
       };
       current.onclose = (event) => {
         if (socket !== current || destroyed) return;
-        socket = undefined;
-        if (event.code === 4403 || event.code === 4404) return revoke();
+        socket = undefined; connected = false; inFlight = undefined; clearTimeout(ackTimer); options.onPresenceChange([]);
+        if (event.code === 4403 || event.code === 4404) { void revoke(); return; }
         if (!navigator.onLine) return state("offline");
         state(event.code === 4400 ? "error" : "connecting"); reconnect();
       };
@@ -895,15 +1109,57 @@ export async function createBrowserPublicSharedLyricSync(options: {
     } catch { if (!destroyed) { state(navigator.onLine ? "error" : "offline"); reconnect(); } }
     finally { connecting = false; }
   }
-  function online() { retryDelay = 500; clearTimeout(retryTimer); retryTimer = undefined; void connect(); }
-  function offline() { socket?.close(); state("offline"); }
-  function destroy() {
+  function online() { rateLimited = false; retryDelay = 500; clearTimeout(retryTimer); retryTimer = undefined; void connect(); }
+  function offline() { connected = false; socket?.close(); state("offline"); }
+  async function destroy() {
     if (destroyed) return;
-    destroyed = true; clearTimeout(retryTimer); socket?.close();
-    window.removeEventListener("online", online); window.removeEventListener("offline", offline); document.destroy();
+    destroyed = true; clearTimeout(retryTimer); clearTimeout(ackTimer); clearTimeout(awarenessIdleTimer); socket?.close();
+    window.removeEventListener("online", online); window.removeEventListener("offline", offline);
+    options.onPresenceChange([]); await writes; storage?.close(); document.destroy(); acceptedDocument.destroy();
   }
-  window.addEventListener("online", online); window.addEventListener("offline", offline); void connect();
-  return { destroy, retry: online };
+  window.addEventListener("online", online); window.addEventListener("offline", offline);
+  try {
+    const cached = await storage?.documents.get(options.linkId);
+    if (cached) { Y.applyUpdate(document, cached.snapshot, remoteOrigin); initialized = true; options.onBody(text.toString()); }
+    await publishRejectedDrafts(); options.onAccessChange(access); void connect();
+  } catch { state("error"); }
+  return {
+    applyLocalTransaction(transaction) {
+      if (!initialized || access.mode !== "write" || rateLimited || destroyed || transaction.origin !== "user"
+        || transaction.composing || !transaction.changes.length) return;
+      const queuedDuringComposition = composing ? remoteQueue.splice(0) : [];
+      const relativeChanges = queuedDuringComposition.length ? transaction.changes.map((change) => ({
+        from: Y.createRelativePositionFromTypeIndex(text, change.from, 0),
+        to: change.to === change.from ? Y.createRelativePositionFromTypeIndex(text, change.from, 0)
+          : Y.createRelativePositionFromTypeIndex(text, change.to, -1), insert: change.insert
+      })) : null;
+      if (queuedDuringComposition.length) reconcilingComposition = true;
+      try {
+        for (const update of queuedDuringComposition) Y.applyUpdate(document, update, remoteOrigin);
+        const changes = relativeChanges?.map((change) => {
+          const from = Y.createAbsolutePositionFromRelativePosition(change.from, document)?.index;
+          const to = Y.createAbsolutePositionFromRelativePosition(change.to, document)?.index;
+          return from === undefined || to === undefined ? null : { from, to, insert: change.insert };
+        }).filter((change): change is EditorTextChange => change !== null) ?? transaction.changes;
+        document.transact(() => {
+          for (const change of [...changes].sort((left, right) => right.from - left.from)) {
+            if (change.to > change.from) text.delete(change.from, change.to - change.from);
+            if (change.insert) text.insert(change.from, change.insert);
+          }
+        }, { local: localOrigin, requestId: transaction.requestId,
+          authoredText: transaction.changes.map((change) => change.insert).join("") });
+      } finally { reconcilingComposition = false; }
+      if (queuedDuringComposition.length) options.onBody(text.toString());
+    },
+    setComposing(value) { composing = value; if (!value) for (const update of remoteQueue.splice(0)) applyRemote(update); },
+    updateSelection(selection) { if (access.mode === "write" && !rateLimited) updateAwareness(selection); },
+    listRejectedDrafts,
+    async removeRejectedDraft(updateId) {
+      await storage?.rejected.where("updateId").equals(updateId).delete(); await publishRejectedDrafts();
+    },
+    destroy,
+    retry: online
+  };
 }
 
 function parseSharingParticipants(value: unknown, document: Y.Doc, text: Y.Text): readonly SharingParticipant[] {
@@ -913,7 +1169,8 @@ function parseSharingParticipants(value: unknown, document: Y.Doc, text: Y.Text)
     const participant = item as Record<string, unknown>;
     if (typeof participant.participantId !== "string" || !/^[0-9a-f-]{36}$/i.test(participant.participantId)
       || typeof participant.displayName !== "string" || !participant.displayName.trim()
-      || (participant.role !== "owner" && participant.role !== "read" && participant.role !== "write")) return [];
+      || (participant.role !== "owner" && participant.role !== "read" && participant.role !== "write"
+        && participant.role !== "public-write")) return [];
     const activity = participant.activity === "active" ? "active" : "idle";
     const color = participant.color === "cyan" || participant.color === "violet" || participant.color === "orange"
       ? participant.color : "lime";
@@ -921,6 +1178,15 @@ function parseSharingParticipants(value: unknown, document: Y.Doc, text: Y.Text)
     return [{ participantId: participant.participantId, displayName: participant.displayName.slice(0, 80),
       role: participant.role, activity, color, ...(selection ? { selection } : {}) }];
   });
+}
+
+function parsePublicSharedAccess(value: Record<string, unknown>): PublicSharedLyricAccess | null {
+  if ((value.access !== "public-read" && value.access !== "public-write") || !Number.isSafeInteger(value.permissionEpoch)) return null;
+  if (value.access === "public-read") return { mode: "read", permissionEpoch: value.permissionEpoch as number };
+  if (!Number.isSafeInteger(value.writeEpoch) || typeof value.guestSessionId !== "string"
+    || !/^[0-9a-f-]{36}$/i.test(value.guestSessionId)) return null;
+  return { mode: "write", permissionEpoch: value.permissionEpoch as number, writeEpoch: value.writeEpoch as number,
+    guestSessionId: value.guestSessionId, ...(typeof value.displayName === "string" ? { displayName: value.displayName } : {}) };
 }
 
 function parseAwarenessSelection(value: unknown, document: Y.Doc, text: Y.Text): SharingParticipant["selection"] | null {
