@@ -7,12 +7,14 @@ state: "complete"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-13"
-next_action: "1.1.2 main/tag eb949b5·정식 image·릴리스 서버 exact digest·공개 공동 편집/복구/재시작 인수·GitHub Release 완료. 1.1.3 P1의 비로그인 guest 공개 쓰기 정책을 사용자가 명시 승인할 때까지 구현하지 않는다"
+next_action: "1.1.3 P1 계약 source 68f694e 원격 확인 완료. P1 PR을 main에 병합한 뒤 P2에서 1130 schema·guest session/지속 예산·owner toggle·public write ACK 기반을 구현한다"
 ```
 
 ## 승인과 기준
 
 2026-09-12 사용자가 1.1.6까지 각 버전의 계획된 모든 Phase와 개별 정식 릴리스를 실행하도록 승인했다. 착수 전에 고지한 권장 모델에 따라 1.1.0은 owner를 유지하고 actor와 자료별 grant를 분리한 지정 사용자 읽기부터 시작한다. 공개 링크·선택/공개 쓰기·guest와 디자인 적용은 각 담당 버전 P1의 명시 계약과 실패/복구 경계를 먼저 확정한다. 버전별 P5와 동일 SHA 개발 인수가 끝난 뒤에만 main·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·GitHub Release를 수행한다. 기존 DB volume·secret·beta allowlist와 사용자가 승인한 `OPS-100-001` 위험 예외를 보존한다.
+
+2026-09-13 사용자가 ``비로그인 guest 쓰기 승인``이라고 명시했다. 1.1.3은 기존 공개 읽기 capability 안에서 owner의 별도 위험 확인을 거친 해당 가사 본문 쓰기만 허용하며, 서버 발급 익명 guest session·별도 write epoch·지속 남용 예산·owner write 중지·거부 원문 복구를 적용한다. 계정 가입·workspace/목록·메모/연결 자료·revision·ACL·metadata·삭제·소유권 권한은 포함하지 않는다. 세부 계약은 `docs/runbooks/1.1.3-phase1-public-write-contract.md`에서 최초 구현 전에 고정한다.
 
 2026-09-11 사용자가 1.0.14까지 모든 버전을 실행하고 각 버전을 개별 정식 릴리스하도록 명시적으로 승인했다. 현재 실행 범위는 1.0.6부터 1.0.14까지 각 버전의 계획된 Phase, Phase별 개발 서버 인수, 버전별 main 병합·annotated tag·정식 image·릴리스 서버 migrate/배포/공개 smoke다. 각 P1의 기존 권장안은 최초 소비 전에 범위·실패·복구 경계를 문서로 확정하며, 외부 제공 조건이 충족되지 않는 기능은 우회 구현하거나 완료로 가장하지 않는다. 기존 DB volume·secret과 사용자가 승인한 `OPS-100-001` 위험 예외를 보존한다.
 
@@ -130,13 +132,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.2 P4 | complete | 후보 `b797224`, Actions `34721549799`·`34721572892`, Vitest 353 PASS·E2E 347 PASS·5-browser 5 PASS·동일 SHA 공개 3계정/복구/재시작 인수 완료 |
 | 1.1.2 P5 | complete | 후보 `8ec3cf9`, Actions `34723513936`·`34723521842`, 네 dev image·27 migration 봉인·동일 SHA 공개 3계정/복구/재시작 인수 완료 |
 | 1.1.2 Release | complete | main/tag `eb949b5`, main CI `34724875009` 재실행·tag CI `34726392136`, exact digest 운영 배포·공개 공동 편집/복구/재시작 smoke·GitHub Release 완료 |
-| 1.1.3 P1 | review | 비로그인 guest를 포함하는 public-link write 정책의 사용자 명시 승인 대기; 구현 미착수 |
+| 1.1.3 P1 | complete | 계약 `68f694e`, 사용자 승인·public read 안 body write·guest session/epoch·지속 제한·owner 중지·복구/rollback 확정; 문서 검증 PASS, runtime 미착수 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.3/P1 | LC-NF-1.1.3-P1-01 | 비로그인 guest public-link write 정책 승인 gate | v1.1.2 `eb949b5` | 2026-09-13 | review |
+| Codex | 1.1.3/P1 | LC-NF-1.1.3-P1-01~06 | 승인 증거·W⊆R·guest session/epoch·지속 제한·owner 중지·복구·호환/rollback 계약 | v1.1.2 `eb949b5`, 계약 `68f694e` | 2026-09-13 | complete |
 | Codex | 1.1.2/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.2 P5 `8ec3cf9` | 2026-09-13 | complete |
 | Codex | 1.1.2/P5 | LC-NF-1.1.2-P5-01~06 | 요구 추적·현재 문서·봉인 artifact·최종 CI·동일 SHA 개발 인수·정식 release gate | 1.1.2 P4 `b797224` | 2026-09-13 | complete |
 | Codex | 1.1.2/P4 | LC-NF-1.1.2-P4-01~07 | W⊆R·3계정 동시 편집·epoch 경쟁·권한/복구·offline/reconnect·서비스 재시작 | 1.1.2 P3 `f8f2dbd` | 2026-09-13 | complete |

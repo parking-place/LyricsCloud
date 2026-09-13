@@ -11,7 +11,7 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합, 지정 사용자 공동 편집·공개 링크 읽기 공유와 온라인 우선 PWA를 지원한다.
 
-현재 운영 서버의 정식 릴리스는 [`v1.1.2`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.1.2)이다. 다음 `1.1.3`의 비로그인 공개 링크 쓰기는 보안 정책의 사용자 명시 승인 전에는 구현하지 않는다.
+현재 운영 서버의 정식 릴리스는 [`v1.1.2`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.1.2)이다. 다음 `1.1.3`의 비로그인 공개 링크 본문 쓰기 정책과 P1 계약이 승인됐고, P2부터 runtime을 구현한다.
 
 ## 주요 기능
 
@@ -38,15 +38,17 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 | 항목 | 상태 |
 |---|---|
 | 소스·runtime version | `1.1.2` |
-| 현재 작업 | [1.1.3 Phase 1 — 비로그인 guest 쓰기 정책 승인 대기](<./0.Plans/2.Patch-phase/1.1.3/1phase.md>) |
+| 현재 작업 | [1.1.3 Phase 2 — guest 쓰기 저장·서버 기반](<./0.Plans/2.Patch-phase/1.1.3/2phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.1.2`, main/tag `eb949b5`, exact digest 운영 배포·공개 공동 편집/복구/재시작 smoke 완료 |
-| 개발 인수 | 1.1.3 P1의 비로그인 guest 공개 쓰기 정책 명시 승인 대기; 구현 미착수 |
+| 개발 인수 | 1.1.3 P1 계약 source `68f694e` 완료; P2 runtime 구현 대기 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.
 
 1.1.2 지정 사용자 공동 편집은 활성 읽기 grant 안에서만 본문 쓰기를 허용한다. writer는 ACL·메타데이터·revision·삭제·소유권을 관리할 수 없고, 권한 강등·회수 뒤 거부된 로컬 원문은 계정·actor·자료·grant·epoch별 복구함에 보존되며 자동 재적용하지 않는다.
+
+1.1.3 공개 쓰기는 기존 공개 읽기 링크의 같은 자료·token·만료 범위에서 owner가 별도 위험 확인한 경우에만 비로그인 guest의 본문 편집을 허용한다. guest는 서버 발급 익명 세션으로만 구분하며 workspace·목록·메모·연결 자료·revision·ACL·metadata·삭제·소유권·계정 권한은 얻지 않는다.
 
 ## 화면
 
