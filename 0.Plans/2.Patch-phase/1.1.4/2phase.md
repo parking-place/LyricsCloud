@@ -1,6 +1,6 @@
 # 1.1.4 Phase 2 — 핵심 기반·저장과 서버
 
-- 상태: **검토** (`review`, 구현·로컬 검증 완료, 후보 CI·동일 SHA 개발 인수 전)
+- 상태: **완료** (`complete`, 후보 `3de111fdaf4f0b79d02b51d311b0c7293e02b67f`)
 - 단계 목적: 공유 안정성·복구 동선 정리의 핵심 기반·저장과 서버을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -68,14 +68,18 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 - `test:migration:1140` 및 1100·1110·1120·1130 recovery: PASS — 실제 DB 반복 적용, 삭제 fence 권한, rollback 뒤 재적용.
 - S1 가속 microbenchmark: 30 rounds, 640 input updates → 1 update, output equivalent, p95 6.683 ms, heap peak 32.41 MiB. 실제 장시간·브라우저 memory·물리 기기 성능 증거로 승격하지 않는다.
 - 남은 gate: 후보 원격 전체 CI, 네 dev image, 같은 SHA의 개발 서버 migration/health와 공개 기능 smoke. 실제 장시간·절전·물리 기기/IME는 P4/P5까지 미실행으로 유지한다.
+- GitHub Actions `34778131953`: PASS — 전체 verify와 web·collaboration·worker·migrate 개발 image 발행·서명. 각 서비스의 40자리 SHA tag와 `dev-1.1.4-p2` tag digest가 일치한다.
+- 개발 서버 후보 `3de111fdaf4f0b79d02b51d311b0c7293e02b67f`: PASS — checkout·runtime build id 동일, version `1.1.4`, channel `dev`, phase `p2`, schema `1140_sharing_stability.sql`, 네 서비스 healthy.
+- 공개 개발 smoke: PASS — selected/public 삭제 fence, 두 epoch 증가, trash 복원 뒤 old capability 비부활, owner 본문 복원. 합성 계정·자료는 제거했다.
+- 실제 장시간 절전·물리 기기/OS IME는 실행하지 않았고 P4/P5의 별도 증거로 남긴다. S1 가속 측정을 실제 duration 또는 실기기 PASS로 승격하지 않는다.
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다. — 후보 SHA 확정 전
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
 - [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 로컬 검증되었다.
 - [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
 - [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를 갖췄다.
 - [x] main·Release·운영 변경은 수행하지 않았다.
 
 ## 산출물

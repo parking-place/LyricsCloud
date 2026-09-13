@@ -38,11 +38,11 @@ AI 생성과 미디어 업로드는 1.1.3 범위가 아니다.
 
 | 항목 | 상태 |
 |---|---|
-| 소스·runtime version | `1.1.3` |
-| 현재 작업 | [1.1.4 Phase 1 — 공유 안정화 계약 검토](<./0.Plans/2.Patch-phase/1.1.4/1phase.md>) |
+| 소스·runtime version | `1.1.4` |
+| 현재 작업 | [1.1.4 Phase 3 — PC·모바일 사용자 흐름](<./0.Plans/2.Patch-phase/1.1.4/3phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.1.3`, main/tag `35fa482`, exact digest 운영 배포·공개 guest 공동 편집/복구/재시작 smoke 완료 |
-| 개발 인수 | 1.1.3 P1~P5와 정식 릴리스 완료; 1.1.4 P1 계약 검토가 다음 작업 |
+| 개발 인수 | 1.1.4 P1 계약과 P2 삭제 capability fence·bounded queue의 동일 SHA 개발 인수 완료; P3 진행 중 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.
