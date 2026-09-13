@@ -3,6 +3,7 @@ import { parseCreateLyricInput, parseCreateSongInput } from "@lyricscloud/domain
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PostgresLyricStore } from "./lyrics.js";
+import { PostgresLyricSharingStore, SharingConflictError } from "./lyric-sharing.js";
 import { PostgresPublicLyricSharingStore, PublicLinkConflictError } from "./public-lyric-sharing.js";
 import { PostgresSongStore } from "./songs.js";
 
@@ -10,6 +11,7 @@ const enabled = process.env.AUTH_DATABASE_INTEGRATION === "true";
 const databaseUrl = process.env.DATABASE_URL ?? "";
 const pool = enabled ? new Pool({ connectionString: databaseUrl, max: 4 }) : null;
 const sharing = enabled ? new PostgresPublicLyricSharingStore(databaseUrl, 5) : null;
+const selectedSharing = enabled ? new PostgresLyricSharingStore(databaseUrl, 3) : null;
 const lyrics = enabled ? new PostgresLyricStore(databaseUrl, 3) : null;
 const songs = enabled ? new PostgresSongStore(databaseUrl, 3) : null;
 const users: string[] = [];
@@ -43,6 +45,17 @@ describe.runIf(enabled)("public lyric read links", () => {
     expect(await sharing!.issueGuestSession(firstDigest, "4".repeat(64))).toBeNull();
     expect(await sharing!.setAccess(stranger, lyric.id, first!.link.id,
       { requestId: randomUUID(), access: "write", confirmation: "public-guest-write-v1" })).toBeNull();
+    const strangerSharingId = (await selectedSharing!.getOwnIdentity(stranger))!.sharingId;
+    const selectedGrant = (await selectedSharing!.grantRead(owner, lyric.id, strangerSharingId, randomUUID()))!.grant;
+    const blockedEpoch = first!.link.writeEpoch;
+    await expect(sharing!.setAccess(owner, lyric.id, first!.link.id,
+      { requestId: randomUUID(), access: "write", confirmation: "public-guest-write-v1" }))
+      .rejects.toBeInstanceOf(PublicLinkConflictError);
+    await expect(sharing!.readProjection(firstDigest)).resolves.toMatchObject({ access: "read", writeEpoch: blockedEpoch });
+    await expect(selectedSharing!.listGrants(owner, lyric.id)).resolves.toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: selectedGrant.id, state: "active", access: "read" })
+    ]));
+    expect(await selectedSharing!.revokeRead(owner, lyric.id, selectedGrant.id)).toBe(true);
     const accessRequest = randomUUID();
     const enabled = await sharing!.setAccess(owner, lyric.id, first!.link.id,
       { requestId: accessRequest, access: "write", confirmation: "public-guest-write-v1" });
@@ -54,9 +67,13 @@ describe.runIf(enabled)("public lyric read links", () => {
     expect(guest).toMatchObject({ linkId: first!.link.id, resourceId: lyric.id,
       permissionEpoch: first!.link.permissionEpoch, writeEpoch: 2 });
     expect(guest!.displayName).toMatch(/^게스트-[0-9A-F]{4}$/);
+    await expect(selectedSharing!.grantRead(owner, lyric.id, strangerSharingId, randomUUID()))
+      .rejects.toBeInstanceOf(SharingConflictError);
     const disabled = await sharing!.setAccess(owner, lyric.id, first!.link.id,
       { requestId: randomUUID(), access: "read" });
     expect(disabled).toMatchObject({ link: { access: "read", writeEpoch: 3 } });
+    await expect(selectedSharing!.grantRead(owner, lyric.id, strangerSharingId, randomUUID()))
+      .resolves.toMatchObject({ grant: { state: "active", access: "read" } });
     expect(await sharing!.issueGuestSession(firstDigest, "5".repeat(64))).toBeNull();
     expect(await sharing!.revoke(stranger, lyric.id, first!.link.id)).toBeNull();
     await expect(sharing!.issue(owner, lyric.id, { ...input, tokenDigest: "2".repeat(64),
@@ -74,5 +91,5 @@ describe.runIf(enabled)("public lyric read links", () => {
 
 afterAll(async () => {
   if (pool && users.length) await pool.query("delete from app_users where id=any($1::uuid[])", [users]);
-  await Promise.all([sharing?.close(), lyrics?.close(), songs?.close(), pool?.end()]);
+  await Promise.all([sharing?.close(), selectedSharing?.close(), lyrics?.close(), songs?.close(), pool?.end()]);
 });

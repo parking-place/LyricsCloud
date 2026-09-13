@@ -157,11 +157,17 @@ export class PostgresPublicLyricSharingStore {
         return link ? { link, replayed: true } : null;
       }
       if (!await ownsActiveLyric(client, resourceId)) return null;
+      await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [`sharing-mode:${resourceId}`]);
       const current = (await client.query<{ write_enabled: boolean }>(`select write_enabled
         from lyric_public_read_links where id=$1 and resource_id=$2 and owner_id=$3
           and state='active' and expires_at>statement_timestamp() for update`, [linkId, resourceId, ownerId])).rows[0];
       if (!current) return null;
       const write = input.access === "write";
+      if (write && (await client.query(`select 1 from lyric_read_grants
+        where resource_id=$1 and owner_id=$2 and state='active'
+          and (expires_at is null or expires_at>statement_timestamp()) limit 1`, [resourceId, ownerId])).rowCount) {
+        throw new PublicLinkConflictError();
+      }
       const updated = await client.query(`update lyric_public_read_links set
         write_enabled=$4,
         write_epoch=case when write_enabled<>$4 then write_epoch+1 else write_epoch end,

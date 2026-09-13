@@ -120,37 +120,51 @@ export function PublicSharedLyricViewer() {
   useEffect(() => {
     if (!connection) return;
     let active = true;
+    let syncReady = false;
+    let syncHasDocument = false;
+    let syncState: SharedLyricSyncState = "connecting";
     const parent = editorParent.current;
     const textEditor = parent ? createCodeMirrorTextEditor({ parent, initialValue: bodyRef.current,
-      ariaLabel: "공유된 가사 본문", placeholder: "아직 입력된 가사가 없습니다.", readOnly: accessRef.current.mode !== "write",
+      ariaLabel: "공유된 가사 본문", placeholder: "아직 입력된 가사가 없습니다.", readOnly: true,
       onChange(value) { bodyRef.current = value; if (active) setBody(value); },
       onCompositionStart() { sync.current?.setComposing(true); },
       onCompositionEnd() { sync.current?.setComposing(false); },
       onSelectionChange(selection) { sync.current?.updateSelection(selection); },
       onTransaction(transaction) { sync.current?.applyLocalTransaction(transaction); }
     }) : null;
+    function updateEditable() {
+      textEditor?.setEditable(syncReady && syncHasDocument && accessRef.current.mode === "write"
+        && syncState !== "connecting" && syncState !== "limited" && syncState !== "revoked");
+    }
     editor.current = textEditor;
     void createBrowserPublicSharedLyricSync({ ...connection,
       onBody(value, changes) {
-        if (!active || value === bodyRef.current) return;
+        if (!active) return;
+        syncHasDocument = true;
+        if (value === bodyRef.current) { updateEditable(); return; }
         const currentLength = editor.current?.value.length ?? 0;
         bodyRef.current = value; setBody(value);
         editor.current?.applyTransaction({ changes: changes ?? [{ from: 0, to: currentLength, insert: value }] });
+        updateEditable();
       },
       onStateChange(value) {
         if (!active) return;
+        syncState = value;
         setState(value);
-        textEditor?.setEditable(accessRef.current.mode === "write" && value !== "limited" && value !== "revoked");
+        updateEditable();
         if (value === "revoked") {
           sessionStorage.removeItem(tokenKey);
           setUnavailable(true);
           setLyric(null);
         }
       },
-      onAccessChange(value) { if (active) { accessRef.current = value; setAccess(value); textEditor?.setEditable(value.mode === "write"); } },
+      onAccessChange(value) { if (active) { accessRef.current = value; setAccess(value); updateEditable(); } },
       onPresenceChange(value) { if (active) setParticipants(value); },
       onRejectedDrafts(value) { if (active) setRejectedDrafts(value); }
-    }).then((value) => { if (active) sync.current = value; else void value.destroy(); });
+    }).then((value) => {
+      if (active) { sync.current = value; syncReady = true; updateEditable(); }
+      else void value.destroy();
+    });
     return () => { active = false; textEditor?.finishComposition(); textEditor?.destroy(); editor.current = null;
       void sync.current?.destroy(); sync.current = null; };
   }, [connection]);

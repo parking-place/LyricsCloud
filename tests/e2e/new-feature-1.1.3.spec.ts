@@ -14,10 +14,14 @@ test.describe("1.1.3 public-link guest writing", () => {
     const mobile = info.project.name.includes("mobile");
     const contextOptions = { baseURL: origin, viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 }, isMobile: mobile, hasTouch: mobile };
     const ownerContext = await browser.newContext(contextOptions);
+    const selectedContext = await browser.newContext(contextOptions);
+    const connectingGuestContext = await browser.newContext(contextOptions);
     const guestAContext = await browser.newContext(contextOptions);
     const guestBContext = await browser.newContext(contextOptions);
     const owner = await account(ownerContext, "공개 쓰기 소유자");
+    const selected = await account(selectedContext, "공개 쓰기 충돌 독자");
     const ownerPage = await ownerContext.newPage();
+    const connectingGuestPage = await connectingGuestContext.newPage();
     const guestAPage = await guestAContext.newPage();
     const guestBPage = await guestBContext.newPage();
     try {
@@ -27,6 +31,10 @@ test.describe("1.1.3 public-link guest writing", () => {
         requestId: randomUUID(), title: "공개 게스트 가사", body: "[Verse]\n공개 게스트 원문", memo: "게스트에게 숨긴 소유자 메모"
       } });
       const lyricId = ((await lyricResponse.json()) as { lyric: { id: string } }).lyric.id;
+      const selectedGrantResponse = await ownerContext.request.post(`/api/lyrics/${lyricId}/shares`, { headers, data: {
+        requestId: randomUUID(), sharingId: selected.sharingId
+      } });
+      expect(selectedGrantResponse.status()).toBe(201);
 
       await ownerPage.goto(`/lyrics/${lyricId}`);
       await expect(ownerPage.getByLabel("가사 본문")).toBeVisible({ timeout: 15_000 });
@@ -43,9 +51,27 @@ test.describe("1.1.3 public-link guest writing", () => {
       const risk = dialog.locator(".sharing-public-write-risk");
       await expect(risk).toContainText("링크를 가진 누구나 계정 없이 새 게스트 세션");
       await expect(risk).toContainText("작업 메모·연결 자료·버전 복원·삭제·권한 관리");
+      await expect(risk).toContainText("선택 공유 독자가 있으면 공개 쓰기를 함께 켤 수 없습니다");
       await risk.getByRole("button", { name: "위험을 이해하고 쓰기 허용" }).click();
+      await expect(dialog.locator(".sharing-notice")).toContainText("선택 공유 독자가 있는 동안 공개 쓰기를 함께 켤 수 없습니다", { timeout: 10_000 });
+      await expect(accessButtons.nth(0)).toHaveAttribute("aria-pressed", "true");
+      const selectedGrant = dialog.locator(".sharing-grants li", { hasText: "공개 쓰기 충돌 독자" });
+      await expect(selectedGrant).toContainText("읽기 전용");
+      await selectedGrant.getByRole("button", { name: "권한 회수" }).click();
+      await expect(dialog.locator(".sharing-notice")).toContainText("읽기 권한을 회수", { timeout: 10_000 });
+      await accessButtons.nth(1).click();
+      await dialog.locator(".sharing-public-write-risk").getByRole("button", { name: "위험을 이해하고 쓰기 허용" }).click();
       await expect(dialog.locator(".sharing-notice")).toContainText("비로그인 게스트 쓰기를 허용", { timeout: 10_000 });
       await expect(accessButtons.nth(1)).toHaveAttribute("aria-pressed", "true");
+
+      await connectingGuestPage.routeWebSocket("**/collaboration/public", () => undefined);
+      await connectingGuestPage.goto(issued.url);
+      await expect(connectingGuestPage.locator(".shared-read-badge")).toContainText("게스트 공동 작성", { timeout: 15_000 });
+      const connectingEditor = connectingGuestPage.getByLabel("공유된 가사 본문");
+      await expect(connectingEditor).toHaveAttribute("contenteditable", "false");
+      await connectingEditor.click(); await connectingGuestPage.keyboard.insertText(" 연결 전 유실 입력");
+      await expect(connectingEditor).not.toContainText("연결 전 유실 입력");
+      await connectingGuestContext.close();
 
       await Promise.all([guestAPage.goto(issued.url), guestBPage.goto(issued.url)]);
       for (const page of [guestAPage, guestBPage]) {
@@ -122,8 +148,9 @@ test.describe("1.1.3 public-link guest writing", () => {
       }
     } finally {
       await Promise.all([guestAContext.setOffline(false).catch(() => undefined), guestBContext.setOffline(false).catch(() => undefined)]);
-      await Promise.all([ownerContext.close(), guestAContext.close(), guestBContext.close()]);
-      await removeAccounts([owner.userId]);
+      await Promise.all([ownerContext.close(), selectedContext.close(), connectingGuestContext.close().catch(() => undefined),
+        guestAContext.close(), guestBContext.close()]);
+      await removeAccounts([owner.userId, selected.userId]);
     }
   });
 });
@@ -157,7 +184,9 @@ async function account(context: BrowserContext, displayName: string) {
     await pool.query("insert into auth_sessions(token_hash,user_id,expires_at,absolute_expires_at) values($1,$2,now()+interval '1 hour',now()+interval '2 hours')", [hashToken(token), userId]);
   });
   await context.addCookies([{ name: "lc_session", value: token, url: origin, httpOnly: true, sameSite: "Lax" }]);
-  return { userId };
+  const sharingId = await withE2eDatabase(async (pool) => (await pool.query<{ sharing_id: string }>(
+    "select sharing_id from user_profiles where owner_id=$1", [userId])).rows[0]!.sharing_id);
+  return { userId, sharingId };
 }
 
 async function removeAccounts(ids: readonly string[]) {
