@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { PostgresLyricStore, PostgresSongStore } from "@lyricscloud/database";
+import { PostgresLyricSharingStore, PostgresLyricStore, PostgresSongStore } from "@lyricscloud/database";
 import { parseCreateLyricInput, parseCreateSongInput } from "@lyricscloud/domain";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -12,13 +12,18 @@ const pool = enabled ? new Pool({ connectionString: url }) : null;
 const store = enabled ? new CollaborationStore(url) : null;
 const songs = enabled ? new PostgresSongStore(url, 2) : null;
 const lyrics = enabled ? new PostgresLyricStore(url, 2) : null;
+const sharing = enabled ? new PostgresLyricSharingStore(url, 2) : null;
 const users: string[] = [];
 const hash = (body: string) => createHash("sha256").update(body).digest("hex");
 
 describe.runIf(enabled)("immutable body revisions", () => {
   beforeAll(async () => {
     if (!pool || !/lyricscloud_test(?:\?|$)/.test(url)) throw new Error("requires isolated lyricscloud_test");
-    for (let i = 0; i < 2; i++) users.push((await pool.query("insert into app_users default values returning id")).rows[0].id);
+    for (let i = 0; i < 2; i++) {
+      const id = (await pool.query("insert into app_users default values returning id")).rows[0].id;
+      users.push(id);
+      await pool.query("insert into user_profiles(owner_id,display_name) values($1,$2)", [id, `복원 사용자 ${i + 1}`]);
+    }
   });
 
   it("snapshots changed bodies once per five-minute window and deduplicates important checkpoints", async () => {
@@ -90,6 +95,30 @@ describe.runIf(enabled)("immutable body revisions", () => {
       expect((await store!.listRevisions(f.owner, f.key))!.items).toHaveLength(1);
     } finally { await pool!.query(`drop trigger ${trigger} on lyrics; drop function ${trigger}()`); }
     expect(await store!.restoreRevision(f.owner, f.key, old!.id, request)).toMatchObject({ duplicate: false });
+  });
+
+  it("merges a still-authorized offline writer after owner restore", async () => {
+    const f = await fixture();
+    const original = await store!.checkpoint(f.owner, f.key, "large_paste");
+    await edit(f, "복원 직전 owner 본문");
+    const writer = users[1]!;
+    const writerSharingId = (await sharing!.getOwnIdentity(writer))!.sharingId;
+    const grant = (await sharing!.grantRead(f.owner, f.id, writerSharingId, randomUUID()))!.grant;
+    await sharing!.setGrantAccess(f.owner, f.id, grant.id, "write", randomUUID());
+    const loaded = (await store!.loadDocumentForActor(writer, f.key))!;
+    const offline = materialize(loaded.snapshot, loaded.updates);
+    const vector = Y.encodeStateVector(offline);
+    offline.getText("body").insert(offline.getText("body").length, "\noffline writer 원문");
+
+    const current = (await store!.listRevisions(f.owner, f.key))!.current;
+    await store!.restoreRevision(f.owner, f.key, original!.id, { requestId: randomUUID(), expectedHash: current.hash });
+    const accepted = await store!.applyUpdateForActor(loaded.access, f.key, randomUUID(), Y.encodeStateAsUpdate(offline, vector));
+    offline.destroy();
+    expect(accepted).toMatchObject({ duplicate: false });
+    const merged = (await lyrics!.getLyric(f.owner, f.id))!.body;
+    expect(merged).toContain("[Verse]\n원래 표현");
+    expect(merged).toContain("offline writer 원문");
+    expect(merged).not.toContain("복원 직전 owner 본문");
   });
 
   it("enforces owner isolation, immutable rows and deleted-document guards", async () => {
@@ -166,5 +195,5 @@ async function edit(f: { owner: string; key: string }, body: string) {
 }
 afterAll(async () => {
   if (users.length) await pool!.query("delete from app_users where id=any($1::uuid[])", [users]);
-  await Promise.all([store?.close(), lyrics?.close(), songs?.close(), pool?.end()]);
+  await Promise.all([store?.close(), sharing?.close(), lyrics?.close(), songs?.close(), pool?.end()]);
 });

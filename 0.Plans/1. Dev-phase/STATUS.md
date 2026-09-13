@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.1.3"
-current_phase: "../2.Patch-phase/1.1.3/5phase.md"
-state: "complete"
+current_version: "1.1.4"
+current_phase: "../2.Patch-phase/1.1.4/2phase.md"
+state: "review"
 owner: "Codex"
-started_at: "2026-09-11"
+started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.4 P1 계약 source 6f35313 원격 인수 완료. P2에서 삭제 capability fence·old grant 비부활과 browser outbox/IME bounded queue 실패 회귀를 먼저 작성하고 최소 구현한다"
+next_action: "1.1.4 P2 후보를 commit/push하고 전체 CI·네 dev image·동일 SHA 개발 migration/health/공개 smoke를 통과시킨다"
 ```
 
 ## 승인과 기준
@@ -144,6 +144,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.4/P2 | LC-NF-1.1.4-P2-01~06 | 1140 delete fence·selected/public epoch·browser outbox/IME compact·DB/단위/복구 회귀 | 1.1.4 P1 `6f35313`, main `8e3e904` | 2026-09-14 | review |
 | Codex | 1.1.4/P1 | LC-NF-1.1.4-P1-01~06 | 사건 순서·queue 한도·증거 등급·입력표·호환/rollback·P2/P3/P4 담당 계약 | v1.1.3 `35fa482`, 계약 `6f35313` | 2026-09-14 | complete |
 | Codex | 1.1.3/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.3 P5 `8abf21a` | 2026-09-14 | complete |
 | Codex | 1.1.3/P5 | LC-NF-1.1.3-P5-01~06 | 요구 추적·현재/사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.3 P4 `3fd9f0d`, 후보 `8abf21a` | 2026-09-14 | complete |

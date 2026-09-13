@@ -1,6 +1,6 @@
 # 1.1.4 Phase 2 — 핵심 기반·저장과 서버
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **검토** (`review`, 구현·로컬 검증 완료, 후보 CI·동일 SHA 개발 인수 전)
 - 단계 목적: 공유 안정성·복구 동선 정리의 핵심 기반·저장과 서버을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -40,12 +40,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.4-P2-01` 구현 전 `1.1.4` 수용 사례의 실패 테스트를 작성한다. 제안 위치는 `tests/new-feature/1.1.4.contract.test.ts`이며 runner 포함 여부를 확인한 뒤 실패 이유를 기록한다.
-- [ ] `LC-NF-1.1.4-P2-02` 다중 actor update/receipt/revision/권한 epoch 경계에서 재현한 문제만 수정한다.
-- [ ] `LC-NF-1.1.4-P2-03` worker projection 재처리·삭제 자료·검색/export 가용성을 owner별로 대조한다.
-- [ ] `LC-NF-1.1.4-P2-04` bounded queue·연결 수·메모리·응답 p95를 측정하고 출력 동등성을 유지하는 병목만 줄인다.
-- [ ] `LC-NF-1.1.4-P2-05` 기존 계정 로그아웃/탈퇴·beta grant 회수와 resource capability의 정책을 회귀한다.
-- [ ] `LC-NF-1.1.4-P2-06` 추가 schema가 있으면 실제 테스트 DB의 빈 설치·이전 schema 업그레이드·권한·되돌림을 검사한다. 원인 수정 후 동일 실패 테스트와 기존 관련 회귀를 다시 실행한다.
+- [x] `LC-NF-1.1.4-P2-01` 구현 전 `1.1.4` 수용 사례의 실패 테스트를 작성한다. 제안 위치는 `tests/new-feature/1.1.4.contract.test.ts`이며 runner 포함 여부를 확인한 뒤 실패 이유를 기록한다. — queue helper 부재 3건과 실제 DB의 delete 후 selected/public capability 잔존 2건을 실패로 확인
+- [x] `LC-NF-1.1.4-P2-02` 다중 actor update/receipt/revision/권한 epoch 경계에서 재현한 문제만 수정한다. — 같은 capability/epoch끼리만 outbox를 lossless compact하고 in-flight update는 보호, 복원 중 같은 epoch의 writer 원문 병합 회귀 추가
+- [x] `LC-NF-1.1.4-P2-03` worker projection 재처리·삭제 자료·검색/export 가용성을 owner별로 대조한다. — 전체 실제 DB suite의 projection recovery·resource lifecycle·search·export 회귀 PASS
+- [x] `LC-NF-1.1.4-P2-04` bounded queue·연결 수·메모리·응답 p95를 측정하고 출력 동등성을 유지하는 병목만 줄인다. — outbox/IME remote queue 64건 또는 1 MiB 상한, Yjs 출력 동등성 단위 회귀와 S1 640→1 update microbenchmark p95 6.683 ms·peak 32.41 MiB
+- [x] `LC-NF-1.1.4-P2-05` 기존 계정 로그아웃/탈퇴·beta grant 회수와 resource capability의 정책을 회귀한다. — 기존 auth/lifecycle/sharing 전체 회귀 PASS, 삭제 전환에서 selected/public capability를 모두 revoke하고 두 epoch를 증가시켜 trash 복원 뒤 부활 차단
+- [x] `LC-NF-1.1.4-P2-06` 추가 schema가 있으면 실제 테스트 DB의 빈 설치·이전 schema 업그레이드·권한·되돌림을 검사한다. 원인 수정 후 동일 실패 테스트와 기존 관련 회귀를 다시 실행한다. — `1140_sharing_stability.sql` 반복 적용·검증·rollback/reapply와 1100~1130 recovery PASS
 
 ## 구체적 검증
 
@@ -62,14 +62,21 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 [공통 명령·검증](../QUALITY-GATES.md)을 먼저 읽는다. 기존 runner의 영향받은 검사를 우선 사용하고 필요할 때만 회귀를 보강한다. 지원 환경에서 관련 DB/E2E를 선택하며 동일 변경의 full suite는 로컬/CI 중 한 곳과 필수 게이트만 따른다. native은 승인된 SDK/플랫폼 명령을 기록한다. 없는 도구·실제 IME·물리 기기 검증을 모사 결과로 통과시켰다고 표시하지 않는다. 문서-only Phase는 링크·범위·결정·설계 검토로 별도 인수한다.
 
+- Node 24 + 실제 PostgreSQL 격리 DB `pnpm test`: PASS — 93 files, 364 tests; beta 외부 fixture 4건은 계약대로 skip.
+- Node 24 `pnpm build`: PASS — production Next.js와 workspace build.
+- `revisions.integration.test.ts` 5회 반복: PASS — CRDT 동시 삽입의 합법적 위치 차이를 허용하되 복원 대상과 writer 원문 보존, 폐기 owner 본문 부재를 모두 판정한다.
+- `test:migration:1140` 및 1100·1110·1120·1130 recovery: PASS — 실제 DB 반복 적용, 삭제 fence 권한, rollback 뒤 재적용.
+- S1 가속 microbenchmark: 30 rounds, 640 input updates → 1 update, output equivalent, p95 6.683 ms, heap peak 32.41 MiB. 실제 장시간·브라우저 memory·물리 기기 성능 증거로 승격하지 않는다.
+- 남은 gate: 후보 원격 전체 CI, 네 dev image, 같은 SHA의 개발 서버 migration/health와 공개 기능 smoke. 실제 장시간·절전·물리 기기/IME는 P4/P5까지 미실행으로 유지한다.
+
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다. — 후보 SHA 확정 전
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 로컬 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
 - [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] main·Release·운영 변경은 수행하지 않았다.
 
 ## 산출물
 

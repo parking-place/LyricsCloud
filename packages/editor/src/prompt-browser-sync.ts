@@ -9,7 +9,7 @@ import {
   movePromptToken, promptTitle, promptTokenSequence, removePromptToken, type PromptSequenceItem
 } from "./crdt.js";
 import type { LocalSyncState } from "./browser-sync.js";
-import { SyncStorage, type QueuedUpdate } from "./sync-storage.js";
+import { enqueueRemoteUpdate, SyncStorage, type QueuedUpdate } from "./sync-storage.js";
 
 export interface PromptEditorSnapshot {
   readonly title: string;
@@ -118,7 +118,7 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
     const queued: QueuedUpdate | undefined = update ? { documentKey, updateId: crypto.randomUUID(), payload: update } : undefined;
     pendingWrites++;
     emit("saving-local");
-    writes = writes.then(() => storage.persist({ resourceId: options.resourceId, documentKey, snapshot: cached }, queued))
+    writes = writes.then(() => storage.persist({ resourceId: options.resourceId, documentKey, snapshot: cached }, queued, inFlight))
       .catch(() => fail("error"))
       .finally(() => { pendingWrites--; });
     void writes.then(() => pump()).catch(() => fail("error"));
@@ -130,7 +130,7 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
     if (origin === localOrigin) channel?.postMessage(update);
   });
   function applyRemote(update: Uint8Array) {
-    if (composing) remoteQueue.push(update);
+    if (composing) enqueueRemoteUpdate(remoteQueue, update);
     else Y.applyUpdate(document, update, remoteOrigin);
   }
   async function pump() {

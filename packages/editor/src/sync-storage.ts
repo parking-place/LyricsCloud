@@ -8,6 +8,7 @@ export interface LocalDocument {
 }
 
 export interface QueuedUpdate {
+  sequence?: number;
   updateId: string;
   documentKey: string;
   payload: Uint8Array;
@@ -15,6 +16,39 @@ export interface QueuedUpdate {
   permissionEpoch?: number;
   writeEpoch?: number;
   authoredText?: string;
+}
+
+export const LOCAL_SYNC_QUEUE_LIMITS = Object.freeze({ count: 64, bytes: 1_048_576 });
+
+export function sameQueuedUpdateCapability(left: QueuedUpdate, right: QueuedUpdate): boolean {
+  return left.documentKey === right.documentKey && left.grantId === right.grantId
+    && left.permissionEpoch === right.permissionEpoch && left.writeEpoch === right.writeEpoch;
+}
+
+export function compactQueuedUpdates(items: readonly QueuedUpdate[],
+  createUpdateId: () => string = () => crypto.randomUUID()): QueuedUpdate[] {
+  if (items.length < 2 || (items.length <= LOCAL_SYNC_QUEUE_LIMITS.count
+    && items.reduce((total, item) => total + item.payload.byteLength, 0) <= LOCAL_SYNC_QUEUE_LIMITS.bytes)) {
+    return [...items];
+  }
+  const first = items[0]!;
+  if (!items.every((item) => sameQueuedUpdateCapability(first, item))) throw new Error("SYNC_QUEUE_CAPABILITY_MIXED");
+  return [{
+    updateId: createUpdateId(), documentKey: first.documentKey,
+    payload: Y.mergeUpdates(items.map((item) => item.payload)),
+    ...(first.grantId ? { grantId: first.grantId } : {}),
+    ...(first.permissionEpoch !== undefined ? { permissionEpoch: first.permissionEpoch } : {}),
+    ...(first.writeEpoch !== undefined ? { writeEpoch: first.writeEpoch } : {}),
+    authoredText: items.map((item) => item.authoredText ?? "").join("")
+  }];
+}
+
+export function enqueueRemoteUpdate(queue: Uint8Array[], update: Uint8Array): void {
+  queue.push(update);
+  if (queue.length > LOCAL_SYNC_QUEUE_LIMITS.count
+    || queue.reduce((total, item) => total + item.byteLength, 0) > LOCAL_SYNC_QUEUE_LIMITS.bytes) {
+    queue.splice(0, queue.length, Y.mergeUpdates(queue));
+  }
 }
 
 export interface RejectedWriterDraft {
@@ -54,13 +88,23 @@ export class SyncStorage extends Dexie {
 
   // A tab must never replace another tab's newer snapshot or persist a draft
   // without the update that will eventually receive its durable server ACK.
-  async persist(document: LocalDocument, update?: QueuedUpdate): Promise<void> {
+  async persist(document: LocalDocument, update?: QueuedUpdate, protectedUpdateId?: string): Promise<void> {
     await this.transaction("rw", this.documents, this.updates, async () => {
       const current = await this.documents.get(document.resourceId);
       if (current && current.documentKey !== document.documentKey) throw new Error("SYNC_DOCUMENT_CHANGED");
       const snapshot = current ? Y.mergeUpdates([current.snapshot, document.snapshot]) : document.snapshot;
       await this.documents.put({ ...document, snapshot });
-      if (update) await this.updates.put(update);
+      if (update) {
+        await this.updates.put(update);
+        const sameCapability = (await this.updates.where("documentKey").equals(document.documentKey).toArray())
+          .filter((item) => item.updateId !== protectedUpdateId && sameQueuedUpdateCapability(update, item));
+        const compacted = compactQueuedUpdates(sameCapability);
+        if (compacted.length < sameCapability.length) {
+          const sequences = sameCapability.map((item) => item.sequence).filter((value): value is number => value !== undefined);
+          await this.updates.bulkDelete(sequences);
+          await this.updates.put(compacted[0]!);
+        }
+      }
     });
   }
 
