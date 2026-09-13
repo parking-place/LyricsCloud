@@ -10,6 +10,7 @@ const databaseName = `lyricscloud_1120_${randomUUID().replaceAll("-", "")}`;
 const url = new URL(source); url.pathname = `/${databaseName}`;
 const admin = new Pool({ connectionString: source.href, max: 1 });
 const rollback = await readFile("packages/database/rollback/1120_selected_lyric_write.sql", "utf8");
+const publicWriterRollback = await readFile("packages/database/rollback/1130_public_lyric_guest_write.sql", "utf8");
 
 try {
   await admin.query(`create database "${databaseName}"`);
@@ -49,6 +50,7 @@ try {
     assert.equal((await asUser(target, stranger, (client) => client.query(
       "select * from app_selected_lyric_write_receipt($1,$2,$3,3,6)", [documentKey, updateId, grantId]))).rowCount, 0);
 
+    await target.query(publicWriterRollback);
     await target.query(rollback);
     assert.equal((await target.query("select column_name from information_schema.columns where table_name='lyric_read_grants' and column_name='write_enabled'")).rowCount, 0);
     assert.equal((await target.query("select body from lyrics where resource_id=$1", [lyric])).rows[0].body, "body");

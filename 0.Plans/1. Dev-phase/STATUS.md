@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.1.2"
-current_phase: "../2.Patch-phase/1.1.2/5phase.md"
-state: "complete"
+current_version: "1.1.3"
+current_phase: "../2.Patch-phase/1.1.3/2phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-13"
-next_action: "1.1.3 P1 계약 source 68f694e 원격 확인 완료. P1 PR을 main에 병합한 뒤 P2에서 1130 schema·guest session/지속 예산·owner toggle·public write ACK 기반을 구현한다"
+next_action: "1.1.3 P1 PR #106 main 병합 완료. P2에서 1130 schema·guest session/지속 예산·owner toggle·public write ACK 기반과 migration/권한 회귀를 구현·검증한다"
 ```
 
 ## 승인과 기준
@@ -133,11 +133,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.2 P5 | complete | 후보 `8ec3cf9`, Actions `34723513936`·`34723521842`, 네 dev image·27 migration 봉인·동일 SHA 공개 3계정/복구/재시작 인수 완료 |
 | 1.1.2 Release | complete | main/tag `eb949b5`, main CI `34724875009` 재실행·tag CI `34726392136`, exact digest 운영 배포·공개 공동 편집/복구/재시작 smoke·GitHub Release 완료 |
 | 1.1.3 P1 | complete | 계약 `68f694e`, 사용자 승인·public read 안 body write·guest session/epoch·지속 제한·owner 중지·복구/rollback 확정; 문서 검증 PASS, runtime 미착수 |
+| 1.1.3 P2 | in_progress | 1130 additive schema·guest session/durable budget·owner access API·public write ACK 및 실패/권한/migration 회귀 구현 중 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.3/P2 | LC-NF-1.1.3-P2-01~06 | 실패 계약·1130 schema·guest session/지속 예산·owner access API·public write ACK·migration/권한 회귀 | 1.1.3 P1 `68f694e`, main `4390c6e` | 2026-09-13 | in_progress |
 | Codex | 1.1.3/P1 | LC-NF-1.1.3-P1-01~06 | 승인 증거·W⊆R·guest session/epoch·지속 제한·owner 중지·복구·호환/rollback 계약 | v1.1.2 `eb949b5`, 계약 `68f694e` | 2026-09-13 | complete |
 | Codex | 1.1.2/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.2 P5 `8ec3cf9` | 2026-09-13 | complete |
 | Codex | 1.1.2/P5 | LC-NF-1.1.2-P5-01~06 | 요구 추적·현재 문서·봉인 artifact·최종 CI·동일 SHA 개발 인수·정식 release gate | 1.1.2 P4 `b797224` | 2026-09-13 | complete |

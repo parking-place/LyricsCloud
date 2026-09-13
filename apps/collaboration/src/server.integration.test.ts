@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { once } from "node:events";
-import { createPublicShareToken, publicShareTokenDigest } from "@lyricscloud/auth";
+import { createGuestSessionToken, createPublicShareToken, guestSessionTokenDigest, publicShareTokenDigest } from "@lyricscloud/auth";
 import { parseCreateLyricInput, parseCreateSongInput } from "@lyricscloud/domain";
 import { PostgresLyricSharingStore, PostgresLyricStore, PostgresPublicLyricSharingStore, PostgresSongStore } from "@lyricscloud/database";
 import { Pool } from "pg";
@@ -25,7 +25,7 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
   beforeAll(async () => {
     if (!pool || !/lyricscloud_test(?:\?|$)/.test(databaseUrl)) throw new Error("collaboration integration requires lyricscloud_test");
     processHandle = spawn("apps/collaboration/node_modules/.bin/tsx", ["apps/collaboration/src/server.ts"], {
-      cwd: process.cwd(), env: { ...process.env, DATABASE_URL: databaseUrl, APP_VERSION: "1.1.2", BUILD_ID: "synthetic", COLLABORATION_PORT: String(port), APP_ORIGIN: "http://localhost:8080" }
+      cwd: process.cwd(), env: { ...process.env, DATABASE_URL: databaseUrl, APP_VERSION: "1.1.3", BUILD_ID: "synthetic", COLLABORATION_PORT: String(port), APP_ORIGIN: "http://localhost:8080" }
     });
     processHandle.stdout.on("data", (chunk) => { output += chunk.toString(); });
     processHandle.stderr.on("data", (chunk) => { output += chunk.toString(); });
@@ -93,6 +93,93 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
     expect(output).not.toContain(Buffer.from(update).toString("base64"));
     expect(output).not.toContain(ownerId);
     expect(output).not.toContain(lyric.id);
+  }, 15_000);
+
+  it("attributes public guest writes, deduplicates retry and downgrades on the owner kill switch", async () => {
+    const ownerId = (await pool!.query<{ id: string }>("insert into app_users default values returning id")).rows[0]!.id;
+    users.push(ownerId); await pool!.query("insert into user_profiles(owner_id,display_name) values($1,'guest owner')", [ownerId]);
+    const song = (await songs!.createSong(ownerId, parseCreateSongInput({ title: "guest song", requestId: randomUUID() }))).song;
+    const secretBody = `guest-secret-${randomUUID()}`;
+    const lyric = (await lyrics!.createLyric(ownerId, parseCreateLyricInput({ title: "guest lyric", body: secretBody,
+      requestId: randomUUID() }, song.id)))!.lyric;
+    const ownerToken = await session(ownerId);
+    const ownerHeaders = { cookie: `lc_session=${ownerToken}`, origin: "http://localhost:8080" };
+    const bootstrap = await fetch(`http://127.0.0.1:${port}/documents/${lyric.id}`, { method: "POST", headers: ownerHeaders });
+    const { documentKey } = await bootstrap.json() as { documentKey: string };
+    const linkToken = createPublicShareToken();
+    const issued = await publicSharing!.issue(ownerId, lyric.id, { requestId: randomUUID(),
+      tokenDigest: publicShareTokenDigest(linkToken), expiresAt: new Date(Date.now() + 86_400_000),
+      fields: { ownerDisplayName: false, status: false, updatedAt: false } });
+    const enabledLink = (await publicSharing!.setAccess(ownerId, lyric.id, issued!.link.id,
+      { requestId: randomUUID(), access: "write", confirmation: "public-guest-write-v1" }))!.link;
+    const guestToken = createGuestSessionToken();
+    const guest = await publicSharing!.issueGuestSession(publicShareTokenDigest(linkToken), guestSessionTokenDigest(guestToken));
+    const writer = publicSocket(linkToken, issued!.link.id, guestToken);
+    const snapshot = await nextJson(writer, "snapshot");
+    expect(snapshot).toMatchObject({ access: "public-write", permissionEpoch: enabledLink.permissionEpoch,
+      writeEpoch: enabledLink.writeEpoch, guestSessionId: guest!.id, displayName: guest!.displayName });
+    const document = new Y.Doc(); Y.applyUpdate(document, Buffer.from(snapshot.payload as string, "base64"));
+    const vector = Y.encodeStateVector(document);
+    document.getText("body").insert(document.getText("body").length, "\n비로그인 작성");
+    const payload = Y.encodeStateAsUpdate(document, vector); const updateId = randomUUID();
+    const frame = { type: "update", updateId, payload: Buffer.from(payload).toString("base64"),
+      permissionEpoch: enabledLink.permissionEpoch, writeEpoch: enabledLink.writeEpoch };
+    writer.send(JSON.stringify(frame));
+    expect(await nextJson(writer, "ack")).toMatchObject({ updateId, duplicate: false });
+    expect((await lyrics!.getLyric(ownerId, lyric.id))!.body).toContain("비로그인 작성");
+    writer.send(JSON.stringify(frame));
+    expect(await nextJson(writer, "ack")).toMatchObject({ updateId, duplicate: true });
+    expect((await pool!.query<{ count: string }>(`select update_count::text count from lyric_public_write_windows
+      where scope='guest' and guest_session_id=$1`, [guest!.id])).rows[0]!.count).toBe("1");
+    expect((await pool!.query(`select public_guest_session_id,actor_id from sync_updates
+      where document_key=$1 and update_id=$2`, [documentKey, updateId])).rows[0])
+      .toEqual({ public_guest_session_id: guest!.id, actor_id: null });
+
+    const beforeDeletion = Y.encodeStateVector(document);
+    document.getText("body").delete(0, document.getText("body").length);
+    const deletionPayload = Y.encodeStateAsUpdate(document, beforeDeletion); const deletionUpdateId = randomUUID();
+    writer.send(JSON.stringify({ ...frame, updateId: deletionUpdateId,
+      payload: Buffer.from(deletionPayload).toString("base64") }));
+    expect(await nextJson(writer, "ack")).toMatchObject({ updateId: deletionUpdateId, duplicate: false });
+    expect((await lyrics!.getLyric(ownerId, lyric.id))!.body).toBe("");
+    const history = await pool!.query<{ snapshot: Buffer; payload: Buffer; public_guest_session_id: string }>(`select
+      d.snapshot,u.payload,u.public_guest_session_id from sync_documents d join sync_updates u
+      on u.document_key=d.document_key where d.document_key=$1 order by u.sequence`, [documentKey]);
+    expect(history.rows).toHaveLength(2);
+    expect(history.rows.every((row) => row.public_guest_session_id === guest!.id)).toBe(true);
+    const recoverable = new Y.Doc(); Y.applyUpdate(recoverable, history.rows[0]!.snapshot);
+    Y.applyUpdate(recoverable, history.rows[0]!.payload);
+    expect(recoverable.getText("body").toString()).toContain("비로그인 작성");
+    recoverable.destroy();
+
+    const permission = nextJson(writer, "permission"); const rejected = nextJson(writer, "rejected");
+    const disabled = (await publicSharing!.setAccess(ownerId, lyric.id, issued!.link.id,
+      { requestId: randomUUID(), access: "read" }))!.link;
+    writer.send(JSON.stringify({ ...frame, updateId: randomUUID() }));
+    expect(await permission).toMatchObject({ access: "public-read", permissionEpoch: disabled.permissionEpoch });
+    expect(await rejected).toMatchObject({ code: "SYNC_WRITE_REVOKED", access: "public-read" });
+    const closed = once(writer, "close"); writer.close(); await closed;
+
+    const reconnect = publicSocket(linkToken, issued!.link.id, guestToken);
+    expect(await nextJson(reconnect, "snapshot")).toMatchObject({ access: "public-read" });
+    const reconnectClosed = once(reconnect, "close"); reconnect.close(); await reconnectClosed;
+    const reenabled = (await publicSharing!.setAccess(ownerId, lyric.id, issued!.link.id,
+      { requestId: randomUUID(), access: "write", confirmation: "public-guest-write-v1" }))!.link;
+    const staleSession = publicSocket(linkToken, issued!.link.id, guestToken);
+    expect(await nextJson(staleSession, "snapshot")).toMatchObject({ access: "public-read",
+      permissionEpoch: reenabled.permissionEpoch });
+    const staleClosed = once(staleSession, "close"); staleSession.close(); await staleClosed;
+    const replacementToken = createGuestSessionToken();
+    const replacementGuest = await publicSharing!.issueGuestSession(publicShareTokenDigest(linkToken),
+      guestSessionTokenDigest(replacementToken));
+    const replacementWriter = publicSocket(linkToken, issued!.link.id, replacementToken);
+    expect(await nextJson(replacementWriter, "snapshot")).toMatchObject({ access: "public-write",
+      writeEpoch: reenabled.writeEpoch, guestSessionId: replacementGuest!.id });
+    const replacementClosed = once(replacementWriter, "close"); replacementWriter.close(); await replacementClosed;
+    const wrongResource = publicSocket(linkToken, randomUUID(), guestToken);
+    expect((await once(wrongResource, "close"))[0]).toBe(4404);
+    document.destroy();
+    expect(output).not.toContain(linkToken); expect(output).not.toContain(guestToken); expect(output).not.toContain(secretBody);
   }, 15_000);
 
   it("keeps read on write downgrade, authenticates writer awareness and closes only on read revoke", async () => {
@@ -281,6 +368,13 @@ async function session(userId: string): Promise<string> {
   await pool!.query(`insert into auth_sessions(token_hash,user_id,expires_at,absolute_expires_at)
     values($1,$2,now()+interval '1 hour',now()+interval '2 hours')`, [createHash("sha256").update(token).digest("base64url"), userId]);
   return token;
+}
+
+function publicSocket(linkToken: string, linkId: string, guestSession?: string): WebSocket {
+  const socket = new WebSocket(`ws://127.0.0.1:${port}/public`, { headers: { origin: "http://localhost:8080" } });
+  socket.once("open", () => socket.send(JSON.stringify({ type: "auth", token: linkToken, linkId,
+    ...(guestSession ? { guestSession } : {}) })));
+  return socket;
 }
 
 async function waitForReady() {

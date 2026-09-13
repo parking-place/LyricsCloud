@@ -1,6 +1,6 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "1120_selected_lyric_write.sql";
+export const CURRENT_SCHEMA_VERSION = "1130_public_lyric_guest_write.sql";
 
 export * from "./auth.js";
 export * from "./beta-access.js";

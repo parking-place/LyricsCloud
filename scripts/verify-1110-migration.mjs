@@ -10,6 +10,7 @@ const databaseName = `lyricscloud_1110_${randomUUID().replaceAll("-", "")}`;
 const url = new URL(source); url.pathname = `/${databaseName}`;
 const admin = new Pool({ connectionString: source.href, max: 1 });
 const rollback = await readFile("packages/database/rollback/1110_public_lyric_read_links.sql", "utf8");
+const publicWriterRollback = await readFile("packages/database/rollback/1130_public_lyric_guest_write.sql", "utf8");
 
 try {
   await admin.query(`create database "${databaseName}"`);
@@ -37,6 +38,7 @@ try {
     await asUser(target, owner, (client) => client.query(`update lyric_public_read_links
       set state='revoked',permission_epoch=permission_epoch+1,revoked_at=clock_timestamp() where id=$1`, [link]));
     assert.equal((await asPublic(target, (client) => client.query("select * from app_public_lyric_projection($1)", [digest]))).rowCount, 0);
+    await target.query(publicWriterRollback);
     await target.query(rollback);
     assert.equal((await target.query("select to_regclass('public.lyric_public_read_links') present")).rows[0].present, null);
     assert.equal((await target.query("select body from lyrics where resource_id=$1", [lyric])).rows[0].body, "public body");

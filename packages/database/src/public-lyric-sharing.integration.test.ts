@@ -37,9 +37,27 @@ describe.runIf(enabled)("public lyric read links", () => {
     expect([first!.replayed, replay!.replayed].sort()).toEqual([false, true]);
     expect((await pool!.query("select 1 from sync_documents where resource_id=$1", [lyric.id])).rowCount).toBe(1);
     await expect(sharing!.readProjection(firstDigest)).resolves.toMatchObject({ title: "public title", body: "public body",
-      ownerDisplayName: "공유자", permissionEpoch: 1 });
+      ownerDisplayName: "공유자", permissionEpoch: 1, access: "read", writeEpoch: 1 });
     expect(JSON.stringify(await sharing!.readProjection(firstDigest))).not.toContain("private memo");
     expect(await sharing!.list(stranger, lyric.id)).toBeNull();
+    expect(await sharing!.issueGuestSession(firstDigest, "4".repeat(64))).toBeNull();
+    expect(await sharing!.setAccess(stranger, lyric.id, first!.link.id,
+      { requestId: randomUUID(), access: "write", confirmation: "public-guest-write-v1" })).toBeNull();
+    const accessRequest = randomUUID();
+    const enabled = await sharing!.setAccess(owner, lyric.id, first!.link.id,
+      { requestId: accessRequest, access: "write", confirmation: "public-guest-write-v1" });
+    expect(enabled).toMatchObject({ replayed: false, link: { access: "write", writeEpoch: 2 } });
+    await expect(sharing!.setAccess(owner, lyric.id, first!.link.id,
+      { requestId: accessRequest, access: "read" })).rejects.toBeInstanceOf(PublicLinkConflictError);
+    await expect(sharing!.readProjection(firstDigest)).resolves.toMatchObject({ access: "write", writeEpoch: 2 });
+    const guest = await sharing!.issueGuestSession(firstDigest, "4".repeat(64));
+    expect(guest).toMatchObject({ linkId: first!.link.id, resourceId: lyric.id,
+      permissionEpoch: first!.link.permissionEpoch, writeEpoch: 2 });
+    expect(guest!.displayName).toMatch(/^게스트-[0-9A-F]{4}$/);
+    const disabled = await sharing!.setAccess(owner, lyric.id, first!.link.id,
+      { requestId: randomUUID(), access: "read" });
+    expect(disabled).toMatchObject({ link: { access: "read", writeEpoch: 3 } });
+    expect(await sharing!.issueGuestSession(firstDigest, "5".repeat(64))).toBeNull();
     expect(await sharing!.revoke(stranger, lyric.id, first!.link.id)).toBeNull();
     await expect(sharing!.issue(owner, lyric.id, { ...input, tokenDigest: "2".repeat(64),
       expiresAt: new Date(input.expiresAt.getTime() + 1000) })).rejects.toBeInstanceOf(PublicLinkConflictError);

@@ -22,6 +22,28 @@ export class PublicSharingInputError extends Error {
   constructor() { super("PUBLIC_SHARING_INPUT_INVALID"); this.name = "PublicSharingInputError"; }
 }
 
+export const PUBLIC_GUEST_WRITE_CONFIRMATION = "public-guest-write-v1" as const;
+
+export function parsePublicLinkAccessInput(value: unknown): {
+  requestId: string;
+  access: "read" | "write";
+  confirmation?: typeof PUBLIC_GUEST_WRITE_CONFIRMATION;
+} {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new PublicSharingInputError();
+  const input = value as Record<string, unknown>;
+  if (Object.keys(input).some((key) => !["requestId", "access", "confirmation"].includes(key))
+    || typeof input.requestId !== "string" || !isResourceId(input.requestId)
+    || (input.access !== "read" && input.access !== "write")
+    || (input.access === "write" && input.confirmation !== PUBLIC_GUEST_WRITE_CONFIRMATION)
+    || (input.access === "read" && input.confirmation !== undefined)) throw new PublicSharingInputError();
+  return { requestId: input.requestId, access: input.access,
+    ...(input.access === "write" ? { confirmation: PUBLIC_GUEST_WRITE_CONFIRMATION } : {}) };
+}
+
+export function parsePublicGuestSessionInput(text: string): { token: string } {
+  return parsePublicReadInput(text);
+}
+
 export function parsePublicLinkInput(value: unknown): {
   requestId: string;
   expiresInDays: 1 | 7 | 30;

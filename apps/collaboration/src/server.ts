@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage } from "node:http";
-import { parsePublicShareToken, publicShareTokenDigest } from "@lyricscloud/auth";
+import { guestSessionTokenDigest, parseGuestSessionToken, parsePublicShareToken, publicShareTokenDigest } from "@lyricscloud/auth";
 import { readRuntimeConfig } from "@lyricscloud/config";
 import { checkDatabase, DatabaseHealthError, PostgresAuthStore } from "@lyricscloud/database";
 import { isResourceId, parseCheckpointReason, parseRestoreRevisionInput, parseSyncUpdateEnvelope, SYNC_LIMITS } from "@lyricscloud/domain";
@@ -31,7 +31,7 @@ const projectionRetry = setInterval(async () => {
     // commits before this socket is visible to the recovery broadcast. Keep
     // reconciling connections that have observed a pending projection so that
     // the ready transition cannot be lost at that boundary.
-    if (!context || context.accessMode === "public-read"
+    if (!context || context.accessMode === "public-read" || context.accessMode === "public-write"
       || (!result.recovered && !context.projectionPending) || !await authorized(peer)) continue;
     const loaded = await documents.loadDocument(context.ownerId, context.documentKey).catch(() => null);
     if (loaded && peer.readyState === WebSocket.OPEN) {
@@ -319,7 +319,7 @@ interface ConnectionContext {
   documentKey: string;
   actorId?: string;
   ownerId: string;
-  accessMode: "owner" | "read" | "write" | "public-read";
+  accessMode: "owner" | "read" | "write" | "public-read" | "public-write";
   permissionEpoch: number;
   grantId?: string;
   writeEpoch?: number;
@@ -330,6 +330,8 @@ interface ConnectionContext {
   projectionPending: boolean;
   publicLinkId?: string;
   publicTokenDigest?: string;
+  publicGuestSessionId?: string;
+  publicGuestSessionDigest?: string;
   activity: "active" | "idle";
   selection?: { anchor: string; head: string };
 }
@@ -342,6 +344,26 @@ async function authorized(client: WebSocket, checkDocument = false): Promise<boo
         context.documentKey, context.permissionEpoch);
       if (!allowed) { closeUnavailable(client); return false; }
       return client.readyState === WebSocket.OPEN;
+    }
+    if (context?.accessMode === "public-write") {
+      const current = await documents.loadPublicGuestDocument(context.publicTokenDigest!, context.publicLinkId!,
+        context.publicGuestSessionDigest!);
+      if (current && current.documentKey === context.documentKey && current.guestSessionId === context.publicGuestSessionId
+        && current.permissionEpoch === context.permissionEpoch && current.writeEpoch === context.writeEpoch) {
+        return client.readyState === WebSocket.OPEN;
+      }
+      const readable = await documents.loadPublicDocument(context.publicTokenDigest!, context.publicLinkId!);
+      if (readable && readable.documentKey === context.documentKey && readable.permissionEpoch === context.permissionEpoch) {
+        context.accessMode = "public-read";
+        context.writeEpoch = undefined;
+        context.selection = undefined;
+        context.activity = "idle";
+        if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({ type: "permission",
+          access: "public-read", permissionEpoch: context.permissionEpoch }));
+        schedulePresenceBroadcast(context.documentKey);
+        return client.readyState === WebSocket.OPEN;
+      }
+      closeUnavailable(client); return false;
     }
     const session = context?.request ? await authenticate(context.request) : null;
     const loaded = context && session && session.userId === context.actorId && checkDocument
@@ -446,20 +468,27 @@ function validateAwarenessSelection(value: unknown, snapshot: Uint8Array, update
 
 async function broadcastPresence(documentKey: string): Promise<void> {
   const peers = [...(sockets.get(documentKey) ?? [])];
-  const visiblePeers: WebSocket[] = [];
+  const accountPeers: WebSocket[] = [];
+  const guestPeers: WebSocket[] = [];
   for (const peer of peers) {
     const context = contexts.get(peer);
-    if (context?.accessMode !== "public-read" && await authorized(peer, true) && peer.readyState === WebSocket.OPEN) visiblePeers.push(peer);
+    if (!context || context.accessMode === "public-read" || !await authorized(peer, true)
+      || peer.readyState !== WebSocket.OPEN) continue;
+    if (context.accessMode === "public-write") guestPeers.push(peer); else accountPeers.push(peer);
   }
-  const participants = visiblePeers.flatMap((peer) => {
+  const participants = [...accountPeers, ...guestPeers].flatMap((peer) => {
     const context = contexts.get(peer);
     return context ? [{ participantId: context.participantId,
       displayName: publicParticipantName(context.displayName), role: context.accessMode,
       activity: context.activity, color: participantColor(context.participantId),
       ...(context.selection ? { selection: context.selection } : {}) }] : [];
   });
-  const payload = JSON.stringify({ type: "presence", participants });
-  for (const peer of visiblePeers) if (peer.readyState === WebSocket.OPEN) peer.send(payload);
+  const accountPayload = JSON.stringify({ type: "presence", participants });
+  for (const peer of accountPeers) if (peer.readyState === WebSocket.OPEN) peer.send(accountPayload);
+  const guestIds = new Set(guestPeers.map((peer) => contexts.get(peer)?.participantId));
+  const guestPayload = JSON.stringify({ type: "presence",
+    participants: participants.filter((participant) => guestIds.has(participant.participantId)) });
+  for (const peer of guestPeers) if (peer.readyState === WebSocket.OPEN) peer.send(guestPayload);
 }
 
 function participantColor(participantId: string): "lime" | "cyan" | "violet" | "orange" {
@@ -485,26 +514,103 @@ function setupPublicClient(client: WebSocket): void {
     const text = raw.toString();
     if (binary || Buffer.byteLength(text, "utf8") > 4_096) return closeProtocol(client, "SYNC_AUTH_INVALID");
     try {
-      const input = JSON.parse(text) as { type?: unknown; token?: unknown; linkId?: unknown };
+      const input = JSON.parse(text) as { type?: unknown; token?: unknown; linkId?: unknown; guestSession?: unknown };
       if (input.type !== "auth" || typeof input.linkId !== "string" || !isResourceId(input.linkId)) throw new Error();
       const digest = publicShareTokenDigest(parsePublicShareToken(input.token));
-      const loaded = await documents.loadPublicDocument(digest, input.linkId);
-      if (!loaded) return closeUnavailable(client);
-      const peers = sockets.get(loaded.documentKey) ?? new Set<WebSocket>();
-      const publicCount = [...peers].filter((peer) => contexts.get(peer)?.accessMode === "public-read").length;
+      const sessionDigest = input.guestSession === undefined ? undefined
+        : guestSessionTokenDigest(parseGuestSessionToken(input.guestSession));
+      const guest = sessionDigest ? await documents.loadPublicGuestDocument(digest, input.linkId, sessionDigest) : null;
+      const readable = guest ?? await documents.loadPublicDocument(digest, input.linkId);
+      if (!readable) return closeUnavailable(client);
+      const peers = sockets.get(readable.documentKey) ?? new Set<WebSocket>();
+      const publicCount = [...peers].filter((peer) => {
+        const mode = contexts.get(peer)?.accessMode; return mode === "public-read" || mode === "public-write";
+      }).length;
       if (publicCount >= 20) return client.close(4429, "SYNC_TEMPORARILY_UNAVAILABLE");
-      contexts.set(client, { documentKey: loaded.documentKey, ownerId: loaded.ownerId,
-        accessMode: "public-read", permissionEpoch: loaded.permissionEpoch, displayName: "", participantId: randomUUID(),
+      if (guest && [...peers].filter((peer) => contexts.get(peer)?.publicGuestSessionId === guest.guestSessionId).length >= 4) {
+        return client.close(4429, "SYNC_TEMPORARILY_UNAVAILABLE");
+      }
+      contexts.set(client, { documentKey: readable.documentKey, ownerId: readable.ownerId,
+        accessMode: guest ? "public-write" : "public-read", permissionEpoch: readable.permissionEpoch,
+        writeEpoch: guest?.writeEpoch, displayName: guest?.guestDisplayName ?? "", participantId: randomUUID(),
         promptModeCapable: false, projectionPending: false, publicLinkId: input.linkId, publicTokenDigest: digest,
+        publicGuestSessionId: guest?.guestSessionId, publicGuestSessionDigest: guest ? sessionDigest : undefined,
         activity: "idle" });
-      peers.add(client); sockets.set(loaded.documentKey, peers);
+      peers.add(client); sockets.set(readable.documentKey, peers);
       if (!await authorized(client)) return;
-      client.send(JSON.stringify({ type: "snapshot", payload: Buffer.from(merge(loaded.snapshot, loaded.updates)).toString("base64"),
-        access: "public-read", permissionEpoch: loaded.permissionEpoch, projection: "current" }));
-      client.on("message", () => client.close(4403, "SYNC_WRITE_FORBIDDEN"));
-      client.on("close", () => { peers.delete(client); if (!peers.size) sockets.delete(loaded.documentKey); });
+      client.send(JSON.stringify({ type: "snapshot", payload: Buffer.from(merge(readable.snapshot, readable.updates)).toString("base64"),
+        access: guest ? "public-write" : "public-read", permissionEpoch: readable.permissionEpoch,
+        writeEpoch: guest?.writeEpoch, guestSessionId: guest?.guestSessionId,
+        displayName: guest?.guestDisplayName, projection: "current" }));
+      if (guest) void broadcastPresence(readable.documentKey);
+      client.on("message", (message, messageBinary) => void handlePublicMessage(client, peers, message, messageBinary));
+      client.on("close", () => {
+        peers.delete(client); if (!peers.size) sockets.delete(readable.documentKey);
+        else void broadcastPresence(readable.documentKey);
+      });
     } catch { closeUnavailable(client); }
   });
+}
+
+async function handlePublicMessage(client: WebSocket, peers: Set<WebSocket>, raw: import("ws").RawData,
+  binary: boolean): Promise<void> {
+  const context = contexts.get(client);
+  if (!context || binary) return closeProtocol(client, "SYNC_UPDATE_INVALID");
+  try {
+    if (!await authorized(client, true)) return;
+    const input = JSON.parse(raw.toString()) as { type?: unknown; updateId?: unknown; payload?: unknown;
+      permissionEpoch?: unknown; writeEpoch?: unknown; selection?: unknown; activity?: unknown;
+      actorId?: unknown; participantId?: unknown; displayName?: unknown; ownerId?: unknown };
+    if (context.accessMode === "public-read") {
+      if (context.publicGuestSessionId && input.type === "update" && typeof input.updateId === "string") {
+        return rejectUpdate(client, input.updateId, context, "SYNC_WRITE_REVOKED");
+      }
+      client.close(4403, "SYNC_WRITE_FORBIDDEN"); return;
+    }
+    const current = await documents.loadPublicGuestDocument(context.publicTokenDigest!, context.publicLinkId!,
+      context.publicGuestSessionDigest!);
+    if (!current || current.documentKey !== context.documentKey) return closeUnavailable(client);
+    if (input.actorId !== undefined || input.participantId !== undefined || input.displayName !== undefined
+      || input.ownerId !== undefined) return closeProtocol(client, "SYNC_AWARENESS_IDENTITY_FORBIDDEN");
+    if (input.type === "awareness") {
+      if (input.activity !== "active" && input.activity !== "idle") return closeProtocol(client, "SYNC_AWARENESS_INVALID");
+      const awareness = validateAwarenessSelection(input.selection, current.snapshot, current.updates);
+      if (awareness.status === "invalid") return closeProtocol(client, "SYNC_AWARENESS_INVALID");
+      context.selection = awareness.status === "current" ? awareness.selection : undefined;
+      context.activity = input.activity;
+      await broadcastPresence(context.documentKey);
+      return;
+    }
+    if (input.type !== "update" || typeof input.payload !== "string") throw new Error("SYNC_UPDATE_INVALID");
+    const envelope = parseSyncUpdateEnvelope({ updateId: input.updateId,
+      payload: new Uint8Array(Buffer.from(input.payload, "base64")) });
+    if (input.permissionEpoch !== context.permissionEpoch || input.writeEpoch !== context.writeEpoch) {
+      return rejectUpdate(client, envelope.updateId, context, "SYNC_WRITE_EPOCH_STALE");
+    }
+    const result = await documents.applyPublicGuestUpdate({ tokenDigest: context.publicTokenDigest!,
+      linkId: context.publicLinkId!, sessionDigest: context.publicGuestSessionDigest!,
+      guestSessionId: context.publicGuestSessionId!, permissionEpoch: context.permissionEpoch,
+      writeEpoch: context.writeEpoch! }, context.documentKey, envelope.updateId, envelope.payload);
+    if (!result) {
+      await authorized(client, true);
+      return rejectUpdate(client, envelope.updateId, context, "SYNC_WRITE_REVOKED");
+    }
+    if (result.rateLimited) return rejectUpdate(client, envelope.updateId, context, "SYNC_RATE_LIMITED");
+    context.projectionPending = result.projectionPending;
+    client.send(JSON.stringify({ type: "ack", updateId: envelope.updateId, duplicate: result.duplicate,
+      sequence: result.sequence, permissionEpoch: context.permissionEpoch, writeEpoch: context.writeEpoch,
+      projection: result.projectionPending ? "pending" : "current" }));
+    if (!result.duplicate) for (const peer of peers) {
+      if (peer !== client && await authorized(peer) && peer.readyState === WebSocket.OPEN) {
+        peer.send(JSON.stringify({ type: "update", updateId: envelope.updateId, payload: input.payload }));
+      }
+    }
+  } catch (error) {
+    const code = error instanceof Error && /^SYNC_/.test(error.message) ? error.message : "SYNC_UPDATE_INVALID";
+    telemetry.record({ signal: "log", event: "public_sync_update_rejected", errorCode: code,
+      resourceType: "lyric", outcome: "failure" });
+    closeProtocol(client, code);
+  }
 }
 
 function withinPublicHandshakeLimit(key: string, now = Date.now()): boolean {

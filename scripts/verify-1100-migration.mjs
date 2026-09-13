@@ -12,6 +12,7 @@ const admin = new Pool({ connectionString: source.href, max: 1 });
 const rollback = await readFile("packages/database/rollback/1100_selected_lyric_sharing.sql", "utf8");
 const publicLinkRollback = await readFile("packages/database/rollback/1110_public_lyric_read_links.sql", "utf8");
 const selectedWriterRollback = await readFile("packages/database/rollback/1120_selected_lyric_write.sql", "utf8");
+const publicWriterRollback = await readFile("packages/database/rollback/1130_public_lyric_guest_write.sql", "utf8");
 
 try {
   await admin.query(`create database "${databaseName}"`);
@@ -37,6 +38,7 @@ try {
     await asUser(target, owner, (client) => client.query("update lyric_read_grants set state='revoked',permission_epoch=permission_epoch+1,revoked_at=now() where id=$1", [grant]));
     assert.equal((await asUser(target, reader, (client) => client.query("select body from lyrics where resource_id=$1", [lyric]))).rowCount, 0);
 
+    await target.query(publicWriterRollback);
     await target.query(selectedWriterRollback);
     await target.query(publicLinkRollback);
     await target.query(rollback);

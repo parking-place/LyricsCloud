@@ -15,6 +15,9 @@ export interface PublicLyricLink {
   readonly resourceId: string;
   readonly state: "active" | "revoked";
   readonly permissionEpoch: number;
+  readonly access: "read" | "write";
+  readonly writeEpoch: number;
+  readonly writeConfirmedAt: string | null;
   readonly fields: PublicLinkFields;
   readonly expiresAt: string;
   readonly createdAt: string;
@@ -30,11 +33,24 @@ export interface PublicLyricProjection {
   readonly updatedAt?: string;
   readonly ownerDisplayName?: string;
   readonly permissionEpoch: number;
+  readonly access: "read" | "write";
+  readonly writeEpoch: number;
+  readonly expiresAt: string;
+}
+
+export interface PublicGuestSession {
+  readonly id: string;
+  readonly linkId: string;
+  readonly resourceId: string;
+  readonly permissionEpoch: number;
+  readonly writeEpoch: number;
+  readonly displayName: string;
   readonly expiresAt: string;
 }
 
 interface LinkRow extends QueryResultRow {
   id: string; resource_id: string; state: "active" | "revoked"; permission_epoch: string;
+  write_enabled: boolean; write_epoch: string; write_confirmed_at: Date | null;
   show_owner_display_name: boolean; show_status: boolean; show_updated_at: boolean;
   expires_at: Date; created_at: Date; revoked_at: Date | null; rotated_at: Date | null;
 }
@@ -58,6 +74,7 @@ export class PostgresPublicLyricSharingStore {
     return this.#withActor(ownerId, async (client) => {
       if (!await ownsActiveLyric(client, resourceId)) return null;
       const rows = await client.query<LinkRow>(`select id,resource_id,state,permission_epoch::text,
+        write_enabled,write_epoch::text,write_confirmed_at,
         show_owner_display_name,show_status,show_updated_at,expires_at,created_at,revoked_at,rotated_at
         from lyric_public_read_links where owner_id=$1 and resource_id=$2 order by created_at desc,id desc`,
       [ownerId, resourceId]);
@@ -91,6 +108,7 @@ export class PostgresPublicLyricSharingStore {
         "select coalesce(max(permission_epoch),0)::text epoch from lyric_public_read_links where resource_id=$1",
         [resourceId])).rows[0]!.epoch);
       await client.query(`update lyric_public_read_links set state='revoked',permission_epoch=permission_epoch+1,
+        write_enabled=false,write_epoch=write_epoch+1,
         revoked_at=clock_timestamp(),rotated_at=clock_timestamp()
         where resource_id=$1 and owner_id=$2 and state='active'`, [resourceId, ownerId]);
       const id = randomUUID();
@@ -111,9 +129,64 @@ export class PostgresPublicLyricSharingStore {
     return this.#withActor(ownerId, async (client) => {
       if (!await ownsActiveLyric(client, resourceId)) return null;
       const result = await client.query(`update lyric_public_read_links
-        set state='revoked',permission_epoch=permission_epoch+1,revoked_at=clock_timestamp()
+        set state='revoked',permission_epoch=permission_epoch+1,write_enabled=false,
+          write_epoch=write_epoch+1,revoked_at=clock_timestamp()
         where id=$1 and resource_id=$2 and owner_id=$3 and state='active'`, [linkId, resourceId, ownerId]);
       return result.rowCount === 1;
+    });
+  }
+
+  setAccess(ownerId: string, resourceId: string, linkId: string, input: {
+    requestId: string; access: "read" | "write"; confirmation?: "public-guest-write-v1";
+  }): Promise<{ link: PublicLyricLink; replayed: boolean } | null> {
+    validateUuid(resourceId); validateUuid(linkId); validateUuid(input.requestId);
+    if ((input.access !== "read" && input.access !== "write")
+      || (input.access === "write" && input.confirmation !== "public-guest-write-v1")
+      || (input.access === "read" && input.confirmation !== undefined)) throw new PublicLinkInputError();
+    const requestHash = createHash("sha256").update(JSON.stringify({ resourceId, linkId,
+      access: input.access, confirmation: input.confirmation ?? null })).digest("hex");
+    return this.#withActor(ownerId, async (client) => {
+      await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))",
+        [`public-link-access:${ownerId}:${input.requestId}`]);
+      const replay = (await client.query<{ link_id: string; request_sha256: string }>(
+        "select link_id,request_sha256 from lyric_public_access_requests where owner_id=$1 and request_id=$2",
+        [ownerId, input.requestId])).rows[0];
+      if (replay) {
+        if (replay.request_sha256 !== requestHash) throw new PublicLinkConflictError();
+        const link = await selectLink(client, replay.link_id);
+        return link ? { link, replayed: true } : null;
+      }
+      if (!await ownsActiveLyric(client, resourceId)) return null;
+      const current = (await client.query<{ write_enabled: boolean }>(`select write_enabled
+        from lyric_public_read_links where id=$1 and resource_id=$2 and owner_id=$3
+          and state='active' and expires_at>statement_timestamp() for update`, [linkId, resourceId, ownerId])).rows[0];
+      if (!current) return null;
+      const write = input.access === "write";
+      const updated = await client.query(`update lyric_public_read_links set
+        write_enabled=$4,
+        write_epoch=case when write_enabled<>$4 then write_epoch+1 else write_epoch end,
+        write_confirmed_at=case when $4 then clock_timestamp() else write_confirmed_at end
+        where id=$1 and resource_id=$2 and owner_id=$3`, [linkId, resourceId, ownerId, write]);
+      if (updated.rowCount !== 1) return null;
+      await client.query(`insert into lyric_public_access_requests
+        (owner_id,request_id,resource_id,link_id,requested_access,confirmation_version,request_sha256,resulting_write_epoch)
+        select $1,$2,$3,$4,$5,$6,$7,write_epoch from lyric_public_read_links where id=$4`,
+      [ownerId, input.requestId, resourceId, linkId, input.access, input.confirmation ?? null, requestHash]);
+      const link = await selectLink(client, linkId);
+      if (!link) throw new Error("PUBLIC_LINK_READBACK_FAILED");
+      return { link, replayed: false };
+    });
+  }
+
+  issueGuestSession(tokenDigest: string, sessionDigest: string): Promise<PublicGuestSession | null> {
+    validateDigest(tokenDigest); validateDigest(sessionDigest);
+    return this.#public(async (client) => {
+      const row = (await client.query<{ session_id: string; link_id: string; resource_id: string;
+        permission_epoch: string; write_epoch: string; display_name: string; expires_at: Date }>(
+        "select * from app_issue_public_guest_session($1,$2)", [tokenDigest, sessionDigest])).rows[0];
+      return row ? { id: row.session_id, linkId: row.link_id, resourceId: row.resource_id,
+        permissionEpoch: Number(row.permission_epoch), writeEpoch: Number(row.write_epoch),
+        displayName: row.display_name, expiresAt: row.expires_at.toISOString() } : null;
     });
   }
 
@@ -122,12 +195,14 @@ export class PostgresPublicLyricSharingStore {
     return this.#public(async (client) => {
       const row = (await client.query<{ link_id: string; document_key: string | null; title: string; body: string;
         status: LyricStatus | null; updated_at: Date | null; owner_display_name: string | null;
-        permission_epoch: string; expires_at: Date }>("select * from app_public_lyric_projection($1)", [tokenDigest])).rows[0];
+        permission_epoch: string; write_enabled: boolean; write_epoch: string; expires_at: Date }>(
+        "select * from app_public_lyric_projection($1)", [tokenDigest])).rows[0];
       if (!row) return null;
       return { linkId: row.link_id, title: row.title, body: row.body,
         ...(row.status ? { status: row.status } : {}), ...(row.updated_at ? { updatedAt: row.updated_at.toISOString() } : {}),
         ...(row.owner_display_name ? { ownerDisplayName: row.owner_display_name } : {}),
-        permissionEpoch: Number(row.permission_epoch), expiresAt: row.expires_at.toISOString() };
+        permissionEpoch: Number(row.permission_epoch), access: row.write_enabled ? "write" : "read",
+        writeEpoch: Number(row.write_epoch), expiresAt: row.expires_at.toISOString() };
     });
   }
 
@@ -178,6 +253,7 @@ async function ensurePublicLyricDocument(client: PoolClient, ownerId: string, re
 
 async function selectLink(client: PoolClient, id: string): Promise<PublicLyricLink | null> {
   const row = (await client.query<LinkRow>(`select id,resource_id,state,permission_epoch::text,
+    write_enabled,write_epoch::text,write_confirmed_at,
     show_owner_display_name,show_status,show_updated_at,expires_at,created_at,revoked_at,rotated_at
     from lyric_public_read_links where id=$1`, [id])).rows[0];
   return row ? mapLink(row) : null;
@@ -185,6 +261,8 @@ async function selectLink(client: PoolClient, id: string): Promise<PublicLyricLi
 
 function mapLink(row: LinkRow): PublicLyricLink {
   return { id: row.id, resourceId: row.resource_id, state: row.state, permissionEpoch: Number(row.permission_epoch),
+    access: row.write_enabled ? "write" : "read", writeEpoch: Number(row.write_epoch),
+    writeConfirmedAt: row.write_confirmed_at?.toISOString() ?? null,
     fields: { ownerDisplayName: row.show_owner_display_name, status: row.show_status, updatedAt: row.show_updated_at },
     expiresAt: row.expires_at.toISOString(), createdAt: row.created_at.toISOString(),
     revokedAt: row.revoked_at?.toISOString() ?? null, rotatedAt: row.rotated_at?.toISOString() ?? null };
