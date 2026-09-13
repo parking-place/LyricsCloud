@@ -7,7 +7,7 @@ state: "complete"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-14"
-next_action: "1.1.3 P5 후보 8abf21a의 전체 CI 두 경로·네 dev image·동일 SHA 개발 공개 guest 권한/복구/재시작 인수 완료. 승인된 main·annotated v1.1.3·정식 image·릴리스 서버 exact digest·공개 smoke·GitHub Release를 실행한다"
+next_action: "1.1.3 main/tag 35fa482, main CI 34773400193·tag CI 34774978060, exact digest 운영 배포·공개 guest 권한/복구/재시작 smoke·GitHub Release 완료. 1.1.4 P1 공유 안정화 사건 순서·증거 등급·담당 경계를 검토한다"
 ```
 
 ## 승인과 기준
@@ -137,11 +137,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.3 P3 | complete | 후보 `167ceb8`, Actions `34765577731`·`34765580164`, 네 dev image·동일 SHA 공개 두 guest 수렴/격리/offline 복구/비자동 replay/전체 회수 인수 완료 |
 | 1.1.3 P4 | complete | 후보 `3fd9f0d`, Actions `34769556924`·`34769560151`, 실제 DB 358 PASS·5-browser 5/5·네 dev image와 동일 SHA 공개 재시작 전후 권한/복구 인수 완료 |
 | 1.1.3 P5 | complete | 후보 `8abf21a`, Actions `34771639925`·`34771648925`, 네 dev image·28 migration 봉인·동일 SHA 공개 guest 권한/복구/재시작 인수 완료 |
+| 1.1.3 Release | complete | main/tag `35fa482`, main CI `34773400193`·tag CI `34774978060`, exact digest 운영 배포·공개 guest 권한/복구/재시작 smoke·GitHub Release 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.3/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.3 P5 `8abf21a` | 2026-09-14 | complete |
 | Codex | 1.1.3/P5 | LC-NF-1.1.3-P5-01~06 | 요구 추적·현재/사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.3 P4 `3fd9f0d`, 후보 `8abf21a` | 2026-09-14 | complete |
 | Codex | 1.1.3/P4 | LC-NF-1.1.3-P4-01~07 | read/write 불일치·token 자료 격리·지속 제한/owner 중지·offline/reconnect·restart·지원 browser 회귀 | 1.1.3 P3 `167ceb8`, 후보 `3fd9f0d` | 2026-09-14 | complete |
 | Codex | 1.1.3/P3 | LC-NF-1.1.3-P3-01~06 | owner 공개 read/write 비교·위험 확인, guest CodeMirror·분리 복구함·저장 상태·PC/mobile E2E | 1.1.3 P2 `e58dd9c`, 후보 `167ceb8` | 2026-09-13 | complete |
@@ -239,6 +241,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.3은 PR #110 merge 뒤 main과 annotated `v1.1.3`이 `35fa482e31b13a96ed0f4b53754ebe672d23634d`을 가리킨다. main Actions `34773400193`과 tag Actions `34774978060`의 전체 verify와 네 정식 image 서명·provenance·SBOM을 통과했으며 서비스별 `1.1.3`·`Release`·`latest`·`Release-latest`의 동일 digest를 확인했다. 운영 서버에 migrate 우선 exact digest 배포해 `1.1.3`·`release`·phase `null`, schema `1130_public_lyric_guest_write.sql`, 네 서비스 healthy를 확인했다. 공개 운영에서 selected/public 충돌과 ACL 보존, 두 guest live 수렴, guest scope·private API/메모/연결 자료 격리, presence, offline rejected-only 복구·비자동 replay, 전체 회수와 서비스 재시작 지속성이 PASS했고 합성 fixture를 제거했다. 기존 DB volume·secret·HMAC allowlist·beta code를 보존하고 GitHub Release를 발행했다. 실제 OS/물리 기기 미실행과 `OPS-100-001` backup 예외를 유지하며 1.1.4 P1 공유 안정화 계약 검토로 이동한다.
 
 1.1.2는 PR #103 merge 뒤 main과 annotated `v1.1.2`가 `eb949b59022cdd3185dae7349570439eca96b879`을 가리킨다. main Actions `34724875009`은 최초 실행의 performance 절대 예산은 통과했으나 짧은 microbenchmark revision round CV가 일시적으로 기준을 넘었고, 코드 변경 없는 재실행 전체 PASS로 분류했다. tag Actions `34726392136`의 전체 verify와 네 정식 image 서명·provenance·SBOM을 통과했으며 서비스별 `1.1.2`·`Release`·`latest`·`Release-latest`의 동일 digest를 확인했다. 운영 서버에 migrate 우선 exact digest 배포해 `1.1.2`·`release`·phase `null`, schema `1120_selected_lyric_write.sql`, 네 서비스 healthy를 확인했다. 공개 운영에서 owner/writer/reader live 수렴, writer 강등 뒤 읽기, reader/writer 회수, ACL·메모 격리, offline rejected 복구·재허용 비자동 적용과 서비스 재시작 지속성이 PASS했고 합성 fixture를 제거했다. 기존 DB volume·secret·HMAC allowlist·beta code를 보존하고 GitHub Release를 발행했다. 실제 OS/물리 기기 미실행과 `OPS-100-001` backup 예외는 유지한다. 1.1.3은 비로그인 guest를 포함하는 public-link write 정책을 사용자가 명시 승인하기 전에는 구현하지 않는다.
 

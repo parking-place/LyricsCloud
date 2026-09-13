@@ -19,7 +19,7 @@
 - P4 Actions `34769556924`·`34769560151`, 실제 PostgreSQL 358 PASS·4 skip, guest-write 5-browser 5/5 PASS
 - 동일 SHA 개발 환경에서 selected/public 충돌·두 guest 수렴·private 격리·offline rejected 복구·비자동 replay·회수와 서비스 재시작 전후 PASS
 
-P5 전체 CI·네 dev image·동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다. Known limitations: 실제 OS/물리 기기는 새로 실행하지 않았고 장시간 절전·복원 중 offline writer·계정 전환 격리는 1.1.4가 담당하며 `OPS-100-001` 외부 backup 예외를 유지한다.
+P5 Actions `34771639925`·`34771648925`, main CI `34773400193`, tag CI `34774978060`과 동일 SHA 개발/운영 공개 인수를 통과했다. main/annotated tag `35fa482`의 정식 네 image를 exact digest로 배포하고 GitHub Release를 공개했다. Known limitations: 실제 OS/물리 기기는 새로 실행하지 않았고 장시간 절전·복원 중 offline writer·계정 전환 격리는 1.1.4가 담당하며 `OPS-100-001` 외부 backup 예외를 유지한다.
 
 ## [1.1.2] - 2026-09-13
 
