@@ -882,6 +882,7 @@ export async function createBrowserPublicSharedLyricSync(options: {
     ? new SyncStorage(`lyricscloud-public-guest-${options.guestSession.recoveryId}-sync-v1`) : undefined;
   let document = createLyricDocument();
   let text = lyricBody(document);
+  let acceptedDocument = createLyricDocument();
   let socket: WebSocket | undefined;
   let retryTimer: ReturnType<typeof setTimeout> | undefined;
   let ackTimer: ReturnType<typeof setTimeout> | undefined;
@@ -984,12 +985,15 @@ export async function createBrowserPublicSharedLyricSync(options: {
   }
   bindDocument();
   function applyRemote(update: Uint8Array) {
+    Y.applyUpdate(acceptedDocument, update, remoteOrigin);
     if (composing) remoteQueue.push(update); else Y.applyUpdate(document, update, remoteOrigin);
   }
   async function resetToServerSnapshot(update: Uint8Array) {
     await writes;
     initialized = false; composing = false; reconcilingComposition = false; remoteQueue.splice(0);
     document.destroy(); document = createLyricDocument(); text = lyricBody(document); bindDocument();
+    acceptedDocument.destroy(); acceptedDocument = createLyricDocument();
+    Y.applyUpdate(acceptedDocument, update, remoteOrigin);
     Y.applyUpdate(document, update, remoteOrigin); initialized = true; participants = []; selections.clear();
     options.onPresenceChange([]); options.onBody(text.toString());
     if (storage) {
@@ -1040,13 +1044,18 @@ export async function createBrowserPublicSharedLyricSync(options: {
       await transitionAccess(next);
       if (rejectedWrite && initialized) await resetToServerSnapshot(decode(message.payload));
       else if (!initialized) {
-        Y.applyUpdate(document, decode(message.payload), remoteOrigin); initialized = true;
+        const snapshot = decode(message.payload);
+        Y.applyUpdate(acceptedDocument, snapshot, remoteOrigin);
+        Y.applyUpdate(document, snapshot, remoteOrigin); initialized = true;
         options.onBody(text.toString()); persist();
       } else applyRemote(decode(message.payload));
       connected = true; retryDelay = 500; sendAwareness(); await pump(); await report();
     } else if (message.type === "update" && typeof message.payload === "string") applyRemote(decode(message.payload));
     else if (message.type === "ack" && message.updateId === inFlight && storage) {
-      clearTimeout(ackTimer); await storage.updates.where("updateId").equals(message.updateId as string).delete();
+      clearTimeout(ackTimer);
+      const confirmed = await storage.updates.where("updateId").equals(message.updateId as string).first();
+      if (confirmed) Y.applyUpdate(acceptedDocument, confirmed.payload, remoteOrigin);
+      await storage.updates.where("updateId").equals(message.updateId as string).delete();
       inFlight = undefined; await pump(); sendAwareness();
     } else if (message.type === "permission") {
       const next = parsePublicSharedAccess(message);
@@ -1057,7 +1066,9 @@ export async function createBrowserPublicSharedLyricSync(options: {
     } else if (message.type === "rejected" && typeof message.updateId === "string") {
       clearTimeout(ackTimer); inFlight = undefined;
       if (message.code === "SYNC_RATE_LIMITED") {
-        rateLimited = true; await rejectGuest("rate-limited"); state("limited"); return;
+        const acceptedSnapshot = Y.encodeStateAsUpdate(acceptedDocument);
+        rateLimited = true; await rejectGuest("rate-limited");
+        await resetToServerSnapshot(acceptedSnapshot); state("limited"); return;
       }
       await rejectGuest(message.code === "SYNC_WRITE_EPOCH_STALE" ? "epoch-stale" : "write-revoked");
       const next = parsePublicSharedAccess(message);
@@ -1104,7 +1115,7 @@ export async function createBrowserPublicSharedLyricSync(options: {
     if (destroyed) return;
     destroyed = true; clearTimeout(retryTimer); clearTimeout(ackTimer); clearTimeout(awarenessIdleTimer); socket?.close();
     window.removeEventListener("online", online); window.removeEventListener("offline", offline);
-    options.onPresenceChange([]); await writes; storage?.close(); document.destroy();
+    options.onPresenceChange([]); await writes; storage?.close(); document.destroy(); acceptedDocument.destroy();
   }
   window.addEventListener("online", online); window.addEventListener("offline", offline);
   try {
