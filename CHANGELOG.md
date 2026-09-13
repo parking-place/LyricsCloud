@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.1.3] - 2026-09-14
+
+### Added
+
+- owner 위험 확인 뒤 기존 공개 읽기 링크에 켜는 비로그인 guest 가사 본문 공동 편집과 즉시 쓰기 중지
+- 탭별 guest session·표시 이름·인증 presence, guest/link 지속 budget과 거부 원문 복구함
+- `1130_public_lyric_guest_write.sql`의 digest-only guest session·write epoch·durable update receipt/audit
+
+### Security and recovery
+
+- public write를 active public-read의 부분집합으로 유지하고 selected reader와의 동시 활성화를 UI·API 양쪽에서 원자 거부
+- guest의 workspace·목록·제목·상태·메모·연결 자료·revision·ACL·삭제·소유권·계정 권한과 identity 위조를 기본 거부
+- 연결 snapshot 준비 전 편집을 차단하고 제한·중지·회수 시 서버 확인본으로 복귀, 자기 입력만 복구함에 보존하며 자동 replay하지 않음
+
+### Validation
+
+- P4 Actions `34769556924`·`34769560151`, 실제 PostgreSQL 358 PASS·4 skip, guest-write 5-browser 5/5 PASS
+- 동일 SHA 개발 환경에서 selected/public 충돌·두 guest 수렴·private 격리·offline rejected 복구·비자동 replay·회수와 서비스 재시작 전후 PASS
+
+P5 전체 CI·네 dev image·동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다. Known limitations: 실제 OS/물리 기기는 새로 실행하지 않았고 장시간 절전·복원 중 offline writer·계정 전환 격리는 1.1.4가 담당하며 `OPS-100-001` 외부 backup 예외를 유지한다.
+
 ## [1.1.2] - 2026-09-13
 
 ### Added

@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.3"
 current_phase: "../2.Patch-phase/1.1.3/5phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-14"
-next_action: "1.1.3 P4 후보 3fd9f0d의 전체 CI 두 경로·네 dev image·동일 SHA 개발 공개 인수와 실제 서비스 재시작 전후 회귀 완료. P5 요구 추적·문서·봉인 artifact·최종 동일 SHA 인수와 승인된 정식 release gate를 수행한다"
+next_action: "1.1.3 P5 후보 8abf21a의 전체 CI 두 경로·네 dev image·동일 SHA 개발 공개 guest 권한/복구/재시작 인수 완료. 승인된 main·annotated v1.1.3·정식 image·릴리스 서버 exact digest·공개 smoke·GitHub Release를 실행한다"
 ```
 
 ## 승인과 기준
@@ -136,13 +136,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.3 P2 | complete | 후보 `e58dd9c`, Actions `34761752729`·`34761840822`, 1130 schema·guest session/지속 예산·owner kill switch와 동일 SHA 공개 guest write/격리/log 비노출 인수 완료 |
 | 1.1.3 P3 | complete | 후보 `167ceb8`, Actions `34765577731`·`34765580164`, 네 dev image·동일 SHA 공개 두 guest 수렴/격리/offline 복구/비자동 replay/전체 회수 인수 완료 |
 | 1.1.3 P4 | complete | 후보 `3fd9f0d`, Actions `34769556924`·`34769560151`, 실제 DB 358 PASS·5-browser 5/5·네 dev image와 동일 SHA 공개 재시작 전후 권한/복구 인수 완료 |
-| 1.1.3 P5 | in_progress | 요구 추적·사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·동일 SHA 개발 인수·정식 release gate 착수 |
+| 1.1.3 P5 | complete | 후보 `8abf21a`, Actions `34771639925`·`34771648925`, 네 dev image·28 migration 봉인·동일 SHA 공개 guest 권한/복구/재시작 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.3/P5 | LC-NF-1.1.3-P5-01~06 | 요구 추적·현재/사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.3 P4 `3fd9f0d` | 2026-09-14 | in_progress |
+| Codex | 1.1.3/P5 | LC-NF-1.1.3-P5-01~06 | 요구 추적·현재/사용자/지원/보안/자가호스팅 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.3 P4 `3fd9f0d`, 후보 `8abf21a` | 2026-09-14 | complete |
 | Codex | 1.1.3/P4 | LC-NF-1.1.3-P4-01~07 | read/write 불일치·token 자료 격리·지속 제한/owner 중지·offline/reconnect·restart·지원 browser 회귀 | 1.1.3 P3 `167ceb8`, 후보 `3fd9f0d` | 2026-09-14 | complete |
 | Codex | 1.1.3/P3 | LC-NF-1.1.3-P3-01~06 | owner 공개 read/write 비교·위험 확인, guest CodeMirror·분리 복구함·저장 상태·PC/mobile E2E | 1.1.3 P2 `e58dd9c`, 후보 `167ceb8` | 2026-09-13 | complete |
 | Codex | 1.1.3/P2 | LC-NF-1.1.3-P2-01~06 | 1130 schema·guest session/지속 예산·owner access API·public write ACK·migration/권한 회귀 | 1.1.3 P1 `68f694e`, 후보 `e58dd9c` | 2026-09-13 | complete |
