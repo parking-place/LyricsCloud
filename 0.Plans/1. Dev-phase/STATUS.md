@@ -1,9 +1,9 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.1.3"
-current_phase: "../2.Patch-phase/1.1.3/1phase.md"
-state: "review"
+current_version: "1.1.2"
+current_phase: "../2.Patch-phase/1.1.2/5phase.md"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-11"
 updated_at: "2026-09-13"
