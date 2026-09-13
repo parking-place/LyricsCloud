@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.4"
-current_phase: "../2.Patch-phase/1.1.4/3phase.md"
+current_phase: "../2.Patch-phase/1.1.4/4phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.4 P3에서 actor별 저장·복구 안내, 계정 전환 초안 격리, 모바일 dialog/focus와 PC·mobile 사용자 흐름 실패 회귀를 먼저 작성한다"
+next_action: "1.1.4 P4에서 절전·네트워크·재시작, 복원 중 offline writer, 회수 뒤 계정 전환, 3계정·2기기와 5-browser 교차 회귀를 실행한다"
 ```
 
 ## 승인과 기준
@@ -140,12 +140,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.3 Release | complete | main/tag `35fa482`, main CI `34773400193`·tag CI `34774978060`, exact digest 운영 배포·공개 guest 권한/복구/재시작 smoke·GitHub Release 완료 |
 | 1.1.4 P1 | complete | 계약 source `6f35313`, restore/delete/reconnect 사건 순서·queue 상한·S0~S5 증거 등급·담당/rollback 계약 완료 |
 | 1.1.4 P2 | complete | 후보 `3de111f`, Actions `34778131953`, 1140 delete fence·bounded queue·전체 CI·네 dev image·동일 SHA 공개 삭제/복원 인수 완료 |
+| 1.1.4 P3 | complete | 후보 `375ea78`, Actions `34780761622`, actor별 저장/복구 안내·mobile focus·계정 전환 local 격리와 동일 SHA 공개 인수 완료 |
+| 1.1.4 P4 | in_progress | sleep/network/restart·restore/offline writer·계정 격리·3계정/2기기·5-browser 교차 회귀 착수 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.4/P3 | LC-NF-1.1.4-P3-01~06 | actor 저장/복구 copy·계정 전환 local 격리·모바일 dialog/focus·PC/mobile E2E | 1.1.4 P2 `3de111f` | 2026-09-14 | in_progress |
+| Codex | 1.1.4/P4 | LC-NF-1.1.4-P4-01~07 | 절전·네트워크·재시작·복원/offline writer·계정 격리·3계정/2기기·5-browser 회귀 | 1.1.4 P3 `375ea78` | 2026-09-14 | in_progress |
+| Codex | 1.1.4/P3 | LC-NF-1.1.4-P3-01~06 | actor 저장/복구 copy·계정 전환 local 격리·모바일 dialog/focus·PC/mobile E2E | 후보 `375ea78`, Actions `34780761622` | 2026-09-14 | complete |
 | Codex | 1.1.4/P2 | LC-NF-1.1.4-P2-01~06 | 1140 delete fence·selected/public epoch·browser outbox/IME compact·DB/단위/복구 회귀 | 1.1.4 P1 `6f35313`, 후보 `3de111f` | 2026-09-14 | complete |
 | Codex | 1.1.4/P1 | LC-NF-1.1.4-P1-01~06 | 사건 순서·queue 한도·증거 등급·입력표·호환/rollback·P2/P3/P4 담당 계약 | v1.1.3 `35fa482`, 계약 `6f35313` | 2026-09-14 | complete |
 | Codex | 1.1.3/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.3 P5 `8abf21a` | 2026-09-14 | complete |
@@ -340,3 +343,5 @@ P10 후보 `869e32b8a15c2e1e7524a75ab4d8b4428a925c79`는 원격 CI run `34394222
 1.0.5 P5 후보 `78b3f1bc4c240bbceaddcab33e56af1ae0048aae`는 GitHub Actions push run `34487251707`의 전체 verify와 네 dev image 게시·서명을 통과했다. 개발 서버 checkout·환경 `BUILD_ID`·공개 live/ready가 같은 SHA였고 `1.0.5`, channel `dev`, phase `p5`, schema `1000_prompt_modes.sql`, 네 서비스 healthy를 확인했다. 공개 suffix·주 이름 탐색·3,001자 exact copy와 collaboration 재시작 전후 같은 document key·DB 원문 보존이 PASS했고 합성 자료를 제거했다. 신규 P0/P1·원문 유실·인증 우회·교차 owner 노출·무음 저장 실패는 0건이며, 실제 물리 기기 미실행과 `OPS-100-001` 예외를 유지한 채 승인된 정식 릴리스로 이동한다.
 
 1.1.4 P2 후보 `3de111fdaf4f0b79d02b51d311b0c7293e02b67f`는 실제 PostgreSQL 364 unit/integration, 반복 migration/rollback, production build와 Actions `34778131953` 전체 verify·네 dev image 발행/서명을 통과했다. 개발 서버 checkout·공개 live/ready가 같은 SHA였고 `1.1.4`, channel `dev`, phase `p2`, schema `1140_sharing_stability.sql`, 네 서비스 healthy였다. 공개 selected/public 삭제 fence·epoch 증가·trash 복원 뒤 old capability 비부활과 owner 본문 복원을 확인하고 합성 자료를 제거했다. outbox/IME queue는 64건 또는 1 MiB에서 lossless compact하며 S1 가속 측정을 실제 장시간·물리 기기 결과로 취급하지 않는다.
+
+1.1.4 P3 후보 `375ea78f6925f5032dd90b848286c3f0b351168e`는 owner/selected writer/reader/public guest별 서버 ACK·기기/탭 보관·권한 종료 복구 안내와 mobile dialog focus/viewport, 다른 로그인 계정 전환 시 이전 owner-hash local store·본문·권한 비노출을 구현했다. 실제 PostgreSQL 364건, 관련 공유 Chromium 5건, sync/revision/logout 17건, production build와 Actions `34780761622` 전체 verify·네 dev image 발행/서명을 통과했다. 개발 서버 checkout·공개 live/ready가 같은 SHA였고 `1.1.4`, channel `dev`, phase `p3`, schema `1140_sharing_stability.sql`, 네 서비스 healthy였다. 공개 owner/writer/guest 안내·모바일 시트·계정 전환 격리가 PASS했고 합성 계정·자료를 제거했다. 자동화 IME·viewport를 실제 물리 기기/OS IME/장시간 증거로 승격하지 않는다.

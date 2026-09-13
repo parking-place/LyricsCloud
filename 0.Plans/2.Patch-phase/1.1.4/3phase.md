@@ -1,6 +1,6 @@
 # 1.1.4 Phase 3 — PC·모바일 사용자 흐름
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`, 후보 `375ea78f6925f5032dd90b848286c3f0b351168e`)
 - 단계 목적: 공유 안정성·복구 동선 정리의 PC·모바일 사용자 흐름을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -40,12 +40,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.4-P3-01` owner/writer/reader/guest별 저장 상태와 복구 가능한 내용을 명확히 안내한다.
-- [ ] `LC-NF-1.1.4-P3-02` 공유 종료 후 개인 편집 화면으로 돌아올 때 계정·자료·초안이 혼입되지 않게 한다.
-- [ ] `LC-NF-1.1.4-P3-03` 모바일 시트·가상 키보드·권한 dialog의 focus/겹침을 보완한다.
-- [ ] `LC-NF-1.1.4-P3-04` 공유 운영·보관 한계·철회·오류 대응 문서를 실제 상태로 맞춘다.
-- [ ] `LC-NF-1.1.4-P3-05` 제안 `tests/e2e/new-feature-1.1.4.spec.ts`에 실제 기능 경로를 등록하고 정상·빈 상태·실패·권한 없음·로딩을 PC와 모바일에서 검사한다. native이면 플랫폼 runner와 UI 테스트로 대체/병행한다.
-- [ ] `LC-NF-1.1.4-P3-06` 입력·선택·IME·undo·로컬 초안·서버 저장 상태의 연속성을 확인한다. 정상 UI만 보여주기 위해 오류/권한 검사를 제거하지 않는다.
+- [x] `LC-NF-1.1.4-P3-01` owner/writer/reader/guest별 저장 상태와 복구 가능한 내용을 명확히 안내한다. — 공통 접근 가능한 안내 영역에서 서버 ACK·기기/탭 보관·권한 종료 복구 경계를 actor별 copy로 분리
+- [x] `LC-NF-1.1.4-P3-02` 공유 종료 후 개인 편집 화면으로 돌아올 때 계정·자료·초안이 혼입되지 않게 한다. — 실제 이전 writer owner-hash IndexedDB 존재를 확인한 뒤 다른 계정 workspace 진입 전에 제거·API 404·원문 비노출을 PC와 공개 개발 환경에서 확인
+- [x] `LC-NF-1.1.4-P3-03` 모바일 시트·가상 키보드·권한 dialog의 focus/겹침을 보완한다. — 기존 bottom sheet scroll/focus boundary 위에 안내를 추가하고 390×844 viewport 안 배치·dialog 내부 focus를 로컬/공개 Chromium에서 확인
+- [x] `LC-NF-1.1.4-P3-04` 공유 운영·보관 한계·철회·오류 대응 문서를 실제 상태로 맞춘다. — `docs/runbooks/1.1.4-sharing-storage-recovery.md`
+- [x] `LC-NF-1.1.4-P3-05` 제안 `tests/e2e/new-feature-1.1.4.spec.ts`에 실제 기능 경로를 등록하고 정상·빈 상태·실패·권한 없음·로딩을 PC와 모바일에서 검사한다. native이면 플랫폼 runner와 UI 테스트로 대체/병행한다. — 신규 안내·mobile·account-switch 경로와 기존 1.1.2/1.1.3 정상·오류·권한·복구 회귀를 전체 CI에서 함께 실행
+- [x] `LC-NF-1.1.4-P3-06` 입력·선택·IME·undo·로컬 초안·서버 저장 상태의 연속성을 확인한다. 정상 UI만 보여주기 위해 오류/권한 검사를 제거하지 않는다. — 관련 공유 5건, sync/revision/logout 17건과 전체 CI PASS; 합성 IME는 실제 OS IME로 승격하지 않음
 
 ## 구체적 검증
 
@@ -62,14 +62,25 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 [공통 명령·검증](../QUALITY-GATES.md)을 먼저 읽는다. 기존 runner의 영향받은 검사를 우선 사용하고 필요할 때만 회귀를 보강한다. 지원 환경에서 관련 DB/E2E를 선택하며 동일 변경의 full suite는 로컬/CI 중 한 곳과 필수 게이트만 따른다. native은 승인된 SDK/플랫폼 명령을 기록한다. 없는 도구·실제 IME·물리 기기 검증을 모사 결과로 통과시켰다고 표시하지 않는다. 문서-only Phase는 링크·범위·결정·설계 검토로 별도 인수한다.
 
+- 구현 전 Chromium 재현: writer/owner의 `공유 저장 및 복구 안내` region 부재로 실패, 구현 뒤 desktop/mobile 3 PASS·플랫폼 중복 1 skip.
+- Node 24 `pnpm check`와 production `pnpm build`: PASS.
+- 실제 PostgreSQL 전체 `pnpm test`: 93 files·364 PASS, 외부 beta fixture 4건만 계약대로 skip.
+- 선택 writer/public guest/이번 UI 관련 Chromium PC/mobile: 5 PASS·조건부 중복 3 skip.
+- desktop sync resilience·revision·logout/account isolation: 17 PASS, 1.1분. offline outbox, 다른 계정, 복원/undo, 3 replica, 10만 자 문서를 포함한다.
+- GitHub Actions `34780761622`: 전체 verify PASS, web·collaboration·worker·migrate 네 dev image 발행·서명 PASS. 40자리 SHA tag와 `dev-1.1.4-p3` digest가 서비스별로 일치한다.
+- image digest: web `sha256:95315788e0b4812d7912de950dcf58422f3deaafc19a42d3d5f881057b1c9876`, collaboration `sha256:317e8c692c22884a70020a4b4e76cdf229e003755a49c9e09ae340a8f48e10b6`, worker `sha256:37c380f60f94ad6a7923d8d680327cd52ce48024e5c205bb557fc215318e6606`, migrate `sha256:03dee9c223db4359f3eac964270a96a752cc44ba9bd9fb78f73f72275c32974d`.
+- 개발 서버 후보 `375ea78f6925f5032dd90b848286c3f0b351168e`: checkout·build id 동일, version `1.1.4`, channel `dev`, phase `p3`, schema `1140_sharing_stability.sql`, 네 서비스 healthy.
+- 공개 개발 smoke: owner/writer/public guest 안내, 390×844 sharing dialog viewport/focus, writer local store, 다른 계정 전환 시 store·본문·권한 격리 PASS. 합성 계정·자료 제거 완료.
+- 실제 Android/iOS 가상 키보드·물리 기기·OS 한국어 IME·절전·장시간 wall-clock soak는 미실행이며 P4/P5에서도 별도 증거 없이는 PASS로 올리지 않는다.
+
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를 갖췄다.
+- [x] main·Release·운영 변경은 수행하지 않았다.
 
 ## 산출물
 

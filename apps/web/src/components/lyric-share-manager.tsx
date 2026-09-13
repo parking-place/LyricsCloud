@@ -4,6 +4,7 @@ import type { LyricRecord } from "@lyricscloud/domain";
 import { useEffect, useState } from "react";
 import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
+import { SharingStorageGuide } from "./sharing-storage-guide.js";
 
 interface SharingIdentity { readonly sharingId: string; readonly displayName: string }
 interface LyricReadGrant {
@@ -184,6 +185,7 @@ export function LyricShareManager({ lyric, participants }: { lyric: LyricRecord;
         <p id="sharing-description">선택한 계정과 공개 링크의 읽기·본문 쓰기를 관리합니다. 작업 메모, 연결 자료, 버전 기록, 삭제·권한 관리는 공유하지 않습니다.</p>
         {loading ? <p className="sharing-loading" role="status">공유 설정을 불러오는 중…</p> : <>
           <section className="sharing-mode" aria-label="현재 공유 상태"><span className={activeItems.length ? "selected" : "private"}>{activeItems.length ? "선택 공유" : "비공개"}</span><strong>{activeItems.length ? `${activeItems.length}명에게 읽기 허용 · ${activeItems.filter((item) => item.access === "write").length}명 공동 작성` : "나만 볼 수 있음"}</strong></section>
+          <SharingStorageGuide audience="owner" />
           <section className="sharing-preview" aria-labelledby="sharing-preview-title"><div><p className="eyebrow">Preview</p><h3 id="sharing-preview-title">상대에게 보이는 내용</h3></div><dl><div><dt>제목</dt><dd>{lyric.title}</dd></div><div><dt>본문</dt><dd>{lyric.body ? `${lyric.body.slice(0, 120)}${lyric.body.length > 120 ? "…" : ""}` : "빈 가사"}</dd></div><div><dt>상태</dt><dd>{lyric.status}</dd></div></dl><p>공유 안 함: 작업 메모 · 연결 자료 · 버전 기록 · 삭제/ACL 액션</p></section>
           <section className="sharing-identity" aria-labelledby="sharing-code-title"><div><h3 id="sharing-code-title">내 공유 코드</h3><p>상대가 나에게 가사를 공유할 때 이 코드만 전달하세요. 이메일로 계정을 찾지 않습니다.</p></div>{identity ? <div><code>{identity.sharingId}</code><button type="button" onClick={() => void copy.copyText(identity.sharingId, "내 공유 코드", "내 공유 코드를 복사했습니다")}>복사</button></div> : <p>공유 코드를 확인할 수 없습니다.</p>}</section>
           <form className="sharing-grant" onSubmit={(event) => { event.preventDefault(); void grant(); }}><label><span>공유할 계정 코드</span><input value={sharingId} onChange={(event) => setSharingId(event.target.value)} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autoComplete="off" spellCheck={false} /></label><label><span>읽기 권한 기간</span><select value={duration} onChange={(event) => setDuration(event.target.value)}><option value="none">회수할 때까지</option><option value="7">7일</option><option value="30">30일</option><option value="90">90일</option></select></label><button type="submit" className="primary-link" disabled={busy || !sharingId.trim()}>{busy ? "처리 중…" : "읽기 권한 부여"}</button></form>
