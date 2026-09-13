@@ -153,14 +153,18 @@ export function LyricShareManager({ lyric, participants }: { lyric: LyricRecord;
       const response = await fetch(`/api/lyrics/${lyric.id}/public-link/${link.id}`, { method: "PATCH",
         headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestId: crypto.randomUUID(), access,
           ...(access === "write" ? { confirmation: "public-guest-write-v1" } : {}) }) });
-      const result = await response.json().catch(() => ({})) as { link?: PublicLyricLink };
-      if (!response.ok || !result.link) throw new Error();
+      const result = await response.json().catch(() => ({})) as { link?: PublicLyricLink; error?: { code?: string } };
+      if (!response.ok || !result.link) throw new Error(result.error?.code ?? "PUBLIC_ACCESS_FAILED");
       setPublicItems((current) => current.map((item) => item.id === link.id ? result.link! : item));
       setConfirmingPublicWrite(null);
       setNotice(access === "write"
         ? "비로그인 게스트 쓰기를 허용했습니다. 링크를 가진 누구나 새 게스트 세션으로 본문을 수정할 수 있습니다."
         : "게스트 쓰기를 중지했습니다. 공개 읽기는 유지되며 이전 게스트 세션은 다시 쓸 수 없습니다.");
-    } catch { setNotice("공개 읽기·쓰기 상태를 변경하지 못했습니다. 기존 상태는 그대로입니다."); }
+    } catch (error) {
+      setNotice(error instanceof Error && error.message === "CONFLICT"
+        ? "선택 공유 독자가 있는 동안 공개 쓰기를 함께 켤 수 없습니다. 선택 권한을 먼저 회수해 주세요. 기존 상태는 그대로입니다."
+        : "공개 읽기·쓰기 상태를 변경하지 못했습니다. 기존 상태는 그대로입니다.");
+    }
     finally { setBusy(false); }
   }
 
@@ -195,7 +199,7 @@ export function LyricShareManager({ lyric, participants }: { lyric: LyricRecord;
               {confirmingPublicWrite === activePublic.id ? <div className="sharing-public-write-risk" role="group" aria-labelledby="public-write-risk-title" aria-describedby="public-write-risk-description">
                 <strong id="public-write-risk-title">비로그인 게스트 쓰기 위험을 확인해 주세요</strong>
                 <p id="public-write-risk-description">링크를 가진 누구나 계정 없이 새 게스트 세션을 만들고 가사 본문을 수정할 수 있습니다. 표시 이름은 임의의 게스트 번호이며 실제 사람을 식별하지 못합니다. 변경은 서버에 저장되고 소유자 복구 기록에 남습니다.</p>
-                <ul><li>쓰기 중지는 즉시 적용되며 공개 읽기는 유지됩니다.</li><li>이미 받은 링크나 복사한 내용까지 회수할 수는 없습니다.</li><li>작업 메모·연결 자료·버전 복원·삭제·권한 관리는 게스트에게 열리지 않습니다.</li></ul>
+                <ul><li>선택 공유 독자가 있으면 공개 쓰기를 함께 켤 수 없습니다.</li><li>쓰기 중지는 즉시 적용되며 공개 읽기는 유지됩니다.</li><li>이미 받은 링크나 복사한 내용까지 회수할 수는 없습니다.</li><li>작업 메모·연결 자료·버전 복원·삭제·권한 관리는 게스트에게 열리지 않습니다.</li></ul>
                 <div><button type="button" disabled={busy} onClick={() => setConfirmingPublicWrite(null)}>취소</button><button type="button" className="primary-link" disabled={busy} onClick={() => void setPublicAccess(activePublic, "write")}>{busy ? "처리 중…" : "위험을 이해하고 쓰기 허용"}</button></div>
               </div> : null}
               <button type="button" className="danger-text" disabled={busy} onClick={() => void revokePublicLink(activePublic.id)}>공개 링크 회수</button></div> : null}

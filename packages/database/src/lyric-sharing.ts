@@ -108,6 +108,12 @@ export class PostgresLyricSharingStore {
         return grant ? { grant, replayed: true } : null;
       }
 
+      await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [`sharing-mode:${resourceId}`]);
+      if ((await client.query(`select 1 from lyric_public_read_links
+        where resource_id=$1 and owner_id=$2 and state='active' and write_enabled
+          and expires_at>statement_timestamp() limit 1`, [resourceId, ownerId])).rowCount) {
+        throw new SharingConflictError();
+      }
       await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [`lyric-share:${resourceId}:${grantee}`]);
       let grant = await selectActiveGrant(client, resourceId, grantee);
       if (grant && grant.expiresAt !== expiresAt?.toISOString() && !(grant.expiresAt === null && expiresAt === null)) {
