@@ -15,11 +15,13 @@ test.describe("1.1.3 public-link guest writing", () => {
     const contextOptions = { baseURL: origin, viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 }, isMobile: mobile, hasTouch: mobile };
     const ownerContext = await browser.newContext(contextOptions);
     const selectedContext = await browser.newContext(contextOptions);
+    const connectingGuestContext = await browser.newContext(contextOptions);
     const guestAContext = await browser.newContext(contextOptions);
     const guestBContext = await browser.newContext(contextOptions);
     const owner = await account(ownerContext, "공개 쓰기 소유자");
     const selected = await account(selectedContext, "공개 쓰기 충돌 독자");
     const ownerPage = await ownerContext.newPage();
+    const connectingGuestPage = await connectingGuestContext.newPage();
     const guestAPage = await guestAContext.newPage();
     const guestBPage = await guestBContext.newPage();
     try {
@@ -61,6 +63,15 @@ test.describe("1.1.3 public-link guest writing", () => {
       await dialog.locator(".sharing-public-write-risk").getByRole("button", { name: "위험을 이해하고 쓰기 허용" }).click();
       await expect(dialog.locator(".sharing-notice")).toContainText("비로그인 게스트 쓰기를 허용", { timeout: 10_000 });
       await expect(accessButtons.nth(1)).toHaveAttribute("aria-pressed", "true");
+
+      await connectingGuestPage.routeWebSocket("**/collaboration/public", () => undefined);
+      await connectingGuestPage.goto(issued.url);
+      await expect(connectingGuestPage.locator(".shared-read-badge")).toContainText("게스트 공동 작성", { timeout: 15_000 });
+      const connectingEditor = connectingGuestPage.getByLabel("공유된 가사 본문");
+      await expect(connectingEditor).toHaveAttribute("contenteditable", "false");
+      await connectingEditor.click(); await connectingGuestPage.keyboard.insertText(" 연결 전 유실 입력");
+      await expect(connectingEditor).not.toContainText("연결 전 유실 입력");
+      await connectingGuestContext.close();
 
       await Promise.all([guestAPage.goto(issued.url), guestBPage.goto(issued.url)]);
       for (const page of [guestAPage, guestBPage]) {
@@ -137,7 +148,8 @@ test.describe("1.1.3 public-link guest writing", () => {
       }
     } finally {
       await Promise.all([guestAContext.setOffline(false).catch(() => undefined), guestBContext.setOffline(false).catch(() => undefined)]);
-      await Promise.all([ownerContext.close(), selectedContext.close(), guestAContext.close(), guestBContext.close()]);
+      await Promise.all([ownerContext.close(), selectedContext.close(), connectingGuestContext.close().catch(() => undefined),
+        guestAContext.close(), guestBContext.close()]);
       await removeAccounts([owner.userId, selected.userId]);
     }
   });
