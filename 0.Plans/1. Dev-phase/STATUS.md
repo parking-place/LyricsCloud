@@ -133,13 +133,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.2 P5 | complete | 후보 `8ec3cf9`, Actions `34723513936`·`34723521842`, 네 dev image·27 migration 봉인·동일 SHA 공개 3계정/복구/재시작 인수 완료 |
 | 1.1.2 Release | complete | main/tag `eb949b5`, main CI `34724875009` 재실행·tag CI `34726392136`, exact digest 운영 배포·공개 공동 편집/복구/재시작 smoke·GitHub Release 완료 |
 | 1.1.3 P1 | complete | 계약 `68f694e`, 사용자 승인·public read 안 body write·guest session/epoch·지속 제한·owner 중지·복구/rollback 확정; 문서 검증 PASS, runtime 미착수 |
-| 1.1.3 P2 | in_progress | 1130 additive schema·guest session/durable budget·owner access API·public write ACK 및 실패/권한/migration 회귀 구현 중 |
+| 1.1.3 P2 | complete | 후보 `e58dd9c`, Actions `34761752729`·`34761840822`, 1130 schema·guest session/지속 예산·owner kill switch와 동일 SHA 공개 guest write/격리/log 비노출 인수 완료 |
+| 1.1.3 P3 | in_progress | owner 공개 read/write 비교·위험 확인, guest CodeMirror·분리 복구함·저장 상태와 PC/mobile 흐름 착수 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.3/P2 | LC-NF-1.1.3-P2-01~06 | 실패 계약·1130 schema·guest session/지속 예산·owner access API·public write ACK·migration/권한 회귀 | 1.1.3 P1 `68f694e`, main `4390c6e` | 2026-09-13 | in_progress |
+| Codex | 1.1.3/P3 | LC-NF-1.1.3-P3-01~06 | owner 공개 read/write 비교·위험 확인, guest CodeMirror·분리 복구함·저장 상태·PC/mobile E2E | 1.1.3 P2 `e58dd9c` | 2026-09-13 | in_progress |
+| Codex | 1.1.3/P2 | LC-NF-1.1.3-P2-01~06 | 1130 schema·guest session/지속 예산·owner access API·public write ACK·migration/권한 회귀 | 1.1.3 P1 `68f694e`, 후보 `e58dd9c` | 2026-09-13 | complete |
 | Codex | 1.1.3/P1 | LC-NF-1.1.3-P1-01~06 | 승인 증거·W⊆R·guest session/epoch·지속 제한·owner 중지·복구·호환/rollback 계약 | v1.1.2 `eb949b5`, 계약 `68f694e` | 2026-09-13 | complete |
 | Codex | 1.1.2/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.2 P5 `8ec3cf9` | 2026-09-13 | complete |
 | Codex | 1.1.2/P5 | LC-NF-1.1.2-P5-01~06 | 요구 추적·현재 문서·봉인 artifact·최종 CI·동일 SHA 개발 인수·정식 release gate | 1.1.2 P4 `b797224` | 2026-09-13 | complete |
