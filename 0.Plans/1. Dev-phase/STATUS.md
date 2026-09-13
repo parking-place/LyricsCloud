@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.4"
-current_phase: "../2.Patch-phase/1.1.4/4phase.md"
+current_phase: "../2.Patch-phase/1.1.4/5phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.4 P4에서 절전·네트워크·재시작, 복원 중 offline writer, 회수 뒤 계정 전환, 3계정·2기기와 5-browser 교차 회귀를 실행한다"
+next_action: "1.1.4 P5에서 요구 추적·사용자/운영 문서·환경/라이선스/migration/release manifest를 봉인하고 최종 동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다"
 ```
 
 ## 승인과 기준
@@ -141,13 +141,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.4 P1 | complete | 계약 source `6f35313`, restore/delete/reconnect 사건 순서·queue 상한·S0~S5 증거 등급·담당/rollback 계약 완료 |
 | 1.1.4 P2 | complete | 후보 `3de111f`, Actions `34778131953`, 1140 delete fence·bounded queue·전체 CI·네 dev image·동일 SHA 공개 삭제/복원 인수 완료 |
 | 1.1.4 P3 | complete | 후보 `375ea78`, Actions `34780761622`, actor별 저장/복구 안내·mobile focus·계정 전환 local 격리와 동일 SHA 공개 인수 완료 |
-| 1.1.4 P4 | in_progress | sleep/network/restart·restore/offline writer·계정 격리·3계정/2기기·5-browser 교차 회귀 착수 |
+| 1.1.4 P4 | complete | 후보 `233afd2`, Actions `34783619444`, 실제 DB 364 PASS·E2E 353 PASS·5-browser·동일 SHA 공개 복원/offline 병합·queue·회수/계정 격리·재시작 인수 완료 |
+| 1.1.4 P5 | in_progress | 요구 추적·사용자/운영 문서·환경/라이선스/migration/release manifest 봉인과 최종 인수 착수 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.4/P4 | LC-NF-1.1.4-P4-01~07 | 절전·네트워크·재시작·복원/offline writer·계정 격리·3계정/2기기·5-browser 회귀 | 1.1.4 P3 `375ea78` | 2026-09-14 | in_progress |
+| Codex | 1.1.4/P5 | LC-NF-1.1.4-P5-01~06 | 요구 추적·사용자/운영 문서·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.4 P4 `233afd2` | 2026-09-14 | in_progress |
+| Codex | 1.1.4/P4 | LC-NF-1.1.4-P4-01~07 | 복원/offline writer·bounded queue·권한 회수/계정 격리·3계정/2 viewport·5-browser·실제 서비스 재시작 | 후보 `233afd2`, Actions `34783619444` | 2026-09-14 | complete |
 | Codex | 1.1.4/P3 | LC-NF-1.1.4-P3-01~06 | actor 저장/복구 copy·계정 전환 local 격리·모바일 dialog/focus·PC/mobile E2E | 후보 `375ea78`, Actions `34780761622` | 2026-09-14 | complete |
 | Codex | 1.1.4/P2 | LC-NF-1.1.4-P2-01~06 | 1140 delete fence·selected/public epoch·browser outbox/IME compact·DB/단위/복구 회귀 | 1.1.4 P1 `6f35313`, 후보 `3de111f` | 2026-09-14 | complete |
 | Codex | 1.1.4/P1 | LC-NF-1.1.4-P1-01~06 | 사건 순서·queue 한도·증거 등급·입력표·호환/rollback·P2/P3/P4 담당 계약 | v1.1.3 `35fa482`, 계약 `6f35313` | 2026-09-14 | complete |

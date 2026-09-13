@@ -46,7 +46,7 @@ test.describe("1.1.4 sharing storage and recovery UX", () => {
   });
 
   test("removes a previous selected writer local store before another account enters the workspace", async ({ browser }, info) => {
-    test.skip(info.project.name !== "desktop", "account switch isolation runs once");
+    test.skip(!["desktop", "chromium-desktop"].includes(info.project.name), "account switch isolation runs once");
     test.setTimeout(90_000);
     const ownerContext = await browser.newContext({ baseURL: origin });
     const sharedContext = await browser.newContext({ baseURL: origin });
@@ -83,6 +83,94 @@ test.describe("1.1.4 sharing storage and recovery UX", () => {
       await sharedContext.setOffline(false).catch(() => undefined);
       await Promise.all([ownerContext.close(), sharedContext.close()]);
       await removeAccounts([owner.userId, writer.userId, next.userId]);
+    }
+  });
+
+  test("bounds an offline writer queue and merges it after the owner restores an earlier body", async ({ browser }, info) => {
+    test.setTimeout(120_000);
+    const mobile = info.project.name.includes("mobile");
+    const options = { baseURL: origin, viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 },
+      isMobile: mobile, hasTouch: mobile };
+    const ownerContext = await browser.newContext(options);
+    const writerContext = await browser.newContext(options);
+    const owner = await account(ownerContext, "복원 소유자");
+    const writer = await account(writerContext, "오프라인 복원 작성자");
+    const ownerPage = await ownerContext.newPage();
+    const writerPage = await writerContext.newPage();
+    try {
+      const lyricId = await createSharedLyric(ownerContext, writer.sharingId);
+      await ownerPage.goto(`/lyrics/${lyricId}`);
+      const ownerEditor = ownerPage.getByLabel("가사 본문");
+      await expect(ownerEditor).toBeVisible({ timeout: 15_000 });
+      await writerPage.goto(`/shared/lyrics/${lyricId}`);
+      const writerEditor = writerPage.getByLabel("공유된 가사 본문");
+      await expect(writerEditor).toHaveAttribute("contenteditable", "true", { timeout: 15_000 });
+      await expect(writerPage.getByRole("status")).toContainText("모든 변경 저장됨", { timeout: 15_000 });
+
+      const documentKey = await sharedDocumentKey(ownerPage, lyricId);
+      const initial = await ownerPage.request.post(`/collaboration/documents/${documentKey}/revisions`, {
+        headers, data: { reason: "leave" }
+      });
+      expect(initial.status()).toBe(200);
+      const initialRevisionId = ((await initial.json()) as { revision: { id: string } }).revision.id;
+
+      await ownerEditor.click(); await ownerPage.keyboard.press("Control+End");
+      await ownerPage.keyboard.insertText(" 복원에서 제외할 소유자 임시 원문");
+      await expect.poll(() => lyricBody(ownerContext, lyricId)).toContain("소유자 임시 원문");
+
+      await writerContext.setOffline(true);
+      await expect(writerPage.getByRole("status")).toContainText("오프라인", { timeout: 10_000 });
+      await writerEditor.click(); await writerPage.keyboard.press("Control+End");
+      const offlineText = " 오프라인 작성자 원문 " + "빛".repeat(70);
+      for (const character of offlineText) await writerPage.keyboard.insertText(character);
+      await expect(writerEditor).toContainText("오프라인 작성자 원문");
+      await expect(writerPage.getByRole("status")).toContainText("오프라인", { timeout: 15_000 });
+      const databaseName = await ownerDatabaseName(writerPage, writer.userId);
+      const queued = await syncQueueCount(writerPage, databaseName, documentKey);
+      expect(queued).toBeGreaterThan(0);
+      expect(queued).toBeLessThanOrEqual(64);
+
+      const history = await ownerPage.request.get(`/collaboration/documents/${documentKey}/revisions`);
+      expect(history.status()).toBe(200);
+      const expectedHash = ((await history.json()) as { current: { hash: string } }).current.hash;
+      const restored = await ownerPage.request.post(`/collaboration/documents/${documentKey}/revisions/${initialRevisionId}/restore`, {
+        headers, data: { requestId: randomUUID(), expectedHash }
+      });
+      expect(restored.status()).toBe(200);
+      await expect(ownerEditor).toContainText("안정화 원문", { timeout: 15_000 });
+      await expect(ownerEditor).not.toContainText("소유자 임시 원문");
+
+      await writerContext.setOffline(false);
+      await expect(writerPage.getByRole("status")).toContainText("모든 변경 저장됨", { timeout: 20_000 });
+      for (const editor of [ownerEditor, writerEditor]) {
+        await expect(editor).toContainText("안정화 원문", { timeout: 15_000 });
+        await expect(editor).toContainText("오프라인 작성자 원문", { timeout: 15_000 });
+        await expect(editor).not.toContainText("소유자 임시 원문");
+      }
+      await expect.poll(() => syncQueueCount(writerPage, databaseName, documentKey)).toBe(0);
+      for (let round = 1; round <= 3; round++) {
+        await writerContext.setOffline(true);
+        await expect(writerPage.getByRole("status")).toContainText("오프라인", { timeout: 10_000 });
+        const marker = ` 재연결-${round}`;
+        await writerEditor.click(); await writerPage.keyboard.press("Control+End"); await writerPage.keyboard.insertText(marker);
+        await expect(writerPage.getByRole("status")).toContainText("오프라인", { timeout: 10_000 });
+        const pending = await syncQueueCount(writerPage, databaseName, documentKey);
+        expect(pending).toBeGreaterThan(0);
+        expect(pending).toBeLessThanOrEqual(64);
+        await writerContext.setOffline(false);
+        await expect(writerPage.getByRole("status")).toContainText("모든 변경 저장됨", { timeout: 20_000 });
+        await expect(ownerEditor).toContainText(marker, { timeout: 15_000 });
+        await expect.poll(() => syncQueueCount(writerPage, databaseName, documentKey)).toBe(0);
+      }
+      const persisted = await lyricBody(ownerContext, lyricId);
+      expect(persisted).toContain("안정화 원문");
+      expect(persisted).toContain("오프라인 작성자 원문");
+      expect(persisted).toContain("재연결-1 재연결-2 재연결-3");
+      expect(persisted).not.toContain("소유자 임시 원문");
+    } finally {
+      await writerContext.setOffline(false).catch(() => undefined);
+      await Promise.all([ownerContext.close(), writerContext.close()]);
+      await removeAccounts([owner.userId, writer.userId]);
     }
   });
 });
@@ -136,6 +224,33 @@ async function ownerDatabaseName(page: Page, ownerId: string): Promise<string> {
     const hex = [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
     return `lyricscloud-draft-${hex}-sync-v2`;
   }, ownerId);
+}
+
+async function sharedDocumentKey(page: Page, lyricId: string): Promise<string> {
+  const response = await page.request.post(`/collaboration/documents/${lyricId}`, { headers });
+  expect(response.status()).toBe(200);
+  return ((await response.json()) as { documentKey: string }).documentKey;
+}
+
+async function lyricBody(context: BrowserContext, lyricId: string): Promise<string> {
+  const response = await context.request.get(`/api/lyrics/${lyricId}`);
+  expect(response.status()).toBe(200);
+  return ((await response.json()) as { lyric: { body: string } }).lyric.body;
+}
+
+async function syncQueueCount(page: Page, databaseName: string, documentKey: string): Promise<number> {
+  return page.evaluate(({ name, key }) => new Promise<number>((resolve, reject) => {
+    const request = indexedDB.open(name);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const database = request.result;
+      const transaction = database.transaction("updates", "readonly");
+      const count = transaction.objectStore("updates").index("documentKey").count(key);
+      count.onerror = () => reject(count.error);
+      count.onsuccess = () => resolve(count.result);
+      transaction.oncomplete = () => database.close();
+    };
+  }), { name: databaseName, key: documentKey });
 }
 
 async function removeAccounts(ids: readonly string[]) {
