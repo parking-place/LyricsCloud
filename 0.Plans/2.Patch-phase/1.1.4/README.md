@@ -1,6 +1,6 @@
 # 1.1.4 — 공유 안정성·복구 동선 정리
 
-상태: **P1~P3 완료 / P4 진행 중**. P3 후보 `375ea78f6925f5032dd90b848286c3f0b351168e`는 전체 CI·네 dev image와 동일 SHA 개발 서버의 actor별 저장/복구 안내·모바일 dialog·계정 전환 격리 인수를 통과했다.
+상태: **P1~P4 완료 / P5 진행 중**. P4 후보 `233afd2e75e03c388a4bac71635545c637087c53`는 전체 CI·네 dev image, 실제 PostgreSQL·5-browser와 동일 SHA 개발 서버의 3계정/2 viewport 복원·offline writer 병합·queue 상한/배출·권한 회수·계정 전환 격리·서비스 재시작 인수를 통과했다. 실제 장시간·물리 기기·OS IME/절전은 미실행이다.
 
 ## 목표
 
