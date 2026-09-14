@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.5"
 current_phase: "../2.Patch-phase/1.1.5/1phase.md"
-state: "review"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.5 P1에서 승인 manifest/tree와 최신 app component/route/test를 대조하고 token·shell·list/workspace의 실패 입력·담당·rollback 계약을 확정한다"
+next_action: "1.1.5 P2에서 LC_UI_VARIANT parser/root attribute와 B-1 semantic token/surface를 실패 테스트부터 구현하고 classic rollback·theme/build metadata를 검증한다"
 ```
 
 ## 승인과 기준
@@ -151,11 +151,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | UX P3 | complete | B-1 18화면 README/HTML·index·상태 행렬·토큰·제품 매핑, 5 플랫폼 문맥×양 theme+안전 상태 총 231조합 Axe serious/critical 0·overflow 0, old Mock-up/app/runtime/DB/서버 무변경 |
 | UX P4 | complete | B-1 사용자 과제/위험/interaction·feature-flag 검토, 396페이지 overflow 0·144 Axe 0·72 keyboard/focus 0, mobile editor/320px field 수정, 실제 AT/기기/IME 미실행 분리 |
 | UX P5 | complete | 사용자 B-1·후속 실행 승인과 P4 의미 불변 수정 봉인, PROD-NF-006 Accepted, 승인 manifest/tree·1.1.5 Phase별 feature-flag/visual/rollback 인계, runtime/DB/서버 무변경 |
+| 1.1.5 P1 | complete | main `107ec24` 실제 WorkspaceShell/token/list/route/test 조사, LC_UI_VARIANT classic/B-1·editor 비재마운트·API/DB 무변경·실패 입력/담당/rollback 계약 승인 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.5/P1 | LC-NF-1.1.5-P1-01~06 | P1 계약·실제 shell/token/list/route/test 조사·상태/요구/Future | UX P5 merge `107ec24`; 승인 tree `a3a0250` | 2026-09-14 | complete |
 | Codex | UX/P5 | LC-DESIGN-UX-P5-01~06 | 승인 manifest·1.1.5 인계·PROD-NF-006·UX P5 인수 | UX P4 merge `f2b2b8f`; 승인 artifact `8ce1dab` | 2026-09-14 | complete |
 | Codex | UX/P4 | LC-DESIGN-UX-P4-01~07 | `new_Mock-up` 수정·interaction/change log·`docs/ux` P4 검토·P4 인수 | UX P3 merge `3ea7515`; 수정 `0177c84` | 2026-09-14 | complete |
 | Codex | UX/P3 | LC-DESIGN-UX-P3-01~07 | `new_Mock-up` 18화면·index·상태/토큰/제품 매핑·P3 인수 | UX P2 merge `7e290c1`; 목업 `ad1aced` | 2026-09-14 | complete |
@@ -265,6 +267,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.5 P1은 main `107ec24237cb2633f0e3d0d4ea6e78dd5265e8bd`의 WorkspaceShell/root layout/token/styles, 세 목록·dashboard, returnTo/filter route와 기존 회귀를 조사해 B-1 shell 계약을 승인했다. P2는 server-rendered `LC_UI_VARIANT=classic|b1`와 root data attribute, semantic token/surface만 구현하고 P3가 중복 workspace tab·목록/workspace를 전환한다. 두 variant는 같은 child/store/draft/outbox를 쓰며 API/DB/migration/capability 변경은 0이다. editor remount·IME/selection/undo/draft 유실·거짓 저장·교차 계정 노출은 즉시 중단/classic rollback 조건이다. P1은 문서-only라 실제 앱/DB/browser/dev 배포를 수행하지 않았다.
 
 UX P5는 사용자의 B-1 통합 workspace+Flat-depth 선택과 1.1.14까지의 계획된 실행 승인을 P4 의미 불변 수정 뒤 최종 구현 인수로 봉인했다. 승인 artifact `8ce1dab07625174b10637b8b06c5f708e99bfd53`, new_Mock-up tree `a3a0250fba5250e7e20092a25dd5bd5e064b2256`와 제품 기준 v1.1.4 source, P1~P4 merge를 manifest에 연결하고 PROD-NF-006을 Accepted로 전환했다. 1.1.5는 token→shell→list/workspace feature flag, 실제 app 경로 재조사, deep link/view preference/focus, editor 비재마운트, 실제 DB/browser 복구, 동일 SHA 개발 인수 순서로 착수한다. UX는 runtime/DB/server를 바꾸지 않았으며 실제 OS/IME/AT/물리 기기·native SDK/서명 gate는 통과로 간주하지 않는다.
 
