@@ -93,8 +93,8 @@ export function QuickAdd({ ownerId, currentSongId }: { ownerId: string; currentS
         <nav className="quick-add-types" aria-label="새 자료 유형">
           <a href={`/songs/new?returnTo=${encodeURIComponent(returnTo)}`}><span>♪</span><strong>새 곡</strong><small>곡 정보 입력</small></a>
           <a href={lyricHref}><span>≋</span><strong>새 가사</strong><small>{currentSongId ? "현재 곡에서 시작" : "부모 곡 선택"}</small></a>
-          <a href="/rhymes/new"><span>≈</span><strong>새 라임</strong><small>자유 노트 편집</small></a>
-          <a href="/prompts/new"><span>◇</span><strong>새 프롬프트</strong><small>태그 조합 편집</small></a>
+          <a href={`/rhymes/new?returnTo=${encodeURIComponent(returnTo)}`}><span>≈</span><strong>새 라임</strong><small>자유 노트 편집</small></a>
+          <a href={`/prompts/new?returnTo=${encodeURIComponent(returnTo)}`}><span>◇</span><strong>새 프롬프트</strong><small>태그 조합 편집</small></a>
         </nav>
         <div className="quick-idea-capture">
           <div><strong>빠른 아이디어</strong><span>제목과 곡 연결은 나중에 보완할 수 있습니다.</span></div>

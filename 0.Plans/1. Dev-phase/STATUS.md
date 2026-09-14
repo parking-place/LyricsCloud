@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.7"
-current_phase: "../2.Patch-phase/1.1.7/1phase.md"
+current_phase: "../2.Patch-phase/1.1.7/2phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-15"
-next_action: "1.1.7 P1 문서 후보를 push·병합한 뒤 P2 라임/프롬프트 안전한 returnTo 보존을 실패 회귀부터 구현한다"
+next_action: "1.1.7 P2 완료 기록을 push·PR merge한 뒤 P3 PC·iOS·Android 상호작용 범위에 착수한다"
 ```
 
 ## 승인과 기준
@@ -164,11 +164,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.6 P5 | complete | 후보 `7f4ac5b`, Actions `34864142932`·`34864188502`, Vitest 369 PASS·E2E 370 PASS·네 signed dev image·동일 SHA 공개 생성/연결·저장 재진입·재시작 인수 완료 |
 | 1.1.6 Release | complete | main/tag `f8d24c6`, main CI `34868654180`·tag CI `34871969616`, 네 signed exact digest 운영 배포·공개 생성/연결/공유/복구/재시작·전역 beta CLI·GitHub Release 완료 |
 | 1.1.7 P1 | complete | runtime `f8d24c6`, release 기록 main `5a72780`, PC Chromium·Android 대리 Chromium mobile·iOS 대리 WebKit mobile 가입/수직 흐름 6 PASS, 정식 공유/복구 CI 재사용; 라임/프롬프트 returnTo P2 범위 확정 |
+| 1.1.7 P2 | complete | 후보 `206b14f`, Actions `34881741352`·`34881745605`, 첫 후보의 기존 URL 14 FAIL 보정·네 signed dev image·동일 SHA 공개 quick-add 복귀/본문/focus/overflow 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7/P2 | LC-NF-1.1.7-P2-01~03 | quick-add·rhyme/prompt new route/screen·returnTo 회귀·상태/Future | 후보 `206b14f`; Actions `34881741352`·`34881745605`; 네 signed dev image·동일 SHA 공개 인수 | 2026-09-15 | complete |
 | Codex | 1.1.7/P1 | LC-NF-1.1.7-P1-01~03 | 실제 과제·동선 관찰·P1 문서·STATUS·요구 추적·Future | 1.1.6 release `f8d24c6`; 기록 main `5a72780` | 2026-09-15 | complete |
 | Codex | 1.1.6/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | 1.1.6 P5 `7f4ac5b`; main/tag `f8d24c6` | 2026-09-15 | complete |
 | Codex | 1.1.6/P5 | LC-NF-1.1.6-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 후보 `7f4ac5b`; Actions `34864142932`·`34864188502`; 동일 SHA 개발 인수 | 2026-09-15 | complete |
@@ -291,6 +293,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.7 P2 후보 `206b14feb20c6c050662c2eda29c53bfba19e0bb`는 quick-add의 현재 가사 경로를 새 라임·프롬프트에 명시적 `returnTo`로 전달하고 생성 성공·편집 back에서 같은 경로로 복귀시킨다. 첫 후보 `5ae6f30`의 기본 목록 query가 깨뜨린 기존 직접 생성·template·offline recovery 14건을 CI에서 확인하고 명시적 입력에만 query를 붙여 기존/신규 16 PASS로 보정했다. push/PR Actions `34881741352`·`34881745605`, 네 signed dev image와 서비스별 SHA/Phase/Dev tag 동일 digest를 통과했다. 같은 SHA 개발 서버 `1.1.7/dev/p2`, schema `1140_sharing_stability.sql`, B-1 root와 네 서비스 healthy에서 공개 1440/390px×light/dark 새 라임·프롬프트 생성→중첩 가사 URL·exact 한글 본문 복귀, focus·overflow를 PASS하고 fixture를 제거했다. API·DB·migration·권한·copy 변화는 0이며 실제 Android/iOS 앱·물리 기기·OS IME·AT·zoom은 미실행이다. P3는 이 경계를 유지하며 플랫폼별 목록→편집→공유·Suno 복귀와 보이는 drag/context 대안을 검토한다.
 
 1.1.7 P1은 정식 runtime `f8d24c610ce24a1ff926e77204783473b936da88`에서 가입→곡/가사→라임 삽입→문장 프롬프트 exact copy→Suno→재진입을 PC Chromium과 Android/iOS browser 대리에서 6 PASS하고 tag CI `34871969616`의 공유/복구 행렬을 재사용했다. 화면 전환과 control 조작을 분리해 기록했으며, 이미 연결된 자료 삽입/copy는 짧지만 quick-add의 새 라임·프롬프트가 현재 `returnTo`를 전달하지 않아 자동 생성 뒤 원래 가사 문맥을 잃는 막힘을 확인했다. P2는 기존 `safeWorkspaceReturnTo`로 query를 전달하고 생성 성공/취소/back만 원래 문맥으로 복귀시키며 API·DB·권한·resource/draft key는 바꾸지 않는다. 외부 NAVER 사전은 1.0.13 no-go이고 실제 Android/iOS/OS IME/AT/zoom 및 이번 Google callback은 미실행이다. P1은 문서-only라 runtime/image/dev/release 배포를 수행하지 않았다.
 
