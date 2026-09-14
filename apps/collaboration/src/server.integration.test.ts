@@ -203,10 +203,15 @@ describe.runIf(enabled)("authenticated collaboration WebSocket", () => {
 
     const ownerSocket = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: ownerHeaders });
     const readerSocket = new WebSocket(`ws://127.0.0.1:${port}/sync/${documentKey}`, { headers: readerHeaders });
+    const completePresence = nextJsonMatching(readerSocket, "presence", (value) => {
+      const participants = value.participants as Array<Record<string, unknown>> | undefined;
+      return participants?.some((participant) => participant.displayName === "공유 소유자" && participant.role === "owner") === true
+        && participants.some((participant) => participant.displayName === "공유 독자" && participant.role === "read");
+    });
     const [ownerSnapshot, readerSnapshot] = await Promise.all([nextJson(ownerSocket, "snapshot"), nextJson(readerSocket, "snapshot")]);
     expect(ownerSnapshot).toMatchObject({ access: "owner" });
     expect(readerSnapshot).toMatchObject({ access: "read", permissionEpoch: granted!.grant.permissionEpoch });
-    const presence = await nextJson(readerSocket, "presence");
+    const presence = await completePresence;
     expect(presence.participants).toEqual(expect.arrayContaining([
       expect.objectContaining({ displayName: "공유 소유자", role: "owner" }),
       expect.objectContaining({ displayName: "공유 독자", role: "read" })
@@ -394,6 +399,33 @@ async function nextJson(socket: WebSocket, type: string): Promise<Record<string,
     const error = (cause: Error) => { cleanup(); reject(cause); };
     const close = () => { cleanup(); reject(new Error(`socket closed before ${type}`)); };
     const cleanup = () => { socket.off("message", message); socket.off("error", error); socket.off("close", close); };
+    socket.on("message", message); socket.once("error", error); socket.once("close", close);
+  });
+}
+
+async function nextJsonMatching(
+  socket: WebSocket,
+  type: string,
+  predicate: (value: Record<string, unknown>) => boolean,
+  timeoutMs = 3_000
+): Promise<Record<string, unknown>> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error(`socket did not receive matching ${type} within ${timeoutMs}ms`));
+    }, timeoutMs);
+    const message = (raw: RawData) => {
+      const value = JSON.parse(raw.toString()) as Record<string, unknown>;
+      if (value.type === type && predicate(value)) { cleanup(); resolve(value); }
+    };
+    const error = (cause: Error) => { cleanup(); reject(cause); };
+    const close = () => { cleanup(); reject(new Error(`socket closed before matching ${type}`)); };
+    const cleanup = () => {
+      clearTimeout(timeout);
+      socket.off("message", message);
+      socket.off("error", error);
+      socket.off("close", close);
+    };
     socket.on("message", message); socket.once("error", error); socket.once("close", close);
   });
 }
