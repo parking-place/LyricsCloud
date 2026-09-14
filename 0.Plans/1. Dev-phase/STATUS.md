@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.1.5"
-current_phase: "../2.Patch-phase/1.1.5/5phase.md"
+current_version: "1.1.6"
+current_phase: "../2.Patch-phase/1.1.6/1phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.5 정식 릴리스 기록을 병합한 뒤 1.1.6 P1 편집·복구 화면 계약을 착수한다"
+next_action: "1.1.6 P2에서 편집·복구 화면 실패 우선 계약 시험과 B-1 상세 화면 구현을 착수한다"
 ```
 
 ## 승인과 기준
@@ -157,11 +157,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.5 P4 | complete | 후보 `8fb03be`, Actions `34811056142`·`34811076974`, 전체 E2E 365 PASS·네 dev image·동일 SHA 공개 offline 저장/recent deep link·서비스 재시작 인수 완료 |
 | 1.1.5 P5 | complete | 후보 `074782e`, Actions `34814063096`·`34814075649`, 네 dev image·동일 SHA 공개 PC/mobile×dark/light·저장/재시작 인수 완료 |
 | 1.1.5 Release | complete | main/tag `17fb4a9`, main CI `34816897879`·tag CI `34819313816`, exact digest 운영 배포·공개 B-1/공유/복구/재시작·전역 beta CLI·GitHub Release 완료 |
+| 1.1.6 P1 | complete | main 기록 `98c2a29`·제품 source `17fb4a9` 조사, editor/store/copy/security 생명주기·실패 입력·P2~P5 담당·classic/1.1.5 rollback 계약 완료; 문서-only, 실제 OS/물리 기기 미실행 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.6/P1 | LC-NF-1.1.6-P1-01~06 | P1 계획·편집/복구 계약·STATUS·요구 추적·Future 인수 | main 기록 `98c2a29`; 제품 source `17fb4a9`; B-1 승인 | 2026-09-14 | complete |
 | Codex | 1.1.5/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | 1.1.5 P5 `074782e`; main/tag `17fb4a9` | 2026-09-14 | complete |
 | Codex | 1.1.5/P5 | LC-NF-1.1.5-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 후보 `074782e`; Actions `34814063096`·`34814075649`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P4 | LC-NF-1.1.5-P4-01~06 | 저장/복구·권한·offline/reconnect/restart·지원 browser 회귀·상태/요구/Future | 후보 `8fb03be`; Actions `34811056142`·`34811076974`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
@@ -277,6 +279,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.6 P1은 1.1.5 정식 릴리스 기록 main `98c2a29566b6d8382f19ddbc44560a28fcaaebf2`와 실제 제품/tag source `17fb4a9377584c477220092ed91317182f112c8b`를 기준으로 가사·라임·프롬프트 편집기, 자료 패널, 가입/beta, 공유·회수, 탈퇴·복구와 modal focus의 B-1 적용 경계를 계약했다. 같은 resource의 CodeMirror DOM과 CRDT/selection/undo/scroll/IME/outbox를 시각 전환 중 재생성하지 않고, 최신 ACK 전에는 저장 완료를 표시하지 않으며 actor/resource/capability/epoch 복구 격리와 copy payload를 보존한다. API·DB·migration·URL·local store key는 변경하지 않고 classic flag 또는 1.1.5 exact image의 application-first rollback을 사용한다. P1은 문서-only라 앱 CI·image·개발/릴리스 서버 배포를 수행하지 않았고, 실제 OS/물리 기기·OS IME/AT/OS zoom은 P4/P5 미실행 gate로 유지한다. P2는 `tests/new-feature/1.1.6.contract.test.ts`의 실패 우선 계약부터 시작한다.
 
 1.1.5는 PR #127 merge 뒤 main과 annotated `v1.1.5`가 `17fb4a9377584c477220092ed91317182f112c8b`를 가리킨다. main Actions `34816897879`와 tag Actions `34819313816`의 전체 verify와 네 정식 image 서명·provenance·SBOM을 통과했다. 서비스별 `1.1.5`·source SHA·`Release`·`latest`·`Release-latest` 동일 digest를 확인하고 릴리스 서버에 migrate 우선 exact digest로 배포해 `1.1.5/release`, phase 없음, schema `1140_sharing_stability.sql`, 네 서비스 healthy를 확인했다. 공개 PC/mobile×dark/light B-1·3계정 복원/offline writer 병합·bounded/drained outbox·권한 회수·계정/메모 격리와 실제 서비스 재시작 뒤 exact body·recent deep link가 PASS했고 fixture를 제거했다. 기존 DB volume·secret·HMAC allowlist·beta code와 `/usr/local/bin/LyricsCloud betacode ls`를 보존하고 GitHub Release를 발행했다. 실제 OS/물리 기기·OS IME/AT/OS zoom 미실행과 `OPS-100-001` backup 예외를 유지하며 1.1.6 P1로 이동한다.
 
