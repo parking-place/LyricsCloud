@@ -19,6 +19,13 @@ type BudgetFile = {
 };
 type Metric = { name: string; samples: number; p50Ms: number; p95Ms: number; errorRatePercent: number; roundP95CvPercent: number };
 
+const PERFORMANCE_ROUNDS = 3;
+// With seven samples, p95 is the per-round maximum, so a single scheduler
+// pause dominates the CV for the sub-10ms save probe. Stabilize that probe
+// without tripling the concurrent-read workload used by the purge budget.
+const DEFAULT_SAMPLES_PER_ROUND = 7;
+const STABLE_SHORT_SAMPLES_PER_ROUND = 21;
+
 let budgets: BudgetFile;
 
 async function main() {
@@ -71,7 +78,7 @@ async function main() {
       saveOrdinal += 1;
       const result = await lyrics.updateLyricCurrent(ownerId, fixture.saveLyricId, { rowVersion, title: `성능 저장 ${saveOrdinal}` });
       assert(result); rowVersion = result.rowVersion; return rowVersion;
-    });
+    }, STABLE_SHORT_SAMPLES_PER_ROUND);
     const conflict = await conflictProbe(lyrics, ownerId, fixture.saveLyricId, rowVersion);
     const autosave = await autosaveBurstProbe();
 
@@ -186,13 +193,13 @@ function longDocument(lines: number) {
   return Array.from({ length: lines }, (_, index) => index % 80 === 0 ? `[S${index / 80 + 1}]` : `합성 ${index + 1}`).join("\n");
 }
 
-async function measure(name: string, operation: () => unknown | Promise<unknown>): Promise<Metric> {
+async function measure(name: string, operation: () => unknown | Promise<unknown>, samplesPerRound = DEFAULT_SAMPLES_PER_ROUND): Promise<Metric> {
   await operation();
   const rounds: number[][] = [];
   let errors = 0;
-  for (let round = 0; round < 3; round += 1) {
+  for (let round = 0; round < PERFORMANCE_ROUNDS; round += 1) {
     const samples: number[] = [];
-    for (let sample = 0; sample < 7; sample += 1) {
+    for (let sample = 0; sample < samplesPerRound; sample += 1) {
       const started = performance.now();
       try { await operation(); } catch { errors += 1; }
       samples.push(performance.now() - started);

@@ -66,8 +66,9 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 - 실패 우선 계약은 2 FAIL/1 PASS에서 시작했고 구현 후 계약/config 21 PASS, 전체 unit 66 files·257 PASS·115 SKIP, typecheck와 production build를 통과했다.
 - 격리 PostgreSQL에서 migration을 두 번 적용했다. 기존 B-1 desktop/mobile 12 PASS, 편집/자료 panel 회귀 4 PASS, 기존 10,000줄 편집·저장·수동 copy 1 PASS, 신규 동일 editor DOM·theme/panel/1024/900px sheet·undo·heap 회수 1 PASS다.
 - 최초 신규 CSS는 mobile에서 `desktop-open` 숨김 우선순위로 dialog를 감춰 3 PASS/1 FAIL이었다. desktop panel의 961~1080px 접근 경로를 유지하고 960px 이하 desktop-only 숨김과 mobile sheet 표시를 분리한 뒤 동일 4건이 모두 PASS했다.
+- 첫 후보 `89a39c478ce3bcaca22a85621c22dc048f5bc53d`의 PR 전체 verify는 PASS했지만 branch push verify는 같은 SHA에서 두 번 모두 기존 0.9.1 성능 측정의 save 3-round p95 CV만 각각 77.551%·114.241%로 실패했다(예산 75%, save p95 6.074ms·9.738ms/120ms, 오류율 0%). 7표본 p95가 라운드 최댓값이 되는 원인을 고치기 위해 save만 라운드당 21표본으로 늘리고 3라운드·p95·75%·모든 시간/오류 예산은 유지했다. concurrent purge probe는 기존 7표본을 유지하며 격리 PostgreSQL에서 계약 검사와 전체 성능 예산을 연속 3회 PASS했다(save CV 7.576%·9.996%·2.809%, purge 1065.060ms·1107.319ms·1037.080ms/2000ms).
 - Chromium 합성 composition/브라우저 회귀는 실제 OS IME·물리 기기·AT·OS zoom을 대체하지 않는다. 해당 실제 gate와 전체 교차 회귀는 P4/P5 미실행 항목으로 유지한다.
-- 후보 원격 SHA·Actions·네 dev image digest·동일 SHA 개발 배포·공개 smoke는 아직 대기 중이며 완료 조건을 선표시하지 않는다.
+- 보정 후보 원격 SHA·Actions·네 dev image digest·동일 SHA 개발 배포·공개 smoke는 아직 대기 중이며 완료 조건을 선표시하지 않는다.
 
 ## 완료 조건
 

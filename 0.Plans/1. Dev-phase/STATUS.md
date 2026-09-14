@@ -7,7 +7,7 @@ state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.6 P2 로컬 수용 후보를 push하고 CI·네 dev image·동일 SHA 개발 서버와 공개 smoke를 인수한다"
+next_action: "1.1.6 P2 성능 표본 안정화 보정 후보를 push하고 CI·네 dev image·동일 SHA 개발 서버와 공개 smoke를 인수한다"
 ```
 
 ## 승인과 기준
