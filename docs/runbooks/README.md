@@ -144,6 +144,7 @@
 - [`1.1.3 정식 릴리스 실행`](./1.1.3-release.md)
 - [`1.1.3 정식 릴리스 체크리스트`](./1.1.3-release-checklist.md)
 - [`1.1.4 Phase 1 공유 안정성 계약`](./1.1.4-phase1-sharing-stability-contract.md)
+- [`1.1.6 Phase 1 편집·복구 화면 계약`](./1.1.6-phase1-editor-recovery-contract.md)
 - [`1.1.4 공유 저장·복구 안내`](./1.1.4-sharing-storage-recovery.md)
 - [`1.1.4 Phase 4 공유 복구·권한 회귀`](./1.1.4-phase4-recovery-acceptance.md)
 - [`1.1.4 Phase 5 최종 후보 인수`](./1.1.4-phase5-final-acceptance.md)
