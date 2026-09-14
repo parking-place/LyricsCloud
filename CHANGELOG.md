@@ -13,6 +13,11 @@
 - 기존 URL·filter·list/grid·사용자 순서·API/DB를 바꾸지 않고, rail/More 조작 중 CodeMirror·IME·selection·undo·draft/store 인스턴스를 재생성하지 않음
 - `LC_UI_VARIANT=classic`은 B-1 구조/시각 selector를 적용하지 않는 즉시 rollback 경로를 유지
 
+### Validation
+
+- P4 격리 PostgreSQL의 PC/mobile 4건과 Chromium·Firefox·WebKit desktop/mobile 10건에서 셸 조작 중 동일 편집기, offline 한글 원문 재접속 저장, recent filter/deep link, light focus, 다른 owner 격리를 확인
+- P4 후보 `8fb03be`, Actions `34811056142`·`34811076974`, Vitest 365 PASS·4 skip, 전체 E2E 365 PASS·41 skip, 네 dev image와 동일 SHA 개발 공개 PC/mobile·양 theme·서비스 재시작 뒤 exact body/recent deep link 영속성 PASS
+
 ## [1.1.4] - 2026-09-14
 
 ### Added
