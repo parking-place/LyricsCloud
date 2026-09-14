@@ -1,6 +1,6 @@
 # 1.1.6 — 승인 디자인 적용·편집과 복구 화면
 
-상태: **P1~P4 완료 / P5 다음**. P4 후보 `25d71022184c4873d97bd432d3f31a53e803bb60`의 두 CI·네 signed dev image·동일 SHA 개발 서버를 인수했고, 전체 브라우저/실제 DB 회귀와 공개 양 테마·desktop/mobile 생성/연결, exact 저장 재진입·서비스 재시작 보존을 통과했다. 실제 OS/물리 기기·OS IME/AT/OS zoom은 미실행 gate로 남으며 runtime `1.1.6`은 아직 정식 제품이 아니다.
+상태: **P1~P5 완료 / 정식 릴리스 실행 대기**. P5 후보 `7f4ac5bad29d910a26e5256e9714cd3b94a49015`의 두 CI·네 signed dev image·동일 SHA 개발 서버와 공개 저장/재진입·서비스 재시작 인수를 완료했다. 실제 OS/물리 기기·OS IME/AT/OS zoom은 미실행으로 분리했고, 승인된 main/tag/image/릴리스 서버 gate를 다음에 실행한다.
 
 ## 목표
 
@@ -43,4 +43,4 @@
 
 ## 계약과 인수
 
-[세부 계약](../contracts/DESIGN-NATIVE.md) · [품질 게이트](../QUALITY-GATES.md) · [버전 규칙](../VERSIONING.md) · [릴리스 정책](../RELEASE-POLICY.md). 코드가 바뀌지 않은 연구/검증만으로 제품 tag를 발행하지 않는다. P5는 후보 인수이며 정식 main/Release/운영 변경은 별도 현재 승인 뒤 실행한다.
+[세부 계약](../contracts/DESIGN-NATIVE.md) · [품질 게이트](../QUALITY-GATES.md) · [버전 규칙](../VERSIONING.md) · [릴리스 정책](../RELEASE-POLICY.md). 코드가 바뀌지 않은 연구/검증만으로 제품 tag를 발행하지 않는다. P5 후보 인수는 완료됐고, 사용자의 1.1.14까지 버전별 정식 릴리스 승인에 따라 main/Release/운영 gate를 실행한다.
