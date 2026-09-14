@@ -67,6 +67,7 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 - 최종 후보 `7f4ac5bad29d910a26e5256e9714cd3b94a49015`: Node 24 문서/artifact/check PASS, push/PR Actions `34864142932`·`34864188502` PASS. Vitest 369 PASS·4 skip, 전체 E2E 370 PASS·42 skip, selected read 5 PASS, public read 11 PASS·4 skip, selected write 5 PASS, guest writer 5-project PASS, sharing stability 11 PASS·4 skip, release matrix 10 PASS다.
 - 네 dev image의 source SHA·`dev-1.1.6-p5`·`Dev`·`Dev-latest`가 서비스별 같은 digest이고 OCI 1.1 Sigstore referrer가 각 1개다: web `sha256:377d82cb7689bb992189eefbd9027780cbfc97e779091f912c314d91247c369a`, collaboration `sha256:e29f926630aa636446b1fe8dec5e649c3346200d56501f0a48875904172c8929`, worker `sha256:f93d33d2ddfb59d6b7a50916c77540ef3b4a04c6e202554f69c471ae6e73812c`, migrate `sha256:de5adcb1e5b31882b3b5931e98c301b697f4b994c8af152b7c58a6b058b22c4d`.
 - 같은 SHA 개발 서버의 `1.1.6/dev/p5`, schema `1140_sharing_stability.sql`, B-1 root와 네 서비스 healthy를 확인했다. 공개 PC/mobile×dark/light 생성·연결 loading/empty/sheet/focus/overflow, server ACK 뒤 exact 한글 원문 API 재진입·authenticated deep link, web/collaboration/worker 실제 재시작 뒤 exact body와 build를 PASS했고 합성 fixture를 제거했다.
+- 정식 release: PR #133 merge/main/annotated `v1.1.6` `f8d24c610ce24a1ff926e77204783473b936da88`, main/tag Actions `34868654180`·`34871969616`, 네 정식 exact digest와 릴리스 서버·공개 생성/연결/공유/복구/재시작 인수·GitHub Release가 PASS했다. DB volume·secret·allowlist·beta code와 전역 `LyricsCloud betacode ls`를 보존했다.
 
 ## 완료 조건
 

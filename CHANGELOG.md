@@ -25,6 +25,8 @@
 - 29개 불변 migration, release 환경의 B-1/classic 허용값, dependency·Noto Sans KR license, digest-only signed image manifest와 application-first rollback을 1.1.6 artifact로 봉인
 - 실제 OS/물리 기기·OS IME·screen reader·200% OS zoom 미실행과 `OPS-100-001` backup 예외를 알려진 제한으로 유지
 
+P5 Actions `34864142932`·`34864188502`, main CI `34868654180`, tag CI `34871969616`과 동일 SHA 개발/운영 공개 인수를 통과했다. main/annotated tag `f8d24c6`의 정식 네 image를 exact digest로 배포하고 GitHub Release를 공개했다. 기존 DB volume·secret·allowlist·beta code와 전역 관리자 명령을 보존했다. Known limitations: 실제 OS/물리 기기·OS IME/AT/OS zoom은 새로 실행하지 않았고 `OPS-100-001` 외부 backup 예외를 유지한다.
+
 ## [1.1.5] - 2026-09-14
 
 ### Changed
