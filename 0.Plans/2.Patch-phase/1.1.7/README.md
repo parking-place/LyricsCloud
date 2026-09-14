@@ -1,6 +1,6 @@
 # 1.1.7 — 디자인 적용 후 UI/UX 동선 검토·개선
 
-상태: **P1~P4 완료 / P5 로컬 후보 검증 완료**. P3 후보 `740b1e3`에서 exact 목록→대시보드→가사→공유→Suno 새 탭→복귀와 접힌 desktop rail의 접근성 이름·40px target·focus tooltip을 구현했다. P4 후보 `66f2f79`는 reduced transparency·contrast/forced-colors fallback을 최소 추가했고 실제 PostgreSQL 380 PASS, Chromium desktop/mobile 전체 E2E 379 PASS·43 조건부 skip·0 FAIL, 5-browser 집중 8 PASS, 두 Actions·네 signed dev image와 동일 SHA 공개 접근성/저사양 저장·서비스 재시작 인수를 완료했다. P5는 웹 지원 범위와 플랫폼별 차이·미실행 gate, release artifact를 봉인했고 후보 CI·동일 SHA 개발 공개 인수를 기다린다. 요구 `NF-REQ-039`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
+상태: **P1~P5 완료 / 정식 릴리스 준비**. P3 후보 `740b1e3`에서 exact 목록→대시보드→가사→공유→Suno 새 탭→복귀와 접힌 desktop rail의 접근성 이름·40px target·focus tooltip을 구현했다. P4 후보 `66f2f79`는 reduced transparency·contrast/forced-colors fallback을 최소 추가했고 실제 PostgreSQL 380 PASS, Chromium desktop/mobile 전체 E2E 379 PASS·43 조건부 skip·0 FAIL, 5-browser 집중 8 PASS, 두 Actions·네 signed dev image와 동일 SHA 공개 접근성/저사양 저장·서비스 재시작 인수를 완료했다. P5 후보 `b1a1e2c`는 웹 지원 범위와 플랫폼별 차이·미실행 gate, release artifact를 봉인하고 Actions `34900342849`·`34900363577`, 네 signed dev image와 동일 SHA 공개 저장/복귀·접근성 fallback·재시작 인수를 완료했다. 요구 `NF-REQ-039`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
 
 선행: [1.1.6](../1.1.6/README.md)의 인수와 해당 결정 gate. 코드 변경 없는 개발안/외부 gate 보류는 제품 출시로 세지 않는다.
 
