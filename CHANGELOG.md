@@ -19,7 +19,7 @@
 - P4 Actions `34783619444`, 실제 PostgreSQL 364 PASS·4 skip, 전체 Playwright 353 PASS·41 skip, 1.1.4 5-browser matrix PASS
 - 동일 SHA 개발 환경에서 3계정·2 viewport 복원/offline writer 병합·queue 상한/배출·reader 회수·계정 전환 격리와 실제 서비스 재시작 전후 PASS
 
-P5 전체 CI·네 dev image·동일 SHA 개발 인수 뒤 승인된 정식 릴리스를 실행한다. Known limitations: 실제 장시간 wall-clock soak, 물리 Windows/Linux/macOS/Android/iOS, 실제 OS IME·절전/복귀는 새로 실행하지 않았고 `OPS-100-001` 외부 backup 예외를 유지한다.
+P5 Actions `34786159783`, main CI `34789430853`, tag CI `34790980889` 최종 3차 실행과 동일 SHA 개발/운영 공개 인수를 통과했다. main/annotated tag `5f8a045`의 정식 네 image를 exact digest로 배포하고 GitHub Release를 공개했다. Known limitations: 실제 장시간 wall-clock soak, 물리 Windows/Linux/macOS/Android/iOS, 실제 OS IME·절전/복귀는 새로 실행하지 않았고 `OPS-100-001` 외부 backup 예외를 유지한다.
 
 ## [1.1.3] - 2026-09-14
 
