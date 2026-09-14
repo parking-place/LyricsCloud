@@ -17,7 +17,9 @@
 | UX P2 B-1 선택 merge | 7e290c145833eb9cd7092b516f2f462b8b42a435 |
 | UX P3 목업 merge | 3ea75152266c93f1cc881b39e8b1f82094a1de25 |
 | UX P4 검토·수정 merge | f2b2b8f37c2be0c17bc599e5ed4a8b8f9cb12a19 |
-| new_Mock-up tree | 482b6a4d6a04f7a9402a2bb004a34caf4fa6af1e |
+| UX P5 approval/handoff artifact | 8ce1dab07625174b10637b8b06c5f708e99bfd53 |
+| P4 reviewed new_Mock-up tree | 482b6a4d6a04f7a9402a2bb004a34caf4fa6af1e |
+| P5 approved new_Mock-up tree | a3a0250fba5250e7e20092a25dd5bd5e064b2256 |
 | mockup.css blob | 05008cc6a1371be4b7fe9ba8921eb7261e91a3b7 |
 | mockup.js blob | 13e175beced0837195f0952e550fa2c58802ab72 |
 | P4 검토 blob | f9330d5e511ef694d03ecc3fbc52adff9adbba0c |
