@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.5] - Unreleased
+
+### Changed
+
+- 승인된 B-1 통합 workspace 셀로 desktop 중복 tab을 현재 영역 header로 정리하고, 접힌 rail에도 모든 메뉴 tooltip과 현재 위치를 유지
+- 모바일 주 내비를 곡·라임·프롬프트·검색·더보기로 정리하고, 즐겨찾기·최근·템플릿·휴지통·설정은 키보드 focus 복귀가 되는 More 시트에 보존
+- 곡·라임·프롬프트·검색·최근·즐겨찾기·곡 workspace를 flat panel/card 계층으로 맞추고 B-1 light 상태 배지·token 대비를 보정
+
+### Compatibility
+
+- 기존 URL·filter·list/grid·사용자 순서·API/DB를 바꾸지 않고, rail/More 조작 중 CodeMirror·IME·selection·undo·draft/store 인스턴스를 재생성하지 않음
+- `LC_UI_VARIANT=classic`은 B-1 구조/시각 selector를 적용하지 않는 즉시 rollback 경로를 유지
+
 ## [1.1.4] - 2026-09-14
 
 ### Added

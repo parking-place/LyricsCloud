@@ -1,6 +1,6 @@
 # 1.1.5 Phase 3 — PC·모바일 사용자 흐름
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`)
 - 단계 목적: 승인 디자인 적용·탐색 셸의 PC·모바일 사용자 흐름을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -41,12 +41,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.5-P3-01` 공통 헤더·접힌 sidebar·모바일 내비를 승인 목업대로 구현한다.
-- [ ] `LC-NF-1.1.5-P3-02` 곡·라임·프롬프트·검색·최근·즐겨찾기 목록의 시각 계층을 맞춘다.
-- [ ] `LC-NF-1.1.5-P3-03` list/grid 밀도·사용자 순서·focus·필터를 디자인 전환 중 유지한다.
-- [ ] `LC-NF-1.1.5-P3-04` 양 테마·320px·200%확대·키보드·스크린리더를 화면별로 검증한다.
-- [ ] `LC-NF-1.1.5-P3-05` 제안 `tests/e2e/new-feature-1.1.5.spec.ts`에 실제 기능 경로를 등록하고 정상·빈 상태·실패·권한 없음·로딩을 PC와 모바일에서 검사한다. native이면 플랫폼 runner와 UI 테스트로 대체/병행한다.
-- [ ] `LC-NF-1.1.5-P3-06` 입력·선택·IME·undo·로컬 초안·서버 저장 상태의 연속성을 확인한다. 정상 UI만 보여주기 위해 오류/권한 검사를 제거하지 않는다.
+- [x] `LC-NF-1.1.5-P3-01` 공통 헤더·접힌 sidebar·모바일 내비를 승인 목업대로 구현한다. — 중복 desktop tab을 B-1에서 context header로 바꾸고 rail tooltip·active 표시와 모바일 5개 주 내비+More를 구현했다.
+- [x] `LC-NF-1.1.5-P3-02` 곡·라임·프롬프트·검색·최근·즐겨찾기 목록의 시각 계층을 맞춘다. — B-1 flat panel/card·heading·focus 계층을 공통 selector로 적용하고 곡 workspace의 2-column/모바일 stack을 유지했다.
+- [x] `LC-NF-1.1.5-P3-03` list/grid 밀도·사용자 순서·focus·필터를 디자인 전환 중 유지한다. — 기존 library view class·order control·URL filter·route child를 수정하지 않고 시각 cascade만 한정했다.
+- [x] `LC-NF-1.1.5-P3-04` 양 테마·320px·200%확대·키보드·스크린리더를 화면별로 검증한다. — dark/light·320px·720px CSS reflow·keyboard/focus·15화면 Axe serious/critical 0을 통과했다. 실제 OS screen reader와 물리 200% zoom은 P4 실행 입력으로 남겼다.
+- [x] `LC-NF-1.1.5-P3-05` `tests/e2e/new-feature-1.1.5.spec.ts`에 실제 기능 경로를 등록하고 정상·빈 상태·실패·권한 없음·로딩을 PC와 모바일에서 검사한다. — 두 viewport에서 shell·empty song·search loading/error·protected redirect를 실제 route로 검증했다.
+- [x] `LC-NF-1.1.5-P3-06` 입력·선택·IME·undo·로컬 초안·서버 저장 상태의 연속성을 확인한다. — rail/More 조작 전후 동일 CodeMirror DOM, 한글 입력·undo·저장 상태를 PC/mobile에서 검증했다.
 
 ## 구체적 검증
 
@@ -63,14 +63,24 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 [공통 명령·검증](../QUALITY-GATES.md)을 먼저 읽는다. 기존 runner의 영향받은 검사를 우선 사용하고 필요할 때만 회귀를 보강한다. 지원 환경에서 관련 DB/E2E를 선택하며 동일 변경의 full suite는 로컬/CI 중 한 곳과 필수 게이트만 따른다. native은 승인된 SDK/플랫폼 명령을 기록한다. 없는 도구·실제 IME·물리 기기 검증을 모사 결과로 통과시켰다고 표시하지 않는다. 문서-only Phase는 링크·범위·결정·설계 검토로 별도 인수한다.
 
+- 실패 재현: 구현 전 P3 E2E 2 PASS·4 FAIL — desktop 중복 tab/context header 미구현, mobile 주 내비 6개 노출을 고정했다. editor continuity 2건은 기존 계약으로 이미 PASS했다.
+- Node 24 `pnpm check`·web production build: PASS.
+- Playwright P3 PC/mobile: 6 PASS — context header/rail tooltip, mobile 5개 주 내비+More/focus 복귀, 동일 editor DOM·한글 입력·undo, 빈 상태·loading·failure·protected redirect, light·320/720 reflow·overflow 0.
+- 관련 회귀 40건: 초기 B-1 light 상태 badge/prompt token 대비 2 FAIL을 확인하고 수정. 그 외 30 PASS·8 조건부 skip. 수정 후 15화면×dark/light Axe serious/critical PC/mobile 2 PASS.
+- 최초 후보 Actions `34806946625`: 신규 P3 검사는 전부 PASS했고 전체 E2E 359 PASS·41 skip·flaky retry 1 PASS였으나, 기존 responsive shell이 B-1에서 숨긴 호환용 즐겨찾기 링크까지 터치 대상으로 계산해 320px에서 0px 높이 1건 FAIL. 제품 결함이 아닌 검증 대상 선택 오류로 판정해 보이는 5개 링크·버튼만 44px 기준을 적용하고, 5개 주 내비+More 구성은 신규 P3 검사로도 계속 고정한다.
+- API·DB·migration·route/store/editor 수정 0. 실제 OS IME·screen reader·물리 줌은 실행하지 않았으며 P4 교차 검증 입력으로 유지한다.
+- 최종 후보 `24cef7eee5c6d6c77689f47cbd4c740287ab511d`: push Actions `34808547591`과 PR Actions `34808550793` 전체 PASS. 실제 DB 전체 E2E 361 PASS·41 skip, 단위 365 PASS·4 skip, 과거 sharing matrix와 release candidate 10 PASS를 포함한다.
+- 네 개발 image의 source SHA·`dev-1.1.5-p3`·`Dev`·`Dev-latest` tag가 서비스별 동일 digest이며 서명 검증 PASS: web `sha256:6bb66b6223b923fbbcb3b76375a29b1b9386d9a01d2216a32d3b283c742e3226`, collaboration `sha256:b09fbdd0c423fc17f0e47405c78724bc482f1579c8d47435fdce8975601fe9c2`, worker `sha256:2d3970419242903f8130feef219f74df6918d89db9e5251b7cf52fcb7a63102c`, migrate `sha256:5efbc10789123ad29039fb96b5b8ee24de9737a218f799cd6e4a8b929029c607`.
+- 동일 SHA 개발 서버는 version `1.1.5`·channel `dev`·phase `p3`·schema `1140_sharing_stability.sql`, PostgreSQL/web/collaboration/worker healthy다. 공개 PC/mobile×dark/light B-1 root·overflow·exact build, 합성 곡/가사 생성→서버 저장→API 재진입→최근 복귀→context shell/mobile More→인증 deep link PASS 후 합성 계정·자료를 제거했다. 기존 DB volume·secret·beta code를 보존했고 릴리스 서버는 변경하지 않았다.
+
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
+- [x] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
 
 ## 산출물
 
