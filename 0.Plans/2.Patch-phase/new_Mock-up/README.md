@@ -8,6 +8,8 @@ UX P2에서 사용자가 선택한 **B-1(통합 작업공간 + Flat-depth)**을 
 - [화면·상태·플랫폼 행렬](screen-matrix.md)
 - [디자인 토큰](design-tokens.md)
 - [제품 컴포넌트 전환 매핑](component-mapping.md)
+- [interaction·overlay 계약](interaction-contract.md)
+- [P3/P4 검토 변경 기록](review-changelog.md)
 
 각 화면 폴더에는 목적·정보·동선·상태·플랫폼·접근성을 적은 `README.md`와, query로 테마·플랫폼·상태를 바꾸는 `mockup.html`이 있다. 인덱스는 18개 화면의 PC/iOS/Android 및 대표 안전 상태로 바로 연결한다.
 

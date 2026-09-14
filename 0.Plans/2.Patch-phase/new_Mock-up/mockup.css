@@ -179,6 +179,7 @@ html[data-platform="linux"] .topbar::before { content: "LyricsCloud · Wayland/X
   .page-title h1 { overflow: hidden; font-size: 16px; text-overflow: ellipsis; white-space: nowrap; }
   .topbar .button:not(.primary), .topbar::before { display: none !important; }
   .content { padding: 9px; }
+  .toolbar > .field { flex: 1 1 100%; }
   .content-grid, .editor-layout { min-height: auto; display: block; }
   .content-grid > *, .editor-layout > * { margin-bottom: 10px; }
   .cards, .cards.medium { grid-template-columns: 1fr; }
@@ -187,8 +188,8 @@ html[data-platform="linux"] .topbar::before { content: "LyricsCloud · Wayland/X
   .editor-paper { min-height: 420px; padding: 26px 20px; }
   .editor-paper textarea { min-height: 370px; font-size: 16px; }
   .context-panel { display: none; }
-  .editor-tools { position: sticky; z-index: 8; bottom: calc(66px + env(safe-area-inset-bottom)); justify-content: center; margin: 8px; border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--panel); box-shadow: var(--shadow-raised); }
-  .editor-tools .button { min-width: 0; padding: 0 10px; }
+  .editor-tools { position: sticky; z-index: 8; bottom: calc(66px + env(safe-area-inset-bottom)); justify-content: center; gap: 3px; margin: 8px; padding: 8px; border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--panel); box-shadow: var(--shadow-raised); }
+  .editor-tools .button { min-width: 0; padding: 0 5px; font-size: 12px; white-space: nowrap; }
   .editor-tools .button:nth-child(n+4):not(.more) { display: none; }
   .editor-tools .button.more { margin-left: 0; }
   .mobile-nav { position: fixed; z-index: 20; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: repeat(5, 1fr); min-height: calc(64px + env(safe-area-inset-bottom)); padding: 5px 8px env(safe-area-inset-bottom); border-top: 1px solid var(--line); background: var(--panel); }

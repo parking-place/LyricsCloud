@@ -42,9 +42,9 @@
 | `NF-REQ-034` | 읽기 공유 3범위 | [1.1.0](1.1.0/README.md), [1.1.1](1.1.1/README.md), [1.1.4](1.1.4/README.md) | private 기본/selected 내부ID/public-link guest read | 완료: selected/public read와 1.1.4 삭제 capability fence·휴지통 복원 뒤 old grant/link 비부활·계정 전환 격리 검증 |
 | `NF-REQ-035` | 쓰기 공유 3범위 | [1.1.2](1.1.2/README.md), [1.1.3](1.1.3/README.md), [1.1.4](1.1.4/README.md) | private/selected/public-link 및 guest 범위 명시 승인 | 완료: selected/public guest write와 1.1.4 owner 복원/offline writer 병합·bounded queue·재접속 검증 |
 | `NF-REQ-036` | 쓰기 권한은 읽기의 부분집합 | [1.1.0](1.1.0/README.md), [1.1.1](1.1.1/README.md), [1.1.2](1.1.2/README.md), [1.1.3](1.1.3/README.md), [1.1.4](1.1.4/README.md) | 모드+실제 수신자 집합·서버/WS 검증·철회 | 완료: selected/public W⊆R·철회, delete fence·epoch 증가·계정/actor local 격리와 재시작 전후 검증 |
-| `NF-REQ-037` | light/dark 디자인 개편안 | [UX 설계](design/UX/README.md), [1.1.5](1.1.5/README.md), [1.1.6](1.1.6/README.md), [NF-REQ-048의 시안 계약](contracts/DESIGN-NATIVE.md) | 대안·토큰·접근성·승인 후 점진 적용 | UX P1 현행 감사·P2 B-1 선택·P3 양 theme 토큰/18화면 완료, P4~P5 예정 |
+| `NF-REQ-037` | light/dark 디자인 개편안 | [UX 설계](design/UX/README.md), [1.1.5](1.1.5/README.md), [1.1.6](1.1.6/README.md), [NF-REQ-048의 시안 계약](contracts/DESIGN-NATIVE.md) | 대안·토큰·접근성·승인 후 점진 적용 | UX P1 감사·P2 B-1 선택·P3 목업·P4 양 theme/접근성 수정 완료, P5 예정 |
 | `NF-REQ-038` | new_Mock-up·도구 필요 문서 | [UX 설계](design/UX/README.md) | 원본 목업 보존·새 화면/상태·skill/MCP 요구 | UX P1 인벤토리·P2 도구 분류·P3 18화면 new_Mock-up/상태/제품 매핑 완료, P4~P5 예정 |
-| `NF-REQ-039` | UI/UX 동선 개선·개편 | [UX 설계](design/UX/README.md), [1.1.5](1.1.5/README.md), [1.1.6](1.1.6/README.md), [1.1.7](1.1.7/README.md) | 현행 과제 관찰·설계 비교·비파괴 전환 | UX P1 gap·P2 B-1 선택·P3 통합 workspace prototype 완료, P4~P5 예정 |
+| `NF-REQ-039` | UI/UX 동선 개선·개편 | [UX 설계](design/UX/README.md), [1.1.5](1.1.5/README.md), [1.1.6](1.1.6/README.md), [1.1.7](1.1.7/README.md) | 현행 과제 관찰·설계 비교·비파괴 전환 | UX P1 gap·P2 B-1·P3 prototype·P4 과제/interaction/rollback 검토 완료, P5 예정 |
 | `NF-REQ-040` | Windows 네이티브 개발안 | [1.1.8](1.1.8/README.md), [1.1.9](1.1.9/README.md) | 기술/IME/protocol 승인→구현/서명/실기기 인수 | 계획됨 |
 | `NF-REQ-041` | Android 네이티브 개발안 | [1.1.10](1.1.10/README.md), [1.1.11](1.1.11/README.md) | Kotlin 등 비교·IME/수명주기·서명/실기기 인수 | 계획됨 |
 
@@ -54,7 +54,7 @@
 | `NF-REQ-045` | Linux 개발안 | [1.1.12](1.1.12/README.md) | SDK/패키징·X11/Wayland/IME·협업/사전/폰트 검증 뒤 조건부 구현 | 계획됨 |
 | `NF-REQ-046` | macOS 개발안 | [1.1.13](1.1.13/README.md) | SDK/패키징·IME·Keychain·서명/notarization 검증 뒤 조건부 구현 | 계획됨 |
 | `NF-REQ-047` | iOS 개발안과 PC/iOS/Android 목업 | [1.1.14](1.1.14/README.md), [UX](design/UX/README.md) | iPhone/iPad·수명주기·플랫폼별 목업·실기기·서명/스토어 gate | UX P3 PC 3종·iOS·Android 목업 완료, 실제 native 개발안/기기/서명은 1.1.14 예정 |
-| `NF-REQ-048` | 약 5개 morphism·Liquid Glass 시안 선택 | [UX P2](design/UX/2phase.md)~[P5](design/UX/5phase.md), [1.1.5](1.1.5/README.md)~[1.1.7](1.1.7/README.md) | 출처·glass/blur/saturation/shadow/SVG/GSAP 후보·사용자 시안 선택→new_Mock-up·a11y/성능 | UX P2 두 shell×5 morphism 비교·사용자 B-1 선택, P3 18화면/231조합 new_Mock-up 완료, P4~P5 예정 |
+| `NF-REQ-048` | 약 5개 morphism·Liquid Glass 시안 선택 | [UX P2](design/UX/2phase.md)~[P5](design/UX/5phase.md), [1.1.5](1.1.5/README.md)~[1.1.7](1.1.7/README.md) | 출처·glass/blur/saturation/shadow/SVG/GSAP 후보·사용자 시안 선택→new_Mock-up·a11y/성능 | UX P2 B-1 선택·P3 18화면·P4 396페이지/접근성/성능 대리 검토와 의미 불변 수정 완료, P5 예정 |
 
 ## 범위 분할 기준
 
