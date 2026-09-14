@@ -68,6 +68,7 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 - 최종 후보 `074782e8de24b96b7a9bab2fecff90ce2c2a1c6e`: Node 24 문서/artifact/check PASS, push/PR Actions `34814063096`·`34814075649` PASS. Vitest 365 PASS·4 skip, 전체 E2E 365 PASS·41 skip, 1.1.0 5 PASS, 1.1.1 11 PASS·4 skip, 1.1.2 5 PASS, 1.1.3 5-browser 각 1 PASS, 1.1.4 11 PASS·4 skip, release matrix 10 PASS다.
 - 네 dev image의 source SHA·`dev-1.1.5-p5`·`Dev`·`Dev-latest`가 서비스별 같은 digest다: web `sha256:d0300634a38463123968f500373dfda8bd67470d20d535c520845deb51968ce0`, collaboration `sha256:5011b0595a15bf9dbd9767f97bc56c7b8a65455992593578dd04fd847a2a8f8d`, worker `sha256:56464209a27253821e4c37e051eb06c2e137c6a6c296fafae575a86ae075552d`, migrate `sha256:165f029368b5910aff63bd82aedf9477e2151a845ebe61edc4f23e6a41046ffe`.
 - 같은 SHA 개발 서버의 `1.1.5/dev/p5`, schema `1140_sharing_stability.sql`, 네 서비스 healthy를 확인했다. 공개 PC/mobile×dark/light B-1 root·overflow와 실제 서비스 재시작 뒤 exact body·recent deep link·접근 격리가 PASS했고 합성 fixture를 제거했다.
+- 정식 release: PR #127 merge/main/annotated `v1.1.5` `17fb4a9377584c477220092ed91317182f112c8b`, main/tag Actions `34816897879`·`34819313816`, 네 정식 exact digest와 릴리스 서버·공개/재시작 인수·GitHub Release가 PASS했다. DB volume·secret·allowlist·beta code와 전역 `LyricsCloud betacode ls`를 보존했다.
 
 ## 완료 조건
 

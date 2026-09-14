@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.5"
 current_phase: "../2.Patch-phase/1.1.5/5phase.md"
-state: "review"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "완료 기록을 PR #127에 push한 뒤 main 병합·main CI·annotated v1.1.5·정식 image·릴리스 서버 exact digest 배포를 수행한다"
+next_action: "1.1.5 정식 릴리스 기록을 병합한 뒤 1.1.6 P1 편집·복구 화면 계약을 착수한다"
 ```
 
 ## 승인과 기준
@@ -156,11 +156,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.5 P3 | complete | 후보 `24cef7e`, Actions `34808547591`·`34808550793`, 전체 E2E 361 PASS·네 dev image·동일 SHA 공개 B-1 context shell/mobile More와 저장·재진입 인수 완료 |
 | 1.1.5 P4 | complete | 후보 `8fb03be`, Actions `34811056142`·`34811076974`, 전체 E2E 365 PASS·네 dev image·동일 SHA 공개 offline 저장/recent deep link·서비스 재시작 인수 완료 |
 | 1.1.5 P5 | complete | 후보 `074782e`, Actions `34814063096`·`34814075649`, 네 dev image·동일 SHA 공개 PC/mobile×dark/light·저장/재시작 인수 완료 |
+| 1.1.5 Release | complete | main/tag `17fb4a9`, main CI `34816897879`·tag CI `34819313816`, exact digest 운영 배포·공개 B-1/공유/복구/재시작·전역 beta CLI·GitHub Release 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.5/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | 1.1.5 P5 `074782e`; main/tag `17fb4a9` | 2026-09-14 | complete |
 | Codex | 1.1.5/P5 | LC-NF-1.1.5-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 후보 `074782e`; Actions `34814063096`·`34814075649`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P4 | LC-NF-1.1.5-P4-01~06 | 저장/복구·권한·offline/reconnect/restart·지원 browser 회귀·상태/요구/Future | 후보 `8fb03be`; Actions `34811056142`·`34811076974`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P3 | LC-NF-1.1.5-P3-01~06 | 공통 header·rail/mobile nav·목록/grid·곡 workspace·PC/mobile E2E·상태/요구/Future | 후보 `24cef7e`; Actions `34808547591`·`34808550793`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
@@ -275,6 +277,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.5는 PR #127 merge 뒤 main과 annotated `v1.1.5`가 `17fb4a9377584c477220092ed91317182f112c8b`를 가리킨다. main Actions `34816897879`와 tag Actions `34819313816`의 전체 verify와 네 정식 image 서명·provenance·SBOM을 통과했다. 서비스별 `1.1.5`·source SHA·`Release`·`latest`·`Release-latest` 동일 digest를 확인하고 릴리스 서버에 migrate 우선 exact digest로 배포해 `1.1.5/release`, phase 없음, schema `1140_sharing_stability.sql`, 네 서비스 healthy를 확인했다. 공개 PC/mobile×dark/light B-1·3계정 복원/offline writer 병합·bounded/drained outbox·권한 회수·계정/메모 격리와 실제 서비스 재시작 뒤 exact body·recent deep link가 PASS했고 fixture를 제거했다. 기존 DB volume·secret·HMAC allowlist·beta code와 `/usr/local/bin/LyricsCloud betacode ls`를 보존하고 GitHub Release를 발행했다. 실제 OS/물리 기기·OS IME/AT/OS zoom 미실행과 `OPS-100-001` backup 예외를 유지하며 1.1.6 P1로 이동한다.
 
 1.1.5 P5 후보 `074782e8de24b96b7a9bab2fecff90ce2c2a1c6e`는 29개 불변 migration·B-1/classic environment·license·release manifest와 요구/사용자/운영 문서를 봉인했다. Node 24 check와 push/PR Actions `34814063096`·`34814075649` 전체 PASS, Vitest 365 PASS·4 skip, 전체 E2E 365 PASS·41 skip, 1.1.0~1.1.4·release browser matrix를 통과했다. 네 dev image의 SHA·`dev-1.1.5-p5`·`Dev`·`Dev-latest`가 서비스별 동일 digest이고, 같은 SHA 개발 서버의 `1.1.5/dev/p5`, schema `1140_sharing_stability.sql`, 네 서비스 healthy를 확인했다. 공개 PC/mobile×dark/light B-1 root·overflow와 실제 서비스 재시작 뒤 exact body·recent deep link·접근 격리가 PASS했고 합성 fixture를 제거했다. 신규 P0/P1·원문 유실·인증 우회·무음 저장 실패는 0건이다. 실제 OS/물리 기기·OS IME/AT/OS zoom 미실행과 `OPS-100-001` backup 예외를 유지하며 승인된 main/tag/image/릴리스 서버 gate로 이동한다.
 
