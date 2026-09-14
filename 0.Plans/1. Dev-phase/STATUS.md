@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.1.4"
-current_phase: "../2.Patch-phase/1.1.4/5phase.md"
+current_version: "UX"
+current_phase: "../2.Patch-phase/design/UX/1phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.4 main/tag 5f8a045, main CI 34789430853·tag CI 34790980889, exact digest 운영 배포·공개 복원/offline 병합/격리/재시작 smoke·GitHub Release 완료. UX P1 현행 경험 감사를 완료하고 P2 구조·morphism 대안을 사용자에게 제시한다"
+next_action: "UX P1은 v1.1.4 source 5f8a045 기준 15화면·추가 흐름·60 viewport·동선/상태/접근성 감사를 완료했다. P2에서 보수적 shell/통합 workspace와 5개 morphism을 같은 과제로 비교해 사용자 선택을 받는다"
 ```
 
 ## 승인과 기준
@@ -144,11 +144,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.4 P4 | complete | 후보 `233afd2`, Actions `34783619444`, 실제 DB 364 PASS·E2E 353 PASS·5-browser·동일 SHA 공개 복원/offline 병합·queue·회수/계정 격리·재시작 인수 완료 |
 | 1.1.4 P5 | complete | 후보 `081117d`, Actions `34786159783`, 네 dev image·동일 SHA 공개 복원/offline 병합·bounded queue·계정 격리·재시작 인수 완료 |
 | 1.1.4 Release | complete | main/tag `5f8a045`, main CI `34789430853`·tag CI `34790980889` 최종 3차 실행, exact digest 운영 배포·공개 복원/offline 병합/격리/재시작 smoke·GitHub Release 완료 |
+| UX P1 | complete | v1.1.4 `5f8a045` 기준 15화면+추가 흐름·60 viewport, responsive/accessibility/keyboard 12 PASS·4 조건부 skip, UX-GAP-01~06과 실제 AT/물리 기기 미실행 경계 기록 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | UX/P1 | LC-DESIGN-UX-P1-01~06 | `docs/ux`·design/UX P1·현행 15화면/동선/상태/반응형/접근성 감사 | v1.1.4 `5f8a045`, 감사 `99c1e1e` | 2026-09-14 | complete |
 | Codex | 1.1.4/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.4 P5 `081117d` | 2026-09-14 | complete |
 | Codex | 1.1.4/P5 | LC-NF-1.1.4-P5-01~06 | 요구 추적·사용자/운영 문서·봉인 artifact·최종 CI·개발/정식 인수 | 후보 `081117d`, Actions `34786159783` | 2026-09-14 | complete |
 | Codex | 1.1.4/P4 | LC-NF-1.1.4-P4-01~07 | 복원/offline writer·bounded queue·권한 회수/계정 격리·3계정/2 viewport·5-browser·실제 서비스 재시작 | 후보 `233afd2`, Actions `34783619444` | 2026-09-14 | complete |
@@ -253,6 +255,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+UX P1은 정식 v1.1.4 source `5f8a04512c005cb7c211630dc8bf43f42787b60f`의 기존 15화면과 beta/Suno/read-write 공유·탈퇴·복구 흐름을 route/component/state에 연결하고 가입→창작→copy→재개 및 공유/회수의 단계·막힘을 감사했다. 격리 PostgreSQL production build의 responsive/accessibility/shortcut 12 PASS·조건부 4 skip과 15화면×320/390/768/1440px 60장 합성 캡처를 대조해 mobile editor 9개 dock label 붕괴, dashboard 긴 card stack, PC navigation 중복 등 `UX-GAP-01~06`을 우선순위화했다. 실제 NVDA/VoiceOver/TalkBack·물리 touch/safe-area·OS zoom/IME는 미실행으로 명시했고 앱/runtime/DB/기존 목업/운영을 변경하지 않았다. P2는 보수적 shell과 통합 workspace, flat-depth/glass/neumorphism/clay/liquid glass를 같은 과제로 비교하고 사용자의 명시 선택 전 P3 new_Mock-up을 시작하지 않는다.
 
 1.1.4는 PR #116 merge 뒤 main과 annotated `v1.1.4`가 `5f8a04512c005cb7c211630dc8bf43f42787b60f`을 가리킨다. main Actions `34789430853`과 tag Actions `34790980889` 최종 3차 실행의 전체 verify와 네 정식 image 서명·provenance·SBOM을 통과했다. 첫 tag 실행은 절대 성능 예산을 통과한 초단기 revision 측정 CV 노이즈, 두 번째는 기존 collaboration WebSocket 시험 한 건의 15초 제한 초과였고, 실제 PostgreSQL 집중 재검증 4/4와 불변 tag 전체 재실행 PASS로 일시 오류임을 확인했다. 서비스별 `1.1.4`·source SHA·`Release`·`latest`·`Release-latest`의 동일 digest를 확인하고 운영 서버에 migrate 우선 exact digest 배포해 `1.1.4`·`release`·phase `null`, schema `1140_sharing_stability.sql`, 네 서비스 healthy를 확인했다. 공개 3계정·2 viewport에서 owner 복원과 offline writer 병합, bounded/drained outbox, reader 회수, 계정 전환 local store·본문·권한·메모 격리와 실제 서비스 재시작 지속성이 PASS했고 합성 fixture를 0건으로 제거했다. 기존 DB volume·secret·HMAC allowlist·beta code를 보존하고 GitHub Release를 발행했다. 실제 장시간·OS/물리 기기·OS IME/절전 미실행과 `OPS-100-001` backup 예외를 유지하며 UX P1 현행 경험 감사로 이동한다.
 

@@ -42,9 +42,9 @@
 | `NF-REQ-034` | 읽기 공유 3범위 | [1.1.0](1.1.0/README.md), [1.1.1](1.1.1/README.md), [1.1.4](1.1.4/README.md) | private 기본/selected 내부ID/public-link guest read | 완료: selected/public read와 1.1.4 삭제 capability fence·휴지통 복원 뒤 old grant/link 비부활·계정 전환 격리 검증 |
 | `NF-REQ-035` | 쓰기 공유 3범위 | [1.1.2](1.1.2/README.md), [1.1.3](1.1.3/README.md), [1.1.4](1.1.4/README.md) | private/selected/public-link 및 guest 범위 명시 승인 | 완료: selected/public guest write와 1.1.4 owner 복원/offline writer 병합·bounded queue·재접속 검증 |
 | `NF-REQ-036` | 쓰기 권한은 읽기의 부분집합 | [1.1.0](1.1.0/README.md), [1.1.1](1.1.1/README.md), [1.1.2](1.1.2/README.md), [1.1.3](1.1.3/README.md), [1.1.4](1.1.4/README.md) | 모드+실제 수신자 집합·서버/WS 검증·철회 | 완료: selected/public W⊆R·철회, delete fence·epoch 증가·계정/actor local 격리와 재시작 전후 검증 |
-| `NF-REQ-037` | light/dark 디자인 개편안 | [UX 설계](design/UX/README.md), [1.1.5](1.1.5/README.md), [1.1.6](1.1.6/README.md), [NF-REQ-048의 시안 계약](contracts/DESIGN-NATIVE.md) | 대안·토큰·접근성·승인 후 점진 적용 | 계획됨 |
-| `NF-REQ-038` | new_Mock-up·도구 필요 문서 | [UX 설계](design/UX/README.md) | 원본 목업 보존·새 화면/상태·skill/MCP 요구 | 계획됨 |
-| `NF-REQ-039` | UI/UX 동선 개선·개편 | [UX 설계](design/UX/README.md), [1.1.5](1.1.5/README.md), [1.1.6](1.1.6/README.md), [1.1.7](1.1.7/README.md) | 현행 과제 관찰·설계 비교·비파괴 전환 | 계획됨 |
+| `NF-REQ-037` | light/dark 디자인 개편안 | [UX 설계](design/UX/README.md), [1.1.5](1.1.5/README.md), [1.1.6](1.1.6/README.md), [NF-REQ-048의 시안 계약](contracts/DESIGN-NATIVE.md) | 대안·토큰·접근성·승인 후 점진 적용 | UX P1 현행 양 theme·상태/접근성 감사 완료, P2 대안·선택 계획됨 |
+| `NF-REQ-038` | new_Mock-up·도구 필요 문서 | [UX 설계](design/UX/README.md) | 원본 목업 보존·새 화면/상태·skill/MCP 요구 | UX P1 화면/상태 인벤토리 완료, P2 도구 분류·P3 new_Mock-up 계획됨 |
+| `NF-REQ-039` | UI/UX 동선 개선·개편 | [UX 설계](design/UX/README.md), [1.1.5](1.1.5/README.md), [1.1.6](1.1.6/README.md), [1.1.7](1.1.7/README.md) | 현행 과제 관찰·설계 비교·비파괴 전환 | UX P1 15화면·추가 흐름·UX-GAP-01~06 감사 완료, P2~P5 계획됨 |
 | `NF-REQ-040` | Windows 네이티브 개발안 | [1.1.8](1.1.8/README.md), [1.1.9](1.1.9/README.md) | 기술/IME/protocol 승인→구현/서명/실기기 인수 | 계획됨 |
 | `NF-REQ-041` | Android 네이티브 개발안 | [1.1.10](1.1.10/README.md), [1.1.11](1.1.11/README.md) | Kotlin 등 비교·IME/수명주기·서명/실기기 인수 | 계획됨 |
 
