@@ -1,6 +1,6 @@
 # 1.1.5 Phase 5 — 문서·개발 인수·후속 연결
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`, 후보 `074782e8de24b96b7a9bab2fecff90ce2c2a1c6e`의 최종 CI·동일 SHA 개발 인수 완료)
 - 단계 목적: 승인 디자인 적용·탐색 셸의 문서·개발 인수·후속 연결을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -12,10 +12,10 @@
 
 ## 선행조건
 
-- [1.1.5 P4](4phase.md)의 산출물·검증/승인과 실제 최종 SHA 인수.
-- 현재 실행 STATUS·Agent/AGENTS·수정 파일 담당자 충돌 확인.
-- [품질 게이트](../QUALITY-GATES.md)의 격리 환경·지원 런타임·필수 물리 기기 확보.
-- [UX 설계 P5](../design/UX/5phase.md)의 사용자 승인.
+- [x] [1.1.5 P4](4phase.md)의 산출물·검증/승인과 실제 후보 `8fb03becfe27a95f019defb4cbdfee10b55f6812` 인수.
+- [x] 현재 실행 STATUS·Agent/AGENTS·수정 파일 담당자 충돌 확인.
+- [x] [품질 게이트](../QUALITY-GATES.md)의 격리 환경·지원 런타임 확인. 실제 물리 기기·OS IME/AT/OS zoom 미실행은 최종 인수에 별도 기록한다.
+- [x] [UX 설계 P5](../design/UX/5phase.md)의 사용자 B-1 승인.
 
 ## 기준 링크
 
@@ -41,12 +41,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.5-P5-01` 1.1.5의 요구 범위와 각 수용 사례를 정확한 source SHA·변경 파일·migration·실행 명령·결과에 연결한다.
-- [ ] `LC-NF-1.1.5-P5-02` 사용자 가이드·README·지원·보안·자가호스팅·현재 계획/결정 문서를 승인 디자인 적용·탐색 셸의 실제 동작에 맞춰 갱신하고 과거 검증 기록은 보존한다.
-- [ ] `LC-NF-1.1.5-P5-03` 원격 CI와 허용된 개발 산출물·동일 SHA의 개발 환경을 확인한다. 문서-only 결과면 문서 승인만 기록하고 앱 배포 성공을 주장하지 않는다.
-- [ ] `LC-NF-1.1.5-P5-04` 확인된 P0/P1, 원문 유실, 인증 우회, 무음 저장 실패가 없음을 실제 범위에서 판정한다. 신규 범위의 필수 안전성을 다음 안정화 패치로 미루지 않는다.
-- [ ] `LC-NF-1.1.5-P5-05` 다섯 Phase 후보 인수 이후에만 별도 release go/no-go를 요청할 수 있다. main 병합·정식 별칭·app.example.test 배포는 현재 승인 범위를 확인하고 실행한다.
-- [ ] `LC-NF-1.1.5-P5-06` 후속 패치에 계약·미해결/보류·실기기/운영 증거·중단/복구 조건을 인계한다. 같은 제품 계열을 유지하고 빈 릴리스·자동 minor 승격을 만들지 않는다.
+- [x] `LC-NF-1.1.5-P5-01` 1.1.5의 요구 범위와 각 수용 사례를 정확한 source SHA·변경 파일·migration·실행 명령·결과에 연결한다. — P4 source와 `NF-REQ-037/039`, AC 4건, 29개 불변 migration·release artifact를 최종 추적 문서에 연결했다.
+- [x] `LC-NF-1.1.5-P5-02` 사용자 가이드·README·지원·보안·자가호스팅·현재 계획/결정 문서를 승인 디자인 적용·탐색 셸의 실제 동작에 맞춰 갱신하고 과거 검증 기록은 보존한다. — B-1 rail/header/mobile More/Flat-depth, classic rollback, 실제 OS 미실행 경계를 갱신했다.
+- [x] `LC-NF-1.1.5-P5-03` 원격 CI와 허용된 개발 산출물·동일 SHA의 개발 환경을 확인한다. 문서-only 결과면 문서 승인만 기록하고 앱 배포 성공을 주장하지 않는다. — push/PR Actions `34814063096`·`34814075649`, 네 dev image와 같은 SHA 개발 서버·공개 인수를 완료했다.
+- [x] `LC-NF-1.1.5-P5-04` 확인된 P0/P1, 원문 유실, 인증 우회, 무음 저장 실패가 없음을 실제 범위에서 판정한다. 신규 범위의 필수 안전성을 다음 안정화 패치로 미루지 않는다. — 전체 회귀와 공개 저장/재진입·재시작·owner 격리에서 신규 해당 결함 0건이다.
+- [x] `LC-NF-1.1.5-P5-05` 다섯 Phase 후보 인수 이후에만 별도 release go/no-go를 요청할 수 있다. main 병합·정식 별칭·app.example.test 배포는 현재 승인 범위를 확인하고 실행한다. — 다섯 Phase 인수와 사용자의 버전별 정식 릴리스 승인을 확인해 PR #127 병합·정식 release gate로 이동한다.
+- [x] `LC-NF-1.1.5-P5-06` 후속 패치에 계약·미해결/보류·실기기/운영 증거·중단/복구 조건을 인계한다. 같은 제품 계열을 유지하고 빈 릴리스·자동 minor 승격을 만들지 않는다. — 1.1.6에 동일 child/store/API/DB·classic rollback과 실제 OS/native gate 미실행을 인계했다.
 
 ## 구체적 검증
 
@@ -63,14 +63,20 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 [공통 명령·검증](../QUALITY-GATES.md)을 먼저 읽는다. 기존 runner의 영향받은 검사를 우선 사용하고 필요할 때만 회귀를 보강한다. 지원 환경에서 관련 DB/E2E를 선택하며 동일 변경의 full suite는 로컬/CI 중 한 곳과 필수 게이트만 따른다. native은 승인된 SDK/플랫폼 명령을 기록한다. 없는 도구·실제 IME·물리 기기 검증을 모사 결과로 통과시켰다고 표시하지 않는다. 문서-only Phase는 링크·범위·결정·설계 검토로 별도 인수한다.
 
+- 기준 source: P4 merge `2ea54f950c50e3c7dc3f264c5c36b32df2000c51`, 제품 UI/API/DB/migration 변경 없음.
+- 준비 artifact: 1.1.5 environment/migration/license/release manifest, 최종 traceability/release notes/인수·릴리스 runbook. release web은 `LC_UI_VARIANT=b1|classic`만 허용하고 기본 B-1·classic rollback을 검증한다.
+- 최종 후보 `074782e8de24b96b7a9bab2fecff90ce2c2a1c6e`: Node 24 문서/artifact/check PASS, push/PR Actions `34814063096`·`34814075649` PASS. Vitest 365 PASS·4 skip, 전체 E2E 365 PASS·41 skip, 1.1.0 5 PASS, 1.1.1 11 PASS·4 skip, 1.1.2 5 PASS, 1.1.3 5-browser 각 1 PASS, 1.1.4 11 PASS·4 skip, release matrix 10 PASS다.
+- 네 dev image의 source SHA·`dev-1.1.5-p5`·`Dev`·`Dev-latest`가 서비스별 같은 digest다: web `sha256:d0300634a38463123968f500373dfda8bd67470d20d535c520845deb51968ce0`, collaboration `sha256:5011b0595a15bf9dbd9767f97bc56c7b8a65455992593578dd04fd847a2a8f8d`, worker `sha256:56464209a27253821e4c37e051eb06c2e137c6a6c296fafae575a86ae075552d`, migrate `sha256:165f029368b5910aff63bd82aedf9477e2151a845ebe61edc4f23e6a41046ffe`.
+- 같은 SHA 개발 서버의 `1.1.5/dev/p5`, schema `1140_sharing_stability.sql`, 네 서비스 healthy를 확인했다. 공개 PC/mobile×dark/light B-1 root·overflow와 실제 서비스 재시작 뒤 exact body·recent deep link·접근 격리가 PASS했고 합성 fixture를 제거했다.
+
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
+- [x] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
 
 ## 산출물
 

@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.5] - Unreleased
+## [1.1.5] - 2026-09-14
 
 ### Changed
 
@@ -17,6 +17,12 @@
 
 - P4 격리 PostgreSQL의 PC/mobile 4건과 Chromium·Firefox·WebKit desktop/mobile 10건에서 셸 조작 중 동일 편집기, offline 한글 원문 재접속 저장, recent filter/deep link, light focus, 다른 owner 격리를 확인
 - P4 후보 `8fb03be`, Actions `34811056142`·`34811076974`, Vitest 365 PASS·4 skip, 전체 E2E 365 PASS·41 skip, 네 dev image와 동일 SHA 개발 공개 PC/mobile·양 theme·서비스 재시작 뒤 exact body/recent deep link 영속성 PASS
+- P5 후보 `074782e`, Actions `34814063096`·`34814075649`, Vitest 365 PASS·4 skip, 전체 E2E 365 PASS·41 skip, 네 dev image와 동일 SHA 개발 공개 PC/mobile×dark/light·서비스 재시작 뒤 exact body/recent deep link·접근 격리 PASS
+
+### Documentation and release safety
+
+- 29개 불변 migration, release 환경의 B-1/classic 허용값, dependency·Noto Sans KR license, digest-only signed image manifest와 application-first rollback을 1.1.5 artifact로 봉인
+- 실제 OS/물리 기기·OS IME·screen reader·200% OS zoom 미실행과 `OPS-100-001` backup 예외를 알려진 제한으로 유지
 
 ## [1.1.4] - 2026-09-14
 

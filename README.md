@@ -11,7 +11,7 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합, 지정 사용자·공개 링크 공동 편집과 온라인 우선 PWA를 지원한다.
 
-현재 운영 서버의 정식 릴리스는 [`v1.1.4`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.1.4)이다. 다음 단계는 1.1.5 구현에 앞선 제품 버전 없는 UX 설계·사용자 승인이다.
+현재 운영 서버의 정식 릴리스는 [`v1.1.4`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.1.4)이고, 1.1.5 Phase 5 최종 후보를 검증 중이다.
 
 ## 주요 기능
 
@@ -25,6 +25,7 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 - 통합 검색, 최근 작업·위치 복원, 템플릿, 표시 설정과 키보드 명령
 - 30일 휴지통, 탈퇴 철회, TXT/Markdown+JSON 전체 ZIP 내보내기
 - 설치형 PWA, light/dark 테마, 접근 가능한 PC·모바일 화면
+- 승인 B-1 통합 작업공간, 현재 영역 header·접힌 rail tooltip, 모바일 다섯 주 내비+focus 복귀 More와 Flat-depth surface
 - 계정·가사별 Noto Sans KR 선택, same-origin immutable/PWA cache와 system sans fallback
 - 계정별 비열거 공유 코드, 특정 가사 selected-read, 읽기 전용 live update·최소 presence·즉시 권한 회수
 - selected-read 안의 지정 사용자 본문 쓰기, 서버 검증 cursor/presence, 권한 epoch와 거부 원문 복구함
@@ -32,17 +33,17 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 - owner 위험 확인 뒤 공개 링크의 비로그인 guest 본문 공동 편집, 탭별 session/presence·지속 제한·중지와 rejected-only 복구
 - Google OIDC와 1회성 초대 코드 기반 Private Beta 가입
 
-AI 생성과 미디어 업로드는 1.1.4 범위가 아니다.
+AI 생성과 미디어 업로드는 1.1.5 범위가 아니다.
 
 ## 현재 상태
 
 | 항목 | 상태 |
 |---|---|
-| 소스·runtime version | `1.1.4` |
-| 현재 작업 | [UX Phase 2 — 정보 구조·토큰·morphism 비교와 사용자 선택](<./0.Plans/2.Patch-phase/design/UX/2phase.md>) |
+| 소스·runtime version | `1.1.5` |
+| 현재 작업 | [1.1.5 Phase 5 — 문서·개발 인수·후속 연결](<./0.Plans/2.Patch-phase/1.1.5/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.1.4`, main/tag `5f8a045`, exact digest 운영 배포·공개 복원/오프라인 병합/격리/재시작 smoke 완료 |
-| 개발 인수 | 1.1.4 P1~P5와 정식 릴리스·UX P1 현행 경험 감사 완료; P2 비교안 준비 |
+| 개발 인수 | UX P1~P5 B-1 승인, 1.1.5 P1~P4와 동일 SHA 개발 복구/재시작 인수 완료; P5 최종 봉인 중 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.
@@ -52,6 +53,8 @@ AI 생성과 미디어 업로드는 1.1.4 범위가 아니다.
 1.1.3 공개 쓰기는 기존 공개 읽기 링크의 같은 자료·token·만료 범위에서 owner가 별도 위험 확인한 경우에만 비로그인 guest의 본문 편집을 허용한다. guest는 서버 발급 익명 세션으로만 구분하며 workspace·목록·메모·연결 자료·revision·ACL·metadata·삭제·소유권·계정 권한은 얻지 않는다.
 
 1.1.4는 가사·상위 곡 삭제 시 selected/public capability를 회수하고 epoch를 올려 휴지통 복원 뒤 과거 공유가 부활하지 않게 한다. owner revision 복원은 같은 epoch의 offline writer 원문과 수렴하며, 브라우저 전송 대기열은 capability별 64건 또는 1 MiB 안에서 lossless compact된다. 로그아웃·계정 전환 뒤 이전 actor의 snapshot·outbox·복구 원문·presence를 다음 계정에 노출하지 않는다.
+
+1.1.5는 승인된 B-1 통합 작업공간과 Flat-depth를 적용한다. desktop은 현재 영역 header와 접힌 rail tooltip을, 모바일은 곡·라임·프롬프트·검색·더보기와 focus 복귀 More 시트를 사용한다. shell 조작 중에도 같은 CodeMirror·IME·selection·undo·draft/store를 유지하고 기존 URL·filter·사용자정렬·API·DB·공유 권한은 바꾸지 않는다. 시각/탐색 rollback은 `LC_UI_VARIANT=classic`이다.
 
 ## 화면
 
@@ -109,7 +112,7 @@ LyricsCloud betacode refresh
 | 인증·베타 운영자 | [Google OAuth](./docs/runbooks/google-oauth-setup.md), [초대 코드 CLI](./docs/runbooks/1.0.1-phase2-beta-admin.md), [HMAC allowlist](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md) |
 | 복구·배포 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md), [개발 배포](./docs/runbooks/development-deploy.md), [Docker Hub 발행](./docs/runbooks/dockerhub-publish.md) |
 | 보안·장애 담당자 | [Security policy](./SECURITY.md), [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
-| 릴리스 검토자 | [1.1.4 release notes](./docs/releases/1.1.4.md), [1.1.4 Phase 5](./docs/runbooks/1.1.4-phase5-final-acceptance.md), [1.1.4 추적](./docs/architecture/1.1.4-FINAL-TRACEABILITY.md), [CHANGELOG.md](./CHANGELOG.md) |
+| 릴리스 검토자 | [1.1.5 release notes](./docs/releases/1.1.5.md), [1.1.5 Phase 5](./docs/runbooks/1.1.5-phase5-final-acceptance.md), [1.1.5 추적](./docs/architecture/1.1.5-FINAL-TRACEABILITY.md), [CHANGELOG.md](./CHANGELOG.md) |
 | 기여자 | [Agent 지침](./Agent.md), [후속 계획](./0.Plans/2.Patch-phase/README.md), [ADR 색인](./docs/adr/README.md) |
 
 ## 저장소 구조
@@ -125,4 +128,4 @@ LyricsCloud betacode refresh
 | `scripts/` | 검증·migration·배포 보조 명령 |
 | `0.Plans/` | 보호된 기획·목업·기술 결정과 Phase 상태 |
 
-Suno 자동 메타데이터·사전·native 앱 후보와 미승인 디자인은 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있다. 1.1.4는 기존 공유의 삭제·복원·offline/reconnect·계정 전환 안정화까지만 제공하고, 1.1.5 구현은 별도 UX 설계와 사용자 선택 뒤에 진행한다.
+Suno 자동 메타데이터·사전·native 앱 후보와 미선택 디자인은 [최신 요구 대응표](./docs/planning/latest-requirements-mapping.md)에 분리되어 있다. 1.1.5는 승인된 B-1 탐색 셸까지만 제공하고 1.1.6 이후 범위와 native 조건부 gate를 선소비하지 않는다.
