@@ -1,6 +1,6 @@
 # 1.1.7 — 디자인 적용 후 UI/UX 동선 검토·개선
 
-상태: **P1~P2 완료 / P3 로컬 후보 검증 완료·원격 인수 대기**. P2 merge `8a3e76a`에서 exact 목록→대시보드→가사→공유→Suno 새 탭→복귀를 보강하고, 접힌 desktop rail의 명시적 접근성 이름·40px target·focus tooltip을 구현했다. Vitest 264 PASS, 1.1.7 Chromium desktop/mobile 4 PASS, P3 5-browser profile 5 PASS이며 필수 CI·signed dev image·동일 SHA 개발 공개 인수 전에는 P3 완료로 표시하지 않는다. 요구 `NF-REQ-039`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
+상태: **P1~P3 완료 / P4 다음**. P3 후보 `740b1e3`에서 exact 목록→대시보드→가사→공유→Suno 새 탭→복귀와 접힌 desktop rail의 접근성 이름·40px target·focus tooltip을 구현했다. Vitest 264 PASS, 5-browser profile 5 PASS, 두 Actions·네 signed dev image와 동일 SHA 공개 PC/mobile×dark/light 인수를 완료했다. 요구 `NF-REQ-039`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
 
 선행: [1.1.6](../1.1.6/README.md)의 인수와 해당 결정 gate. 코드 변경 없는 개발안/외부 gate 보류는 제품 출시로 세지 않는다.
 
