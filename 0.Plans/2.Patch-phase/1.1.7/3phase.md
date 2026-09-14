@@ -1,6 +1,6 @@
 # 1.1.7 Phase 3 — PC·iOS·Android 상호작용
 
-상태: **계획 검토 / 미착수**. `NF-REQ-039`의 이번 Phase 범위만 수행한다.
+상태: **진행 중** (`active`). P2 merge `8a3e76a645f31c5cafb41296da52b8226e0af645`를 기준으로 `NF-REQ-039`의 이번 Phase 범위만 수행한다.
 
 ## 선행조건과 담당 경계
 

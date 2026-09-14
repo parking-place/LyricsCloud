@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.7"
-current_phase: "../2.Patch-phase/1.1.7/2phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.7/3phase.md"
+state: "active"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-15"
-next_action: "1.1.7 P2 완료 기록을 push·PR merge한 뒤 P3 PC·iOS·Android 상호작용 범위에 착수한다"
+next_action: "1.1.7 P3의 실제 목록→편집→공유·Suno 복귀와 키보드/터치 대안을 조사해 실패 우선 계약을 고정한다"
 ```
 
 ## 승인과 기준
@@ -170,6 +170,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7/P3 | LC-NF-1.1.7-P3-01~03 | 목록/편집/공유/Suno 복귀·drag/context 대안·PC/mobile 회귀·상태/Future | P2 merge `8a3e76a`; 실제 OS/기기·AT는 증거 없이는 browser 대리와 분리 | 2026-09-15 | active |
 | Codex | 1.1.7/P2 | LC-NF-1.1.7-P2-01~03 | quick-add·rhyme/prompt new route/screen·returnTo 회귀·상태/Future | 후보 `206b14f`; Actions `34881741352`·`34881745605`; 네 signed dev image·동일 SHA 공개 인수 | 2026-09-15 | complete |
 | Codex | 1.1.7/P1 | LC-NF-1.1.7-P1-01~03 | 실제 과제·동선 관찰·P1 문서·STATUS·요구 추적·Future | 1.1.6 release `f8d24c6`; 기록 main `5a72780` | 2026-09-15 | complete |
 | Codex | 1.1.6/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | 1.1.6 P5 `7f4ac5b`; main/tag `f8d24c6` | 2026-09-15 | complete |
