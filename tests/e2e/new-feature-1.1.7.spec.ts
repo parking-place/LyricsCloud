@@ -137,6 +137,93 @@ test.describe("1.1.7 P3 platform interaction flow", () => {
   });
 });
 
+test.describe("1.1.7 P4 usability and accessibility review", () => {
+  test.skip(!process.env.E2E_DATABASE_URL, "requires isolated E2E database");
+
+  test("keeps the return task usable with reduced motion and narrow reflow", async ({ context, page }) => {
+    test.setTimeout(90_000);
+    const userId = await account(context);
+    const songId = await createSong(context, "1.1.7 P4 접근성 곡");
+    const lyricId = await createLyric(context, songId, "1.1.7 P4 접근성 가사");
+    const listPath = "/songs?status=idea&sort=title_asc";
+    try {
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.setViewportSize({ width: 720, height: 500 });
+      await page.goto(listPath);
+      await page.getByRole("link", { name: "1.1.7 P4 접근성 곡 대시보드 열기" }).click();
+      await expect.poll(() => new URL(page.url()).pathname).toBe(`/songs/${songId}`);
+      expect(new URL(page.url()).searchParams.get("returnTo")).toBe(listPath);
+      await page.getByRole("link", { name: "1.1.7 P4 접근성 가사" }).click();
+      await expect.poll(() => new URL(page.url()).pathname).toBe(`/lyrics/${lyricId}`);
+      await expect(page.locator(".cm-content")).toContainText("돌아와야 하는 한글 원문");
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 20_000 });
+
+      const share = page.getByRole("button", { name: "공유", exact: true });
+      await share.focus();
+      await share.click();
+      await expect(page.getByRole("dialog", { name: "가사 공유" })).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("dialog", { name: "가사 공유" })).toBeHidden();
+      await expect(share).toBeFocused();
+      expect(await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    } finally {
+      await removeAccount(userId);
+    }
+  });
+
+  test("keeps navigation and dialog state visible in forced colors", async ({ browserName, context, page }, testInfo) => {
+    test.skip(browserName !== "chromium", "Playwright forced-colors emulation is accepted on Chromium");
+    const userId = await account(context);
+    const songId = await createSong(context, "1.1.7 P4 고대비 곡");
+    try {
+      await page.emulateMedia({ forcedColors: "active", reducedMotion: "reduce" });
+      await page.goto(`/songs/${songId}`);
+      expect(await page.evaluate(() => matchMedia("(forced-colors: active)").matches)).toBe(true);
+      const navigation = testInfo.project.name.includes("mobile")
+        ? page.getByRole("navigation", { name: "모바일 주 메뉴" })
+        : page.getByRole("navigation", { name: "데스크톱 주 메뉴" });
+      await expect(navigation.getByRole("link", { name: "곡", exact: true })).toBeVisible();
+      const manage = page.getByRole("button", { name: "연결 관리" });
+      await manage.click();
+      const dialog = page.getByRole("dialog", { name: "연결 자료 관리" });
+      await expect(dialog).toBeVisible();
+      await expect(dialog).toHaveCSS("border-top-style", "solid");
+      expect(await page.locator(".topbar").evaluate((element) => getComputedStyle(element).backdropFilter)).toBe("none");
+      await page.keyboard.press("Escape");
+      await expect(manage).toBeFocused();
+    } finally {
+      await removeAccount(userId);
+    }
+  });
+
+  test("keeps exact editor persistence under fourfold CPU throttling", async ({ browserName, context, page }, testInfo) => {
+    test.skip(browserName !== "chromium" || !["mobile", "chromium-mobile"].includes(testInfo.project.name),
+      "the low-end proxy uses Chromium mobile CDP once");
+    test.setTimeout(90_000);
+    const userId = await account(context);
+    const songId = await createSong(context, "1.1.7 P4 저사양 대리 곡");
+    const lyricId = await createLyric(context, songId, "1.1.7 P4 저사양 대리 가사");
+    const cdp = await context.newCDPSession(page);
+    try {
+      await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+      await page.goto(`/lyrics/${lyricId}`);
+      const editor = page.locator(".cm-content");
+      await expect(editor).toHaveAttribute("contenteditable", "true", { timeout: 20_000 });
+      await editor.focus();
+      await page.keyboard.press("Control+End");
+      await page.keyboard.insertText("\n저사양 대리에서도 보존할 입력");
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 30_000 });
+      await expect.poll(async () => (await (await page.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body,
+        { timeout: 30_000 }).toContain("저사양 대리에서도 보존할 입력");
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    } finally {
+      await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 }).catch(() => undefined);
+      await removeAccount(userId);
+    }
+  });
+});
+
 async function openQuickAdd(page: Page) {
   await page.locator(".top-quick-add:visible, .quick-add:visible").first().click();
   await expect(page.getByRole("dialog", { name: "빠른 추가" })).toBeVisible();
