@@ -16,7 +16,7 @@ issuer=https://token.actions.githubusercontent.com
 COSIGN_EXPERIMENTAL=1 cosign sign --yes --registry-referrers-mode=oci-1-1 "$artifact"
 
 signature_verified=false
-signature_attempts=30
+signature_attempts=180
 signature_delay_seconds=5
 for ((attempt = 1; attempt <= signature_attempts; attempt += 1)); do
   if cosign verify --experimental-oci11 \
