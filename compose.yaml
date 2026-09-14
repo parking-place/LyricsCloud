@@ -20,8 +20,9 @@ x-app: &app
     CI: "true"
     NODE_ENV: development
     DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set in .env}
-    APP_VERSION: ${APP_VERSION:-1.1.4}
+    APP_VERSION: ${APP_VERSION:-1.1.5}
     BUILD_ID: ${BUILD_ID:-local}
+    LC_UI_VARIANT: ${LC_UI_VARIANT:-b1}
   volumes:
     - .:/workspace
     - workspace_node_modules:/workspace/node_modules
@@ -80,8 +81,9 @@ services:
       CI: "true"
       NODE_ENV: test
       DATABASE_URL: ${TEST_DATABASE_URL:-postgresql://lyricscloud_test:lyricscloud_test_only@postgres_test:5432/lyricscloud_test}
-      APP_VERSION: ${APP_VERSION:-1.1.4}
+      APP_VERSION: ${APP_VERSION:-1.1.5}
       BUILD_ID: ${BUILD_ID:-local}
+      LC_UI_VARIANT: ${LC_UI_VARIANT:-b1}
     depends_on:
       postgres_test:
         condition: service_healthy
@@ -98,8 +100,9 @@ services:
       CI: "true"
       NODE_ENV: development
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set in .env}
-      APP_VERSION: ${APP_VERSION:-1.1.4}
+      APP_VERSION: ${APP_VERSION:-1.1.5}
       BUILD_ID: ${BUILD_ID:-local}
+      LC_UI_VARIANT: ${LC_UI_VARIANT:-b1}
       APP_ORIGIN: ${APP_ORIGIN:-http://localhost:8080}
       COLLABORATION_INTERNAL_URL: http://collaboration:3001
       GOOGLE_ISSUER: ${GOOGLE_ISSUER:-https://accounts.google.com}

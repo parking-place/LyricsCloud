@@ -1,6 +1,6 @@
 # 1.1.5 Phase 2 — 핵심 기반·저장과 서버
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **검토** (`review`, 구현·로컬 검증 완료, 후보 CI·동일 SHA 개발 인수 전)
 - 단계 목적: 승인 디자인 적용·탐색 셸의 핵심 기반·저장과 서버을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -41,12 +41,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.5-P2-01` 구현 전 `1.1.5` 수용 사례의 실패 테스트를 작성한다. 제안 위치는 `tests/new-feature/1.1.5.contract.test.ts`이며 runner 포함 여부를 확인한 뒤 실패 이유를 기록한다.
-- [ ] `LC-NF-1.1.5-P2-02` 승인 토큰과 공통 component를 단계적으로 적용하며 무관한 라이브러리 교체를 하지 않는다.
-- [ ] `LC-NF-1.1.5-P2-03` 기존 deep link·returnTo·최근 위치·저장 상태의 계약을 보존한다.
-- [ ] `LC-NF-1.1.5-P2-04` 동일 build metadata를 사용해 버전/phase/channel 표기를 일치시킨다.
-- [ ] `LC-NF-1.1.5-P2-05` 가능한 경우 기능 flag로 전환하되 플래그로 P0/P1을 감추지 않고 이행 종료 조건을 둔다.
-- [ ] `LC-NF-1.1.5-P2-06` 추가 schema가 있으면 실제 테스트 DB의 빈 설치·이전 schema 업그레이드·권한·되돌림을 검사한다. 원인 수정 후 동일 실패 테스트와 기존 관련 회귀를 다시 실행한다.
+- [x] `LC-NF-1.1.5-P2-01` 구현 전 `1.1.5` 수용 사례의 실패 테스트를 작성한다. 제안 위치는 `tests/new-feature/1.1.5.contract.test.ts`이며 runner 포함 여부를 확인한 뒤 실패 이유를 기록한다. — 기존 config runner에 default/allowlist 계약을 먼저 추가해 `uiVariant` 부재 2건 실패(16 PASS)를 확인하고, 제품 root/theme 회귀는 `tests/e2e/new-feature-1.1.5.spec.ts`에 분리했다.
+- [x] `LC-NF-1.1.5-P2-02` 승인 토큰과 공통 component를 단계적으로 적용하며 무관한 라이브러리 교체를 하지 않는다. — 승인 B-1의 dark/light canvas/panel/surface/ink/accent/danger/focus와 radius/shadow semantic token을 추가하고 기존 component 변수에 alias했다. 구조·라이브러리는 바꾸지 않았다.
+- [x] `LC-NF-1.1.5-P2-03` 기존 deep link·returnTo·최근 위치·저장 상태의 계약을 보존한다. — root attribute/token만 바꾸고 route/component child/store/draft/outbox/API를 수정하지 않았으며 관련 workspace-return/build와 전체 단위 회귀가 통과했다.
+- [x] `LC-NF-1.1.5-P2-04` 동일 build metadata를 사용해 버전/phase/channel 표기를 일치시킨다. — VERSION·workspace package·config·compose·CI·Playwright·Next build id를 1.1.5로 정렬했다.
+- [x] `LC-NF-1.1.5-P2-05` 가능한 경우 기능 flag로 전환하되 플래그로 P0/P1을 감추지 않고 이행 종료 조건을 둔다. — `LC_UI_VARIANT=classic|b1`, default B-1, server root attribute로 고정하며 classic selector에는 새 cascade를 적용하지 않아 즉시 시각 rollback한다. editor remount·저장/IME/선택·권한 결함이면 classic으로 중단한다.
+- [x] `LC-NF-1.1.5-P2-06` 추가 schema가 있으면 실제 테스트 DB의 빈 설치·이전 schema 업그레이드·권한·되돌림을 검사한다. 원인 수정 후 동일 실패 테스트와 기존 관련 회귀를 다시 실행한다. — schema/API/권한 변화 0이라 migration은 없으며 config 실패 테스트와 단위·browser 회귀를 재실행했다.
 
 ## 구체적 검증
 
@@ -63,14 +63,21 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 [공통 명령·검증](../QUALITY-GATES.md)을 먼저 읽는다. 기존 runner의 영향받은 검사를 우선 사용하고 필요할 때만 회귀를 보강한다. 지원 환경에서 관련 DB/E2E를 선택하며 동일 변경의 full suite는 로컬/CI 중 한 곳과 필수 게이트만 따른다. native은 승인된 SDK/플랫폼 명령을 기록한다. 없는 도구·실제 IME·물리 기기 검증을 모사 결과로 통과시켰다고 표시하지 않는다. 문서-only Phase는 링크·범위·결정·설계 검토로 별도 인수한다.
 
+- Node 24 config 실패 재현: `uiVariant` 부재로 2 FAIL·16 PASS, 구현 뒤 18 PASS.
+- Node 24 `pnpm test`: PASS — 65 files·254 tests; 실제 DB가 필요한 29 files·115 tests는 이 로컬 실행에서 계약대로 skip했으며 PASS로 승격하지 않는다.
+- Node 24 `pnpm check`와 `pnpm build`: PASS — 경계·TypeScript·Next production build와 standalone asset 준비 완료.
+- Playwright Chromium desktop/mobile `new-feature-1.1.5.spec.ts`: 2 PASS — server root B-1과 dark/light 승인 token 실제 계산값 확인.
+- DB/API/migration·route·editor component 수정 0. classic은 새 alias selector의 대상이 아니며 config allowlist로 잘못된 값은 fail closed 한다.
+- 남은 gate: 후보 원격 전체 CI·네 dev image·같은 SHA 개발 서버의 runtime/version/phase/channel/root variant·양 theme·기존 저장/탐색 공개 smoke.
+
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다. — 후보 SHA 확정 전
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 로컬 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
 - [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] main·Release·운영 변경은 수행하지 않았다.
 
 ## 산출물
 

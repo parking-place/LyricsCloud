@@ -22,3 +22,42 @@
 @media (prefers-color-scheme: dark) {
   :root { --lc-bg: #171613; --lc-surface: #22211d; --lc-text: #f3f0e9; --lc-muted: #b9b3a8; --lc-accent: #cbb7ff; }
 }
+
+/* UX P5 approved B-1 semantic foundation. Classic intentionally keeps the
+   pre-1.1.5 token cascade unchanged for an exact visual rollback. */
+html[data-ui-variant="b1"] {
+  --lc-b1-canvas: #080b0f;
+  --lc-b1-panel: #11161d;
+  --lc-b1-surface: #171e27;
+  --lc-b1-surface-raised: #202936;
+  --lc-b1-ink: #f5f8fa;
+  --lc-b1-muted: #9ba8b7;
+  --lc-b1-line: #2c3744;
+  --lc-b1-accent: #c8ff3d;
+  --lc-b1-accent-hover: #d8ff78;
+  --lc-b1-accent-ink: #101605;
+  --lc-b1-danger: #ff9f91;
+  --lc-b1-danger-bg: #3b211f;
+  --lc-b1-focus: #9bb7ff;
+  --lc-b1-radius-control: 0.5rem;
+  --lc-b1-radius-compact: 0.75rem;
+  --lc-b1-radius-panel: 1rem;
+  --lc-b1-shadow-raised: 0 18px 50px rgb(0 0 0 / 28%);
+}
+
+html[data-ui-variant="b1"][data-theme="light"] {
+  --lc-b1-canvas: #f4f7f9;
+  --lc-b1-panel: #ffffff;
+  --lc-b1-surface: #eaf0f4;
+  --lc-b1-surface-raised: #dfe8ee;
+  --lc-b1-ink: #17212b;
+  --lc-b1-muted: #526170;
+  --lc-b1-line: #c4d0da;
+  --lc-b1-accent: #426800;
+  --lc-b1-accent-hover: #2f5000;
+  --lc-b1-accent-ink: #ffffff;
+  --lc-b1-danger: #982d24;
+  --lc-b1-danger-bg: #fce8e5;
+  --lc-b1-focus: #365eea;
+  --lc-b1-shadow-raised: 0 18px 50px rgb(23 33 43 / 18%);
+}

@@ -41,6 +41,25 @@ html[data-theme="light"] {
   --focus: #315600;
 }
 
+/* B-1 reuses the existing component contract while swapping only semantic
+   presentation tokens. Structural shell changes are owned by 1.1.5 P3. */
+html[data-ui-variant="b1"] {
+  --ink: var(--lc-b1-ink);
+  --muted: var(--lc-b1-muted);
+  --subtle: var(--lc-b1-muted);
+  --canvas: var(--lc-b1-canvas);
+  --panel: var(--lc-b1-panel);
+  --surface: var(--lc-b1-surface);
+  --surface-raised: var(--lc-b1-surface-raised);
+  --line: var(--lc-b1-line);
+  --acid: var(--lc-b1-accent);
+  --acid-hover: var(--lc-b1-accent-hover);
+  --acid-ink: var(--lc-b1-accent-ink);
+  --danger: var(--lc-b1-danger);
+  --danger-bg: var(--lc-b1-danger-bg);
+  --focus: var(--lc-b1-focus);
+}
+
 html[data-theme="light"] .side-nav,
 html[data-theme="light"] .mobile-bottom-nav { background: #ffffff; }
 html[data-theme="light"] .mobile-header { background: #ffffff; }
