@@ -2,6 +2,8 @@
 
 UX P2에서 사용자가 선택한 **B-1(통합 작업공간 + Flat-depth)**을 기존 제품 계약 위에 구체화한 설계 세트다. 보호된 `0.Plans/Mock-up/**`는 수정하지 않으며, 이 폴더의 결과도 UX P5 구현 인수 전에는 제품 코드의 확정 기준이 아니다.
 
+UX P5에서 [승인 design manifest](../../../docs/ux/ux-p5-approved-design-manifest.md)로 구현 인수를 확정했다. 제품 적용은 1.1.5 이후 각 Phase의 실제 회귀·동일 SHA 개발 인수와 별도 release gate를 따라야 한다.
+
 ## 검토 시작
 
 - [전체 화면 인덱스](index.html)

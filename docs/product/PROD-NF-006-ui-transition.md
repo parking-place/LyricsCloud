@@ -1,9 +1,9 @@
 # PROD-NF-006 — 디자인 승인·점진 적용
 
-- 상태: **Proposed**
+- 상태: **Accepted for B-1 incremental implementation**
 - 작성일: 2026-09-09
 - 결정 Phase: UX P5, 1.1.5~1.1.6 소비
-- 승인: 2026-09-14 UX P2에서 사용자가 `B-1` 통합 workspace+Flat-depth를 선택했다. P3~P4 목업·검토 뒤 P5 최종 승인 전까지 상태는 Proposed다.
+- 승인: 2026-09-14 사용자가 `B-1` 확인 질문에 `1.1.14까지 달렷`이라고 답해 통합 workspace+Flat-depth 선택과 UX P3~P5·계획된 후속 실행을 승인했다. P4 수정은 mobile layout 세부 조정뿐이며 선택안 의미와 기능 범위를 바꾸지 않아 UX P5에서 최종 구현 인수로 확정했다.
 
 ## 해결할 질문
 
@@ -18,6 +18,16 @@
 ## 권장 선택과 이유
 
 사용자가 선택한 `B-1`을 기능 삭제 없이 상태 행렬과 new_Mock-up으로 먼저 만들고 셸/목록 다음 편집/복구 화면 순서로 적용한다. viewport별 primary navigation은 하나로 수렴하고 mobile editor 고정 도구는 핵심 4개 이하로 제한한다. 외형/OS 변화만으로 새 minor를 발행하지 않는다.
+
+## 승인 조건
+
+- 18화면의 기능·정상/오류/권한/복구 상태를 삭제하지 않는다.
+- URL/API/DB, CodeMirror/Yjs, IME/selection/undo, 계정별 초안/outbox, owner/actor/capability 계약을 유지한다.
+- 1.1.5는 token·shell·목록/workspace, 1.1.6은 editor/상세 화면으로 분리하며 feature flag를 rollback 경계로만 사용한다.
+- P4 자동 검증은 실제 OS/IME/AT/물리 기기 PASS를 뜻하지 않는다.
+- 각 제품 버전은 자체 Phase·CI·동일 SHA 개발 인수와 별도 release gate를 통과한다.
+
+[승인 manifest](../ux/ux-p5-approved-design-manifest.md)와 [1.1.5 인계](../ux/ux-p5-to-1.1.5-handoff.md)가 이 결정의 구현 입력이다.
 
 ## 영향과 검증
 
