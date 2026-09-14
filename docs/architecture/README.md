@@ -42,3 +42,5 @@
 - [`1.1.4 공유 안정성·복구 최종 추적`](./1.1.4-FINAL-TRACEABILITY.md)
 - [`1.1.5 승인 B-1 탐색 셸 최종 추적`](./1.1.5-FINAL-TRACEABILITY.md)
 - [`1.1.6 편집·자료·가입·공유·복구 B-1 최종 추적`](./1.1.6-FINAL-TRACEABILITY.md)
+- [`1.1.7 UI/UX 동선 개선 최종 추적`](./1.1.7-FINAL-TRACEABILITY.md)
+- [`1.1.7 웹 동선·플랫폼 개발안 인계`](./1.1.7-PLATFORM-HANDOFF.md)

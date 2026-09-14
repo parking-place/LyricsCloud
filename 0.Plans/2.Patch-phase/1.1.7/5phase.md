@@ -1,6 +1,6 @@
 # 1.1.7 Phase 5 — 웹 인수·플랫폼 개발안 인계
 
-상태: **진행 중** (`active`). P4 완료 merge `bdc7eecb3e4f681108e6683a31308de6a13f923a`를 기준으로 `NF-REQ-039`의 이번 Phase 범위만 수행한다. 실제 SDK/OS/기기·서명/스토어 gate는 별도 증거 없이 완료로 표시하지 않는다.
+상태: **로컬 후보 검증 완료** (`active`). P4 완료 merge `bdc7eecb3e4f681108e6683a31308de6a13f923a`를 기준으로 `NF-REQ-039`의 이번 Phase 범위만 수행한다. 후보 push·두 필수 CI·네 signed dev image·동일 SHA 개발 공개 인수 전에는 완료로 표시하지 않는다. 실제 SDK/OS/기기·서명/스토어 gate는 별도 증거 없이 완료로 표시하지 않는다.
 
 ## 선행조건과 담당 경계
 
@@ -8,13 +8,20 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.7-P5-01` 현재 사용자 안내와 PC/iOS/Android별 목업 상태·탐색 문서를 갱신한다.
+- [x] `LC-NF-1.1.7-P5-01` 현재 사용자 안내와 PC/iOS/Android별 목업 상태·탐색 문서를 갱신한다. — user guide와 new_Mock-up 행렬/interaction에 exact 복귀·query·focus·접근성 fallback과 browser 대리/native 미실행 경계를 연결했다.
 - [ ] `LC-NF-1.1.7-P5-02` CI·동일 SHA 개발 공개 smoke로 동선 인수를 마무리한다.
-- [ ] `LC-NF-1.1.7-P5-03` Windows/Linux/macOS/Android/iOS 개발안의 공통 계약과 OS별 차이를 인계하되 SDK/패키징/스토어를 자동 확정하지 않는다.
+- [x] `LC-NF-1.1.7-P5-03` Windows/Linux/macOS/Android/iOS 개발안의 공통 계약과 OS별 차이를 인계하되 SDK/패키징/스토어를 자동 확정하지 않는다. — 공통 CodeMirror/Yjs·URL·저장/권한/복구 계약과 플랫폼별 최초 결정·실제 gate를 `1.1.7-PLATFORM-HANDOFF.md`에 분리했다.
 
 ## 수용 기준
 
 `AC-1.1.7-05`: 승인 UI 동선이 네이티브 개발안의 입력으로 명확히 연결된다.
+
+## 로컬 후보 증거
+
+- P4 제품 source `66f2f79967828ca40237a0d7a241d6da54094d37`와 완료 merge `bdc7eecb3e4f681108e6683a31308de6a13f923a`를 입력으로 삼았고 P5에서 제품 UI/API/DB/migration 동작을 바꾸지 않았다.
+- 1.1.7 release environment, 29개 migration checksum, dependency/Noto Sans KR license와 digest-only image placeholder를 네 artifact에 봉인했다.
+- Node 24.20.0에서 architecture boundary, release artifact/final/document/environment 검증, 11 workspace package TypeScript와 production build를 통과했다. 1.1.7 계약 6건도 PASS했다.
+- 실제 native SDK·앱·OS/기기·IME/AT/zoom·패키징·서명·스토어는 실행하지 않았고 Chromium/WebKit mobile을 native PASS로 표시하지 않는다.
 
 ## 검증·완료·인계
 

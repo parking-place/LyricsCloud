@@ -11,7 +11,9 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합, 지정 사용자·공개 링크 공동 편집과 온라인 우선 PWA를 지원한다.
 
-현재 운영 서버의 정식 릴리스는 [`v1.1.5`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.1.5)이고, 1.1.6 Phase 5 최종 후보 인수를 완료해 정식 릴리스 gate를 실행한다.
+현재 운영 서버의 정식 릴리스는 [`v1.1.6`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.1.6)이고, 1.1.7 Phase 5 최종 후보 인수를 진행한다.
+
+[1.1.7 release notes](./docs/releases/1.1.7.md)와 [CHANGELOG.md](./CHANGELOG.md)에 사용자 변화·호환성·미실행 gate를 기록한다.
 
 ## 주요 기능
 
@@ -26,6 +28,8 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 - 30일 휴지통, 탈퇴 철회, TXT/Markdown+JSON 전체 ZIP 내보내기
 - 설치형 PWA, light/dark 테마, 접근 가능한 PC·모바일 화면
 - 승인 B-1 통합 작업공간, 현재 영역 header·접힌 rail tooltip, 모바일 다섯 주 내비+focus 복귀 More와 Flat-depth surface
+- 새 라임·프롬프트의 호출 화면 exact 복귀, 목록 filter·sort·view query 보존과 공유/Suno 작업 뒤 focus·동선 복원
+- reduced transparency·increased contrast·forced colors의 불투명 판독 fallback과 reduced motion·200% 확대 대리 reflow
 - 계정·가사별 Noto Sans KR 선택, same-origin immutable/PWA cache와 system sans fallback
 - 계정별 비열거 공유 코드, 특정 가사 selected-read, 읽기 전용 live update·최소 presence·즉시 권한 회수
 - selected-read 안의 지정 사용자 본문 쓰기, 서버 검증 cursor/presence, 권한 epoch와 거부 원문 복구함
@@ -33,17 +37,17 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 - owner 위험 확인 뒤 공개 링크의 비로그인 guest 본문 공동 편집, 탭별 session/presence·지속 제한·중지와 rejected-only 복구
 - Google OIDC와 1회성 초대 코드 기반 Private Beta 가입
 
-AI 생성과 미디어 업로드는 1.1.6 범위가 아니다.
+AI 생성과 미디어 업로드는 1.1.7 범위가 아니다.
 
 ## 현재 상태
 
 | 항목 | 상태 |
 |---|---|
-| 소스·runtime version | `1.1.6` |
-| 현재 작업 | [1.1.6 Phase 5 — 문서·개발 인수·후속 연결](<./0.Plans/2.Patch-phase/1.1.6/5phase.md>) |
+| 소스·runtime version | `1.1.7` |
+| 현재 작업 | [1.1.7 Phase 5 — 웹 인수·플랫폼 개발안 인계](<./0.Plans/2.Patch-phase/1.1.7/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
-| 정식 릴리스 | `v1.1.5`, main/tag `17fb4a9`, exact digest 운영 배포·공개 B-1/공유/복구/재시작·전역 beta CLI smoke 완료 |
-| 개발 인수 | 1.1.6 P1~P5 완료; 후보 `7f4ac5b`의 두 CI·네 signed dev image·동일 SHA 개발 저장/재진입/재시작 인수 완료 |
+| 정식 릴리스 | `v1.1.6`, main/tag `f8d24c6`, exact digest 운영 배포·공개 B-1 생성/연결·공유/복구·재시작·전역 beta CLI smoke 완료 |
+| 개발 인수 | 1.1.7 P1~P4 완료; P5 최종 artifact·CI·동일 SHA 개발 인수 진행 중 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.
@@ -57,6 +61,8 @@ AI 생성과 미디어 업로드는 1.1.6 범위가 아니다.
 1.1.5는 승인된 B-1 통합 작업공간과 Flat-depth를 적용한다. desktop은 현재 영역 header와 접힌 rail tooltip을, 모바일은 곡·라임·프롬프트·검색·더보기와 focus 복귀 More 시트를 사용한다. shell 조작 중에도 같은 CodeMirror·IME·selection·undo·draft/store를 유지하고 기존 URL·filter·사용자정렬·API·DB·공유 권한은 바꾸지 않는다. 시각/탐색 rollback은 `LC_UI_VARIANT=classic`이다.
 
 1.1.6은 같은 CodeMirror와 store를 유지한 채 가사·라임·프롬프트 편집기, 자료 패널, 새 자료 생성, 곡 연결 관리, beta 가입·공유 회수·guest 복구·탈퇴 재인증 화면까지 B-1 상태 언어를 확장한다. light/dark·desktop/mobile 전환 중 입력·selection·undo·초점을 보존하고 서버 ACK 전에는 저장 완료를 표시하지 않는다. classic/B-1의 copy/export payload와 기존 URL·deep link·API·DB·capability는 동일하다.
+
+1.1.7은 새 라임·프롬프트 생성에 명시적 내부 `returnTo`를 사용해 호출 화면으로 정확히 복귀하고, 곡 목록의 filter·sort·view query를 대시보드·가사·공유·Suno 작업 뒤에도 보존한다. 공유 dialog와 모바일 More는 trigger focus를 복원하며 접힌 rail·drag/context 기능에는 keyboard/버튼 대안이 있다. reduced transparency·contrast/forced-colors fallback은 표현만 바꾸고 CodeMirror/Yjs·API·DB·권한·저장 원문을 바꾸지 않는다.
 
 ## 화면
 
