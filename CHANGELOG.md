@@ -17,6 +17,8 @@
 
 - P4 후보 `25d7102`, PR/push Actions `34857974913`·`34857969866`, Vitest 369 PASS·4 skip, 전체 E2E 370 PASS·42 skip과 지원 5-browser 회귀 PASS
 - 네 signed dev image와 동일 SHA 개발 공개 desktop/mobile×dark/light 생성·연결·focus·overflow, server ACK 뒤 exact 원문 재진입과 실제 서비스 재시작 저장 보존 PASS
+- P5 후보 `7f4ac5b`, push/PR Actions `34864142932`·`34864188502`, Vitest 369 PASS·4 skip, 전체 E2E 370 PASS·42 skip과 공유·release browser matrix PASS
+- P5 네 signed dev image의 SHA/Phase/Dev tag 일치와 동일 SHA 개발 공개 생성·연결·저장 재진입·서비스 재시작 지속성 PASS
 
 ### Documentation and release safety
 

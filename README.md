@@ -11,7 +11,7 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합, 지정 사용자·공개 링크 공동 편집과 온라인 우선 PWA를 지원한다.
 
-현재 운영 서버의 정식 릴리스는 [`v1.1.5`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.1.5)이고, 1.1.6 Phase 5 최종 후보를 검증 중이다.
+현재 운영 서버의 정식 릴리스는 [`v1.1.5`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.1.5)이고, 1.1.6 Phase 5 최종 후보 인수를 완료해 정식 릴리스 gate를 실행한다.
 
 ## 주요 기능
 
@@ -43,7 +43,7 @@ AI 생성과 미디어 업로드는 1.1.6 범위가 아니다.
 | 현재 작업 | [1.1.6 Phase 5 — 문서·개발 인수·후속 연결](<./0.Plans/2.Patch-phase/1.1.6/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.1.5`, main/tag `17fb4a9`, exact digest 운영 배포·공개 B-1/공유/복구/재시작·전역 beta CLI smoke 완료 |
-| 개발 인수 | 1.1.6 P1~P4의 편집·자료·가입/공유/복구 B-1 적용과 동일 SHA 개발 저장/재진입/재시작 인수 완료; P5 최종 봉인 중 |
+| 개발 인수 | 1.1.6 P1~P5 완료; 후보 `7f4ac5b`의 두 CI·네 signed dev image·동일 SHA 개발 저장/재진입/재시작 인수 완료 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.
