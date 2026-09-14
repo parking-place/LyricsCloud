@@ -1,6 +1,6 @@
 # 1.1.5 Phase 2 — 핵심 기반·저장과 서버
 
-- 상태: **검토** (`review`, 구현·로컬 검증 완료, 후보 CI·동일 SHA 개발 인수 전)
+- 상태: **완료** (`complete`, 후보 `43980ba70d388897a0c8c42552b44d34462c24b9`)
 - 단계 목적: 승인 디자인 적용·탐색 셸의 핵심 기반·저장과 서버을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -68,15 +68,20 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 - Node 24 `pnpm check`와 `pnpm build`: PASS — 경계·TypeScript·Next production build와 standalone asset 준비 완료.
 - Playwright Chromium desktop/mobile `new-feature-1.1.5.spec.ts`: 2 PASS — server root B-1과 dark/light 승인 token 실제 계산값 확인.
 - DB/API/migration·route·editor component 수정 0. classic은 새 alias selector의 대상이 아니며 config allowlist로 잘못된 값은 fail closed 한다.
-- 남은 gate: 후보 원격 전체 CI·네 dev image·같은 SHA 개발 서버의 runtime/version/phase/channel/root variant·양 theme·기존 저장/탐색 공개 smoke.
+- 로컬 완료 시 남았던 원격 CI·네 dev image·동일 SHA 개발 서버·공개 UI/저장/탐색 gate는 아래 실제 증거로 모두 충족했다.
+- GitHub Actions `34803929839`: PASS — 전체 verify와 web·collaboration·worker·migrate 개발 image 발행·서명. 각 서비스의 SHA·`dev-1.1.5-p2`·`Dev`·`Dev-latest` tag가 서비스별 동일 digest다.
+- 개발 서버 후보 `43980ba70d388897a0c8c42552b44d34462c24b9`: PASS — checkout/runtime build id 동일, version `1.1.5`, channel `dev`, phase `p2`, schema `1140_sharing_stability.sql`, 네 서비스 healthy. Docker volume은 유지하고 미사용 image/cache만 정리했다.
+- 공개 개발 UI: PASS — PC 1440×1000·mobile 390×844의 dark/light에서 B-1 root, 승인 token 계산값, overflow 0과 exact build를 확인했다.
+- 공개 개발 저장/탐색: PASS — 합성 계정으로 곡·가사 생성, 본문 server save, API 재진입, 최근 작업 복귀, 인증 deep link와 B-1 root를 확인하고 합성 계정·자료를 제거했다. 기존 사용자는 수정하지 않았다.
+- classic은 같은 image의 config parser·CSS 비적용 계약으로 검증했다. 개발 서버는 승인 기본 B-1로 유지하며 실제 환경 전환/restart 교차 회귀는 P4가 담당한다.
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다. — 후보 SHA 확정 전
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
 - [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 로컬 검증되었다.
 - [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
 - [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를 갖췄다.
 - [x] main·Release·운영 변경은 수행하지 않았다.
 
 ## 산출물

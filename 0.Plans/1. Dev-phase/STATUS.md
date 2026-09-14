@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.5"
 current_phase: "../2.Patch-phase/1.1.5/2phase.md"
-state: "review"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.5 P2 후보를 원격 검증하고 같은 SHA의 개발 서버에 b1로 배포해 root variant·양 theme token·classic rollback·기존 저장/탐색 smoke를 인수한다"
+next_action: "1.1.5 P3에서 같은 child/store/editor를 유지하며 B-1 공통 header·rail/mobile nav·목록/grid·곡 workspace를 실패 E2E부터 구현한다"
 ```
 
 ## 승인과 기준
@@ -152,13 +152,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | UX P4 | complete | B-1 사용자 과제/위험/interaction·feature-flag 검토, 396페이지 overflow 0·144 Axe 0·72 keyboard/focus 0, mobile editor/320px field 수정, 실제 AT/기기/IME 미실행 분리 |
 | UX P5 | complete | 사용자 B-1·후속 실행 승인과 P4 의미 불변 수정 봉인, PROD-NF-006 Accepted, 승인 manifest/tree·1.1.5 Phase별 feature-flag/visual/rollback 인계, runtime/DB/서버 무변경 |
 | 1.1.5 P1 | complete | main `107ec24` 실제 WorkspaceShell/token/list/route/test 조사, LC_UI_VARIANT classic/B-1·editor 비재마운트·API/DB 무변경·실패 입력/담당/rollback 계약 승인 |
-| 1.1.5 P2 | review | `LC_UI_VARIANT=classic\|b1` 검증/default B-1·server root attribute·양 theme semantic token과 1.1.5 build metadata 구현, 로컬 unit 254 PASS·신규 PC/mobile 2 PASS·check/build PASS; 원격 CI·동일 SHA 개발 인수 전 |
+| 1.1.5 P2 | complete | 후보 `43980ba`, Actions `34803929839`, 네 dev image tag 동일 digest·동일 SHA 개발 배포, 공개 PC/mobile×dark/light token과 저장→재진입·최근 복귀·deep link 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.5/P2 | LC-NF-1.1.5-P2-01~06 | config/root layout/token/styles/version/compose·신규 PC/mobile 회귀·상태/요구/Future | 1.1.5 P1 merge `6c03dc3`; 승인 tree `a3a0250` | 2026-09-14 | review |
+| Codex | 1.1.5/P2 | LC-NF-1.1.5-P2-01~06 | config/root layout/token/styles/version/compose·신규 PC/mobile 회귀·상태/요구/Future | 후보 `43980ba`; Actions `34803929839`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P1 | LC-NF-1.1.5-P1-01~06 | P1 계약·실제 shell/token/list/route/test 조사·상태/요구/Future | UX P5 merge `107ec24`; 승인 tree `a3a0250` | 2026-09-14 | complete |
 | Codex | UX/P5 | LC-DESIGN-UX-P5-01~06 | 승인 manifest·1.1.5 인계·PROD-NF-006·UX P5 인수 | UX P4 merge `f2b2b8f`; 승인 artifact `8ce1dab` | 2026-09-14 | complete |
 | Codex | UX/P4 | LC-DESIGN-UX-P4-01~07 | `new_Mock-up` 수정·interaction/change log·`docs/ux` P4 검토·P4 인수 | UX P3 merge `3ea7515`; 수정 `0177c84` | 2026-09-14 | complete |
@@ -270,7 +270,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 ## 인계
 
-1.1.5 P2는 `LC_UI_VARIANT`가 승인된 `classic|b1`만 받고 미지정 시 B-1이 되도록 실패 테스트부터 구현했다. server-rendered `<html data-ui-variant>`와 dark/light semantic token alias만 추가해 같은 component child/store/draft/outbox를 유지하며, classic에는 기존 cascade를 추가로 적용하지 않는다. VERSION·package·compose·CI·Playwright metadata를 1.1.5로 맞췄고 Node 24 unit 254 PASS(실제 DB 115건은 미설정 skip), check/build PASS, Chromium PC/mobile의 root·양 theme token 2 PASS다. API/DB/migration/capability 변화는 0이며 원격 CI·동일 SHA 개발 배포와 공개 저장/탐색 smoke 전이라 P2는 review다.
+1.1.5 P2 후보 `43980ba70d388897a0c8c42552b44d34462c24b9`는 `LC_UI_VARIANT`가 승인된 `classic|b1`만 받고 미지정 시 B-1이 되도록 실패 테스트부터 구현했다. server-rendered `<html data-ui-variant>`와 dark/light semantic token alias만 추가해 같은 component child/store/draft/outbox를 유지하며, classic에는 기존 cascade를 추가로 적용하지 않는다. VERSION·package·compose·CI·Playwright metadata는 1.1.5로 일치한다. Actions `34803929839` 전체 verify와 네 개발 image 발행/서명이 PASS했고 각 서비스의 SHA·`dev-1.1.5-p2`·`Dev`·`Dev-latest` tag가 서비스별 동일 digest다. 같은 SHA 개발 서버의 네 서비스 healthy, schema `1140_sharing_stability.sql`, 공개 PC/mobile×dark/light root/token/overflow와 합성 곡·가사 생성→서버 저장→API 재진입→최근 복귀→인증 deep link가 PASS했으며 합성 계정·자료는 제거했다. API/DB/migration/capability 변화는 0이다. P3는 이 child/store를 유지한 채 shell/list/workspace 구조만 전환한다.
 
 1.1.5 P1은 main `107ec24237cb2633f0e3d0d4ea6e78dd5265e8bd`의 WorkspaceShell/root layout/token/styles, 세 목록·dashboard, returnTo/filter route와 기존 회귀를 조사해 B-1 shell 계약을 승인했다. P2는 server-rendered `LC_UI_VARIANT=classic|b1`와 root data attribute, semantic token/surface만 구현하고 P3가 중복 workspace tab·목록/workspace를 전환한다. 두 variant는 같은 child/store/draft/outbox를 쓰며 API/DB/migration/capability 변경은 0이다. editor remount·IME/selection/undo/draft 유실·거짓 저장·교차 계정 노출은 즉시 중단/classic rollback 조건이다. P1은 문서-only라 실제 앱/DB/browser/dev 배포를 수행하지 않았다.
 
