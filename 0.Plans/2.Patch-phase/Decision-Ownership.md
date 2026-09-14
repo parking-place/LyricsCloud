@@ -15,7 +15,7 @@
 | `PROD-NF-003` | 개인 순서·목록 보기 | 1.0.7 P1, 1.0.8 P1, 1.0.9 소비 | Accepted for 1.0.7 views and 1.0.8 song ordering; 1.0.9 ordering Proposed | [결정](../../docs/product/PROD-NF-003-library-order-views.md) |
 | `PROD-NF-004` | 모델 표기·복수 작업 링크 | 1.0.10 P1, 1.0.11 소비 | 1.0.10 수동 workspace Accepted; 자동 metadata Deferred / no-go | [결정](../../docs/product/PROD-NF-004-suno-work-links.md) |
 | `PROD-NF-005` | 공유 수신자와 공개 필드 | 1.1.0 P1, 1.1.1~1.1.3 확장 승인, 1.1.4 복구 의미 | Accepted through 1.1.4 restore/delete/account-transition behavior | [결정](../../docs/product/PROD-NF-005-sharing-scope.md) |
-| `PROD-NF-006` | 디자인 승인·점진 적용 | UX P5, 1.1.5~1.1.6 소비 | Proposed | [결정](../../docs/product/PROD-NF-006-ui-transition.md) |
+| `PROD-NF-006` | 디자인 승인·점진 적용 | UX P5, 1.1.5~1.1.6 소비 | Proposed; UX P2 `B-1` selected, P5 final approval pending | [결정](../../docs/product/PROD-NF-006-ui-transition.md) |
 | `OPS-NF-002` | 제품 단계 전환·마이너 진입 | 1.0.12 점검; 1.0.14 P5, 1.1.0 P1 | Accepted for 1.1.0 selected-read entry | [결정](../../docs/operations/OPS-NF-002-minor-entry.md) |
 | `ADR-NF-006` | 사전 제공 경로·권리·조회 경계 | 1.0.13 P1 | Deferred / no-go; 공식 계약 확보 시 재개 | [결정](../../docs/adr/ADR-NF-006-dictionary-provider.md) |
 | `ADR-NF-007` | 웹폰트 자산·로딩·라이선스 | 1.0.14 P1 | Accepted for 1.0.14 | [결정](../../docs/adr/ADR-NF-007-web-fonts.md) |

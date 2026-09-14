@@ -3,14 +3,16 @@
 ```yaml
 current_version: "UX"
 current_phase: "../2.Patch-phase/design/UX/2phase.md"
-state: "awaiting_user_selection"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "UX P2의 A/B 정보 구조와 1~5 morphism, token·상태·반응형·도구·Liquid Glass 비교 및 60조합 자동 검증 완료. 사용자에게 권고 B-1과 대안을 제시하고 명시 선택을 받은 뒤 P2를 완료한다"
+next_action: "사용자가 UX P2 B-1 통합 workspace+Flat-depth와 1.1.14까지의 후속 실행을 승인했다. P3에서 기능 보존 상태 행렬과 PC·iOS·Android별 new_Mock-up/prototype을 만든다"
 ```
 
 ## 승인과 기준
+
+2026-09-14 사용자가 직전 UX P2 권고안 `B-1` 확인 질문에 ``1.1.14까지 달렷``이라고 답했다. 이를 통합 workspace+Flat-depth의 명시 선택과 UX P3~P5, 1.1.5~1.1.14의 계획된 Phase·각 출시 가능한 버전의 정식 릴리스 실행 승인으로 기록한다. 기존 기능 삭제는 승인하지 않았으며 CodeMirror/Yjs·IME·selection/undo·초안·권한/복구·URL/API/DB 계약을 유지한다. 네이티브 SDK·실기기·서명·스토어 등 각 계획의 조건부 gate는 별도 실제 증거 없이 완료나 릴리스로 표시하지 않는다.
 
 2026-09-12 사용자가 1.1.6까지 각 버전의 계획된 모든 Phase와 개별 정식 릴리스를 실행하도록 승인했다. 착수 전에 고지한 권장 모델에 따라 1.1.0은 owner를 유지하고 actor와 자료별 grant를 분리한 지정 사용자 읽기부터 시작한다. 공개 링크·선택/공개 쓰기·guest와 디자인 적용은 각 담당 버전 P1의 명시 계약과 실패/복구 경계를 먼저 확정한다. 버전별 P5와 동일 SHA 개발 인수가 끝난 뒤에만 main·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·GitHub Release를 수행한다. 기존 DB volume·secret·beta allowlist와 사용자가 승인한 `OPS-100-001` 위험 예외를 보존한다.
 
@@ -145,13 +147,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.4 P5 | complete | 후보 `081117d`, Actions `34786159783`, 네 dev image·동일 SHA 공개 복원/offline 병합·bounded queue·계정 격리·재시작 인수 완료 |
 | 1.1.4 Release | complete | main/tag `5f8a045`, main CI `34789430853`·tag CI `34790980889` 최종 3차 실행, exact digest 운영 배포·공개 복원/offline 병합/격리/재시작 smoke·GitHub Release 완료 |
 | UX P1 | complete | v1.1.4 `5f8a045` 기준 15화면+추가 흐름·60 viewport, responsive/accessibility/keyboard 12 PASS·4 조건부 skip, UX-GAP-01~06과 실제 AT/물리 기기 미실행 경계 기록 |
-| UX P2 | awaiting_user_selection | A 보수적 shell/B 통합 workspace×Flat/Glass/Neumorphism/Clay/Liquid, 양 theme·320/390/1440px 60조합 Axe/overflow PASS; 권고 `B-1`, 사용자 선택 전 P3 중단 |
+| UX P2 | complete | A/B shell×5 morphism·양 theme·320/390/1440px 60조합 Axe/overflow PASS, 사용자 `B-1` 통합 workspace+Flat-depth 선택과 기능 보존 조건 기록 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | UX/P2 | LC-DESIGN-UX-P2-01~07 | `docs/ux`·prototype·design/UX P2·TOOLS-AND-SKILLS·선택 기록 | UX P1 merge `99dd580`; 사용자 구조/표현 선택 | 2026-09-14 | awaiting_user_selection |
+| Codex | UX/P2 | LC-DESIGN-UX-P2-01~07 | `docs/ux`·prototype·design/UX P2·TOOLS-AND-SKILLS·선택 기록 | UX P1 merge `99dd580`; 사용자 `B-1` 선택 | 2026-09-14 | complete |
 | Codex | UX/P1 | LC-DESIGN-UX-P1-01~06 | `docs/ux`·design/UX P1·현행 15화면/동선/상태/반응형/접근성 감사 | v1.1.4 `5f8a045`, 감사 `99c1e1e` | 2026-09-14 | complete |
 | Codex | 1.1.4/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.4 P5 `081117d` | 2026-09-14 | complete |
 | Codex | 1.1.4/P5 | LC-NF-1.1.4-P5-01~06 | 요구 추적·사용자/운영 문서·봉인 artifact·최종 CI·개발/정식 인수 | 후보 `081117d`, Actions `34786159783` | 2026-09-14 | complete |
@@ -257,6 +259,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+UX P2는 A 보수적 shell/B 통합 workspace와 Flat-depth/Glass/Neumorphism/Clay/Liquid Glass를 같은 가사 편집 과제, 양 theme, 320/390/1440px에서 비교했다. 60조합의 serious/critical Axe 위반과 horizontal overflow가 0건이었고 외부 계정·Figma·image generation·GSAP·신규 runtime dependency 없이 repository-native prototype으로 고정했다. 사용자는 `B-1` 통합 workspace+Flat-depth를 선택하고 실행 범위를 1.1.14까지 확대했다. 기능 삭제는 승인되지 않았고 Liquid/Glass는 선택되지 않았으므로 P3는 불투명 semantic surface·한 primary navigation·mobile 핵심 4행동 이하를 기준으로 PC·iOS·Android 상태별 new_Mock-up을 만든다.
 
 UX P1은 정식 v1.1.4 source `5f8a04512c005cb7c211630dc8bf43f42787b60f`의 기존 15화면과 beta/Suno/read-write 공유·탈퇴·복구 흐름을 route/component/state에 연결하고 가입→창작→copy→재개 및 공유/회수의 단계·막힘을 감사했다. 격리 PostgreSQL production build의 responsive/accessibility/shortcut 12 PASS·조건부 4 skip과 15화면×320/390/768/1440px 60장 합성 캡처를 대조해 mobile editor 9개 dock label 붕괴, dashboard 긴 card stack, PC navigation 중복 등 `UX-GAP-01~06`을 우선순위화했다. 실제 NVDA/VoiceOver/TalkBack·물리 touch/safe-area·OS zoom/IME는 미실행으로 명시했고 앱/runtime/DB/기존 목업/운영을 변경하지 않았다. P2는 보수적 shell과 통합 workspace, flat-depth/glass/neumorphism/clay/liquid glass를 같은 과제로 비교하고 사용자의 명시 선택 전 P3 new_Mock-up을 시작하지 않는다.
 

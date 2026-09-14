@@ -1,6 +1,6 @@
 # UX Phase 2 — 정보 구조·토큰·약 5개 morphism 시안과 사용자 선택
 
-- 상태: **사용자 선택 대기** (`awaiting_user_selection`)
+- 상태: **완료** (`complete`)
 - 단계 목적: 기존 계약을 유지하는 디자인 선택을 제안한다.
 - 적용 범위: 설계·목업 마일스톤 (런타임 미배포)
 
@@ -48,7 +48,7 @@
 - [x] `LC-DESIGN-UX-P2-03` 저장/오프라인/동기화/공유 권한을 색상 외 문장·상태로 전달하는 UI 규칙을 만든다.
 - [x] `LC-DESIGN-UX-P2-04` 반응형 메뉴·닫힌 sidebar·자료 패널·modal/sheet의 stacking과 키보드 복귀 규칙을 정의한다.
 - [x] `LC-DESIGN-UX-P2-05` 필요한 디자인/Figma·문서/Context7·브라우저 테스트 도구를 TOOLS-AND-SKILLS.md에서 설치 필요/선택/권한으로 분류한다.
-- [ ] `LC-DESIGN-UX-P2-06` 접근성 기준과 사용자의 시안 선택을 P3 착수 전에 기록하고 기존 기능 제거가 있다면 명시 승인 대상으로 분리한다.
+- [x] `LC-DESIGN-UX-P2-06` 접근성 기준과 사용자의 시안 선택을 P3 착수 전에 기록하고 기존 기능 제거가 있다면 명시 승인 대상으로 분리한다.
 
 - [x] `LC-DESIGN-UX-P2-07` 사용자 Liquid Glass Effect/Toggle 및 Apple motion 출처를 비교하고 blur·saturation·shadow·SVG distortion·GSAP 후보의 권리·지원·비용·fallback을 설명한다. 도구 설치와 실제 구현은 이 문서 작성 범위가 아니다.
 
@@ -64,16 +64,16 @@
 - 기본 권고는 `B-1`이다. 통합 workspace로 viewport별 primary navigation을 하나로 만들고, 불투명 flat-depth surface로 읽기·성능·브라우저 편차 위험을 낮춘다. Liquid Glass를 선택해도 control/navigation layer에만 제한하고 opaque/no-distortion/no-motion fallback을 유지한다.
 - 외부 디자인 계정·Figma·Context7·image generation·GSAP·새 runtime dependency는 필요하지 않아 설치·연결·외부 업로드하지 않았다. 출처와 채택 시 재검토 조건은 비교 문서와 [도구 계획](../../TOOLS-AND-SKILLS.md)에 기록했다.
 - 실제 NVDA/VoiceOver/TalkBack·물리 iOS/Android·저사양 GPU는 아직 실행하지 않았다. P2 사용자 선택과 P3 목업 뒤 P4에서 실행/미실행을 다시 분리한다.
-- 사용자 정보 구조·표현 방식 선택은 아직 없다. `LC-DESIGN-UX-P2-06`과 완료 조건은 선택 기록 전까지 열어 두며 P3와 1.1.5 구현을 시작하지 않는다.
+- 2026-09-14 사용자가 직전 `B-1` 권고 질문에 ``1.1.14까지 달렷``이라고 답해 통합 workspace+Flat-depth 선택과 후속 실행 범위를 승인했다. 기능 삭제는 승인되지 않았으므로 기존 기능은 유지하고 위치·위계만 점진 전환한다.
 
 ## 완료 조건
 
-- [ ] 모든 작업 ID와 구체적 수용 기준에 실제 산출물/증거가 있다.
-- [ ] 원문·인가·복구·기존 사용자 동작을 손상시키지 않았고 확인된 차이는 승인됐다.
-- [ ] 검사하지 못한 항목·외부 제한·남은 위험을 숨기지 않고 기록했다.
-- [ ] 현재 문서와 체크 상태·담당 경로·정확한 SHA가 일치한다.
-- [ ] 구현 Phase는 CI·정확한 SHA의 개발 인수를, 설계-only는 검토/승인을 완료했다.
-- [ ] release/main/production 변경은 별도 승인 없이 실행하지 않았다.
+- [x] 모든 작업 ID와 구체적 수용 기준에 실제 산출물/증거가 있다.
+- [x] 원문·인가·복구·기존 사용자 동작을 보존하는 `B-1` 전환 계약과 사용자 선택을 기록했다.
+- [x] 검사하지 못한 항목·외부 제한·남은 위험을 숨기지 않고 기록했다.
+- [x] 현재 문서와 체크 상태·담당 경로·정확한 SHA가 일치한다.
+- [x] 설계-only P2의 비교·자동 검증·사용자 선택을 완료했다.
+- [x] P2 범위에서 release/main/production 변경을 수행하지 않았다.
 
 ## 산출물
 

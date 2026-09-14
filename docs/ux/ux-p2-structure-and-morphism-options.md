@@ -82,8 +82,9 @@
 
 ## 사용자 선택 기록
 
-- 상태: **선택 대기**
-- 정보 구조: `A` 보수적 shell / `B` 통합 workspace 중 미선택
-- 표현 방식: `1` Flat-depth / `2` Glass / `3` Neumorphism / `4` Clay / `5` Liquid Glass 중 미선택
-- 기본 권고: `B-1`. 선택 전에는 P3 `new_Mock-up`과 1.1.5 runtime 구현을 시작하지 않는다.
-
+- 상태: **선택 완료**
+- 승인 시각: 2026-09-14, 사용자 응답 ``1.1.14까지 달렷``을 직전 질문의 권고안 `B-1` 승인과 실행 범위 확대로 기록했다.
+- 정보 구조: `B` 통합 workspace.
+- 표현 방식: `1` Flat-depth.
+- 기능 계약: 기존 기능을 삭제하지 않고 viewport별 primary navigation 하나, mobile editor 핵심 4행동 이하, 나머지 기능별 More group으로 재배치한다. CodeMirror/Yjs·IME·selection·undo·미전송 초안·권한/복구 의미를 보존한다.
+- 범위: P3~P5 설계 인수 뒤 1.1.5부터 1.1.14까지 계획된 Phase를 순서대로 진행한다. P5 최종 디자인 승인과 각 버전의 조건부 기술·실기기·서명 gate는 실제 증거 없이 PASS로 간주하지 않는다.
