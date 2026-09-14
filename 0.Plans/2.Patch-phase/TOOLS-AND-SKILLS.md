@@ -30,3 +30,13 @@
 | macOS/iOS | 승인 뒤 Apple SDK/Xcode·실제 Mac/iPhone/iPad, SwiftUI 관련 작업 시 해당 스킬 | IME·수명주기·Keychain·서명/배포 권한 별도 |
 
 설치·계정 연결·외부 업로드는 이번 문서 범위 밖이다. 도구가 있다는 이유로 도입하거나 가상의 성공 증거를 기록하지 않는다.
+
+## UX P2 실제 도구 판정
+
+| 작업 | 사용/결정 | 설치·권한·비용·rollback |
+|---|---|---|
+| 두 정보 구조×다섯 morphism 비교 | repository-native HTML/CSS와 기존 Playwright·Axe 사용 | 추가 설치·계정·외부 업로드 없음. 비교 파일 삭제만으로 철회 가능 |
+| 공식 기준 조사 | Apple HIG·W3C WCAG/Filter Effects·MDN·GSAP·CodePen의 공개 공식 문서 직접 확인 | Context7 불필요, 비밀·사용자 자료 송신 없음 |
+| P2/P3 시각 자산 | 합성 가사와 기존 1.0.1 브랜드를 코드 기반 prototype에 사용 | Figma/image generation 불필요. 사용자가 Figma 산출물을 별도 요청할 때만 연결·권한을 다시 판단 |
+| Liquid Glass 효과 | CSS opacity/blur/shadow와 reduced-motion/transparency fallback만 비교 | GSAP·SVG distortion·신규 runtime dependency 미도입. 선택 시 P3에서 CSS 우선, 1.1.5 P1에서 번들·license·성능을 별도 승인 |
+| 실제 보조기기·물리 기기 | 자동 Axe/keyboard/reflow만 수행, 실제 AT/기기는 미실행 | P4에서 사용 가능한 NVDA/VoiceOver/TalkBack·iOS/Android 환경과 개인정보 없는 합성 입력을 별도 인수 |

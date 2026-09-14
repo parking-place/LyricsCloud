@@ -54,7 +54,7 @@
 | `NF-REQ-045` | Linux 개발안 | [1.1.12](1.1.12/README.md) | SDK/패키징·X11/Wayland/IME·협업/사전/폰트 검증 뒤 조건부 구현 | 계획됨 |
 | `NF-REQ-046` | macOS 개발안 | [1.1.13](1.1.13/README.md) | SDK/패키징·IME·Keychain·서명/notarization 검증 뒤 조건부 구현 | 계획됨 |
 | `NF-REQ-047` | iOS 개발안과 PC/iOS/Android 목업 | [1.1.14](1.1.14/README.md), [UX](design/UX/README.md) | iPhone/iPad·수명주기·플랫폼별 목업·실기기·서명/스토어 gate | 계획됨 |
-| `NF-REQ-048` | 약 5개 morphism·Liquid Glass 시안 선택 | [UX P2](design/UX/2phase.md)~[P5](design/UX/5phase.md), [1.1.5](1.1.5/README.md)~[1.1.7](1.1.7/README.md) | 출처·glass/blur/saturation/shadow/SVG/GSAP 후보·사용자 시안 선택→new_Mock-up·a11y/성능 | 계획됨 |
+| `NF-REQ-048` | 약 5개 morphism·Liquid Glass 시안 선택 | [UX P2](design/UX/2phase.md)~[P5](design/UX/5phase.md), [1.1.5](1.1.5/README.md)~[1.1.7](1.1.7/README.md) | 출처·glass/blur/saturation/shadow/SVG/GSAP 후보·사용자 시안 선택→new_Mock-up·a11y/성능 | UX P2 두 shell×5 morphism·양 theme·60조합 비교와 사용자 `B-1` 선택 완료, P3~P5 계획됨 |
 
 ## 범위 분할 기준
 
