@@ -1,6 +1,6 @@
 # 1.1.5 Phase 4 — 실패·권한·복구 회귀
 
-- 상태: **검토** (`review`, 로컬 교차 인수 완료·CI/개발 재시작 인수 대기)
+- 상태: **완료** (`complete`, 후보 CI·동일 SHA 개발 공개/재시작 인수 완료)
 - 단계 목적: 승인 디자인 적용·탐색 셸의 실패·권한·복구 회귀을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -66,16 +66,19 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 - 기준 source: P3 merge `924980a8613d03a0eb61f04927547279f8a2e104`; runtime 코드/API/DB/migration 변경 0, P4 테스트·인수 문서만 변경.
 - 격리 PostgreSQL + production build의 P4 desktop/mobile: 4 PASS. 같은 editor DOM, online/offline 한글 원문, reconnect server exact body, reload, recent filter/deep link, light/focus, 다른 owner 404/빈 목록을 검증했다.
 - Chromium desktop·Firefox desktop·WebKit desktop·Chromium mobile·WebKit mobile: 10 PASS. 실제 Windows/macOS/iOS/Android 브라우저가 아니라 Linux browser engine 자동 회귀이며 물리 기기·OS IME·screen reader·200% OS zoom을 대신하지 않는다.
-- Node 24 `pnpm check`: PASS. 후보 SHA 필수 CI·네 dev image·동일 SHA 개발 배포와 실제 서비스 재시작/공개 스모크는 완료 전 남은 gate다.
+- Node 24 `pnpm check`: PASS. 후보 `8fb03becfe27a95f019defb4cbdfee10b55f6812`의 push/PR Actions `34811056142`·`34811076974` 전체 PASS. Vitest 365 PASS·4 조건부 skip, 전체 Playwright 365 PASS·41 조건부 skip이며 네 dev image 게시·서명을 완료했다.
+- 서비스별 source SHA·`dev-1.1.5-p4`·`Dev`·`Dev-latest`는 같은 digest다: web `sha256:49007db0606d1da85f02d933901e226582bbf64425a3d8d448ce660390d4cb2c`, collaboration `sha256:4855aeb8aa28ceb7f81d0b8521fba86d262bca3539281f13bcb442ddd027fb09`, worker `sha256:bc9c1818bf81bb117578dfdf4a0be2e078f295c9d879a2cca555ad29f59795ab`, migrate `sha256:d01ebaa813e7390a712f8768953abfe1d11309e2c04014ddea3be2758f591798`.
+- 같은 SHA 개발 서버는 `1.1.5`·`dev`·`p4`, schema `1140_sharing_stability.sql`, B-1 root와 네 서비스 healthy다. 공개 PC/mobile×dark/light exact build·root·overflow를 통과했고, 합성 owner의 exact body를 서비스 재시작 전후 확인해 recent deep link까지 PASS한 뒤 fixture를 제거했다. 릴리스 서버는 변경하지 않았다.
+- 실제 Windows/macOS/iOS/Android 물리 기기·OS IME·screen reader·200% OS zoom은 이번 Phase에서 실행하지 않았고 자동화 결과로 대체하지 않는다.
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
+- [x] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
 
 ## 산출물
 

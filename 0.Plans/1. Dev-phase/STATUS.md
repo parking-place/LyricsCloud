@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.5"
 current_phase: "../2.Patch-phase/1.1.5/4phase.md"
-state: "review"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.5 P4의 저장 중 셸 전환·deep link/filter/recent·양 theme/focus·다른 계정/offline/reconnect/restart·지원 browser 교차 회귀를 실행한다"
+next_action: "1.1.5 P4 PR #126을 main에 병합한 뒤 P5 문서·봉인·최종 CI와 동일 SHA 개발 인수를 수행한다"
 ```
 
 ## 승인과 기준
@@ -154,12 +154,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.5 P1 | complete | main `107ec24` 실제 WorkspaceShell/token/list/route/test 조사, LC_UI_VARIANT classic/B-1·editor 비재마운트·API/DB 무변경·실패 입력/담당/rollback 계약 승인 |
 | 1.1.5 P2 | complete | 후보 `43980ba`, Actions `34803929839`, 네 dev image tag 동일 digest·동일 SHA 개발 배포, 공개 PC/mobile×dark/light token과 저장→재진입·최근 복귀·deep link 인수 완료 |
 | 1.1.5 P3 | complete | 후보 `24cef7e`, Actions `34808547591`·`34808550793`, 전체 E2E 361 PASS·네 dev image·동일 SHA 공개 B-1 context shell/mobile More와 저장·재진입 인수 완료 |
+| 1.1.5 P4 | complete | 후보 `8fb03be`, Actions `34811056142`·`34811076974`, 전체 E2E 365 PASS·네 dev image·동일 SHA 공개 offline 저장/recent deep link·서비스 재시작 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.5/P4 | LC-NF-1.1.5-P4-01~06 | 저장/복구·권한·offline/reconnect/restart·지원 browser 회귀·상태/요구/Future | 1.1.5 P3 merge `924980a`; 동일 SHA 개발 인수 | 2026-09-14 | review |
+| Codex | 1.1.5/P4 | LC-NF-1.1.5-P4-01~06 | 저장/복구·권한·offline/reconnect/restart·지원 browser 회귀·상태/요구/Future | 후보 `8fb03be`; Actions `34811056142`·`34811076974`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P3 | LC-NF-1.1.5-P3-01~06 | 공통 header·rail/mobile nav·목록/grid·곡 workspace·PC/mobile E2E·상태/요구/Future | 후보 `24cef7e`; Actions `34808547591`·`34808550793`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P2 | LC-NF-1.1.5-P2-01~06 | config/root layout/token/styles/version/compose·신규 PC/mobile 회귀·상태/요구/Future | 후보 `43980ba`; Actions `34803929839`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P1 | LC-NF-1.1.5-P1-01~06 | P1 계약·실제 shell/token/list/route/test 조사·상태/요구/Future | UX P5 merge `107ec24`; 승인 tree `a3a0250` | 2026-09-14 | complete |
@@ -272,6 +273,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.5 P4 후보 `8fb03becfe27a95f019defb4cbdfee10b55f6812`는 B-1 shell 조작 중 같은 CodeMirror DOM, offline 한글 원문→reconnect server exact body→reload, recent filter/deep link, 양 theme/focus와 다른 owner 격리를 회귀로 고정했다. Node 24 check, 격리 PostgreSQL PC/mobile 4 PASS, 5-browser engine 10 PASS와 push/PR Actions `34811056142`·`34811076974` 전체 PASS를 통과했다. Vitest 365 PASS·4 조건부 skip, 전체 Playwright 365 PASS·41 조건부 skip이며 네 dev image의 source/P4/Dev tag 동일 digest·서명도 완료했다. 같은 SHA 개발 서버의 `1.1.5`·`dev`·`p4`, schema `1140_sharing_stability.sql`, B-1 root와 네 서비스 healthy를 확인하고 공개 PC/mobile×dark/light 및 서비스 재시작 전후 exact body·recent deep link를 PASS한 뒤 fixture를 제거했다. 앱/API/DB/migration 변경은 0이며 실제 OS IME·screen reader·물리 기기/OS zoom은 미실행으로 유지한다. P5는 이 후보를 문서·artifact에 봉인하고 최종 CI·동일 SHA 개발 인수 뒤 승인된 정식 릴리스 gate로 이동한다.
 
 1.1.5 P3 최종 후보 `24cef7eee5c6d6c77689f47cbd4c740287ab511d`는 승인 B-1의 context header, rail tooltip/current state, mobile 5개 주 내비+More, flat list/workspace를 적용하면서 기존 route/filter/order와 동일 CodeMirror/store/draft/outbox를 유지한다. push/PR Actions `34808547591`·`34808550793` 전체 PASS, 네 개발 image의 source/P3/Dev tag 동일 digest·서명과 같은 SHA 개발 서버의 공개 PC/mobile×dark/light root/overflow, 합성 저장→API 재진입→최근 복귀→인증 deep link를 통과했고 fixture를 제거했다. API/DB/migration/capability 변경은 0이며 실제 OS IME·screen reader·물리 200% zoom은 P4에서 자동 증거와 구분해 남긴다. P4는 저장 중 shell 전환·deep link/filter/recent·양 theme/focus·다른 계정/offline/reconnect/restart/지원 browser 회귀만 수행한다.
 
