@@ -12,7 +12,7 @@
 
 - API·DB·29개 migration·CodeMirror/Yjs·copy/export·owner/actor/capability/epoch를 변경하지 않고 실제 PostgreSQL·Chromium 전체 회귀와 지원 5-browser 집중 검증을 통과
 - P2~P4 네 signed dev image와 동일 SHA 공개 개발 환경에서 exact 복귀·focus·theme·reflow·4x CPU 입력, API/CRDT 저장과 서비스 재시작 지속성을 확인
-- P5 최종 CI·동일 SHA 개발 인수와 정식 릴리스 결과는 후보 확정 뒤 기록
+- P5 후보 `b1a1e2c`, Actions `34900342849`·`34900363577`와 동일 SHA 개발 인수, main/tag `edb8b4a`, Actions `34904079990`·`34906725749`, 네 signed exact digest 운영 배포·공개 저장/복귀/공유/복구·재시작 smoke와 GitHub Release 완료
 
 ### Documentation and release safety
 
