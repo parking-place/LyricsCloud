@@ -1,6 +1,6 @@
 # 1.1.5 Phase 3 — PC·모바일 사용자 흐름
 
-- 상태: **검토** (`review`, 로컬 인수 완료·CI/개발 배포 대기)
+- 상태: **완료** (`complete`)
 - 단계 목적: 승인 디자인 적용·탐색 셸의 PC·모바일 사용자 흐름을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -69,16 +69,18 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 - 관련 회귀 40건: 초기 B-1 light 상태 badge/prompt token 대비 2 FAIL을 확인하고 수정. 그 외 30 PASS·8 조건부 skip. 수정 후 15화면×dark/light Axe serious/critical PC/mobile 2 PASS.
 - 최초 후보 Actions `34806946625`: 신규 P3 검사는 전부 PASS했고 전체 E2E 359 PASS·41 skip·flaky retry 1 PASS였으나, 기존 responsive shell이 B-1에서 숨긴 호환용 즐겨찾기 링크까지 터치 대상으로 계산해 320px에서 0px 높이 1건 FAIL. 제품 결함이 아닌 검증 대상 선택 오류로 판정해 보이는 5개 링크·버튼만 44px 기준을 적용하고, 5개 주 내비+More 구성은 신규 P3 검사로도 계속 고정한다.
 - API·DB·migration·route/store/editor 수정 0. 실제 OS IME·screen reader·물리 줌은 실행하지 않았으며 P4 교차 검증 입력으로 유지한다.
-- 남은 게이트: 후보 SHA push·필수 CI·네 dev image·동일 SHA 개발 배포·공개 스모크. 완료 전 PASS로 승격하지 않는다.
+- 최종 후보 `24cef7eee5c6d6c77689f47cbd4c740287ab511d`: push Actions `34808547591`과 PR Actions `34808550793` 전체 PASS. 실제 DB 전체 E2E 361 PASS·41 skip, 단위 365 PASS·4 skip, 과거 sharing matrix와 release candidate 10 PASS를 포함한다.
+- 네 개발 image의 source SHA·`dev-1.1.5-p3`·`Dev`·`Dev-latest` tag가 서비스별 동일 digest이며 서명 검증 PASS: web `sha256:6bb66b6223b923fbbcb3b76375a29b1b9386d9a01d2216a32d3b283c742e3226`, collaboration `sha256:b09fbdd0c423fc17f0e47405c78724bc482f1579c8d47435fdce8975601fe9c2`, worker `sha256:2d3970419242903f8130feef219f74df6918d89db9e5251b7cf52fcb7a63102c`, migrate `sha256:5efbc10789123ad29039fb96b5b8ee24de9737a218f799cd6e4a8b929029c607`.
+- 동일 SHA 개발 서버는 version `1.1.5`·channel `dev`·phase `p3`·schema `1140_sharing_stability.sql`, PostgreSQL/web/collaboration/worker healthy다. 공개 PC/mobile×dark/light B-1 root·overflow·exact build, 합성 곡/가사 생성→서버 저장→API 재진입→최근 복귀→context shell/mobile More→인증 deep link PASS 후 합성 계정·자료를 제거했다. 기존 DB volume·secret·beta code를 보존했고 릴리스 서버는 변경하지 않았다.
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
+- [x] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
 
 ## 산출물
 

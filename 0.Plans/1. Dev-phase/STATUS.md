@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.5"
 current_phase: "../2.Patch-phase/1.1.5/3phase.md"
-state: "review"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.5 P3 후보를 push하고 필수 CI·네 dev image·동일 SHA 개발 배포·공개 PC/mobile 스모크를 통과한 뒤 완료한다"
+next_action: "PR #125를 main에 병합한 뒤 merge SHA에서 1.1.5 P4 실패·권한·복구 교차 회귀를 착수한다"
 ```
 
 ## 승인과 기준
@@ -153,12 +153,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | UX P5 | complete | 사용자 B-1·후속 실행 승인과 P4 의미 불변 수정 봉인, PROD-NF-006 Accepted, 승인 manifest/tree·1.1.5 Phase별 feature-flag/visual/rollback 인계, runtime/DB/서버 무변경 |
 | 1.1.5 P1 | complete | main `107ec24` 실제 WorkspaceShell/token/list/route/test 조사, LC_UI_VARIANT classic/B-1·editor 비재마운트·API/DB 무변경·실패 입력/담당/rollback 계약 승인 |
 | 1.1.5 P2 | complete | 후보 `43980ba`, Actions `34803929839`, 네 dev image tag 동일 digest·동일 SHA 개발 배포, 공개 PC/mobile×dark/light token과 저장→재진입·최근 복귀·deep link 인수 완료 |
+| 1.1.5 P3 | complete | 후보 `24cef7e`, Actions `34808547591`·`34808550793`, 전체 E2E 361 PASS·네 dev image·동일 SHA 공개 B-1 context shell/mobile More와 저장·재진입 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.5/P3 | LC-NF-1.1.5-P3-01~06 | 공통 header·rail/mobile nav·목록/grid·곡 workspace·PC/mobile E2E·상태/요구/Future | 1.1.5 P2 merge `4be6e22`; 로컬 인수 PASS | 2026-09-14 | review |
+| Codex | 1.1.5/P3 | LC-NF-1.1.5-P3-01~06 | 공통 header·rail/mobile nav·목록/grid·곡 workspace·PC/mobile E2E·상태/요구/Future | 후보 `24cef7e`; Actions `34808547591`·`34808550793`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P2 | LC-NF-1.1.5-P2-01~06 | config/root layout/token/styles/version/compose·신규 PC/mobile 회귀·상태/요구/Future | 후보 `43980ba`; Actions `34803929839`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P1 | LC-NF-1.1.5-P1-01~06 | P1 계약·실제 shell/token/list/route/test 조사·상태/요구/Future | UX P5 merge `107ec24`; 승인 tree `a3a0250` | 2026-09-14 | complete |
 | Codex | UX/P5 | LC-DESIGN-UX-P5-01~06 | 승인 manifest·1.1.5 인계·PROD-NF-006·UX P5 인수 | UX P4 merge `f2b2b8f`; 승인 artifact `8ce1dab` | 2026-09-14 | complete |
@@ -270,6 +271,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.5 P3 최종 후보 `24cef7eee5c6d6c77689f47cbd4c740287ab511d`는 승인 B-1의 context header, rail tooltip/current state, mobile 5개 주 내비+More, flat list/workspace를 적용하면서 기존 route/filter/order와 동일 CodeMirror/store/draft/outbox를 유지한다. push/PR Actions `34808547591`·`34808550793` 전체 PASS, 네 개발 image의 source/P3/Dev tag 동일 digest·서명과 같은 SHA 개발 서버의 공개 PC/mobile×dark/light root/overflow, 합성 저장→API 재진입→최근 복귀→인증 deep link를 통과했고 fixture를 제거했다. API/DB/migration/capability 변경은 0이며 실제 OS IME·screen reader·물리 200% zoom은 P4에서 자동 증거와 구분해 남긴다. P4는 저장 중 shell 전환·deep link/filter/recent·양 theme/focus·다른 계정/offline/reconnect/restart/지원 browser 회귀만 수행한다.
 
 1.1.5 P2 후보 `43980ba70d388897a0c8c42552b44d34462c24b9`는 `LC_UI_VARIANT`가 승인된 `classic|b1`만 받고 미지정 시 B-1이 되도록 실패 테스트부터 구현했다. server-rendered `<html data-ui-variant>`와 dark/light semantic token alias만 추가해 같은 component child/store/draft/outbox를 유지하며, classic에는 기존 cascade를 추가로 적용하지 않는다. VERSION·package·compose·CI·Playwright metadata는 1.1.5로 일치한다. Actions `34803929839` 전체 verify와 네 개발 image 발행/서명이 PASS했고 각 서비스의 SHA·`dev-1.1.5-p2`·`Dev`·`Dev-latest` tag가 서비스별 동일 digest다. 같은 SHA 개발 서버의 네 서비스 healthy, schema `1140_sharing_stability.sql`, 공개 PC/mobile×dark/light root/token/overflow와 합성 곡·가사 생성→서버 저장→API 재진입→최근 복귀→인증 deep link가 PASS했으며 합성 계정·자료는 제거했다. API/DB/migration/capability 변화는 0이다. P3는 이 child/store를 유지한 채 shell/list/workspace 구조만 전환한다.
 
