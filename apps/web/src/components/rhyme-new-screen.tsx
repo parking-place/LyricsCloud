@@ -147,7 +147,7 @@ export function RhymeNewScreen({ ownerId, displaySettings }: { ownerId: string; 
   const bodyError = bodyLength > RHYME_LIMITS.body ? `본문은 ${RHYME_LIMITS.body.toLocaleString()}자 이하로 입력해 주세요.` : "";
   const stateLabel = state === "error" ? (submissionRef.current ? "서버 생성 결과를 확인하지 못했습니다. 다시 시도하여 같은 요청의 결과를 확인해 주세요." : "이 기기에 임시 저장하지 못했습니다. 내용을 복사해 보관한 뒤 다시 시도해 주세요.") : !ready ? "로컬 초안을 불러오는 중…" : state === "creating" ? "노트를 생성하고 서버에 저장하는 중…" : isOnline ? "이 기기에 임시 저장됨 · 유효한 제목을 입력하면 자동 저장됩니다" : "오프라인 · 이 기기에 임시 저장됨";
 
-  return <section className="rhyme-new-page" aria-labelledby="new-rhyme-title" data-pending-input={Boolean(title || body)} style={writingDisplayVariables(displaySettings)}
+  return <section className="rhyme-new-page" aria-labelledby="new-rhyme-title" data-creation-surface="rhyme" data-pending-input={Boolean(title || body)} style={writingDisplayVariables(displaySettings)}
     onCompositionStart={() => { composingRef.current = true; setComposing(true); }} onCompositionEnd={() => { composingRef.current = false; setComposing(false); }}>
     <header className="rhyme-editor-header"><div><button type="button" className="back-button" onClick={requestCancel}>← 라임 노트</button><p className="eyebrow">New rhyme note</p></div>
       <button type="button" className="secondary-button" onClick={requestCancel}>취소</button>

@@ -97,7 +97,7 @@ export function LyricNewScreen({ currentSongId, returnTo, templateId }: { curren
 
   const titleTooLong = [...title.trim()].length > LYRIC_LIMITS.title;
   const locked = saving || Boolean(submission.current);
-  return <section className="lyric-new-page" aria-labelledby="new-lyric-title" data-pending-input={Boolean(title || saving)}>
+  return <section className="lyric-new-page" aria-labelledby="new-lyric-title" data-creation-surface="lyric" data-pending-input={Boolean(title || saving)}>
     <header className="form-heading"><div><a className="back-inline" href={returnTo}>← 이전 화면</a><p className="eyebrow">Quick add · Lyrics</p><h1 id="new-lyric-title">새 가사 시작</h1><p>{template ? `“${template.title}” 구조를 독립된 새 가사에 복사합니다.` : "현재 곡을 그대로 쓰거나 내 곡 중 부모를 선택한 뒤 빈 초안을 엽니다."}</p></div></header>
     <nav className="creation-source" aria-label="가사 시작 방식"><a aria-current={!templateId ? "page" : undefined} href={`/lyrics/new${currentSongId ? `?songId=${currentSongId}` : ""}`}>빈 가사</a><a aria-current={templateId ? "page" : undefined} href="/templates?type=lyrics">템플릿에서 선택</a></nav>
     {notice ? <div className="form-error-banner" role="status"><span>{notice}</span></div> : null}

@@ -141,7 +141,7 @@ export function SongLinkManager({ songId, songTitle, kind, onKindChange, onClose
   }
 
   return <div className="song-link-backdrop" role="presentation">
-    <section className="song-link-dialog" role="dialog" aria-modal="true" aria-labelledby="song-link-title">
+    <section className="song-link-dialog" role="dialog" aria-modal="true" aria-labelledby="song-link-title" data-connection-manager="true">
       <DialogFocusBoundary selector=".song-link-dialog" onClose={onClose} blocked={saving} initialFocus="input" />
       <div className="sheet-handle" aria-hidden="true" />
       <header><div><p className="eyebrow">Linked resources</p><h2 id="song-link-title">{songTitle} 연결 자료 관리</h2><p>자료를 여러 개 선택한 뒤 한 번에 적용할 수 있습니다.</p></div><button type="button" disabled={saving} onClick={onClose} aria-label="연결 관리 닫기">닫기</button></header>

@@ -73,22 +73,115 @@ test.describe("1.1.6 P2 stable editor surfaces", () => {
   });
 });
 
+test.describe("1.1.6 P3 creation and connection flows", () => {
+  test.skip(!process.env.E2E_DATABASE_URL, "requires the isolated E2E database");
+
+  test("keeps B-1 creation input and connection states themed on desktop and mobile", async ({ context, page }, testInfo) => {
+    test.setTimeout(90_000);
+    if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 390, height: 620 });
+    const account = await createAccount(context, "1.1.6 P3 합성 사용자");
+    const song = await context.request.post("/api/songs", {
+      headers, data: { requestId: randomUUID(), title: "1.1.6 P3 테마 곡" }
+    });
+    expect(song.status()).toBe(201);
+    const songId = (await song.json()).song.id as string;
+
+    try {
+      await page.goto(`/lyrics/new?songId=${songId}`);
+      const lyricSurface = page.locator('[data-creation-surface="lyric"]');
+      const lyricTitle = page.getByRole("textbox", { name: "가사 제목" });
+      await expect(lyricSurface).toBeVisible();
+      await lyricTitle.fill("테마를 바꿔도 남는 합성 제목");
+      await page.emulateMedia({ colorScheme: "light" });
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+      await expect(lyricTitle).toHaveValue("테마를 바꿔도 남는 합성 제목");
+      await expectSemanticBackground(lyricSurface, "--canvas");
+      expect(await hasHorizontalOverflow(page)).toBe(false);
+      await page.screenshot({ path: `docs/user/images/1.1.6-p3-creation-${testInfo.project.name}.png`, fullPage: true });
+
+      await page.emulateMedia({ colorScheme: "dark" });
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+      await expect(lyricTitle).toHaveValue("테마를 바꿔도 남는 합성 제목");
+
+      await page.goto("/rhymes/new");
+      const rhymeSurface = page.locator('[data-creation-surface="rhyme"]');
+      await expect(rhymeSurface).toBeVisible();
+      const rhymeBody = page.getByLabel("자유 본문");
+      await expect(rhymeBody).toBeEnabled();
+      await rhymeBody.fill("바라보, 마나, 마따ㅎ");
+      const cancel = page.getByRole("button", { name: "취소" });
+      await cancel.click();
+      await expect(page.getByRole("dialog", { name: "새 라임 노트 작성을 취소할까요?" })).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(cancel).toBeFocused();
+      await expect(rhymeBody).toHaveValue("바라보, 마나, 마따ㅎ");
+
+      await page.goto(`/songs/${songId}`);
+      const manage = page.getByRole("button", { name: "연결 관리" });
+      await expect(manage).toBeVisible();
+
+      let releaseLoad!: () => void;
+      const loadGate = new Promise<void>((resolve) => { releaseLoad = resolve; });
+      const rhymeQuery = `**/api/songs/${songId}/links?type=rhyme_note&state=all&limit=20`;
+      await page.route(rhymeQuery, async (route) => { await loadGate; await route.continue(); }, { times: 1 });
+      await manage.click();
+      const manager = page.getByRole("dialog", { name: "1.1.6 P3 테마 곡 연결 자료 관리" });
+      await expect(manager).toHaveAttribute("data-connection-manager", "true");
+      await expect(manager.getByText("라임 노트 후보를 불러오는 중입니다.")).toBeVisible();
+      await expectSemanticBackground(manager, "--panel");
+      releaseLoad();
+      await expect(manager.getByText("아직 만든 라임 노트가 없습니다.")).toBeVisible();
+
+      const promptQuery = `**/api/songs/${songId}/links?type=prompt&state=all&limit=20`;
+      await page.route(promptQuery, (route) => route.fulfill({ status: 503, body: "{}" }), { times: 1 });
+      await manager.getByRole("tab", { name: "프롬프트" }).click();
+      const loadError = manager.getByRole("alert");
+      await expect(loadError).toContainText("프롬프트 후보를 불러오지 못했습니다.");
+      await loadError.getByRole("button", { name: "다시 시도" }).click();
+      await expect(manager.getByText("아직 만든 프롬프트가 없습니다.")).toBeVisible();
+      expect(await hasHorizontalOverflow(page)).toBe(false);
+      await page.screenshot({ path: `docs/user/images/1.1.6-p3-connection-${testInfo.project.name}.png` });
+
+      await page.keyboard.press("Escape");
+      await expect(manager).toHaveCount(0);
+      await expect(manage).toBeFocused();
+    } finally {
+      await deleteAccount(account.userId);
+    }
+  });
+});
+
 function metric(result: { metrics: Array<{ name: string; value: number }> }, name: string) {
   const value = result.metrics.find((item) => item.name === name)?.value;
   if (value === undefined) throw new Error(`missing performance metric ${name}`);
   return value;
 }
 
-async function createAccount(context: BrowserContext) {
+async function createAccount(context: BrowserContext, displayName = "1.1.6 P2 합성 사용자") {
   const userId = randomUUID();
   const token = `editor-116-p2-${randomUUID()}`;
   await withE2eDatabase(async (pool) => {
     await pool.query("insert into app_users(id,status) values($1,'active')", [userId]);
-    await pool.query("insert into user_profiles(owner_id,display_name) values($1,'1.1.6 P2 합성 사용자')", [userId]);
+    await pool.query("insert into user_profiles(owner_id,display_name) values($1,$2)", [userId, displayName]);
     await pool.query("insert into auth_sessions(token_hash,user_id,expires_at,absolute_expires_at) values($1,$2,now()+interval '1 hour',now()+interval '2 hours')", [hashToken(token), userId]);
   });
   await context.addCookies([{ name: "lc_session", value: token, url: origin, httpOnly: true, sameSite: "Lax" }]);
   return { userId };
+}
+
+async function expectSemanticBackground(locator: import("@playwright/test").Locator, variable: "--canvas" | "--panel") {
+  expect(await locator.evaluate((element, semanticVariable) => {
+    const probe = document.createElement("span");
+    probe.style.backgroundColor = `var(${semanticVariable})`;
+    document.body.append(probe);
+    const expected = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return getComputedStyle(element).backgroundColor === expected;
+  }, variable)).toBe(true);
+}
+
+async function hasHorizontalOverflow(page: import("@playwright/test").Page) {
+  return page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
 }
 
 async function createLyric(context: BrowserContext, body: string) {

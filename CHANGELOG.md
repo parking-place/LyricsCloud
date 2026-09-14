@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.6] - Unreleased
+
+### Changed
+
+- 승인된 B-1 flat surface를 가사·라임·프롬프트 편집기와 자료 패널, 새 가사/라임/프롬프트 생성, 가입·공유·복구, 곡 연결 관리까지 확장
+- 생성 화면과 연결 관리가 light/dark 전환과 PC/mobile 크기 변화 뒤에도 의미 색상·입력·상태·초점을 유지하도록 명시적 화면 계약을 추가
+
+### Recovery and validation
+
+- 10,000줄 편집기의 DOM·selection·undo와 서버 저장을 테마/패널/폭 변경 중 보존하고, 연결 관리의 로딩·빈 상태·오류·재시도와 대화상자 focus 복귀를 자동 검증
+- 가입 코드 오류, 저장 실패 exact-copy, 권한 회수/guest 복구, 탈퇴 재인증, 라임·프롬프트 로컬 초안 재진입을 PC/mobile 관련 회귀에서 함께 확인
+- 실제 구현의 합성 desktop/mobile 화면과 저장·권한·복구 안내를 `docs/user/1.1.6-editor-and-recovery.md`에 기록
+
 ## [1.1.5] - 2026-09-14
 
 ### Changed

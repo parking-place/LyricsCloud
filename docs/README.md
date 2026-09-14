@@ -9,6 +9,7 @@
 - [`security`](./security/): 위협 모델, 인증·소유권·로그 규칙
 - [`runbooks`](./runbooks/): 배포, migration, 백업·복원, 장애 대응
 - [`operations`](./operations/): 운영 인수·릴리스 정책과 예외 기록
+- [`user`](./user/): 실제 제품 화면을 기준으로 한 사용자 안내와 복구 방법
 - [후속 아이디어 검토 이력](./planning/future-idea-scope.md): 통합·제외한 번호와 범위 근거
 
 후속 구현의 작업 순서는 [계획 안내](../0.Plans/2.Patch-phase/README.md)를 따릅니다. 후보 129개는 [Future_Feature.md](../0.Plans/2.Patch-phase/Future_Feature.md)에 게시하며, 모든 push 전과 Phase 완료 때 저장소 전역 Future 파일의 실제 Git 변경을 [검수 인수 절차](../0.Plans/2.Patch-phase/FUTURE-INTAKE.md)에 따라 확인합니다. 새 `ADR-NF-*`·`PROD-NF-*`·`OPS-NF-*`는 [후속 결정 색인](../0.Plans/2.Patch-phase/Decision-Ownership.md)에 연결된 Proposed 문서이며 기존 Accepted 결정을 자동 대체하지 않습니다.
