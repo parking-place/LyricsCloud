@@ -46,8 +46,8 @@ test.describe("0.9.0 responsive shell", () => {
         await expectControlsInsideViewport(page, ".song-toolbar > *", viewport.width);
 
         if (viewport.width <= 720) {
-          const navItems = page.locator(".mobile-bottom-nav a, .mobile-bottom-nav button");
-          await expect(navItems).toHaveCount(6);
+          const navItems = page.locator(".mobile-bottom-nav a:visible, .mobile-bottom-nav button:visible");
+          await expect(navItems).toHaveCount(5);
           for (let index = 0; index < await navItems.count(); index += 1) {
             const box = await navItems.nth(index).boundingBox();
             expect(box?.height ?? 0, `${viewport.name}px touch target ${index}`).toBeGreaterThanOrEqual(44);

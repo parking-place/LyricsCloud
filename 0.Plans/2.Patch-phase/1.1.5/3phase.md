@@ -67,6 +67,7 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 - Node 24 `pnpm check`·web production build: PASS.
 - Playwright P3 PC/mobile: 6 PASS — context header/rail tooltip, mobile 5개 주 내비+More/focus 복귀, 동일 editor DOM·한글 입력·undo, 빈 상태·loading·failure·protected redirect, light·320/720 reflow·overflow 0.
 - 관련 회귀 40건: 초기 B-1 light 상태 badge/prompt token 대비 2 FAIL을 확인하고 수정. 그 외 30 PASS·8 조건부 skip. 수정 후 15화면×dark/light Axe serious/critical PC/mobile 2 PASS.
+- 최초 후보 Actions `34806946625`: 신규 P3 검사는 전부 PASS했고 전체 E2E 359 PASS·41 skip·flaky retry 1 PASS였으나, 기존 responsive shell이 B-1에서 숨긴 호환용 즐겨찾기 링크까지 터치 대상으로 계산해 320px에서 0px 높이 1건 FAIL. 제품 결함이 아닌 검증 대상 선택 오류로 판정해 보이는 5개 링크·버튼만 44px 기준을 적용하고, 5개 주 내비+More 구성은 신규 P3 검사로도 계속 고정한다.
 - API·DB·migration·route/store/editor 수정 0. 실제 OS IME·screen reader·물리 줌은 실행하지 않았으며 P4 교차 검증 입력으로 유지한다.
 - 남은 게이트: 후보 SHA push·필수 CI·네 dev image·동일 SHA 개발 배포·공개 스모크. 완료 전 PASS로 승격하지 않는다.
 
