@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.7"
-current_phase: "../2.Patch-phase/1.1.7/2phase.md"
+current_phase: "../2.Patch-phase/1.1.7/3phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-15"
-next_action: "1.1.7 P2 완료 기록을 push·PR merge한 뒤 P3 PC·iOS·Android 상호작용 범위에 착수한다"
+next_action: "1.1.7 P3 완료 기록을 push·PR merge한 뒤 P4 사용성·접근성 재검토 범위에 착수한다"
 ```
 
 ## 승인과 기준
@@ -165,11 +165,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.6 Release | complete | main/tag `f8d24c6`, main CI `34868654180`·tag CI `34871969616`, 네 signed exact digest 운영 배포·공개 생성/연결/공유/복구/재시작·전역 beta CLI·GitHub Release 완료 |
 | 1.1.7 P1 | complete | runtime `f8d24c6`, release 기록 main `5a72780`, PC Chromium·Android 대리 Chromium mobile·iOS 대리 WebKit mobile 가입/수직 흐름 6 PASS, 정식 공유/복구 CI 재사용; 라임/프롬프트 returnTo P2 범위 확정 |
 | 1.1.7 P2 | complete | 후보 `206b14f`, Actions `34881741352`·`34881745605`, 첫 후보의 기존 URL 14 FAIL 보정·네 signed dev image·동일 SHA 공개 quick-add 복귀/본문/focus/overflow 인수 완료 |
+| 1.1.7 P3 | complete | 후보 `740b1e3`, Actions `34887398291`·`34887401584`, Vitest 264 PASS·5-browser P3 5 PASS·네 signed dev image·동일 SHA 공개 PC/mobile×dark/light 복귀/focus/새 탭/tooltip 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7/P3 | LC-NF-1.1.7-P3-01~03 | 목록/편집/공유/Suno 복귀·drag/context 대안·PC/mobile 회귀·상태/Future | 후보 `740b1e3`, 두 CI·네 signed dev image·동일 SHA 공개 PC/mobile×dark/light PASS; 실제 OS/기기·AT는 browser 대리와 분리 | 2026-09-15 | complete |
 | Codex | 1.1.7/P2 | LC-NF-1.1.7-P2-01~03 | quick-add·rhyme/prompt new route/screen·returnTo 회귀·상태/Future | 후보 `206b14f`; Actions `34881741352`·`34881745605`; 네 signed dev image·동일 SHA 공개 인수 | 2026-09-15 | complete |
 | Codex | 1.1.7/P1 | LC-NF-1.1.7-P1-01~03 | 실제 과제·동선 관찰·P1 문서·STATUS·요구 추적·Future | 1.1.6 release `f8d24c6`; 기록 main `5a72780` | 2026-09-15 | complete |
 | Codex | 1.1.6/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | 1.1.6 P5 `7f4ac5b`; main/tag `f8d24c6` | 2026-09-15 | complete |

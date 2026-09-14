@@ -1,6 +1,6 @@
 # 1.1.7 — 디자인 적용 후 UI/UX 동선 검토·개선
 
-상태: **P1~P2 완료 / P3 다음**. runtime source `f8d24c610ce24a1ff926e77204783473b936da88`의 관찰을 바탕으로 라임/프롬프트 quick-add의 안전한 `returnTo` 보존을 구현했다. 첫 CI가 찾은 기존 URL 호환 14건을 보정하고 후보 `206b14f`의 두 CI·네 signed dev image·동일 SHA 개발 공개 인수를 완료했다. 요구 `NF-REQ-039`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
+상태: **P1~P3 완료 / P4 다음**. P3 후보 `740b1e3`에서 exact 목록→대시보드→가사→공유→Suno 새 탭→복귀와 접힌 desktop rail의 접근성 이름·40px target·focus tooltip을 구현했다. Vitest 264 PASS, 5-browser profile 5 PASS, 두 Actions·네 signed dev image와 동일 SHA 공개 PC/mobile×dark/light 인수를 완료했다. 요구 `NF-REQ-039`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
 
 선행: [1.1.6](../1.1.6/README.md)의 인수와 해당 결정 gate. 코드 변경 없는 개발안/외부 gate 보류는 제품 출시로 세지 않는다.
 
