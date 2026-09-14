@@ -1,6 +1,6 @@
 # UX Phase 1 — 현행 동선·기능/상태 인벤토리
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`)
 - 단계 목적: 실제 구현을 관찰해 재설계 범위를 설정한다.
 - 적용 범위: 설계·목업 마일스톤 (런타임 미배포)
 
@@ -43,12 +43,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-DESIGN-UX-P1-01` 기존 15개 화면과 beta 가입·Suno 링크·read/write 공유의 추가 화면을 route·컴포넌트·요구사항에 연결한다.
-- [ ] `LC-DESIGN-UX-P1-02` 가입→곡→가사→라임→프롬프트→복사→재개 및 공유/복구 동선의 단계·되돌아가기·막힘을 기록한다.
-- [ ] `LC-DESIGN-UX-P1-03` 관찰에는 합성 자료/동의한 테스트 참여자만 사용하며 실제 창작 내용·메일·행동 분석을 무단 수집하지 않는다.
-- [ ] `LC-DESIGN-UX-P1-04` PC·320/360/390px·태블릿·keyboard·screen reader·200% 확대에서 현행 장애를 측정한다.
-- [ ] `LC-DESIGN-UX-P1-05` 브랜딩 1.0.1 자산을 입력으로 유지하고 변경 제안은 별도 승인 항목으로 분리한다.
-- [ ] `LC-DESIGN-UX-P1-06` 개편 목적을 단계 수·발견성·오류 회복·접근성 기준으로 정하고 유지해야 할 기능 계약을 고정한다.
+- [x] `LC-DESIGN-UX-P1-01` 기존 15개 화면과 beta 가입·Suno 링크·read/write 공유의 추가 화면을 route·컴포넌트·요구사항에 연결한다.
+- [x] `LC-DESIGN-UX-P1-02` 가입→곡→가사→라임→프롬프트→복사→재개 및 공유/복구 동선의 단계·되돌아가기·막힘을 기록한다.
+- [x] `LC-DESIGN-UX-P1-03` 관찰에는 합성 자료/동의한 테스트 참여자만 사용하며 실제 창작 내용·메일·행동 분석을 무단 수집하지 않는다.
+- [x] `LC-DESIGN-UX-P1-04` PC·320/360/390px·태블릿·keyboard·screen reader·200% 확대에서 현행 장애를 측정한다.
+- [x] `LC-DESIGN-UX-P1-05` 브랜딩 1.0.1 자산을 입력으로 유지하고 변경 제안은 별도 승인 항목으로 분리한다.
+- [x] `LC-DESIGN-UX-P1-06` 개편 목적을 단계 수·발견성·오류 회복·접근성 기준으로 정하고 유지해야 할 기능 계약을 고정한다.
 
 ## 구체적 검증
 
@@ -57,16 +57,20 @@
 
 ## 실행·증거 기록
 
-현재 명령은 [QUALITY-GATES.md](../../QUALITY-GATES.md)를 따른다. 작업별 실제 test 파일/명령·환경·실패/성공 수·SHA를 인수 로그에 기록한다. DB/E2E는 전용 테스트 DB에서만 수행한다. 실제 IME/기기/Google 설정 검증을 synthetic 이벤트나 이전 PASS로 대체하지 않는다. 문서-only Phase는 링크/범위/결정/목업 검토를 수행하며 앱 테스트 결과를 꾸미지 않는다.
+- 제품 기준은 정식 main/tag source `5f8a04512c005cb7c211630dc8bf43f42787b60f`, 감사 산출물 commit `99c1e1e8fd6ea51ef3f56d4c3be4a7a53e7e3770`이다. 산출물은 [1.1.4 현행 사용자 경험 감사](../../../../docs/ux/1.1.4-current-experience-audit.md)에 고정했다.
+- 격리 PostgreSQL과 production build에서 responsive shell·접근성 상태·shortcut desktop/mobile 12 PASS·조건부 4 skip을 확인했다. 15개 화면을 320/390/768/1440px에서 60장 캡처했고 캡처는 합성 자료만 사용해 ignored private evidence에 보존했다.
+- 390px 가사 editor의 9개 도구 label 붕괴, mobile dashboard 장거리 card stack, PC navigation 중복을 P1/P2 gap으로 기록했다. 신규 데이터 손실·인가 우회 P0/P1은 확인되지 않았다.
+- 자동 Axe·DOM semantic tree·keyboard/focus·CSS 200% reflow는 통과했지만 실제 NVDA/VoiceOver/TalkBack, 물리 touch target, 실제 iOS/Android safe-area/keyboard·OS zoom/IME는 실행하지 않았다. 이 제한을 실제 보조기기 PASS로 표시하지 않는다.
+- P1은 앱 코드·runtime `VERSION`·DB schema·기존/새 목업·운영 서버를 변경하지 않았다. 1.1.4 정식 릴리스는 별도의 사용자 승인 release gate에서 먼저 완료됐다.
 
 ## 완료 조건
 
-- [ ] 모든 작업 ID와 구체적 수용 기준에 실제 산출물/증거가 있다.
-- [ ] 원문·인가·복구·기존 사용자 동작을 손상시키지 않았고 확인된 차이는 승인됐다.
-- [ ] 검사하지 못한 항목·외부 제한·남은 위험을 숨기지 않고 기록했다.
-- [ ] 현재 문서와 체크 상태·담당 경로·정확한 SHA가 일치한다.
-- [ ] 구현 Phase는 CI·정확한 SHA의 개발 인수를, 설계-only는 검토/승인을 완료했다.
-- [ ] release/main/production 변경은 별도 승인 없이 실행하지 않았다.
+- [x] 모든 작업 ID와 구체적 수용 기준에 실제 산출물/증거가 있다.
+- [x] 원문·인가·복구·기존 사용자 동작을 손상시키지 않았고 확인된 차이는 승인 대상 gap으로 분리했다.
+- [x] 검사하지 못한 항목·외부 제한·남은 위험을 숨기지 않고 기록했다.
+- [x] 현재 문서와 체크 상태·담당 경로·정확한 SHA가 일치한다.
+- [x] 설계-only P1의 문서·화면·자동 접근성/반응형 검토를 완료했다.
+- [x] P1 범위에서 release/main/production 변경을 수행하지 않았다.
 
 ## 산출물
 

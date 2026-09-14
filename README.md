@@ -39,10 +39,10 @@ AI 생성과 미디어 업로드는 1.1.4 범위가 아니다.
 | 항목 | 상태 |
 |---|---|
 | 소스·runtime version | `1.1.4` |
-| 현재 작업 | [UX Phase 1 — 현행 동선·기능/상태 인벤토리](<./0.Plans/2.Patch-phase/design/UX/1phase.md>) |
+| 현재 작업 | [UX Phase 2 — 정보 구조·토큰·morphism 비교와 사용자 선택](<./0.Plans/2.Patch-phase/design/UX/2phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.1.4`, main/tag `5f8a045`, exact digest 운영 배포·공개 복원/오프라인 병합/격리/재시작 smoke 완료 |
-| 개발 인수 | 1.1.4 P1~P5와 정식 릴리스 완료; UX P1 현행 경험 감사 진행 |
+| 개발 인수 | 1.1.4 P1~P5와 정식 릴리스·UX P1 현행 경험 감사 완료; P2 비교안 준비 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.
