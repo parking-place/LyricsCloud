@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.5"
-current_phase: "../2.Patch-phase/1.1.5/2phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.5/3phase.md"
+state: "review"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.5 P3에서 같은 child/store/editor를 유지하며 B-1 공통 header·rail/mobile nav·목록/grid·곡 workspace를 실패 E2E부터 구현한다"
+next_action: "1.1.5 P3 후보를 push하고 필수 CI·네 dev image·동일 SHA 개발 배포·공개 PC/mobile 스모크를 통과한 뒤 완료한다"
 ```
 
 ## 승인과 기준
@@ -158,6 +158,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.5/P3 | LC-NF-1.1.5-P3-01~06 | 공통 header·rail/mobile nav·목록/grid·곡 workspace·PC/mobile E2E·상태/요구/Future | 1.1.5 P2 merge `4be6e22`; 로컬 인수 PASS | 2026-09-14 | review |
 | Codex | 1.1.5/P2 | LC-NF-1.1.5-P2-01~06 | config/root layout/token/styles/version/compose·신규 PC/mobile 회귀·상태/요구/Future | 후보 `43980ba`; Actions `34803929839`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P1 | LC-NF-1.1.5-P1-01~06 | P1 계약·실제 shell/token/list/route/test 조사·상태/요구/Future | UX P5 merge `107ec24`; 승인 tree `a3a0250` | 2026-09-14 | complete |
 | Codex | UX/P5 | LC-DESIGN-UX-P5-01~06 | 승인 manifest·1.1.5 인계·PROD-NF-006·UX P5 인수 | UX P4 merge `f2b2b8f`; 승인 artifact `8ce1dab` | 2026-09-14 | complete |

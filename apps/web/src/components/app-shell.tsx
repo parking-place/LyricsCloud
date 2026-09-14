@@ -28,6 +28,19 @@ interface ShellProfile {
 
 type ThemeShellWindow = Window & { __lcApplyTheme?: (theme: "system" | "light" | "dark") => void };
 
+const WORKSPACE_CONTEXT = {
+  home: ["Workspace", "창작 홈"],
+  songs: ["라이브러리", "곡 · 가사"],
+  rhymes: ["라이브러리", "라임 노트"],
+  prompts: ["라이브러리", "프롬프트"],
+  search: ["탐색", "통합 검색"],
+  recent: ["탐색", "최근 작업"],
+  favorites: ["탐색", "즐겨찾기"],
+  templates: ["라이브러리", "템플릿"],
+  trash: ["관리", "휴지통"],
+  settings: ["계정", "설정"]
+} as const;
+
 export function WorkspaceShell({
   profile,
   loginCompleted = false,
@@ -41,6 +54,7 @@ export function WorkspaceShell({
   currentSongId?: string;
   children: ReactNode;
 }) {
+  const [contextGroup, contextTitle] = WORKSPACE_CONTEXT[active];
   const [collapsed, setCollapsed] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState("");
@@ -205,16 +219,16 @@ export function WorkspaceShell({
       <button className="rail-toggle" type="button" onClick={() => setCollapsed((value) => !value)} aria-expanded={!collapsed} aria-label={collapsed ? "좌측 메뉴 펼치기" : "좌측 메뉴 접기"}>☰</button>
       <p className="nav-label">Workspace</p>
       <nav className="nav-list" aria-label="데스크톱 주 메뉴">
-        <a className={`nav-item${active === "home" ? " active" : ""}`} href="/workspace" aria-current={active === "home" ? "page" : undefined}><span aria-hidden="true">✦</span><span className="nav-text">창작 홈</span></a>
-        <a className={`nav-item${active === "songs" ? " active" : ""}`} href="/songs" aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><span className="nav-text">곡</span></a>
-        <a className={`nav-item${active === "rhymes" ? " active" : ""}`} href="/rhymes" aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><span className="nav-text">라임 노트</span></a>
-        <a className={`nav-item${active === "prompts" ? " active" : ""}`} href="/prompts" aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><span className="nav-text">프롬프트</span></a>
-        <a className={`nav-item${active === "search" ? " active" : ""}`} href="/search" aria-current={active === "search" ? "page" : undefined}><span aria-hidden="true">⌕</span><span className="nav-text">통합 검색</span></a>
-        <a className={`nav-item${active === "recent" ? " active" : ""}`} href="/recent" aria-current={active === "recent" ? "page" : undefined}><span aria-hidden="true">↺</span><span className="nav-text">최근 작업</span></a>
-        <a className={`nav-item${active === "favorites" ? " active" : ""}`} href="/favorites" aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><span className="nav-text">즐겨찾기</span></a>
-        <a className={`nav-item${active === "templates" ? " active" : ""}`} href="/templates" aria-current={active === "templates" ? "page" : undefined}><span aria-hidden="true">▦</span><span className="nav-text">템플릿</span></a>
-        <a className={`nav-item${active === "trash" ? " active" : ""}`} href="/trash" aria-current={active === "trash" ? "page" : undefined}><span aria-hidden="true">♲</span><span className="nav-text">휴지통</span></a>
-        <a className={`nav-item${active === "settings" ? " active" : ""}`} href="/settings" aria-current={active === "settings" ? "page" : undefined}><span aria-hidden="true">⚙</span><span className="nav-text">설정</span></a>
+        <a className={`nav-item${active === "home" ? " active" : ""}`} href="/workspace" title="창작 홈" aria-current={active === "home" ? "page" : undefined}><span aria-hidden="true">✦</span><span className="nav-text">창작 홈</span></a>
+        <a className={`nav-item${active === "songs" ? " active" : ""}`} href="/songs" title="곡" aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><span className="nav-text">곡</span></a>
+        <a className={`nav-item${active === "rhymes" ? " active" : ""}`} href="/rhymes" title="라임 노트" aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><span className="nav-text">라임 노트</span></a>
+        <a className={`nav-item${active === "prompts" ? " active" : ""}`} href="/prompts" title="프롬프트" aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><span className="nav-text">프롬프트</span></a>
+        <a className={`nav-item${active === "search" ? " active" : ""}`} href="/search" title="통합 검색" aria-current={active === "search" ? "page" : undefined}><span aria-hidden="true">⌕</span><span className="nav-text">통합 검색</span></a>
+        <a className={`nav-item${active === "recent" ? " active" : ""}`} href="/recent" title="최근 작업" aria-current={active === "recent" ? "page" : undefined}><span aria-hidden="true">↺</span><span className="nav-text">최근 작업</span></a>
+        <a className={`nav-item${active === "favorites" ? " active" : ""}`} href="/favorites" title="즐겨찾기" aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><span className="nav-text">즐겨찾기</span></a>
+        <a className={`nav-item${active === "templates" ? " active" : ""}`} href="/templates" title="템플릿" aria-current={active === "templates" ? "page" : undefined}><span aria-hidden="true">▦</span><span className="nav-text">템플릿</span></a>
+        <a className={`nav-item${active === "trash" ? " active" : ""}`} href="/trash" title="휴지통" aria-current={active === "trash" ? "page" : undefined}><span aria-hidden="true">♲</span><span className="nav-text">휴지통</span></a>
+        <a className={`nav-item${active === "settings" ? " active" : ""}`} href="/settings" title="설정" aria-current={active === "settings" ? "page" : undefined}><span aria-hidden="true">⚙</span><span className="nav-text">설정</span></a>
       </nav>
       <div className="side-spacer" />
       <div className="profile-mini"><Avatar profile={profile} /><span className="nav-text"><strong>{profile.displayName}</strong><small>개인 작업 공간</small></span></div>
@@ -223,6 +237,7 @@ export function WorkspaceShell({
     <div className="main-shell" ref={mainShell}>
       <header className="topbar">
         <nav className="workspace-tabs" aria-label="창작 영역"><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트</a><a href="/prompts" className={`workspace-tab${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}>프롬프트</a><a href="/templates" className={`workspace-tab${active === "templates" ? " active" : ""}`} aria-current={active === "templates" ? "page" : undefined}>▦ 템플릿</a><a href="/favorites" className={`workspace-tab${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}>★ 즐겨찾기</a><a href="/recent" className={`workspace-tab${active === "recent" ? " active" : ""}`} aria-current={active === "recent" ? "page" : undefined}>↺ 최근</a><a href="/search" className={`workspace-tab${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}>⌕ 검색</a></nav>
+        <div className="b1-topbar-context" role="group" aria-label="현재 작업 영역"><span>{contextGroup}</span><strong>{contextTitle}</strong></div>
         <span className="topbar-spacer" /><button className="top-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`top-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button>
       </header>
       <PwaManager ownerId={profile.userId} />
@@ -241,8 +256,8 @@ export function WorkspaceShell({
       <a href="/prompts" className={`mobile-nav-item${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><strong>프롬프트</strong></a>
       <span className="mobile-nav-spacer" aria-hidden="true" />
       <a href="/search" className={`mobile-nav-item${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}><span aria-hidden="true">⌕</span><strong>검색</strong></a>
-      <a href="/favorites" aria-label="즐겨찾기" className={`mobile-nav-item${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><strong aria-hidden="true">저장</strong></a>
-      <button ref={mobileMoreButton} type="button" className={`mobile-nav-item mobile-more-button${["recent", "templates", "trash", "settings"].includes(active) ? " active" : ""}`}
+      <a href="/favorites" aria-label="즐겨찾기" className={`mobile-nav-item mobile-favorites-direct${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><strong aria-hidden="true">저장</strong></a>
+      <button ref={mobileMoreButton} type="button" className={`mobile-nav-item mobile-more-button${["favorites", "recent", "templates", "trash", "settings"].includes(active) ? " active" : ""}`}
         aria-haspopup="dialog" aria-expanded={mobileMoreOpen} onClick={() => setMobileMoreOpen(true)}><span aria-hidden="true">•••</span><strong>더보기</strong></button>
     </nav>
     {mobileMoreOpen ? <div className="mobile-more-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) closeMobileMore(); }}>
@@ -250,6 +265,7 @@ export function WorkspaceShell({
         <div className="sheet-handle" aria-hidden="true" />
         <header><div><p className="eyebrow">Workspace</p><h2 id="mobile-more-title">더보기</h2></div><button type="button" onClick={closeMobileMore}>닫기</button></header>
         <nav aria-label="모바일 추가 메뉴">
+          <a className="b1-more-item" href="/favorites" aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><span><strong>즐겨찾기</strong><small>고정한 곡과 자료 모아보기</small></span></a>
           <a href="/recent" aria-current={active === "recent" ? "page" : undefined}><span aria-hidden="true">↺</span><span><strong>최근 작업</strong><small>마지막 작업 위치로 돌아가기</small></span></a>
           <a href="/templates" aria-current={active === "templates" ? "page" : undefined}><span aria-hidden="true">▦</span><span><strong>템플릿</strong><small>가사 구조와 프롬프트 재사용</small></span></a>
           <a href="/trash" aria-current={active === "trash" ? "page" : undefined}><span aria-hidden="true">♲</span><span><strong>휴지통</strong><small>삭제한 자료 복원과 완전 삭제</small></span></a>

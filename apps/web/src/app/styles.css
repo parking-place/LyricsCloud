@@ -1977,3 +1977,49 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .resource-not-found h1 { max-width: 44rem; margin: 0; font-size: clamp(2rem, 5vw, 4.4rem); letter-spacing: -.055em; }
 .resource-not-found > p:not(.eyebrow) { max-width: 38rem; margin: 0; color: var(--muted); line-height: 1.7; }
 .resource-not-found > div { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .7rem; }
+
+/* 1.1.5 P3 approved B-1 shell. The classic cascade above remains the exact
+   rollback path; these rules change presentation without replacing route
+   children, editor instances, stores, filters or ordering controls. */
+.b1-topbar-context, .b1-more-item { display: none; }
+
+html[data-ui-variant="b1"] .workspace-shell { grid-template-columns: 14.25rem minmax(0, 1fr); }
+html[data-ui-variant="b1"] .workspace-shell.is-collapsed { grid-template-columns: 4.5rem minmax(0, 1fr); }
+html[data-ui-variant="b1"] .side-nav { gap: .3rem; padding: 1.1rem .8rem max(.8rem, var(--lc-safe-bottom)); background: var(--panel); }
+html[data-ui-variant="b1"] .side-nav > .brand { margin: 0 .35rem 1.2rem; }
+html[data-ui-variant="b1"] .nav-label { margin-top: .7rem; }
+html[data-ui-variant="b1"] .nav-item { min-height: 2.65rem; border-radius: .5rem; }
+html[data-ui-variant="b1"] .nav-item.active { border-color: transparent; background: color-mix(in srgb, var(--acid) 11%, var(--surface)); }
+html[data-ui-variant="b1"] .workspace-shell.is-collapsed .nav-item,
+html[data-ui-variant="b1"] .workspace-shell.is-collapsed .logout-button { grid-template-columns: 1.5rem; justify-content: center; padding-inline: .65rem; }
+html[data-ui-variant="b1"] .workspace-tabs { display: none; }
+html[data-ui-variant="b1"] .b1-topbar-context { min-width: 0; display: grid; gap: .12rem; }
+html[data-ui-variant="b1"] .b1-topbar-context span { color: var(--subtle); font-size: .62rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+html[data-ui-variant="b1"] .b1-topbar-context strong { overflow: hidden; font-size: 1rem; text-overflow: ellipsis; white-space: nowrap; }
+html[data-ui-variant="b1"] .topbar { gap: .75rem; background: color-mix(in srgb, var(--canvas) 90%, transparent); }
+html[data-ui-variant="b1"] .topbar-spacer { flex: 1 1 auto; }
+
+html[data-ui-variant="b1"] :is(.songs-heading, .rhymes-heading, .prompts-heading, .favorites-heading, .recent-heading) h1,
+html[data-ui-variant="b1"] :is(.search-heading, .dashboard-heading) h1 { letter-spacing: -.045em; }
+html[data-ui-variant="b1"] :is(.song-card, .rhyme-card, .prompt-card, .saved-card, .recent-card, .search-result-card, .dashboard-panel, .count-grid article, .recent-focus) { border-radius: .65rem; background: var(--panel); box-shadow: none; }
+html[data-ui-variant="b1"] :is(.song-card, .rhyme-card, .prompt-card, .saved-card, .recent-card, .search-result-card):focus-within { border-color: color-mix(in srgb, var(--acid) 52%, var(--line)); }
+html[data-ui-variant="b1"] :is(.song-toolbar, .rhyme-toolbar, .prompt-toolbar, .search-controls) { border-color: var(--line); }
+html[data-ui-variant="b1"] .dashboard-layout { grid-template-columns: minmax(0, 1.55fr) minmax(18rem, .8fr); }
+html[data-ui-variant="b1"] .dashboard-heading { padding-bottom: 1.4rem; }
+html[data-ui-variant="b1"] .dashboard-panel { padding: 1rem; }
+html[data-ui-variant="b1"][data-theme="light"] .status-badge { color: var(--muted); }
+html[data-ui-variant="b1"][data-theme="light"] .status-completed { color: #27643d; }
+html[data-ui-variant="b1"][data-theme="light"] :is(.status-writing_lyrics, .status-revising) { color: #315b91; }
+html[data-ui-variant="b1"][data-theme="light"] .prompt-tokens li { border-color: color-mix(in srgb, var(--acid) 35%, var(--line)); background: color-mix(in srgb, var(--acid) 8%, var(--panel)); color: var(--acid); }
+
+@media (max-width: 720px) {
+  html[data-ui-variant="b1"] .workspace-shell,
+  html[data-ui-variant="b1"] .workspace-shell.is-collapsed { grid-template-columns: minmax(0, 1fr); }
+  html[data-ui-variant="b1"] .mobile-header,
+  html[data-ui-variant="b1"] .mobile-bottom-nav { background: var(--panel); }
+  html[data-ui-variant="b1"] .mobile-bottom-nav { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  html[data-ui-variant="b1"] .mobile-favorites-direct { display: none; }
+  html[data-ui-variant="b1"] .mobile-more-sheet .b1-more-item { display: grid; }
+  html[data-ui-variant="b1"] :is(.songs-page, .rhymes-page, .prompts-page, .favorites-page, .recent-page, .search-page, .dashboard-page) { padding-bottom: calc(1.5rem + var(--lc-safe-bottom)); }
+  html[data-ui-variant="b1"] .dashboard-layout { grid-template-columns: minmax(0, 1fr); }
+}
