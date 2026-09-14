@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "UX"
-current_phase: "../2.Patch-phase/design/UX/1phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/design/UX/2phase.md"
+state: "awaiting_user_selection"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "UX P1은 v1.1.4 source 5f8a045 기준 15화면·추가 흐름·60 viewport·동선/상태/접근성 감사를 완료했다. P2에서 보수적 shell/통합 workspace와 5개 morphism을 같은 과제로 비교해 사용자 선택을 받는다"
+next_action: "UX P2의 A/B 정보 구조와 1~5 morphism, token·상태·반응형·도구·Liquid Glass 비교 및 60조합 자동 검증 완료. 사용자에게 권고 B-1과 대안을 제시하고 명시 선택을 받은 뒤 P2를 완료한다"
 ```
 
 ## 승인과 기준
@@ -145,11 +145,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.4 P5 | complete | 후보 `081117d`, Actions `34786159783`, 네 dev image·동일 SHA 공개 복원/offline 병합·bounded queue·계정 격리·재시작 인수 완료 |
 | 1.1.4 Release | complete | main/tag `5f8a045`, main CI `34789430853`·tag CI `34790980889` 최종 3차 실행, exact digest 운영 배포·공개 복원/offline 병합/격리/재시작 smoke·GitHub Release 완료 |
 | UX P1 | complete | v1.1.4 `5f8a045` 기준 15화면+추가 흐름·60 viewport, responsive/accessibility/keyboard 12 PASS·4 조건부 skip, UX-GAP-01~06과 실제 AT/물리 기기 미실행 경계 기록 |
+| UX P2 | awaiting_user_selection | A 보수적 shell/B 통합 workspace×Flat/Glass/Neumorphism/Clay/Liquid, 양 theme·320/390/1440px 60조합 Axe/overflow PASS; 권고 `B-1`, 사용자 선택 전 P3 중단 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | UX/P2 | LC-DESIGN-UX-P2-01~07 | `docs/ux`·prototype·design/UX P2·TOOLS-AND-SKILLS·선택 기록 | UX P1 merge `99dd580`; 사용자 구조/표현 선택 | 2026-09-14 | awaiting_user_selection |
 | Codex | UX/P1 | LC-DESIGN-UX-P1-01~06 | `docs/ux`·design/UX P1·현행 15화면/동선/상태/반응형/접근성 감사 | v1.1.4 `5f8a045`, 감사 `99c1e1e` | 2026-09-14 | complete |
 | Codex | 1.1.4/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke | 1.1.4 P5 `081117d` | 2026-09-14 | complete |
 | Codex | 1.1.4/P5 | LC-NF-1.1.4-P5-01~06 | 요구 추적·사용자/운영 문서·봉인 artifact·최종 CI·개발/정식 인수 | 후보 `081117d`, Actions `34786159783` | 2026-09-14 | complete |

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ko" data-theme="dark" data-morphism="flat" data-shell="integrated">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LyricsCloud UX P2 concept comparison</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      color-scheme: dark;
+      --bg: #080b0f; --panel: #11161d; --surface: #171e27; --raised: #202936;
+      --ink: #f5f8fa; --muted: #9ba8b7; --line: #2c3744; --accent: #c8ff3d;
+      --accent-ink: #101605; --danger: #ff9f91; --shadow: 0 22px 60px rgb(0 0 0 / .32);
+      --radius: 16px; --blur: 0px; --panel-alpha: 1; --border-alpha: 1;
+    }
+    html[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f3f6f8; --panel: #ffffff; --surface: #eaf0f4; --raised: #dde6ed;
+      --ink: #17212b; --muted: #526170; --line: #c4d0da; --accent: #426800;
+      --accent-ink: #fff; --danger: #982d24; --shadow: 0 18px 50px rgb(23 33 43 / .16);
+    }
+    html[data-morphism="glass"] { --radius: 18px; --blur: 18px; --panel-alpha: .78; --border-alpha: .72; }
+    html[data-morphism="neumorphism"] { --radius: 20px; --line: transparent; --shadow: 10px 10px 24px rgb(0 0 0 / .28), -7px -7px 20px rgb(255 255 255 / .035); }
+    html[data-theme="light"][data-morphism="neumorphism"] { --shadow: 10px 10px 24px #cfd6dc, -9px -9px 24px #fff; }
+    html[data-morphism="clay"] { --radius: 25px; --shadow: 0 10px 0 rgb(0 0 0 / .18), inset 0 2px 0 rgb(255 255 255 / .10); }
+    html[data-morphism="liquid"] { --radius: 28px; --blur: 24px; --panel-alpha: .72; --border-alpha: .58; --shadow: inset 1px 1px 0 rgb(255 255 255 / .22), inset -1px -1px 0 rgb(255 255 255 / .06), 0 22px 60px rgb(0 0 0 / .28); }
+    body { margin: 0; min-width: 320px; min-height: 100svh; background: radial-gradient(circle at 75% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 30%), var(--bg); color: var(--ink); font: 14px/1.5 Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif; }
+    button { color: inherit; font: inherit; }
+    button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .lab { position: sticky; z-index: 20; top: 0; display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(18px); }
+    .lab strong { margin-right: auto; letter-spacing: -.02em; }
+    .lab-group { display: flex; gap: 5px; padding: 4px; border: 1px solid var(--line); border-radius: 12px; }
+    .lab button { min-height: 34px; padding: 5px 10px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
+    .lab button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 800; }
+    .frame { width: min(1440px, 100%); min-height: calc(100svh - 56px); margin: auto; display: grid; grid-template-columns: 220px minmax(0, 1fr); }
+    .rail { position: relative; display: grid; grid-template-rows: auto auto 1fr auto; gap: 22px; padding: 22px 16px; border-right: 1px solid color-mix(in srgb, var(--line) calc(var(--border-alpha) * 100%), transparent); background: color-mix(in srgb, var(--panel) calc(var(--panel-alpha) * 100%), transparent); backdrop-filter: blur(var(--blur)) saturate(1.18); }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; letter-spacing: .08em; }
+    .mark { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 11px; background: var(--accent); color: var(--accent-ink); box-shadow: var(--shadow); }
+    .rail small { color: var(--muted); font-size: 11px; }
+    .nav { display: grid; align-content: start; gap: 5px; }
+    .nav button { min-height: 42px; display: grid; grid-template-columns: 28px 1fr; align-items: center; border: 0; border-radius: 12px; background: transparent; text-align: left; cursor: pointer; }
+    .nav button.active { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-weight: 800; }
+    .rail-footer { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); }
+    .main { min-width: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr); }
+    .topbar { min-height: 68px; display: flex; align-items: center; gap: 10px; padding: 10px 24px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(var(--blur)); }
+    .crumb { min-width: 0; margin-right: auto; }
+    .crumb small { display: block; color: var(--muted); }
+    .crumb strong { font-size: 17px; }
+    .save { display: grid; justify-items: end; color: var(--muted); font-size: 11px; }
+    .save b { color: var(--accent); font-size: 12px; }
+    .icon-button, .primary, .tool { min-height: 40px; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--surface) 88%, transparent); cursor: pointer; box-shadow: var(--shadow); }
+    .icon-button { width: 40px; }
+    .primary { padding: 0 15px; border-color: transparent; background: var(--accent); color: var(--accent-ink); font-weight: 900; }
+    .statusbar { display: flex; align-items: center; gap: 9px; min-height: 38px; padding: 7px 24px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    .statusbar span:last-child { margin-left: auto; }
+    .workspace { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; padding: 16px; }
+    .editor, .context { min-width: 0; overflow: hidden; border: 1px solid color-mix(in srgb, var(--line) calc(var(--border-alpha) * 100%), transparent); border-radius: var(--radius); background: color-mix(in srgb, var(--panel) calc(var(--panel-alpha) * 100%), transparent); box-shadow: var(--shadow); backdrop-filter: blur(var(--blur)) saturate(1.18); }
+    .editor { display: grid; grid-template-rows: auto minmax(450px, 1fr) auto; }
+    .editor-head { display: flex; align-items: center; gap: 10px; padding: 15px 18px; border-bottom: 1px solid var(--line); }
+    .editor-head h1 { margin: 0 auto 0 0; font-size: 20px; letter-spacing: -.04em; }
+    .chip { padding: 4px 8px; border-radius: 999px; background: var(--raised); color: var(--muted); font-size: 11px; }
+    .paper { position: relative; padding: 34px clamp(24px, 6vw, 80px); background: linear-gradient(90deg, transparent 0 5%, color-mix(in srgb, var(--line) 40%, transparent) 5% calc(5% + 1px), transparent calc(5% + 1px)); }
+    .paper p { margin: 0; max-width: 720px; white-space: pre-line; font: 18px/2 "LyricsCloud Noto Sans KR", ui-monospace, monospace; }
+    .caret { display: inline-block; width: 2px; height: 22px; margin-left: 2px; background: var(--accent); vertical-align: -4px; animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .tools { display: flex; gap: 7px; padding: 12px 16px; border-top: 1px solid var(--line); }
+    .tool { flex: 0 0 auto; padding: 0 12px; box-shadow: none; color: var(--muted); }
+    .tool.key { color: var(--ink); font-weight: 800; }
+    .tool.more { margin-left: auto; }
+    .context { display: grid; align-content: start; gap: 14px; padding: 18px; }
+    .context header { display: flex; align-items: center; }
+    .context header h2 { margin: 0 auto 0 0; font-size: 17px; }
+    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 12px; background: var(--surface); }
+    .tabs button { min-height: 36px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); }
+    .tabs button.active { background: var(--raised); color: var(--accent); font-weight: 800; }
+    .resource { display: grid; gap: 6px; padding: 12px; border: 1px solid var(--line); border-radius: 13px; background: color-mix(in srgb, var(--surface) 80%, transparent); }
+    .resource small { color: var(--muted); }
+    .recovery { padding: 12px; border-radius: 13px; background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+    .recovery p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .bottom { display: none; }
+    html[data-shell="conservative"] .frame { grid-template-columns: 254px minmax(0, 1fr); }
+    html[data-shell="conservative"] .topbar::after { content: "곡 · 가사   라임 노트   프롬프트   템플릿   즐겨찾기   최근   검색"; order: -1; color: var(--muted); font-size: 12px; word-spacing: 8px; }
+    html[data-shell="conservative"] .crumb { display: none; }
+    html[data-shell="conservative"] .nav button:nth-child(n+6) { opacity: .72; }
+    html[data-morphism="clay"] .primary, html[data-morphism="clay"] .nav button.active { transform: translateY(-2px); box-shadow: 0 5px 0 color-mix(in srgb, var(--accent) 55%, #000); }
+    html[data-morphism="liquid"] .primary, html[data-morphism="liquid"] .icon-button, html[data-morphism="liquid"] .tool.key { border-color: rgb(255 255 255 / .22); background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 62%, transparent), color-mix(in srgb, var(--panel) 65%, transparent)); color: var(--ink); backdrop-filter: blur(28px) saturate(1.4); }
+    html[data-morphism="liquid"] .editor::before { content: ""; position: fixed; width: 260px; height: 260px; right: 14%; top: 18%; border-radius: 45% 55% 62% 38%; background: color-mix(in srgb, var(--accent) 8%, transparent); filter: blur(24px); pointer-events: none; }
+    html[data-morphism="neumorphism"] .editor, html[data-morphism="neumorphism"] .context, html[data-morphism="neumorphism"] .rail { border: 0; }
+    html[data-morphism="clay"] .editor, html[data-morphism="clay"] .context { border-width: 2px; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+    @media (prefers-reduced-transparency: reduce) { :root { --panel-alpha: 1; --blur: 0px; } }
+    body.is-capture .lab { display: none; }
+    body.is-capture .frame { min-height: 100svh; }
+    @media (max-width: 720px) {
+      .lab { position: static; flex-wrap: wrap; }
+      .lab strong { width: 100%; }
+      .lab-group { max-width: 100%; overflow-x: auto; }
+      .frame, html[data-shell="conservative"] .frame { min-height: calc(100svh - 126px); display: block; }
+      body.is-capture .frame, body.is-capture html[data-shell="conservative"] .frame { min-height: 100svh; }
+      .rail { display: none; }
+      .main { min-height: calc(100svh - 126px); grid-template-rows: auto auto minmax(0, 1fr) auto; }
+      .topbar { min-height: 58px; padding: 8px 12px; }
+      .topbar .crumb small, .topbar .save span, .topbar > .icon-button { display: none; }
+      .topbar .crumb strong { display: block; overflow: hidden; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+      .topbar .save b { font-size: 11px; white-space: nowrap; }
+      html[data-shell="conservative"] .topbar::after { display: none; }
+      html[data-shell="conservative"] .crumb { display: block; }
+      .primary { padding: 0 11px; }
+      .statusbar { padding: 7px 12px; }
+      .workspace { display: block; padding: 8px 8px 82px; }
+      .editor { min-height: calc(100svh - 266px); border-radius: 18px; }
+      .editor-head { padding: 12px; }
+      .editor-head .chip:nth-of-type(2) { display: none; }
+      .paper { min-height: 390px; padding: 26px 22px; }
+      .paper p { font-size: 16px; line-height: 2; }
+      .tools { position: fixed; z-index: 8; right: 12px; bottom: 74px; left: 12px; justify-content: center; gap: 6px; padding: 7px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 90%, transparent); box-shadow: var(--shadow); backdrop-filter: blur(18px); }
+      .tool { min-width: 0; padding: 0 10px; }
+      .tool:nth-child(n+4):not(.more) { display: none; }
+      .tool.more { margin-left: 0; }
+      .context { display: none; }
+      .bottom { position: fixed; z-index: 7; right: 0; bottom: 0; left: 0; height: 66px; display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px max(8px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); border-top: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 94%, transparent); backdrop-filter: blur(var(--blur)); }
+      .bottom button { display: grid; place-items: center; gap: 0; border: 0; background: transparent; color: var(--muted); font-size: 10px; }
+      .bottom button b { font-size: 17px; }
+      .bottom button.active { color: var(--accent); }
+    }
+  </style>
+</head>
+<body>
+  <header class="lab">
+    <strong>UX P2 · 같은 가사 편집 과제 비교</strong>
+    <div class="lab-group" aria-label="정보 구조">
+      <button data-shell="conservative">A 보수적 셸</button><button data-shell="integrated" aria-pressed="true">B 통합 작업공간</button>
+    </div>
+    <div class="lab-group" aria-label="표현 방식">
+      <button data-morphism="flat" aria-pressed="true">1 Flat</button><button data-morphism="glass">2 Glass</button><button data-morphism="neumorphism">3 Neumorphism</button><button data-morphism="clay">4 Clay</button><button data-morphism="liquid">5 Liquid</button>
+    </div>
+    <div class="lab-group"><button id="theme">Light/Dark</button></div>
+  </header>
+  <div class="frame">
+    <aside class="rail">
+      <div class="brand"><span class="mark">L</span><span>LYRICSCLOUD<br><small>PRIVATE BETA</small></span></div>
+      <nav class="nav" aria-label="주 메뉴">
+        <button><span>✦</span><span>창작 홈</span></button><button class="active"><span>♪</span><span>곡 · 가사</span></button><button><span>≈</span><span>라임 노트</span></button><button><span>◇</span><span>프롬프트</span></button><button><span>⌕</span><span>통합 검색</span></button><button><span>↺</span><span>최근 작업</span></button><button><span>★</span><span>즐겨찾기</span></button><button><span>▦</span><span>템플릿</span></button>
+      </nav>
+      <div></div><div class="rail-footer"><b>UI 감사 합성 사용자</b><small>개인 작업 공간 · 온라인</small></div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="crumb"><small>새벽의 파편 / 가사 2</small><strong>후렴 아이디어</strong></div>
+        <div class="save"><b>✓ 서버에 저장됨</b><span>방금 전 · 대기 0건</span></div>
+        <button class="icon-button" aria-label="공유">↗</button><button class="primary">Suno용 복사</button>
+      </header>
+      <div class="statusbar"><span class="dot"></span><strong>온라인 · 동기화됨</strong><span>작성자 1 · 읽는 사람 2</span></div>
+      <section class="workspace">
+        <article class="editor">
+          <header class="editor-head"><h1>후렴 아이디어</h1><span class="chip">작업 중</span><span class="chip">한국어 · 16px</span></header>
+          <div class="paper"><p>[Chorus: Bright synths]
+새벽의 파편을 모아
+우리의 이름을 적어<span class="caret"></span>
+
+흐려진 장면 너머로
+다시 시작되는 노래</p></div>
+          <footer class="tools"><button class="tool key">＋ 구조</button><button class="tool key">≈ 라임</button><button class="tool key">◇ 프롬프트</button><button class="tool">버전</button><button class="tool">표시</button><button class="tool more">••• 더보기</button></footer>
+        </article>
+        <aside class="context">
+          <header><h2>작업 자료</h2><button class="icon-button">×</button></header>
+          <div class="tabs"><button class="active">라임</button><button>프롬프트</button><button>다른 가사</button></div>
+          <div class="resource"><strong>파편 · 장면</strong><small>한국어 · 최근 사용</small><span>파편 / 장면 / 단면 / 반면</span></div>
+          <div class="resource"><strong>몽환적 신스팝</strong><small>문장형 프롬프트</small><span>airy vocal, nocturnal synth…</span></div>
+          <div class="recovery"><strong>복구할 초안 없음</strong><p>권한이 바뀌거나 오프라인 저장이 거부되면 원문을 여기서 복사할 수 있습니다.</p></div>
+        </aside>
+      </section>
+      <nav class="bottom" aria-label="모바일 주 메뉴"><button class="active"><b>♪</b>곡</button><button><b>≈</b>라임</button><button><b>◇</b>프롬프트</button><button><b>⌕</b>검색</button><button><b>•••</b>더보기</button></nav>
+    </main>
+  </div>
+  <script>
+    const root = document.documentElement;
+    document.querySelectorAll('button[data-shell]').forEach(button => button.addEventListener('click', () => {
+      root.dataset.shell = button.dataset.shell;
+      document.querySelectorAll('button[data-shell]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    }));
+    document.querySelectorAll('button[data-morphism]').forEach(button => button.addEventListener('click', () => {
+      root.dataset.morphism = button.dataset.morphism;
+      document.querySelectorAll('button[data-morphism]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    }));
+    document.querySelector('#theme').addEventListener('click', () => { root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark'; });
+    const params = new URLSearchParams(location.search);
+    if (params.has('capture')) document.body.classList.add('is-capture');
+    if (params.has('shell')) document.querySelector(`button[data-shell="${params.get('shell')}"]`)?.click();
+    if (params.has('morphism')) document.querySelector(`button[data-morphism="${params.get('morphism')}"]`)?.click();
+    if (params.get('theme') === 'light') root.dataset.theme = 'light';
+  </script>
+</body>
+</html>
+
