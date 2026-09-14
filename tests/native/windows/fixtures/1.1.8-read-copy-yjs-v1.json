@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "lyricscloud.windows.contract.v1",
+  "sourceSha": "b288dcfd5d3d0a69868b5201c878df7a221e63f3",
+  "producer": {
+    "runtime": "Node.js 24.20.0",
+    "yjs": "13.6.32"
+  },
+  "sentenceCopy": {
+    "body": "바라봐,\r\n마냥,\r마땅한 🙂",
+    "expected": "바라봐,\n마냥,\n마땅한 🙂"
+  },
+  "songFormCopy": {
+    "body": "바라봐, 마냥, 마땅한\n[Verse]\n첫 줄\n[Extend: 3:00:24]\n둘째 줄 🙂",
+    "expectedWhole": "바라봐, 마냥, 마땅한\n[Verse]\n첫 줄\n둘째 줄 🙂",
+    "selectedSectionIndexes": [1],
+    "expectedSelected": "[Extend: 3:00:24]\n둘째 줄 🙂"
+  },
+  "warningBoundary": {
+    "codePoint": "가",
+    "repeat": 3001,
+    "expectedLimit": 3000,
+    "expectedWarning": true
+  },
+  "yjsSnapshot": {
+    "sharedType": "body",
+    "expectedBody": "바라봐, 마냥, 마땅한\n[Verse]\n첫 줄\n[Extend: 3:00:24]\n둘째 줄 🙂",
+    "updateBase64": "AQHWg0gABAEEYm9keU7rsJTrnbzrtJAsIOuniOuDpSwg66eI65WF7ZWcCltWZXJzZV0K7LKrIOykhApbRXh0ZW5kOiAzOjAwOjI0XQrrkZjsp7gg7KSEIPCfmYIA"
+  }
+}

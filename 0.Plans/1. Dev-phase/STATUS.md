@@ -1,13 +1,13 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.1.7"
-current_phase: "../2.Patch-phase/1.1.7/5phase.md"
-state: "complete"
+current_version: "1.1.8"
+current_phase: "../2.Patch-phase/1.1.8/1phase.md"
+state: "review"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-15"
-next_action: "1.1.7 정식 릴리스 완료 기록을 PR로 main에 병합한 뒤 1.1.8 P1의 현재 계획과 선행조건만 착수한다"
+next_action: "사용자가 ADR-NF-004의 WinUI 3/read-copy 권고 범위를 승인하면 P1 최초 소비 결정과 source SHA를 봉인하고 P2를 시작한다"
 ```
 
 ## 승인과 기준
@@ -169,11 +169,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.7 P4 | complete | 후보 `66f2f79`, Actions `34894853203`·`34894869965`, 네 signed dev image·동일 SHA 공개 reduced motion/reflow/forced colors·4x CPU 저장·서비스 재시작 영속 인수 완료 |
 | 1.1.7 P5 | complete | 후보 `b1a1e2c`, Actions `34900342849`·`34900363577`, Vitest 376 PASS·E2E 379 PASS·네 signed dev image·동일 SHA 공개 접근성 fallback/저장·복귀·서비스 재시작 영속 인수 완료 |
 | 1.1.7 Release | complete | main/tag `edb8b4a`, main CI `34904079990`·tag CI `34906725749`, 네 signed exact digest 운영 배포·공개 복귀/접근성/공유/복구/재시작·전역 beta CLI·GitHub Release 완료 |
+| 1.1.8 P1 | review | 기준 main `b288dcf`, WinUI 3/read-copy-only·system browser/loopback PKCE·DPAPI cache 권고, JS reference copy/Yjs/auth 34 PASS; 사용자 기술·범위 승인과 Windows SDK/OS/IME/서명 미완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.8/P1 | LC-NF-1.1.8-P1-01~07 | Windows 기술 비교·인증/copy/Yjs fixture·실패/권한/복구·담당/승인 gate·상태/Future | 1.1.7 release `edb8b4a`; 기록 main `b288dcf`; JS reference 34 PASS; 플랫폼 선택 미승인 | 2026-09-15 08:43 KST | review |
 | Codex | 1.1.7/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | P5 `b1a1e2c`; main/tag `edb8b4a`; Actions `34904079990`·`34906725749` | 2026-09-15 | complete |
 | Codex | 1.1.7/P5 | LC-NF-1.1.7-P5-01~03 | 사용자 안내·플랫폼 탐색/공통 계약·최종 artifact/CI·개발 공개 인수·상태/Future | 후보 `b1a1e2c`; Actions `34900342849`·`34900363577`; 네 signed dev image·동일 SHA 개발 공개 인수 완료, native gate 미실행 | 2026-09-15 | complete |
 | Codex | 1.1.7/P4 | LC-NF-1.1.7-P4-01~03 | 1.1.7 회귀·접근성/성능 대리·협업/presence/font/IME 영향·상태/Future | 후보 `66f2f79`, 두 CI·네 signed dev image·동일 SHA 개발 공개 저장/재시작 인수 완료; 실제 OS/기기·AT·OS zoom은 별도 미실행 | 2026-09-15 | complete |
