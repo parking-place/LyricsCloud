@@ -1,6 +1,6 @@
 # 1.1.7 — 디자인 적용 후 UI/UX 동선 검토·개선
 
-상태: **P1 완료 / P2 보정 후보 로컬 검증 완료·CI/동일 SHA 개발 인수 대기**. runtime source `f8d24c610ce24a1ff926e77204783473b936da88`의 관찰을 바탕으로 라임/프롬프트 quick-add의 안전한 `returnTo` 보존을 구현했고, 첫 CI가 찾은 기존 URL 호환 14건을 보정해 desktop/mobile 기존·신규 16 PASS를 확보했다. 요구 `NF-REQ-039`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
+상태: **P1~P2 완료 / P3 다음**. runtime source `f8d24c610ce24a1ff926e77204783473b936da88`의 관찰을 바탕으로 라임/프롬프트 quick-add의 안전한 `returnTo` 보존을 구현했다. 첫 CI가 찾은 기존 URL 호환 14건을 보정하고 후보 `206b14f`의 두 CI·네 signed dev image·동일 SHA 개발 공개 인수를 완료했다. 요구 `NF-REQ-039`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
 
 선행: [1.1.6](../1.1.6/README.md)의 인수와 해당 결정 gate. 코드 변경 없는 개발안/외부 gate 보류는 제품 출시로 세지 않는다.
 
