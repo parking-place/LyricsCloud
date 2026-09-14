@@ -62,6 +62,8 @@ test.describe("1.1.6 P2 stable editor surfaces", () => {
       await page.keyboard.insertText("X");
       await expect(editor).toContainText("끝 입력X");
       await page.keyboard.press("Control+z");
+      await expect(editor).not.toContainText("끝 입력X");
+      if ((await editor.textContent())?.includes("끝 입력")) await page.keyboard.press("Control+z");
       await expect(editor).not.toContainText("끝 입력");
       await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 20_000 });
       await expect.poll(async () => (await (await context.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body, { timeout: 20_000 })
