@@ -1,4 +1,4 @@
-# LyricsCloud 1.1.6 정식·1.1.7 후보 지원 정책
+# LyricsCloud 1.1.7 정식 지원 정책
 
 ## 지원 환경
 
@@ -57,7 +57,7 @@
 
 1.1.5 후보는 승인 B-1 context header·접힌 rail tooltip·모바일 다섯 주 내비+More·Flat-depth를 제공하면서 같은 CodeMirror/store와 기존 URL·filter·order·API·DB를 유지한다. shell 조작 중 editor가 재생성되거나 입력·undo가 사라지거나, recent deep link가 다른 자료로 가거나, 다른 owner 자료가 보이거나, 저장 실패가 성공으로 표시되면 배포를 중단한다. P4의 실제 PostgreSQL, 전체 E2E 365 PASS·41 skip, Linux 5-browser engine과 동일 SHA 공개 offline/reconnect·서비스 재시작은 PASS했지만 실제 Windows/Linux/macOS/Android/iOS 물리 기기·OS IME·screen reader·200% OS zoom은 새로 실행하지 않았다.
 
-1.1.7 후보는 새 라임·프롬프트의 명시적 내부 복귀, 목록 filter·sort·view query 보존, dialog/mobile More focus 복원, 접힌 rail keyboard tooltip과 접근성 media-query fallback을 추가한다. 외부 URL로 이동하거나 원래 목록 상태·편집 원문·selection/undo·draft/outbox를 잃거나 ACK 전 저장 완료를 표시하면 배포를 중단한다. P2~P4의 실제 PostgreSQL·지원 browser engine과 동일 SHA 공개 exact 복귀·reflow·4x CPU 저장·서비스 재시작은 PASS했지만 실제 Windows/Linux/macOS/Android/iOS native 앱·물리 기기·OS IME·screen reader·OS zoom은 실행하지 않았다.
+1.1.7은 새 라임·프롬프트의 명시적 내부 복귀, 목록 filter·sort·view query 보존, dialog/mobile More focus 복원, 접힌 rail keyboard tooltip과 접근성 media-query fallback을 추가한다. 외부 URL로 이동하거나 원래 목록 상태·편집 원문·selection/undo·draft/outbox를 잃거나 ACK 전 저장 완료를 표시하면 배포를 중단한다. 실제 PostgreSQL·지원 browser engine, 동일 SHA 개발과 exact digest 운영의 공개 exact 복귀·reflow·4x CPU 저장·서비스 재시작을 PASS했지만 실제 Windows/Linux/macOS/Android/iOS native 앱·물리 기기·OS IME·screen reader·OS zoom은 실행하지 않았다.
 
 현재 정식 main/tag `f8d24c6`, main CI `34868654180`, tag CI `34871969616`, 네 exact digest 운영 배포를 완료했다. 공개 HTTPS에서 B-1 생성/연결·공유/복구·guest 격리와 서비스 재시작 지속성이 PASS했다. 기존 DB volume·secret·HMAC allowlist·beta code는 보존했으며 외부 backup은 `OPS-100-001` 승인 예외로 여전히 미구축이다.
 
