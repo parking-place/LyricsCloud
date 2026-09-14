@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.5"
-current_phase: "../2.Patch-phase/1.1.5/3phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.5/4phase.md"
+state: "review"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "PR #125를 main에 병합한 뒤 merge SHA에서 1.1.5 P4 실패·권한·복구 교차 회귀를 착수한다"
+next_action: "1.1.5 P4의 저장 중 셸 전환·deep link/filter/recent·양 theme/focus·다른 계정/offline/reconnect/restart·지원 browser 교차 회귀를 실행한다"
 ```
 
 ## 승인과 기준
@@ -159,6 +159,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.5/P4 | LC-NF-1.1.5-P4-01~06 | 저장/복구·권한·offline/reconnect/restart·지원 browser 회귀·상태/요구/Future | 1.1.5 P3 merge `924980a`; 동일 SHA 개발 인수 | 2026-09-14 | review |
 | Codex | 1.1.5/P3 | LC-NF-1.1.5-P3-01~06 | 공통 header·rail/mobile nav·목록/grid·곡 workspace·PC/mobile E2E·상태/요구/Future | 후보 `24cef7e`; Actions `34808547591`·`34808550793`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P2 | LC-NF-1.1.5-P2-01~06 | config/root layout/token/styles/version/compose·신규 PC/mobile 회귀·상태/요구/Future | 후보 `43980ba`; Actions `34803929839`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P1 | LC-NF-1.1.5-P1-01~06 | P1 계약·실제 shell/token/list/route/test 조사·상태/요구/Future | UX P5 merge `107ec24`; 승인 tree `a3a0250` | 2026-09-14 | complete |
