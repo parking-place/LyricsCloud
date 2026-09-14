@@ -2274,3 +2274,40 @@ html[data-ui-variant="b1"] [data-connection-manager="true"] :is(.song-link-empty
   html[data-ui-variant="b1"] [data-creation-surface="lyric"] .song-form-actions { padding-bottom: max(.25rem, var(--lc-safe-bottom)); }
   html[data-ui-variant="b1"] [data-connection-manager="true"] { width: 100%; border-width: 1px 0 0; border-radius: 1rem 1rem 0 0; }
 }
+
+/* 1.1.7 P4 platform accessibility fallbacks. These queries only simplify
+   presentation; navigation, editor and permission state remain unchanged. */
+@media (prefers-reduced-transparency: reduce) {
+  html[data-ui-variant="b1"] :is(.topbar, .mobile-header, .mobile-bottom-nav, .mobile-editor-dock, .rhyme-mobile-dock, .trash-bulk-actions) {
+    background: var(--panel) !important;
+    backdrop-filter: none !important;
+  }
+  html[data-ui-variant="b1"] :is(.dialog-backdrop, .song-link-backdrop, .editor-sheet-backdrop, .editor-resource-shell.is-mobile-open, .mobile-more-backdrop, .sharing-backdrop) {
+    background: #000 !important;
+    backdrop-filter: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  html[data-ui-variant="b1"] :is(.nav-item.active, .workspace-tab.active, [aria-current="page"], [aria-selected="true"], [aria-pressed="true"]) {
+    border-color: currentColor !important;
+    outline: 2px solid currentColor;
+    outline-offset: 1px;
+  }
+}
+
+@media (forced-colors: active) {
+  html[data-ui-variant="b1"] { forced-color-adjust: auto; }
+  html[data-ui-variant="b1"] :is(.topbar, .mobile-header, .mobile-bottom-nav, .mobile-editor-dock, .rhyme-mobile-dock, .trash-bulk-actions) {
+    background: Canvas !important;
+    backdrop-filter: none !important;
+  }
+  html[data-ui-variant="b1"] :is(.nav-item.active, .workspace-tab.active, [aria-current="page"], [aria-selected="true"], [aria-pressed="true"]) {
+    border-color: Highlight !important;
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+  html[data-ui-variant="b1"] :is(.status-badge, .sharing-presence, .shared-viewers, .editor-resource-panel, [data-connection-manager="true"]) {
+    border-color: CanvasText;
+  }
+}

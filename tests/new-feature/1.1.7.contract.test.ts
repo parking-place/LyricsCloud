@@ -64,3 +64,14 @@ describe("1.1.7 P3 platform interaction contract", () => {
     expect(lyric).toContain(">＋ 송폼 삽입</button>");
   });
 });
+
+describe("1.1.7 P4 accessibility fallback contract", () => {
+  it("removes translucent blur when the platform requests simpler surfaces", () => {
+    const styles = read("apps/web/src/app/styles.css");
+
+    expect(styles).toContain("@media (prefers-reduced-transparency: reduce)");
+    expect(styles).toContain("backdrop-filter: none !important");
+    expect(styles).toContain("@media (forced-colors: active)");
+    expect(styles).toContain("forced-color-adjust: auto");
+  });
+});
