@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.7"
-current_phase: "../2.Patch-phase/1.1.7/3phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.7/4phase.md"
+state: "active"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-15"
-next_action: "1.1.7 P3 완료 기록을 push·PR merge한 뒤 P4 사용성·접근성 재검토 범위에 착수한다"
+next_action: "1.1.7 P4의 전후 과제, reduced motion/contrast·200% reflow, 협업·폰트·IME 영향 회귀를 실패 우선으로 검증한다"
 ```
 
 ## 승인과 기준
@@ -166,11 +166,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.7 P1 | complete | runtime `f8d24c6`, release 기록 main `5a72780`, PC Chromium·Android 대리 Chromium mobile·iOS 대리 WebKit mobile 가입/수직 흐름 6 PASS, 정식 공유/복구 CI 재사용; 라임/프롬프트 returnTo P2 범위 확정 |
 | 1.1.7 P2 | complete | 후보 `206b14f`, Actions `34881741352`·`34881745605`, 첫 후보의 기존 URL 14 FAIL 보정·네 signed dev image·동일 SHA 공개 quick-add 복귀/본문/focus/overflow 인수 완료 |
 | 1.1.7 P3 | complete | 후보 `740b1e3`, Actions `34887398291`·`34887401584`, Vitest 264 PASS·5-browser P3 5 PASS·네 signed dev image·동일 SHA 공개 PC/mobile×dark/light 복귀/focus/새 탭/tooltip 인수 완료 |
+| 1.1.7 P4 | active | P3 merge `3c4d89d` 기준 전후 과제·reduced motion/contrast·200% reflow·저사양 대리·협업/presence/font/IME 영향 검증 착수 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7/P4 | LC-NF-1.1.7-P4-01~03 | 1.1.7 회귀·접근성/성능 대리·협업/presence/font/IME 영향·상태/Future | P3 merge `3c4d89d`; 실제 OS/기기·AT·OS zoom은 별도 미실행 경계 | 2026-09-15 | active |
 | Codex | 1.1.7/P3 | LC-NF-1.1.7-P3-01~03 | 목록/편집/공유/Suno 복귀·drag/context 대안·PC/mobile 회귀·상태/Future | 후보 `740b1e3`, 두 CI·네 signed dev image·동일 SHA 공개 PC/mobile×dark/light PASS; 실제 OS/기기·AT는 browser 대리와 분리 | 2026-09-15 | complete |
 | Codex | 1.1.7/P2 | LC-NF-1.1.7-P2-01~03 | quick-add·rhyme/prompt new route/screen·returnTo 회귀·상태/Future | 후보 `206b14f`; Actions `34881741352`·`34881745605`; 네 signed dev image·동일 SHA 공개 인수 | 2026-09-15 | complete |
 | Codex | 1.1.7/P1 | LC-NF-1.1.7-P1-01~03 | 실제 과제·동선 관찰·P1 문서·STATUS·요구 추적·Future | 1.1.6 release `f8d24c6`; 기록 main `5a72780` | 2026-09-15 | complete |

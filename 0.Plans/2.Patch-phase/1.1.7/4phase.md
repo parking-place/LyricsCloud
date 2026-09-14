@@ -1,6 +1,6 @@
 # 1.1.7 Phase 4 — 사용성·접근성 재검토
 
-상태: **계획 검토 / 미착수**. `NF-REQ-039`의 이번 Phase 범위만 수행한다.
+상태: **진행 중** (`active`). P3 merge `3c4d89d4cef9ea1413db870fee28628314bbaa33`를 기준으로 `NF-REQ-039`의 이번 Phase 범위만 수행한다.
 
 ## 선행조건과 담당 경계
 
@@ -15,6 +15,14 @@
 ## 수용 기준
 
 `AC-1.1.7-04`: 관찰 문제의 해결과 남은 한계를 비교 근거로 설명할 수 있다.
+
+## 착수 검증 경계
+
+- 기존 UX P4의 B-1 정적 목업 결과를 제품 PASS로 재사용하지 않고, 실제 제품의 P3 수직 과제를 같은 입력으로 다시 실행해 URL·focus·원문·권한 결과를 비교한다.
+- Chromium/Firefox/WebKit의 reduced motion, forced colors/contrast 대리, 720 CSS px reflow(1440px 200% 확대 대리), 390px·CPU throttle 대리에서 기능 동등성과 overflow를 확인한다.
+- 협업은 owner/reader presence와 회수, 가사는 composition event·selection·undo와 Noto Sans KR 적용/차단 fallback을 영향 범위로 검증한다. 외부 사전은 1.0.13 no-go를 유지하며 요청을 새로 만들지 않는다.
+- 실제 OS 200% zoom, 저사양 물리 기기/GPU·배터리, NVDA/VoiceOver/TalkBack, OS IME는 별도 미실행으로 기록한다.
+- 상세 fixture·환경·중단 조건은 [P4 인수 문서](../../../docs/runbooks/1.1.7-phase4-usability-accessibility.md)에 누적한다.
 
 ## 검증·완료·인계
 
