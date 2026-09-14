@@ -1,6 +1,6 @@
 # 1.1.5 Phase 1 — 계약·실패 사례·담당 경계
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`, 구현 전 계약)
 - 단계 목적: 승인 디자인 적용·탐색 셸의 계약·실패 사례·담당 경계을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -41,12 +41,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.5-P1-01` design/UX의 다섯 단계와 사용자 승인 전에는 전면 UI 구현을 시작하지 않는다.
-- [ ] `LC-NF-1.1.5-P1-02` 색상·간격·아이콘·내비 디자인 변경이 API·DB·자료 권한을 변경하지 않게 한다.
-- [ ] `LC-NF-1.1.5-P1-03` editor를 재마운트하지 않는 셸 이행과 기존/새 UI의 안전한 복귀 범위를 정의한다.
-- [ ] `LC-NF-1.1.5-P1-04` 관련 구현·테스트 경로를 읽고 위 요구/수용 사례를 정상·오류·권한·복구 입력표로 고정한다. 원인 미확정 항목은 가설과 증거 수준을 표시한다.
-- [ ] `LC-NF-1.1.5-P1-05` 저장 형식·API·순서·copy·권한 중 변경되는 인터페이스와 호환/되돌림을 결정 문서에 기록하고 최초 소비 전에 승인한다.
-- [ ] `LC-NF-1.1.5-P1-06` 각 변경 파일 담당자와 실제 최종 source SHA를 기록한다. 해당 패치 밖의 기능이나 아직 선택하지 않은 아이디어를 섞지 않는다.
+- [x] `LC-NF-1.1.5-P1-01` design/UX의 다섯 단계와 사용자 승인을 확인한 뒤 구현 계약을 시작했다.
+- [x] `LC-NF-1.1.5-P1-02` 색상·간격·아이콘·내비 변경이 API·DB·자료 권한을 바꾸지 않는 경계를 고정했다.
+- [x] `LC-NF-1.1.5-P1-03` editor를 재마운트하지 않는 셸 이행과 classic/B-1 복귀 범위를 정의했다.
+- [x] `LC-NF-1.1.5-P1-04` 관련 구현·테스트 경로와 정상·오류·권한·복구 입력표·증거 수준을 고정했다.
+- [x] `LC-NF-1.1.5-P1-05` 저장 형식·API·순서·copy·권한은 변경 0이며 UI variant/호환/rollback만 승인했다.
+- [x] `LC-NF-1.1.5-P1-06` P2~P5 파일 담당과 source/승인 artifact/tree SHA를 기록했다.
 
 ## 구체적 검증
 
@@ -61,16 +61,19 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 ## 실행·증거 기록
 
-[공통 명령·검증](../QUALITY-GATES.md)을 먼저 읽는다. 기존 runner의 영향받은 검사를 우선 사용하고 필요할 때만 회귀를 보강한다. 지원 환경에서 관련 DB/E2E를 선택하며 동일 변경의 full suite는 로컬/CI 중 한 곳과 필수 게이트만 따른다. native은 승인된 SDK/플랫폼 명령을 기록한다. 없는 도구·실제 IME·물리 기기 검증을 모사 결과로 통과시켰다고 표시하지 않는다. 문서-only Phase는 링크·범위·결정·설계 검토로 별도 인수한다.
+- main `107ec24237cb2633f0e3d0d4ea6e78dd5265e8bd`, VERSION 1.1.4와 UX P5 승인 artifact/tree를 대조하고 [P1 셸 계약](../../../docs/runbooks/1.1.5-phase1-ui-shell-contract.md)에 실제 경로·실패 입력·담당·rollback을 고정했다.
+- `WorkspaceShell`이 collapsed rail, 중복 workspace tabs, mobile More focus trap, logout/draft guard, theme fetch, global IME-safe shortcut, PWA를 함께 소유함을 확인했다. child/editor key를 바꾸지 않고 server-rendered `LC_UI_VARIANT=classic|b1` root attribute와 같은 store를 쓰는 점진 전환을 승인했다.
+- song/rhyme/prompt 목록의 request sequence·optimistic rollback·view/order 설정, route의 returnTo/filter, responsive-shell/navigation-release/ui-audit/lyric durability 회귀를 P2~P4 입력으로 연결했다. API/DB/migration/capability 변경은 0으로 고정했다.
+- 문서 validator·링크/결정/범위·Future inventory/hash·old Mock-up 보존을 검증했다. P1은 앱 test/DB/browser/서버를 실행한 구현 PASS가 아닌 문서-only 계약 인수다.
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 계약·경로·실패 입력·정확한 기준 SHA가 연결되어 있다.
+- [x] 원문·권한·복구·오류 계약을 UI 전환 중 불변으로 승인했다.
+- [x] 실제 앱/DB/browser/서버 검증은 P2~P5 미실행임을 기록했다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 문서-only 수행과 일치한다.
+- [x] 설계 승인과 구현 전 P1 계약 증거를 갖췄다.
+- [x] main·Release·운영·runtime/DB 변경을 수행하지 않았다.
 
 ## 산출물
 
