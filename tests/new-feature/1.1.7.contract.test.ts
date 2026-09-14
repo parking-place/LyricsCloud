@@ -37,3 +37,30 @@ describe("1.1.7 safe creation return contract", () => {
     expect(safeWorkspaceReturnTo("/account/withdrawal", "/prompts")).toBe("/prompts");
   });
 });
+
+describe("1.1.7 P3 platform interaction contract", () => {
+  it("keeps collapsed rail destinations named and shows their label on keyboard focus", () => {
+    const shell = read("apps/web/src/components/app-shell.tsx");
+    const styles = read("apps/web/src/app/styles.css");
+
+    expect(shell).toContain('aria-label="창작 홈"');
+    expect(shell).toContain('aria-label="곡"');
+    expect(shell).toContain('aria-label="라임 노트"');
+    expect(shell).toContain('aria-label="프롬프트"');
+    expect(styles).toContain(".workspace-shell.is-collapsed .nav-item[title]::after");
+    expect(styles).toContain(".workspace-shell.is-collapsed .nav-item[title]:focus-visible::after");
+  });
+
+  it("retains visible and keyboard alternatives for drag and context-menu actions", () => {
+    const order = read("apps/web/src/components/library-order-controls.tsx");
+    const prompt = read("apps/web/src/components/prompt-token-builder.tsx");
+    const lyric = read("apps/web/src/components/lyric-editor.tsx");
+
+    expect(order).toContain('aria-label={`${title} 앞으로 이동`}');
+    expect(order).toContain('aria-label={`${title} 뒤로 이동`}');
+    expect(prompt).toContain('aria-label="선택한 태그 순서 변경"');
+    expect(prompt).toContain(">앞으로</button>");
+    expect(prompt).toContain(">뒤로</button>");
+    expect(lyric).toContain(">＋ 송폼 삽입</button>");
+  });
+});

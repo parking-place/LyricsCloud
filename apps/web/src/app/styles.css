@@ -302,6 +302,39 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 }
 .logout-button:disabled, .top-logout:disabled, .mobile-logout:disabled { opacity: .55; cursor: wait; }
 .workspace-shell.is-collapsed .brand-copy, .workspace-shell.is-collapsed .nav-label, .workspace-shell.is-collapsed .nav-text { visibility: hidden; }
+.workspace-shell.is-collapsed .side-nav { overflow: visible; }
+.workspace-shell.is-collapsed .nav-item[title], .workspace-shell.is-collapsed .logout-button[title] { position: relative; }
+.workspace-shell.is-collapsed .nav-item[title]::after,
+.workspace-shell.is-collapsed .logout-button[title]::after {
+  position: absolute;
+  z-index: 12;
+  left: calc(100% + .55rem);
+  top: 50%;
+  padding: .42rem .58rem;
+  border: 1px solid var(--line);
+  border-radius: .45rem;
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 28%);
+  content: attr(title);
+  font-size: .72rem;
+  font-weight: 750;
+  line-height: 1.2;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(.2rem, -50%);
+  transition: opacity 120ms ease, transform 120ms ease;
+  visibility: hidden;
+  white-space: nowrap;
+}
+.workspace-shell.is-collapsed .nav-item[title]:hover::after,
+.workspace-shell.is-collapsed .nav-item[title]:focus-visible::after,
+.workspace-shell.is-collapsed .logout-button[title]:hover::after,
+.workspace-shell.is-collapsed .logout-button[title]:focus-visible::after {
+  opacity: 1;
+  transform: translate(0, -50%);
+  visibility: visible;
+}
 .workspace-shell.is-collapsed .rail-toggle { align-self: center; }
 .main-shell { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 4.5rem auto minmax(0, 1fr); }
 .topbar { min-width: 0; display: flex; align-items: center; gap: 1rem; padding: 0 clamp(1.25rem, 3vw, 3rem); border-bottom: 1px solid var(--line); background: rgb(9 11 14 / 88%); backdrop-filter: blur(18px); }
