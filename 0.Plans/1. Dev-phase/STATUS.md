@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.6"
-current_phase: "../2.Patch-phase/1.1.6/3phase.md"
+current_phase: "../2.Patch-phase/1.1.6/4phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.6 P3 화면군 실패·빈 상태·권한·focus 회귀를 먼저 고정하고 PC·모바일 사용자 흐름을 구현한다"
+next_action: "1.1.6 P4에서 10,000줄 편집·저장 실패/권한 회수·copy/export·offline/reconnect/restart와 지원 browser 회귀를 실행한다"
 ```
 
 ## 승인과 기준
@@ -159,12 +159,14 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.5 Release | complete | main/tag `17fb4a9`, main CI `34816897879`·tag CI `34819313816`, exact digest 운영 배포·공개 B-1/공유/복구/재시작·전역 beta CLI·GitHub Release 완료 |
 | 1.1.6 P1 | complete | main 기록 `98c2a29`·제품 source `17fb4a9` 조사, editor/store/copy/security 생명주기·실패 입력·P2~P5 담당·classic/1.1.5 rollback 계약 완료; 문서-only, 실제 OS/물리 기기 미실행 |
 | 1.1.6 P2 | complete | 후보 `a75f641`, Actions `34828840416`·`34828845357`, 네 dev image tag 동일 digest·동일 SHA 개발 배포, 10,000줄 editor 생명주기/heap·서버 저장 재진입·공개 양 theme/viewport 인수 완료 |
+| 1.1.6 P3 | complete | 후보 `e6f9e8c`, Actions `34833243878`·`34833266060`, 네 dev image tag 동일 digest·동일 SHA 개발 배포, 생성/연결 양 theme·desktop/mobile·상태/focus·저장 재진입 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.6/P3 | LC-NF-1.1.6-P3-01~06 | editor/resource/auth/share/recovery PC·mobile flows·E2E·guide·상태/Future | P2 후보 `a75f641`; Actions `34828840416`·`34828845357`; 동일 SHA 개발 인수 | 2026-09-14 | in_progress |
+| Codex | 1.1.6/P4 | LC-NF-1.1.6-P4-01~06 | editor/save/permission/copy/export/offline/reconnect/restart·지원 browser 회귀·상태/Future | P3 후보 `e6f9e8c`; Actions `34833243878`·`34833266060`; 동일 SHA 개발 인수 | 2026-09-14 | in_progress |
+| Codex | 1.1.6/P3 | LC-NF-1.1.6-P3-01~06 | editor/resource/auth/share/recovery PC·mobile flows·E2E·guide·상태/Future | 후보 `e6f9e8c`; Actions `34833243878`·`34833266060`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.6/P2 | LC-NF-1.1.6-P2-01~06 | web editor/auth/share/recovery surfaces·editor contract·runtime metadata·tests·상태/Future | P1 `3e7eaa4`; 후보 `a75f641`; 두 CI·동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.6/P1 | LC-NF-1.1.6-P1-01~06 | P1 계획·편집/복구 계약·STATUS·요구 추적·Future 인수 | main 기록 `98c2a29`; 제품 source `17fb4a9`; B-1 승인 | 2026-09-14 | complete |
 | Codex | 1.1.5/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | 1.1.5 P5 `074782e`; main/tag `17fb4a9` | 2026-09-14 | complete |
@@ -282,6 +284,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.6 P3 후보 `e6f9e8c266d3d61c7016aa51519ff4fc5703fdbe`는 새 가사·라임·프롬프트와 곡 연결 관리에 B-1 semantic surface를 명시하고 light/dark·desktop/mobile의 입력·loading/empty/error/retry·mobile sheet·focus 복귀를 고정했다. 가입 코드 오류·공유 권한 회수/guest 복구·탈퇴 재인증·라임/프롬프트 초안과 10,000줄 editor 연속성은 관련 40 PASS/6 조건부 skip에서 함께 확인했다. Node 24 check/build·Vitest 258 PASS/115 조건부 skip, push/PR Actions `34833243878`·`34833266060` 전체 PASS와 네 서명 dev image tag 동일 digest를 통과했다. 같은 SHA 개발 서버 `1.1.6/dev/p3`, schema `1140_sharing_stability.sql`, 네 서비스 healthy에서 공개 화면 행렬과 server ACK 저장→API 재진입 exact 한글 본문이 PASS했고 합성 fixture를 제거했다. API/DB/migration/capability/copy 변경은 0이며 릴리스 서버는 변경하지 않았다. 실제 OS IME·AT·물리 기기/OS zoom은 P4/P5 gate로 유지한다.
 
 1.1.6 P2 후보 `a75f64166b5a80e077ac7f458b6eb86668a7d957`은 편집기 visual shell과 resource navigation effect를 CodeMirror 생명주기에서 분리하고 lyric/rhyme/prompt save strip·자료 panel/mobile sheet·auth/share/recovery flat surface를 적용했다. 기존 API·DB schema/migration·권한·copy는 바꾸지 않았다. 10,000줄 동일 editor DOM·theme/panel/viewport·undo·서버 저장·GC heap 회귀와 전체 unit/build/DB/E2E를 통과했고, 기존 save 성능 7표본 p95가 최댓값이던 CI 변동은 기준을 완화하지 않고 save만 21표본으로 안정화해 연속 3회 예산을 통과했다. push/PR Actions `34828840416`·`34828845357`, 네 서명 dev image와 동일 SHA 개발 서버 `1.1.6/dev/p2`를 인수했으며 공개 create/save/reopen/recent/deep link와 1440/1024/mobile×dark/light가 PASS했다. 합성 fixture 제거, DB volume·secret·allowlist 보존, 릴리스 서버 무변경이다. 실제 OS IME·AT·물리 기기/OS zoom은 P4/P5 gate로 유지하며 P3는 화면군 정상·빈 상태·실패·권한·focus와 사용자 가이드를 완성한다.
 

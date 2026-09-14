@@ -2122,6 +2122,84 @@ html[data-ui-variant="b1"] :is(.dialog-backdrop, .editor-sheet-backdrop, .lyric-
   background: rgb(0 0 0 / 64%);
 }
 
+/* 1.1.6 P3 creation and connection flows. These semantic hooks keep the
+   approved flat surfaces explicit in both themes without changing classic. */
+html[data-ui-variant="b1"] [data-creation-surface] {
+  background: var(--canvas);
+}
+html[data-ui-variant="b1"] [data-creation-surface="lyric"] .form-heading,
+html[data-ui-variant="b1"] [data-creation-surface="lyric"] .lyric-new-form,
+html[data-ui-variant="b1"] [data-creation-surface="rhyme"] .rhyme-new-document,
+html[data-ui-variant="b1"] [data-creation-surface="prompt"] :is(.prompt-builder-card, .prompt-sentence-card, .prompt-editor-info) {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--panel);
+  box-shadow: none;
+}
+html[data-ui-variant="b1"] [data-creation-surface="lyric"] .form-heading {
+  width: min(100%, 48rem);
+  padding: 1rem;
+}
+html[data-ui-variant="b1"] [data-creation-surface="lyric"] .creation-source,
+html[data-ui-variant="b1"] [data-creation-surface="prompt"] .creation-source {
+  width: fit-content;
+  padding: .25rem;
+  border: 1px solid var(--line);
+  border-radius: .75rem;
+  background: var(--surface);
+}
+html[data-ui-variant="b1"] [data-creation-surface] .creation-source a {
+  border-color: transparent;
+  border-radius: .55rem;
+}
+html[data-ui-variant="b1"] [data-creation-surface] .creation-source a[aria-current="page"] {
+  border-color: color-mix(in srgb, var(--acid) 42%, var(--line));
+  background: color-mix(in srgb, var(--acid) 10%, var(--panel));
+  color: var(--acid);
+}
+html[data-ui-variant="b1"] [data-creation-surface="lyric"] .lyric-new-form {
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+}
+html[data-ui-variant="b1"] [data-creation-surface="lyric"] .lyric-new-form > fieldset,
+html[data-ui-variant="b1"] [data-creation-surface="lyric"] .parent-song-list > label,
+html[data-ui-variant="b1"] [data-creation-surface="lyric"] .quick-empty {
+  border-radius: .65rem;
+  background: var(--surface);
+}
+html[data-ui-variant="b1"] [data-creation-surface="rhyme"] .rhyme-new-document {
+  padding: .8rem;
+  overflow: hidden;
+}
+html[data-ui-variant="b1"] [data-creation-surface="rhyme"] .rhyme-new-document > textarea {
+  border: 0;
+  border-radius: .65rem;
+  background: var(--surface);
+}
+html[data-ui-variant="b1"] [data-connection-manager="true"] {
+  border-radius: 1rem;
+  background: var(--panel);
+  box-shadow: none;
+}
+html[data-ui-variant="b1"] [data-connection-manager="true"] :is(.song-link-tabs, .song-link-toolbar [role="group"]) {
+  padding: .25rem;
+  border-radius: .75rem;
+  background: var(--surface);
+}
+html[data-ui-variant="b1"] [data-connection-manager="true"] :is(.song-link-tabs button, .song-link-toolbar input, .song-link-toolbar [role="group"] button, .song-link-option) {
+  border-radius: .55rem;
+  background: var(--surface);
+}
+html[data-ui-variant="b1"] [data-connection-manager="true"] :is(.song-link-tabs button[aria-selected="true"], .song-link-toolbar [role="group"] button[aria-pressed="true"], .song-link-option.is-linked) {
+  border-color: color-mix(in srgb, var(--acid) 42%, var(--line));
+  background: color-mix(in srgb, var(--acid) 9%, var(--surface));
+}
+html[data-ui-variant="b1"] [data-connection-manager="true"] :is(.song-link-empty, .song-link-error) {
+  border-radius: .65rem;
+  background: var(--surface);
+}
+
 @media (max-width: 1080px) {
   html[data-ui-variant="b1"] .lyric-editor-workspace { grid-template-columns: minmax(9rem, 10rem) minmax(22rem, 1fr); }
   html[data-ui-variant="b1"] .editor-resource-shell.is-desktop-open { grid-column: 1 / -1; display: block; }
@@ -2158,4 +2236,8 @@ html[data-ui-variant="b1"] :is(.dialog-backdrop, .editor-sheet-backdrop, .lyric-
   }
   html[data-ui-variant="b1"] .sharing-backdrop { align-items: end; padding: .5rem 0 0; }
   html[data-ui-variant="b1"] .sharing-dialog { width: 100%; max-height: 92dvh; margin: auto 0 0; border-width: 1px 0 0; border-radius: 1rem 1rem 0 0; }
+  html[data-ui-variant="b1"] [data-creation-surface="lyric"] { padding-inline: max(.65rem, var(--lc-safe-left)); }
+  html[data-ui-variant="b1"] [data-creation-surface="lyric"] :is(.form-heading, .lyric-new-form) { width: 100%; padding: .75rem; }
+  html[data-ui-variant="b1"] [data-creation-surface="lyric"] .song-form-actions { padding-bottom: max(.25rem, var(--lc-safe-bottom)); }
+  html[data-ui-variant="b1"] [data-connection-manager="true"] { width: 100%; border-width: 1px 0 0; border-radius: 1rem 1rem 0 0; }
 }

@@ -52,4 +52,22 @@ describe("1.1.6 editor and recovery surface contract", () => {
     expect(copy.codePointCount).toBe([...copy.payload].length);
     expect(elapsed).toBeLessThan(2_500);
   });
+
+  it("covers creation and connection-management surfaces in the B-1 theme", () => {
+    const lyricNew = read("apps/web/src/components/lyric-new-screen.tsx");
+    const rhymeNew = read("apps/web/src/components/rhyme-new-screen.tsx");
+    const promptNew = read("apps/web/src/components/prompt-new-screen.tsx");
+    const links = read("apps/web/src/components/song-link-manager.tsx");
+    const styles = read("apps/web/src/app/styles.css");
+    const guide = read("docs/user/1.1.6-editor-and-recovery.md");
+
+    expect(lyricNew).toContain('data-creation-surface="lyric"');
+    expect(rhymeNew).toContain('data-creation-surface="rhyme"');
+    expect(promptNew).toContain('data-creation-surface="prompt"');
+    expect(links).toContain('data-connection-manager="true"');
+    expect(styles).toContain('html[data-ui-variant="b1"] [data-creation-surface]');
+    expect(styles).toContain('html[data-ui-variant="b1"] [data-connection-manager="true"]');
+    expect(guide).toContain("1.1.6-p3-creation-desktop.png");
+    expect(guide).toContain("서버 저장 응답이 확인된 상태");
+  });
 });

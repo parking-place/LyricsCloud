@@ -189,7 +189,7 @@ export function PromptNewScreen({ ownerId, templateId, displaySettings }: { owne
     : "이 기기에 임시 저장됨 · 유효한 제목을 입력하면 자동 저장됩니다";
 
   const sentenceLength = [...sentenceText].length;
-  return <section className="prompt-editor-page" aria-labelledby="new-prompt-title" data-pending-input={Boolean(title || items.length || sentenceText)} style={writingDisplayVariables(displaySettings)}
+  return <section className="prompt-editor-page" aria-labelledby="new-prompt-title" data-creation-surface="prompt" data-pending-input={Boolean(title || items.length || sentenceText)} style={writingDisplayVariables(displaySettings)}
     onCompositionStart={() => { composingRef.current = true; setComposing(true); }} onCompositionEnd={() => { composingRef.current = false; setComposing(false); }}>
     <header className="prompt-editor-header"><div><button type="button" className="back-button" onClick={cancel}>← 프롬프트</button><p className="eyebrow">{templateId ? "New prompt · Template copy" : "New prompt"}</p></div>
       <button type="button" className="secondary-button" onClick={cancel}>취소</button>
