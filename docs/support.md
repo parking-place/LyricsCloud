@@ -1,4 +1,4 @@
-# LyricsCloud 1.1.4 정식·1.1.5 후보 지원 정책
+# LyricsCloud 1.1.5 정식·1.1.6 후보 지원 정책
 
 ## 지원 환경
 
@@ -56,6 +56,8 @@
 1.1.4 후보는 가사·상위 곡 삭제와 selected/public capability 회수·epoch 증가를 한 transaction으로 묶고 휴지통 복원 뒤 과거 공유를 되살리지 않는다. 같은 epoch의 owner 복원과 offline writer 입력은 둘 다 보존해 수렴하며 browser outbox는 capability별 64건 또는 1 MiB bounded queue 안에서 lossless compact된다. 로그아웃·다른 계정 전환 뒤 이전 actor의 snapshot·outbox·rejected draft·presence가 보이거나, 삭제/복원 뒤 old grant/link가 다시 열리거나, queue 상한 때문에 원문이 사라지거나 잘못 ACK되면 배포를 중단한다. 실제 PostgreSQL 364 PASS·전체 E2E 353 PASS·Linux 5-browser·공개 3계정/2 viewport와 실제 서비스 재시작은 PASS했지만 실제 장시간·OS 절전/IME·물리 기기는 새로 실행하지 않았다.
 
 1.1.5 후보는 승인 B-1 context header·접힌 rail tooltip·모바일 다섯 주 내비+More·Flat-depth를 제공하면서 같은 CodeMirror/store와 기존 URL·filter·order·API·DB를 유지한다. shell 조작 중 editor가 재생성되거나 입력·undo가 사라지거나, recent deep link가 다른 자료로 가거나, 다른 owner 자료가 보이거나, 저장 실패가 성공으로 표시되면 배포를 중단한다. P4의 실제 PostgreSQL, 전체 E2E 365 PASS·41 skip, Linux 5-browser engine과 동일 SHA 공개 offline/reconnect·서비스 재시작은 PASS했지만 실제 Windows/Linux/macOS/Android/iOS 물리 기기·OS IME·screen reader·200% OS zoom은 새로 실행하지 않았다.
+
+1.1.6 후보는 B-1을 편집기·자료 panel/mobile sheet·새 자료 생성·곡 연결 관리·beta 가입·공유/회수·guest 복구·탈퇴 재인증까지 확장한다. 편집 shell 변화가 CodeMirror·selection·undo·IME·draft/outbox를 재생성하거나, ACK 전 저장 완료를 표시하거나, classic/B-1 copy/export가 다르거나, 권한 종료 뒤 다른 actor의 복구 원문이 보이면 배포를 중단한다. P4의 실제 PostgreSQL 369 PASS·4 skip, 전체 E2E 370 PASS·42 skip, Linux 5-browser engine과 동일 SHA 공개 양 theme/viewport·저장 재진입·서비스 재시작은 PASS했지만 실제 Windows/Linux/macOS/Android/iOS 물리 기기·OS IME·screen reader·200% OS zoom은 새로 실행하지 않았다.
 
 현재 정식 main/tag `35fa482`, main CI `34773400193`, tag CI `34774978060`, 네 exact digest 운영 배포를 완료했다. 공개 HTTPS에서 guest 공동 편집·중지/회수·rejected 복구·private 격리와 서비스 재시작 지속성이 PASS했다. 기존 DB volume·secret·HMAC allowlist·beta code는 보존했으며 외부 backup은 `OPS-100-001` 승인 예외로 여전히 미구축이다.
 

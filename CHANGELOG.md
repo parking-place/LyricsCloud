@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.6] - Unreleased
+## [1.1.6] - 2026-09-15
 
 ### Changed
 
@@ -12,6 +12,16 @@
 - 10,000줄 편집기의 DOM·selection·undo와 서버 저장을 테마/패널/폭 변경 중 보존하고, 연결 관리의 로딩·빈 상태·오류·재시도와 대화상자 focus 복귀를 자동 검증
 - 가입 코드 오류, 저장 실패 exact-copy, 권한 회수/guest 복구, 탈퇴 재인증, 라임·프롬프트 로컬 초안 재진입을 PC/mobile 관련 회귀에서 함께 확인
 - 실제 구현의 합성 desktop/mobile 화면과 저장·권한·복구 안내를 `docs/user/1.1.6-editor-and-recovery.md`에 기록
+
+### Validation
+
+- P4 후보 `25d7102`, PR/push Actions `34857974913`·`34857969866`, Vitest 369 PASS·4 skip, 전체 E2E 370 PASS·42 skip과 지원 5-browser 회귀 PASS
+- 네 signed dev image와 동일 SHA 개발 공개 desktop/mobile×dark/light 생성·연결·focus·overflow, server ACK 뒤 exact 원문 재진입과 실제 서비스 재시작 저장 보존 PASS
+
+### Documentation and release safety
+
+- 29개 불변 migration, release 환경의 B-1/classic 허용값, dependency·Noto Sans KR license, digest-only signed image manifest와 application-first rollback을 1.1.6 artifact로 봉인
+- 실제 OS/물리 기기·OS IME·screen reader·200% OS zoom 미실행과 `OPS-100-001` backup 예외를 알려진 제한으로 유지
 
 ## [1.1.5] - 2026-09-14
 

@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.6"
 current_phase: "../2.Patch-phase/1.1.6/5phase.md"
-state: "in_progress"
+state: "review"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-15"
-next_action: "1.1.6 P5에서 P1~P4 exact SHA/검증/개발 인수를 최종 추적하고 사용자·지원·보안·자가호스팅 문서와 release go/no-go를 봉인한다"
+next_action: "1.1.6 P5 문서·artifact 후보를 검증하고 최종 후보 CI·네 dev image·동일 SHA 개발 인수를 수행한다"
 ```
 
 ## 승인과 기준
@@ -161,12 +161,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.6 P2 | complete | 후보 `a75f641`, Actions `34828840416`·`34828845357`, 네 dev image tag 동일 digest·동일 SHA 개발 배포, 10,000줄 editor 생명주기/heap·서버 저장 재진입·공개 양 theme/viewport 인수 완료 |
 | 1.1.6 P3 | complete | 후보 `e6f9e8c`, Actions `34833243878`·`34833266060`, 네 dev image tag 동일 digest·동일 SHA 개발 배포, 생성/연결 양 theme·desktop/mobile·상태/focus·저장 재진입 인수 완료 |
 | 1.1.6 P4 | complete | 후보 `25d7102`, Actions `34857969866`·`34857974913`, Vitest 369 PASS·E2E 370 PASS·5-browser·네 signed dev image·동일 SHA 공개 copy/export·저장 재진입·재시작 인수 완료 |
+| 1.1.6 P5 | review | 요구 추적·사용자/지원/보안/자가호스팅·환경/migration/license/release manifest 후보 준비, 최종 CI·동일 SHA 개발 인수 대기 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.6/P5 | LC-NF-1.1.6-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | P4 후보 `25d7102`; Actions `34857969866`·`34857974913`; 동일 SHA 개발 인수 | 2026-09-15 | in_progress |
+| Codex | 1.1.6/P5 | LC-NF-1.1.6-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | P4 merge `2237e3b`; 최종 후보 준비 | 2026-09-15 | review |
 | Codex | 1.1.6/P4 | LC-NF-1.1.6-P4-01~06 | editor/save/permission/copy/export/offline/reconnect/restart·지원 browser 회귀·상태/Future | 후보 `25d7102`; Actions `34857969866`·`34857974913`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.6/P3 | LC-NF-1.1.6-P3-01~06 | editor/resource/auth/share/recovery PC·mobile flows·E2E·guide·상태/Future | 후보 `e6f9e8c`; Actions `34833243878`·`34833266060`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.6/P2 | LC-NF-1.1.6-P2-01~06 | web editor/auth/share/recovery surfaces·editor contract·runtime metadata·tests·상태/Future | P1 `3e7eaa4`; 후보 `a75f641`; 두 CI·동일 SHA 개발 인수 | 2026-09-14 | complete |

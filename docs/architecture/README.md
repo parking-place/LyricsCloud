@@ -41,3 +41,4 @@
 - [`1.1.3 공개 링크 비로그인 공동 편집 최종 추적`](./1.1.3-FINAL-TRACEABILITY.md)
 - [`1.1.4 공유 안정성·복구 최종 추적`](./1.1.4-FINAL-TRACEABILITY.md)
 - [`1.1.5 승인 B-1 탐색 셸 최종 추적`](./1.1.5-FINAL-TRACEABILITY.md)
+- [`1.1.6 편집·자료·가입·공유·복구 B-1 최종 추적`](./1.1.6-FINAL-TRACEABILITY.md)

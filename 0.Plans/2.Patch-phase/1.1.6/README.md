@@ -1,6 +1,6 @@
 # 1.1.6 — 승인 디자인 적용·편집과 복구 화면
 
-상태: **P1~P4 완료 / P5 다음**. P4 후보 `25d71022184c4873d97bd432d3f31a53e803bb60`의 두 CI·네 signed dev image·동일 SHA 개발 서버를 인수했고, 전체 브라우저/실제 DB 회귀와 공개 양 테마·desktop/mobile 생성/연결, exact 저장 재진입·서비스 재시작 보존을 통과했다. 실제 OS/물리 기기·OS IME/AT/OS zoom은 미실행 gate로 남으며 runtime `1.1.6`은 아직 정식 제품이 아니다.
+상태: **P1~P4 완료 / P5 후보 검토**. P4 후보 `25d71022184c4873d97bd432d3f31a53e803bb60`의 두 CI·네 signed dev image·동일 SHA 개발 서버를 인수했고, P5 요구 추적·사용자/운영 문서와 environment/migration/license/release manifest 후보를 준비했다. 최종 P5 CI·동일 SHA 개발 인수와 실제 OS/물리 기기·OS IME/AT/OS zoom 미실행 gate를 판정하기 전 runtime `1.1.6`은 정식 제품이 아니다.
 
 ## 목표
 
