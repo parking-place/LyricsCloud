@@ -9,3 +9,7 @@ export function safeWorkspaceReturnTo(value: string | undefined, fallback: Works
       ? `${parsed.pathname}${parsed.search}` : fallback;
   } catch { return fallback; }
 }
+
+export function withReturnTo(href: string, returnTo: string): string {
+  return `${href}${href.includes("?") ? "&" : "?"}returnTo=${encodeURIComponent(returnTo)}`;
+}

@@ -1,6 +1,6 @@
 # 1.1.7 — 디자인 적용 후 UI/UX 동선 검토·개선
 
-상태: **P1 실제 과제·동선 관찰 완료 / P2 준비**. runtime source `f8d24c610ce24a1ff926e77204783473b936da88`에서 세 browser 문맥 6 PASS와 정식 공유/복구 CI를 대조했고, 라임/프롬프트 quick-add의 안전한 `returnTo` 보존을 P2 최소 범위로 확정했다. 요구 `NF-REQ-039`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
+상태: **P1 완료 / P2 로컬 후보 검증 완료·CI/동일 SHA 개발 인수 대기**. runtime source `f8d24c610ce24a1ff926e77204783473b936da88`의 관찰을 바탕으로 라임/프롬프트 quick-add의 안전한 `returnTo` 보존을 구현했고, 세 browser profile 신규 3 PASS·영향 회귀 9 PASS를 확보했다. 요구 `NF-REQ-039`를 [전체 추적표](../Requirements-Traceability.md)로 연결한다.
 
 선행: [1.1.6](../1.1.6/README.md)의 인수와 해당 결정 gate. 코드 변경 없는 개발안/외부 gate 보류는 제품 출시로 세지 않는다.
 

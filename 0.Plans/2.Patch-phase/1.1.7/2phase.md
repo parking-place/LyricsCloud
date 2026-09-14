@@ -1,6 +1,6 @@
 # 1.1.7 Phase 2 — 탐색·복귀 기반 개선
 
-상태: **계획 검토 / 미착수**. `NF-REQ-039`의 이번 Phase 범위만 수행한다.
+상태: **검토 중** (`review`, 로컬 후보 검증 완료·CI/동일 SHA 개발 인수 대기). `NF-REQ-039`의 이번 Phase 범위만 수행한다.
 
 ## 선행조건과 담당 경계
 
@@ -8,13 +8,22 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.7-P2-01` 실제 막힘이 있는 메뉴/패널/이전 위치 복원·새 문서 후 이동을 기존 라우팅 안에서 수정한다.
-- [ ] `LC-NF-1.1.7-P2-02` 현재 선택 자료·permission revoked·오프라인 상태를 이동 뒤에도 보존하고 잘못된 성공 안내를 없앤다.
-- [ ] `LC-NF-1.1.7-P2-03` 키보드 focus와 모바일 back의 반환 위치를 명시하여 초안·history·copy를 보존한다.
+- [x] `LC-NF-1.1.7-P2-01` 실제 막힘이 있는 메뉴/패널/이전 위치 복원·새 문서 후 이동을 기존 라우팅 안에서 수정한다. — quick-add가 현재 가사 경로를 새 라임·프롬프트에 전달하고 생성 성공·편집기 back이 같은 경로로 복귀한다.
+- [x] `LC-NF-1.1.7-P2-02` 현재 선택 자료·permission revoked·오프라인 상태를 이동 뒤에도 보존하고 잘못된 성공 안내를 없앤다. — 허용된 path/query를 그대로 보존하되 외부·계정 경로는 자료별 목록으로 차단하며 API·DB·권한·저장 상태는 변경하지 않았다.
+- [x] `LC-NF-1.1.7-P2-03` 키보드 focus와 모바일 back의 반환 위치를 명시하여 초안·history·copy를 보존한다. — desktop 편집기 back과 mobile browser back에서 원래 가사 URL·한글 본문·focus 가능·overflow 없음이 3환경에서 통과했다.
 
 ## 수용 기준
 
 `AC-1.1.7-02`: 관찰한 실패 과제가 최소 경로에서 재현되지 않고 데이터/이동 상태가 맞는다.
+
+## 실행 증거
+
+- 기준 main은 `ce28a63f71853b4254efd7dbdd42cddd62ad8571`이다. 실패 우선 계약은 구현 전 2 FAIL/1 PASS였고 최소 구현 뒤 계약·return helper·runtime config 24 PASS다.
+- Node 24.20.0에서 architecture boundary·lint·typecheck·Next production build가 통과했다.
+- 격리 PostgreSQL에서 Chromium desktop·Chromium mobile(Android browser 대리)·WebKit mobile(iOS browser 대리)의 새 라임/프롬프트 생성→정확한 중첩 `returnTo`→가사 본문 복귀가 3 PASS다.
+- 같은 세 환경에서 기존 곡→가사→라임 삽입→문장형 프롬프트→Suno→재진입, 1.1.6 생성·연결 화면과 신규 복귀의 영향 회귀가 9 PASS다.
+- API·DB schema·migration·권한·copy 형식은 변경하지 않았다. 실제 Android/iOS 앱·물리 기기·OS IME·AT·OS zoom은 미실행이며 browser 대리 PASS로 바꾸어 쓰지 않는다.
+- 상세 명령·공개 개발 인수/rollback 조건은 [P2 인수 문서](../../../docs/runbooks/1.1.7-phase2-return-flow.md)에 고정했다. 필수 CI·네 dev image·동일 SHA 개발 공개 smoke 전에는 Phase 완료가 아니다.
 
 ## 검증·완료·인계
 
