@@ -1,6 +1,6 @@
 # 1.1.6 Phase 2 — 핵심 기반·저장과 서버
 
-- 상태: **진행 중** (`in_progress`, 로컬 수용 완료·후보 CI/동일 SHA 개발 인수 대기)
+- 상태: **완료** (`complete`, 후보 CI·네 dev image·동일 SHA 개발 인수 완료)
 - 단계 목적: 승인 디자인 적용·편집과 복구 화면의 핵심 기반·저장과 서버을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -68,16 +68,17 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 - 최초 신규 CSS는 mobile에서 `desktop-open` 숨김 우선순위로 dialog를 감춰 3 PASS/1 FAIL이었다. desktop panel의 961~1080px 접근 경로를 유지하고 960px 이하 desktop-only 숨김과 mobile sheet 표시를 분리한 뒤 동일 4건이 모두 PASS했다.
 - 첫 후보 `89a39c478ce3bcaca22a85621c22dc048f5bc53d`의 PR 전체 verify는 PASS했지만 branch push verify는 같은 SHA에서 두 번 모두 기존 0.9.1 성능 측정의 save 3-round p95 CV만 각각 77.551%·114.241%로 실패했다(예산 75%, save p95 6.074ms·9.738ms/120ms, 오류율 0%). 7표본 p95가 라운드 최댓값이 되는 원인을 고치기 위해 save만 라운드당 21표본으로 늘리고 3라운드·p95·75%·모든 시간/오류 예산은 유지했다. concurrent purge probe는 기존 7표본을 유지하며 격리 PostgreSQL에서 계약 검사와 전체 성능 예산을 연속 3회 PASS했다(save CV 7.576%·9.996%·2.809%, purge 1065.060ms·1107.319ms·1037.080ms/2000ms).
 - Chromium 합성 composition/브라우저 회귀는 실제 OS IME·물리 기기·AT·OS zoom을 대체하지 않는다. 해당 실제 gate와 전체 교차 회귀는 P4/P5 미실행 항목으로 유지한다.
-- 보정 후보 원격 SHA·Actions·네 dev image digest·동일 SHA 개발 배포·공개 smoke는 아직 대기 중이며 완료 조건을 선표시하지 않는다.
+- 최종 제품 후보는 `a75f64166b5a80e077ac7f458b6eb86668a7d957`이다. push/PR Actions `34828840416`·`34828845357`의 전체 verify가 PASS했고 네 dev image 발행·서명·provenance/SBOM도 PASS했다. digest는 web `sha256:9a60a4af8b845d9259531ad69c14851da41b2e55b12a5d837cb1f9b90af4f781`, collaboration `sha256:b884a298da664dc30c127a1c347f5d34098b645cc0762402542b601f53c6b4ce`, worker `sha256:4770ffb827ef1508ee2254c76f9ca79b653a5c218f6dd2457c7f38a341f0eff4`, migrate `sha256:03bf7a3d66d82bfabed05c9d446435fd0e1bc48391020b1c0b9d6442c53de02d`이며 각 SHA·`dev-1.1.6-p2`·`Dev`·`Dev-latest`가 동일하다.
+- 같은 SHA를 개발 서버에 migration 우선 배포해 `1.1.6/dev/p2`, schema `1140_sharing_stability.sql`, B-1 root와 네 서비스 healthy를 확인했다. 실제 create→save→API reopen→recent resume→authenticated deep link와 editor/context/save surface, 공개 1440/1024/mobile×dark/light root·overflow를 PASS하고 합성 fixture를 제거했다. DB volume·secret·allowlist는 보존했고 릴리스 서버는 변경하지 않았다.
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
+- [x] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
 
 ## 산출물
 
