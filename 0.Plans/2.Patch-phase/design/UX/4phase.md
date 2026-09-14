@@ -1,6 +1,6 @@
 # UX Phase 4 — 사용성·접근성 검토·안 수정
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`)
 - 단계 목적: 미려함뿐 아니라 실제 작업 가능성을 확인한다.
 - 적용 범위: 설계·목업 마일스톤 (런타임 미배포)
 
@@ -43,14 +43,14 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-DESIGN-UX-P4-01` 동일 사용자 과제로 기존안/새안의 단계·오류·재개 가능성을 비교한다.
-- [ ] `LC-DESIGN-UX-P4-02` 키보드 순서·focus trap/복귀·대비·텍스트 확대·reduced motion을 검토한다.
-- [ ] `LC-DESIGN-UX-P4-03` collapsed sidebar·portal/theme·sheet/keyboard 겹침과 긴 글쓰기 영역을 집중 검토한다.
-- [ ] `LC-DESIGN-UX-P4-04` 기능 삭제·동선 변경·원문 노출의 위험을 별도 change log에 기록한다.
-- [ ] `LC-DESIGN-UX-P4-05` 검토 의견을 수정하고 각 수용 기준에 대응되는 화면 증거를 남긴다.
-- [ ] `LC-DESIGN-UX-P4-06` 개발 비용/회귀 범위·점진 전환 단계와 rollback 가능한 feature flag 계획을 정리한다.
+- [x] `LC-DESIGN-UX-P4-01` 동일 사용자 과제로 기존안/새안의 단계·오류·재개 가능성을 비교한다.
+- [x] `LC-DESIGN-UX-P4-02` 키보드 순서·focus trap/복귀·대비·텍스트 확대·reduced motion을 검토한다.
+- [x] `LC-DESIGN-UX-P4-03` collapsed sidebar·portal/theme·sheet/keyboard 겹침과 긴 글쓰기 영역을 집중 검토한다.
+- [x] `LC-DESIGN-UX-P4-04` 기능 삭제·동선 변경·원문 노출의 위험을 별도 change log에 기록한다.
+- [x] `LC-DESIGN-UX-P4-05` 검토 의견을 수정하고 각 수용 기준에 대응되는 화면 증거를 남긴다.
+- [x] `LC-DESIGN-UX-P4-06` 개발 비용/회귀 범위·점진 전환 단계와 rollback 가능한 feature flag 계획을 정리한다.
 
-- [ ] `LC-DESIGN-UX-P4-07` reduced-motion·reduced transparency·increased contrast 및 저사양 모바일 예산을 검증한다. 효과 fallback에서도 정보·입력·focus·원문이 보존돼야 한다.
+- [x] `LC-DESIGN-UX-P4-07` reduced-motion·reduced transparency·increased contrast 및 저사양 모바일 예산을 검증한다. 효과 fallback에서도 정보·입력·focus·원문이 보존돼야 한다.
 
 ## 구체적 검증
 
@@ -59,16 +59,21 @@
 
 ## 실행·증거 기록
 
-현재 명령은 [QUALITY-GATES.md](../../QUALITY-GATES.md)를 따른다. 작업별 실제 test 파일/명령·환경·실패/성공 수·SHA를 인수 로그에 기록한다. DB/E2E는 전용 테스트 DB에서만 수행한다. 실제 IME/기기/Google 설정 검증을 synthetic 이벤트나 이전 PASS로 대체하지 않는다. 문서-only Phase는 링크/범위/결정/목업 검토를 수행하며 앱 테스트 결과를 꾸미지 않는다.
+- P3 merge `3ea75152266c93f1cc881b39e8b1f82094a1de25`에서 [P4 사용성·접근성 검토](../../../../docs/ux/ux-p4-usability-accessibility-review.md), [interaction 계약](../../new_Mock-up/interaction-contract.md), [검토 변경 기록](../../new_Mock-up/review-changelog.md)을 만들고 목업 수정 commit `0177c841445bf55888d33f29ee766dd76fe652da`에 고정했다.
+- 18화면×양 theme×11 viewport/platform 문맥 396페이지에서 horizontal overflow 0건, 144 Axe serious/critical 0건, 72 keyboard/focus-visible 검사 0건을 확인했다. iOS/Android 320·360·390·768px와 Windows/Linux/macOS 1440px을 사용했다. 첫 320px 공유 editor 6px overflow는 dock gap/padding을 수정한 뒤 같은 전수 행렬에서 0건으로 재검증했다.
+- reduced-motion+forced-colors에서 animation 제거·system border·media 활성화를 확인했다. backdrop/filter·외부 요청은 0, 공통 CSS+JS 37,415 bytes, 최대 DOM 145, 로컬 headless p95 42ms였다. 이는 저사양 실기기 성능 PASS가 아닌 정적 prototype 대리 예산이다.
+- 현행/B-1의 가입·창작·라임/프롬프트·최근 재개·공유/회수 과제를 대조하고 기능 삭제 없음, 9개 고정 editor 행동을 4개+더보기/context로 이동, viewport별 primary navigation 하나를 기록했다. mobile editor label 줄바꿈과 320px 검색 field 압축을 수정했다.
+- 정적 prototype에 없는 portal/sheet focus trap·Escape·trigger 복귀·keyboard/safe-area·theme 상속은 구현 계약으로만 고정하고 실제 PASS로 표시하지 않았다. feature flag를 token→shell→workspace→editor shell→sharing 순으로 분리하고 editor remount/IME/undo/draft 또는 ACL 불일치를 즉시 rollback 조건으로 삼았다.
+- 실제 NVDA/VoiceOver/TalkBack·OS/물리 기기·실제 IME·OS zoom·GPU/배터리는 미실행이다. 앱/runtime/DB/server와 보호된 `0.Plans/Mock-up/**`는 변경하지 않았다.
 
 ## 완료 조건
 
-- [ ] 모든 작업 ID와 구체적 수용 기준에 실제 산출물/증거가 있다.
-- [ ] 원문·인가·복구·기존 사용자 동작을 손상시키지 않았고 확인된 차이는 승인됐다.
-- [ ] 검사하지 못한 항목·외부 제한·남은 위험을 숨기지 않고 기록했다.
-- [ ] 현재 문서와 체크 상태·담당 경로·정확한 SHA가 일치한다.
-- [ ] 구현 Phase는 CI·정확한 SHA의 개발 인수를, 설계-only는 검토/승인을 완료했다.
-- [ ] release/main/production 변경은 별도 승인 없이 실행하지 않았다.
+- [x] 모든 작업 ID와 구체적 수용 기준에 실제 산출물/증거가 있다.
+- [x] 원문·인가·복구·기존 사용자 동작을 손상시키지 않았고 B-1 의미 안의 layout 수정만 수행했다.
+- [x] 검사하지 못한 항목·외부 제한·남은 위험을 숨기지 않고 기록했다.
+- [x] 현재 문서와 체크 상태·담당 경로·정확한 산출물 SHA가 일치한다.
+- [x] 설계-only P4의 사용성·자동 접근성/반응형 검토와 수정 회귀를 완료했다.
+- [x] release/main/production·앱/runtime/DB 변경을 수행하지 않았다.
 
 ## 산출물
 

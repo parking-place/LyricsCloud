@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "UX"
-current_phase: "../2.Patch-phase/design/UX/3phase.md"
+current_phase: "../2.Patch-phase/design/UX/4phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "UX P4에서 B-1 목업의 320/360/390/tablet/desktop·200% reflow, keyboard/focus·reduced motion/forced colors·실제 기기 미수행 경계를 검토하고 발견 결함만 수정한다"
+next_action: "UX P5에서 사용자 승인 B-1과 P4의 의미 불변 수정·검증을 design manifest로 봉인하고 1.1.5 feature-flag 전환 계약을 인계한다"
 ```
 
 ## 승인과 기준
@@ -149,11 +149,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | UX P1 | complete | v1.1.4 `5f8a045` 기준 15화면+추가 흐름·60 viewport, responsive/accessibility/keyboard 12 PASS·4 조건부 skip, UX-GAP-01~06과 실제 AT/물리 기기 미실행 경계 기록 |
 | UX P2 | complete | A/B shell×5 morphism·양 theme·320/390/1440px 60조합 Axe/overflow PASS, 사용자 `B-1` 통합 workspace+Flat-depth 선택과 기능 보존 조건 기록 |
 | UX P3 | complete | B-1 18화면 README/HTML·index·상태 행렬·토큰·제품 매핑, 5 플랫폼 문맥×양 theme+안전 상태 총 231조합 Axe serious/critical 0·overflow 0, old Mock-up/app/runtime/DB/서버 무변경 |
+| UX P4 | complete | B-1 사용자 과제/위험/interaction·feature-flag 검토, 396페이지 overflow 0·144 Axe 0·72 keyboard/focus 0, mobile editor/320px field 수정, 실제 AT/기기/IME 미실행 분리 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | UX/P4 | LC-DESIGN-UX-P4-01~07 | `new_Mock-up` 수정·interaction/change log·`docs/ux` P4 검토·P4 인수 | UX P3 merge `3ea7515`; 수정 `0177c84` | 2026-09-14 | complete |
 | Codex | UX/P3 | LC-DESIGN-UX-P3-01~07 | `new_Mock-up` 18화면·index·상태/토큰/제품 매핑·P3 인수 | UX P2 merge `7e290c1`; 목업 `ad1aced` | 2026-09-14 | complete |
 | Codex | UX/P2 | LC-DESIGN-UX-P2-01~07 | `docs/ux`·prototype·design/UX P2·TOOLS-AND-SKILLS·선택 기록 | UX P1 merge `99dd580`; 사용자 `B-1` 선택 | 2026-09-14 | complete |
 | Codex | UX/P1 | LC-DESIGN-UX-P1-01~06 | `docs/ux`·design/UX P1·현행 15화면/동선/상태/반응형/접근성 감사 | v1.1.4 `5f8a045`, 감사 `99c1e1e` | 2026-09-14 | complete |
@@ -261,6 +263,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+UX P4는 B-1과 현행의 가입→창작, 편집, 라임/프롬프트, 최근 재개, 공유/회수 과제를 대조하고 기능 삭제/원문/API/권한 변경 없이 mobile editor label·320px 검색 field·공유 editor 6px overflow를 수정했다. 최종 18화면×양 theme×11 viewport/platform 396페이지 overflow 0, 144 Axe serious/critical 0, 72 keyboard/focus 0이며 reduced-motion/forced-colors·불투명 fallback·외부 요청 0을 확인했다. token→shell→workspace→editor→sharing feature flag와 rollback 조건, portal/sheet focus 계약을 고정했다. 실제 AT·OS/물리 기기·IME·OS zoom·저사양 GPU는 미실행이고 B-1 의미가 바뀌지 않아 P2 선택 재확인 대상은 아니다. P5는 이 결과와 사용자의 B-1·1.1.14 실행 승인을 design manifest로 봉인하고 1.1.5 P1에 넘긴다.
 
 UX P3는 B-1 통합 workspace+Flat-depth를 18개 화면별 README/HTML과 전체 index, light/dark·Windows/Linux/macOS/iOS/Android 문맥, 정상/빈/로딩/오류와 코드 만료·IME·offline·미전송·권한 철회·자기 입력 복구 상태로 구체화했다. 231조합의 horizontal overflow와 serious/critical Axe 위반이 0건이고 보호된 old Mock-up diff는 0이다. prototype은 서버 저장/OAuth/ACL/collaboration/사전 호출을 하지 않으며 모든 콘텐츠가 합성임을 화면 상단과 문서에 고정했다. 실제 OS·IME·screen reader·물리 기기·GPU는 미실행이므로 P4는 320/360/390/tablet/desktop·200% reflow·keyboard/focus·reduced motion/forced colors를 자동 검토하고 실제 수행/미수행을 분리한다.
 
