@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.6"
-current_phase: "../2.Patch-phase/1.1.6/1phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.6/3phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.6 P2에서 편집·복구 화면 실패 우선 계약 시험과 B-1 상세 화면 구현을 착수한다"
+next_action: "1.1.6 P3 화면군 실패·빈 상태·권한·focus 회귀를 먼저 고정하고 PC·모바일 사용자 흐름을 구현한다"
 ```
 
 ## 승인과 기준
@@ -158,11 +158,14 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.5 P5 | complete | 후보 `074782e`, Actions `34814063096`·`34814075649`, 네 dev image·동일 SHA 공개 PC/mobile×dark/light·저장/재시작 인수 완료 |
 | 1.1.5 Release | complete | main/tag `17fb4a9`, main CI `34816897879`·tag CI `34819313816`, exact digest 운영 배포·공개 B-1/공유/복구/재시작·전역 beta CLI·GitHub Release 완료 |
 | 1.1.6 P1 | complete | main 기록 `98c2a29`·제품 source `17fb4a9` 조사, editor/store/copy/security 생명주기·실패 입력·P2~P5 담당·classic/1.1.5 rollback 계약 완료; 문서-only, 실제 OS/물리 기기 미실행 |
+| 1.1.6 P2 | complete | 후보 `a75f641`, Actions `34828840416`·`34828845357`, 네 dev image tag 동일 digest·동일 SHA 개발 배포, 10,000줄 editor 생명주기/heap·서버 저장 재진입·공개 양 theme/viewport 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.6/P3 | LC-NF-1.1.6-P3-01~06 | editor/resource/auth/share/recovery PC·mobile flows·E2E·guide·상태/Future | P2 후보 `a75f641`; Actions `34828840416`·`34828845357`; 동일 SHA 개발 인수 | 2026-09-14 | in_progress |
+| Codex | 1.1.6/P2 | LC-NF-1.1.6-P2-01~06 | web editor/auth/share/recovery surfaces·editor contract·runtime metadata·tests·상태/Future | P1 `3e7eaa4`; 후보 `a75f641`; 두 CI·동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.6/P1 | LC-NF-1.1.6-P1-01~06 | P1 계획·편집/복구 계약·STATUS·요구 추적·Future 인수 | main 기록 `98c2a29`; 제품 source `17fb4a9`; B-1 승인 | 2026-09-14 | complete |
 | Codex | 1.1.5/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | 1.1.5 P5 `074782e`; main/tag `17fb4a9` | 2026-09-14 | complete |
 | Codex | 1.1.5/P5 | LC-NF-1.1.5-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 후보 `074782e`; Actions `34814063096`·`34814075649`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
@@ -279,6 +282,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.6 P2 후보 `a75f64166b5a80e077ac7f458b6eb86668a7d957`은 편집기 visual shell과 resource navigation effect를 CodeMirror 생명주기에서 분리하고 lyric/rhyme/prompt save strip·자료 panel/mobile sheet·auth/share/recovery flat surface를 적용했다. 기존 API·DB schema/migration·권한·copy는 바꾸지 않았다. 10,000줄 동일 editor DOM·theme/panel/viewport·undo·서버 저장·GC heap 회귀와 전체 unit/build/DB/E2E를 통과했고, 기존 save 성능 7표본 p95가 최댓값이던 CI 변동은 기준을 완화하지 않고 save만 21표본으로 안정화해 연속 3회 예산을 통과했다. push/PR Actions `34828840416`·`34828845357`, 네 서명 dev image와 동일 SHA 개발 서버 `1.1.6/dev/p2`를 인수했으며 공개 create/save/reopen/recent/deep link와 1440/1024/mobile×dark/light가 PASS했다. 합성 fixture 제거, DB volume·secret·allowlist 보존, 릴리스 서버 무변경이다. 실제 OS IME·AT·물리 기기/OS zoom은 P4/P5 gate로 유지하며 P3는 화면군 정상·빈 상태·실패·권한·focus와 사용자 가이드를 완성한다.
 
 1.1.6 P1은 1.1.5 정식 릴리스 기록 main `98c2a29566b6d8382f19ddbc44560a28fcaaebf2`와 실제 제품/tag source `17fb4a9377584c477220092ed91317182f112c8b`를 기준으로 가사·라임·프롬프트 편집기, 자료 패널, 가입/beta, 공유·회수, 탈퇴·복구와 modal focus의 B-1 적용 경계를 계약했다. 같은 resource의 CodeMirror DOM과 CRDT/selection/undo/scroll/IME/outbox를 시각 전환 중 재생성하지 않고, 최신 ACK 전에는 저장 완료를 표시하지 않으며 actor/resource/capability/epoch 복구 격리와 copy payload를 보존한다. API·DB·migration·URL·local store key는 변경하지 않고 classic flag 또는 1.1.5 exact image의 application-first rollback을 사용한다. P1은 문서-only라 앱 CI·image·개발/릴리스 서버 배포를 수행하지 않았고, 실제 OS/물리 기기·OS IME/AT/OS zoom은 P4/P5 미실행 gate로 유지한다. P2는 `tests/new-feature/1.1.6.contract.test.ts`의 실패 우선 계약부터 시작한다.
 

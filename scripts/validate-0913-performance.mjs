@@ -27,6 +27,8 @@ for (const marker of ["pnpm test:release:0913", "pnpm test:performance:0913", "p
 const measurement = await read("scripts/measure-0913-performance.ts");
 assert(measurement.includes("exportWarmupPass < 3") && measurement.indexOf("const exportWarmup") < measurement.indexOf("const rssBeforeExport"), "export memory measurement must warm allocator and cursor state three times before its RSS baseline");
 assert(measurement.indexOf("console.log(serialized.trim())") < measurement.indexOf("performance budget failed"), "performance report must be emitted before budget assertions");
+assert(measurement.includes("const PERFORMANCE_ROUNDS = 3") && measurement.includes("const STABLE_SHORT_SAMPLES_PER_ROUND = 21"), "performance sampling must retain three rounds and enough save samples that p95 is not the per-round maximum");
+assert(measurement.includes("}, STABLE_SHORT_SAMPLES_PER_ROUND)") && measurement.includes("sample < samplesPerRound"), "the save probe must consume the guarded stable sampling count without expanding the concurrent purge workload");
 
 console.log("0.9.1 Phase 3 performance contract: 2500 synthetic resources, 3-round budgets, set-based purge, RC pipeline verified");
 

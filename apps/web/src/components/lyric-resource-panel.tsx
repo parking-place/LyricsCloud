@@ -126,7 +126,7 @@ export function LyricResourcePanel({ lyricId, desktopOpen, mobileOpen, width, se
 
   return <div className={`editor-resource-shell${desktopOpen ? " is-desktop-open" : ""}${mobileOpen ? " is-mobile-open" : ""}`}
     onPointerDown={(event) => { if (mobileOpen && event.target === event.currentTarget) onClose(); }}>
-    <aside className="editor-resource-panel" style={{ "--resource-panel-width": `${width}px` } as CSSProperties}
+    <aside className="editor-resource-panel" data-editor-context-panel="true" style={{ "--resource-panel-width": `${width}px` } as CSSProperties}
       role={mobileOpen ? "dialog" : "complementary"} aria-modal={mobileOpen || undefined} aria-labelledby="editor-resource-title">
       <div className="sheet-handle" aria-hidden="true" />
       <header className="editor-resource-heading">

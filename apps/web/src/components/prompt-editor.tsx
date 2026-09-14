@@ -367,7 +367,9 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
         <button type="button" disabled={!editable || duplicating} onClick={() => void duplicatePrompt()}>{duplicating ? "복제 중…" : "복제"}</button>
         <button type="button" disabled={!editable} onClick={() => setHistoryOpen(true)}>수정 기록</button>
         <button type="button" className="prompt-copy-button" disabled={!editable} onClick={() => void copyPrompt()}>전체 복사</button><span className={`prompt-header-copy-length${copyView.exceedsRecommendedLimit ? " over" : ""}`}>{copyView.codePointCount.toLocaleString("ko-KR")}자</span></div>
-      <SyncIndicator state={syncState} onRetry={() => syncRef.current?.retry()} />
+      <div className="editor-save-strip" data-sync-state={syncState}>
+        <SyncIndicator state={syncState} onRetry={() => syncRef.current?.retry()} />
+      </div>
     </header>
     {notice ? <p className="editor-command-notice" role="status">{notice}{conversionUndo ? <> <button type="button" disabled={conversionBusy || !editable} onClick={() => void undoConversion()}>변환 취소</button></> : null}</p> : null}
     <div className="prompt-editor-title"><label id="prompt-title-label" htmlFor="prompt-title">프롬프트 제목</label>
@@ -382,7 +384,7 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
       <label><input type="radio" name="prompt-mode" value="tags" checked={snapshot.mode === "tags"} onChange={() => requestMode("tags")} /><span><strong>태그형</strong><small>태그를 쉼표 문자열로 복사</small></span></label>
       <label><input type="radio" name="prompt-mode" value="sentence" checked={snapshot.mode === "sentence"} onChange={() => requestMode("sentence")} /><span><strong>문장형</strong><small>문장 원문을 그대로 복사</small></span></label>
     </fieldset>
-    <div className="prompt-editor-workspace">
+    <div className="prompt-editor-workspace" data-editor-surface="prompt">
       {snapshot.mode === "tags" ? <PromptTokenBuilder idPrefix="prompt" items={snapshot.items} disabled={!editable}
         onAdd={addTokens} onMove={(id, index) => syncRef.current?.moveToken(id, index)}
         onRemove={(id) => syncRef.current?.removeToken(id)} onCleanup={cleanup} /> : <section className="prompt-sentence-card"><header><div><p className="eyebrow">Sentence prompt</p><h2>문장 원문</h2></div><span className={[...snapshot.sentenceText].length > PROMPT_LIMITS.serialized ? "over" : ""}>{[...snapshot.sentenceText].length} / {PROMPT_LIMITS.serialized}</span></header>

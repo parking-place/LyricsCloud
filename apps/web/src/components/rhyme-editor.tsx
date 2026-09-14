@@ -277,8 +277,10 @@ export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo =
         <button type="button" onClick={copySelection}>선택 복사</button>
         <button type="button" className="danger-text" disabled={busy} onClick={() => setDeleteOpen(true)}>삭제</button>
       </div>
-      <SaveIndicator state={saveState} syncState={syncState} onRetry={() => void controllerRef.current?.retry()} onCopy={copyBody} />
-      <LocalDraftIndicator state={syncState} onRetry={() => syncRef.current?.retry()} onCopy={copyBody} />
+      <div className="editor-save-strip" data-save-state={saveState.status} data-sync-state={syncState}>
+        <SaveIndicator state={saveState} syncState={syncState} onRetry={() => void controllerRef.current?.retry()} onCopy={copyBody} />
+        <LocalDraftIndicator state={syncState} onRetry={() => syncRef.current?.retry()} onCopy={copyBody} />
+      </div>
     </header>
     {notice ? <p className="editor-command-notice" role="status">{notice}</p> : null}
     {legacyConflict ? <details className="editor-command-notice" open><summary>이전 로컬 초안과 서버 본문을 자동으로 합칠 수 없어 동기화를 멈췄습니다.</summary>
@@ -293,7 +295,7 @@ export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo =
     </div>
     <div className="rhyme-editor-workspace">
       <div className="rhyme-editor-document">
-        <div className="rhyme-editor-surface" data-rhyme-id={initialRhyme.id} ref={mountRef} />
+        <div className="rhyme-editor-surface" data-editor-surface="rhyme" data-rhyme-id={initialRhyme.id} ref={mountRef} />
         <footer><span>순수 텍스트 · 빈 본문 허용 · 최대 {RHYME_LIMITS.body.toLocaleString()}자</span><span>본문 자동 동기화</span></footer>
       </div>
       <aside className="rhyme-editor-side" aria-label="라임 노트 설정">

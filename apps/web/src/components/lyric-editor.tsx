@@ -90,6 +90,19 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const mobileSongFormDialogRef = useRef<HTMLElement>(null);
   const songFormInsertMenuRef = useRef<HTMLElement>(null);
   const restoreSongFormFocusRef = useRef(false);
+  const appliedNavigationKeyRef = useRef("");
+  const navigationInputRef = useRef({
+    find: initialFind,
+    position: initialPosition,
+    basisUpdatedAt: initialLyric.updatedAt,
+    key: JSON.stringify([initialFind, initialPosition, initialLyric.updatedAt])
+  });
+  navigationInputRef.current = {
+    find: initialFind,
+    position: initialPosition,
+    basisUpdatedAt: initialLyric.updatedAt,
+    key: JSON.stringify([initialFind, initialPosition, initialLyric.updatedAt])
+  };
   const [title, setTitle] = useState(initialLyric.title);
   const [memo, setMemo] = useState(initialLyric.memo);
   const [status, setStatus] = useState(initialLyric.status);
@@ -194,7 +207,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     const parent = mountRef.current;
     if (!parent) return;
     let active = true;
-    let initialNavigationPending = Boolean(initialFind || initialPosition);
+    let initialNavigationPending = Boolean(navigationInputRef.current.find || navigationInputRef.current.position);
     let positionCaptureEnabled = !initialNavigationPending;
     const controller = new SerializedSaveController<LyricEditorDraft>({
       initialDraft: {
@@ -321,22 +334,27 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       controllerRef.current = null;
     };
     function applyInitialNavigation(target: CodeMirrorTextEditor) {
-      if (initialFind && target.goToTextMatch(initialFind)) {
-        setCommandNotice("검색 결과와 일치하는 첫 위치로 이동했습니다.");
-        return;
-      }
-      if (initialPosition) {
-        const viewport = window.matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop";
-        const preferSongform = initialPosition.viewport !== viewport || initialPosition.basisUpdatedAt !== initialLyric.updatedAt;
-        const restored = target.restoreResumePosition(initialPosition, preferSongform);
-        setCommandNotice(restored.usedSongform
-          ? `마지막 ${initialPosition.songformLabel ?? "송폼"} 구간으로 이동했습니다.`
-          : "마지막 편집 위치로 이동했습니다.");
-        return;
-      }
-      target.focus();
+      const input = navigationInputRef.current;
+      appliedNavigationKeyRef.current = input.key;
+      const notice = applyLyricNavigation(target, input.find, input.position, input.basisUpdatedAt);
+      if (notice) setCommandNotice(notice);
     }
-  }, [initialFind, initialLyric.body, initialLyric.id, initialLyric.isFavorite, initialLyric.isPinned, initialLyric.memo, initialLyric.pinOrder, initialLyric.rowVersion, initialLyric.status, initialLyric.title, initialLyric.updatedAt, initialPosition, ownerId]);
+  // Visual state (theme, panel, focus mode and viewport) must never recreate
+  // CodeMirror. Route ownership changes are the only lifecycle boundary.
+  }, [initialLyric.id, ownerId]);
+
+  useEffect(() => {
+    const input = navigationInputRef.current;
+    const target = editorRef.current;
+    if (!target || (!input.find && !input.position) || appliedNavigationKeyRef.current === input.key) return;
+    const frame = requestAnimationFrame(() => {
+      if (editorRef.current !== target) return;
+      appliedNavigationKeyRef.current = input.key;
+      const notice = applyLyricNavigation(target, input.find, input.position, input.basisUpdatedAt);
+      if (notice) setCommandNotice(notice);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [initialFind, initialPosition, initialLyric.updatedAt]);
 
   useEffect(() => {
     const currentIds = new Set(songForm.sections.map((section) => section.id));
@@ -820,8 +838,10 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         <button type="button" disabled={commandBusy} onClick={duplicateCurrent}>복제</button>
         <button type="button" disabled={commandBusy} className="danger-text" onClick={() => setDeleteOpen(true)}>삭제</button>
       </div>
-      <SaveIndicator state={saveState} syncState={localSyncState} onRetry={() => { void controllerRef.current?.retry(); }} onCopy={copyWhole} />
-      <LocalDraftIndicator state={localSyncState} onRetry={() => localSyncRef.current?.retry()} onCopy={copyWhole} />
+      <div className="editor-save-strip" data-save-state={saveState.status} data-sync-state={localSyncState}>
+        <SaveIndicator state={saveState} syncState={localSyncState} onRetry={() => { void controllerRef.current?.retry(); }} onCopy={copyWhole} />
+        <LocalDraftIndicator state={localSyncState} onRetry={() => localSyncRef.current?.retry()} onCopy={copyWhole} />
+      </div>
     </header>
     {commandNotice ? <p className="editor-command-notice" role="status">{commandNotice}</p> : null}
     {legacyConflict ? <details className="editor-command-notice" open>
@@ -844,7 +864,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         <CopySelectionActions selectedCount={selectedSectionIds.size} onClear={() => setSelectedSectionIds(new Set())} onCopy={copySelected} />
       </aside>
       <div className="lyric-editor-document">
-        <div className="lyric-editor-surface" data-lyric-id={initialLyric.id} ref={mountRef} />
+        <div className="lyric-editor-surface" data-editor-surface="lyric" data-lyric-id={initialLyric.id} ref={mountRef} />
         <footer className="lyric-editor-footer">
           <span>순수 텍스트 · 최대 100,000자</span>
           <span className={`lyric-copy-length${wholeCopyView.exceedsRecommendedLimit ? " over" : ""}`}>{wholeCopyView.codePointCount.toLocaleString("ko-KR")}자{wholeCopyView.exceedsRecommendedLimit ? " · 3,000자 권장 초과" : " · 본문 자동 동기화"}</span>
@@ -994,6 +1014,20 @@ function CopySelectionActions({ selectedCount, onClear, onCopy }: { selectedCoun
     <button type="button" onClick={onClear} disabled={selectedCount === 0}>선택 해제</button>
     <button type="button" className="primary" onClick={onCopy} disabled={selectedCount === 0}>선택 복사</button>
   </div>;
+}
+
+function applyLyricNavigation(target: CodeMirrorTextEditor, find: string, position: LyricResumePosition | null, basisUpdatedAt: string): string | null {
+  if (find && target.goToTextMatch(find)) return "검색 결과와 일치하는 첫 위치로 이동했습니다.";
+  if (position) {
+    const viewport = window.matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop";
+    const preferSongform = position.viewport !== viewport || position.basisUpdatedAt !== basisUpdatedAt;
+    const restored = target.restoreResumePosition(position, preferSongform);
+    return restored.usedSongform
+      ? `마지막 ${position.songformLabel ?? "송폼"} 구간으로 이동했습니다.`
+      : "마지막 편집 위치로 이동했습니다.";
+  }
+  target.focus();
+  return null;
 }
 
 function SaveIndicator({ state, syncState, onRetry, onCopy }: { state: SaveState; syncState: LocalSyncState; onRetry: () => void; onCopy: () => void }) {
