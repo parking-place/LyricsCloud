@@ -4,7 +4,7 @@ import { ConfigError, hmacAllowlistDigest, readAuthConfig, readBetaSignupConfig,
 describe("runtime configuration", () => {
   it("accepts a PostgreSQL URL", () => {
     const config = readRuntimeConfig({ NODE_ENV: "test", DATABASE_URL: "postgresql://user:secret@db/app" });
-    expect(config).toMatchObject({ runtime: "test", appVersion: "1.1.4", buildId: "local", appChannel: "release", appPhase: null });
+    expect(config).toMatchObject({ runtime: "test", appVersion: "1.1.5", buildId: "local", appChannel: "release", appPhase: null, uiVariant: "b1" });
   });
   it("reports key names without their values", () => {
     const secret = "never-print-this";
@@ -25,16 +25,24 @@ describe("runtime configuration", () => {
     const base = { NODE_ENV: "production", DATABASE_URL: "postgresql://user:test@db/app" };
     expect(() => readRuntimeConfig(base)).toThrow("Invalid configuration keys: APP_VERSION, BUILD_ID");
     expect(() => readRuntimeConfig({ ...base, APP_VERSION: "1.0.0", BUILD_ID: "a".repeat(40) })).toThrow("APP_VERSION");
-    expect(readRuntimeConfig({ ...base, APP_VERSION: "1.1.4", BUILD_ID: "a".repeat(40) }).buildId).toBe("a".repeat(40));
+    expect(readRuntimeConfig({ ...base, APP_VERSION: "1.1.5", BUILD_ID: "a".repeat(40) }).buildId).toBe("a".repeat(40));
   });
 
   it("validates explicit release channels and development phase labels", () => {
-    const base = { NODE_ENV: "test", DATABASE_URL: "postgresql://user:test@db/app", APP_VERSION: "1.1.4" };
+    const base = { NODE_ENV: "test", DATABASE_URL: "postgresql://user:test@db/app", APP_VERSION: "1.1.5" };
     expect(readRuntimeConfig({ ...base, APP_CHANNEL: "dev", APP_PHASE: "p7" }))
       .toMatchObject({ appChannel: "dev", appPhase: "p7" });
     expect(() => readRuntimeConfig({ ...base, APP_CHANNEL: "preview" })).toThrow("APP_CHANNEL");
     expect(() => readRuntimeConfig({ ...base, APP_CHANNEL: "dev", APP_PHASE: "phase-7" })).toThrow("APP_PHASE");
     expect(() => readRuntimeConfig({ ...base, APP_CHANNEL: "release", APP_PHASE: "p7" })).toThrow("APP_PHASE");
+  });
+
+  it("accepts only the approved UI variants and defaults to B-1", () => {
+    const base = { NODE_ENV: "test", DATABASE_URL: "postgresql://user:test@db/app" };
+    expect(readRuntimeConfig(base).uiVariant).toBe("b1");
+    expect(readRuntimeConfig({ ...base, LC_UI_VARIANT: "classic" }).uiVariant).toBe("classic");
+    expect(readRuntimeConfig({ ...base, LC_UI_VARIANT: "b1" }).uiVariant).toBe("b1");
+    expect(() => readRuntimeConfig({ ...base, LC_UI_VARIANT: "glass" })).toThrow("LC_UI_VARIANT");
   });
 });
 
