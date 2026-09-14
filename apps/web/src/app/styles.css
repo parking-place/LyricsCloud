@@ -790,6 +790,7 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 .save-indicator.is-error { color: var(--danger); }
 .save-indicator.is-error > span { background: var(--danger); }
 .save-indicator button { min-height: 2rem; padding: .3rem .55rem; border: 1px solid currentColor; border-radius: .45rem; background: transparent; color: inherit; cursor: pointer; }
+.editor-save-strip { display: contents; }
 .local-draft-state { margin: 0; color: var(--muted); font-size: .72rem; white-space: normal; }
 .local-draft-state.state-offline { color: #f0bd72; }
 .lyric-editor-title { width: min(100%, 54rem); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .8rem; justify-self: center; padding: 1rem 1.5rem .75rem; }
@@ -2022,4 +2023,139 @@ html[data-ui-variant="b1"][data-theme="light"] .prompt-tokens li { border-color:
   html[data-ui-variant="b1"] .mobile-more-sheet .b1-more-item { display: grid; }
   html[data-ui-variant="b1"] :is(.songs-page, .rhymes-page, .prompts-page, .favorites-page, .recent-page, .search-page, .dashboard-page) { padding-bottom: calc(1.5rem + var(--lc-safe-bottom)); }
   html[data-ui-variant="b1"] .dashboard-layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* 1.1.6 P2 approved B-1 editor/detail surfaces. The selectors are rooted at
+   the variant so classic remains the exact visual rollback. Editor mount
+   nodes stay in their original React parents; only their surrounding layout
+   and semantic state surfaces change. */
+html[data-ui-variant="b1"] :is(.lyric-editor-page, .rhyme-editor-page, .prompt-editor-page) {
+  padding: 1rem clamp(.85rem, 2vw, 1.5rem) 1.25rem;
+  background: var(--canvas);
+}
+html[data-ui-variant="b1"] :is(.lyric-editor-header, .rhyme-editor-header, .prompt-editor-header) {
+  align-items: center;
+  gap: .65rem;
+  padding: .75rem .9rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem 1rem 0 0;
+  background: var(--panel);
+}
+html[data-ui-variant="b1"] .editor-save-strip {
+  min-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  order: 4;
+  padding-top: .55rem;
+  border-top: 1px solid var(--line);
+}
+html[data-ui-variant="b1"] .editor-save-strip:empty { display: none; }
+html[data-ui-variant="b1"] .editor-save-strip .save-indicator,
+html[data-ui-variant="b1"] .editor-save-strip .local-draft-state { margin: 0; }
+html[data-ui-variant="b1"] .editor-save-strip .local-draft-state { margin-left: auto; }
+html[data-ui-variant="b1"] :is(.lyric-editor-title, .rhyme-editor-title, .prompt-editor-title) {
+  width: 100%;
+  padding: .85rem 1rem;
+  border-inline: 1px solid var(--line);
+  background: var(--panel);
+}
+html[data-ui-variant="b1"] .lyric-editor-workspace {
+  width: 100%;
+  grid-template-columns: minmax(9rem, 10.5rem) minmax(24rem, 1fr) minmax(17.5rem, var(--resource-panel-width, 20rem));
+  gap: .75rem;
+}
+html[data-ui-variant="b1"] :is(.songform-outline, .lyric-editor-document, .editor-resource-panel, .rhyme-editor-document, .rhyme-settings > section, .prompt-builder-card, .prompt-sentence-card, .prompt-editor-info) {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--panel);
+  box-shadow: none;
+}
+html[data-ui-variant="b1"] .lyric-editor-document,
+html[data-ui-variant="b1"] .rhyme-editor-document { overflow: hidden; }
+html[data-ui-variant="b1"] :is(.lyric-editor-surface, .rhyme-editor-surface) {
+  width: 100%;
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  background: var(--panel);
+}
+html[data-ui-variant="b1"] :is(.lyric-editor-surface, .rhyme-editor-surface) .cm-editor { background: var(--panel); }
+html[data-ui-variant="b1"] :is(.lyric-editor-footer, .rhyme-editor-document > footer) {
+  width: 100%;
+  padding: .65rem .85rem;
+  border-top: 1px solid var(--line);
+}
+html[data-ui-variant="b1"] .editor-resource-panel {
+  width: 100%;
+  padding: .8rem;
+  border-radius: 1rem;
+}
+html[data-ui-variant="b1"] .editor-resource-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+html[data-ui-variant="b1"] :is(.editor-resource-tabs, .prompt-mode-selector) {
+  padding: .25rem;
+  border-radius: .75rem;
+  background: var(--surface);
+}
+html[data-ui-variant="b1"] .editor-resource-results li,
+html[data-ui-variant="b1"] .editor-current-settings > summary { border-radius: .65rem; }
+html[data-ui-variant="b1"] .rhyme-editor-workspace,
+html[data-ui-variant="b1"] .prompt-editor-workspace { width: 100%; max-width: 76rem; gap: .75rem; }
+html[data-ui-variant="b1"] .rhyme-editor-workspace { grid-template-columns: minmax(24rem, 1fr) minmax(17.5rem, 20rem); }
+html[data-ui-variant="b1"] .prompt-editor-workspace { grid-template-columns: minmax(24rem, 1fr) minmax(17.5rem, 20rem); }
+html[data-ui-variant="b1"] .prompt-mode-selector { width: 100%; max-width: 76rem; margin-bottom: .75rem; }
+html[data-ui-variant="b1"] :is(.auth-panel, .auth-card) { background: var(--panel); }
+html[data-ui-variant="b1"] .auth-card { border-radius: 1rem; box-shadow: none; }
+html[data-ui-variant="b1"] .auth-story::before,
+html[data-ui-variant="b1"] .auth-story::after { display: none; }
+html[data-ui-variant="b1"] :is(.auth-error, .beta-signup-recovery, .shared-writer-recovery, .sharing-storage-guide) {
+  border-radius: .75rem;
+  box-shadow: none;
+}
+html[data-ui-variant="b1"] .sharing-dialog { border-radius: 1rem; background: var(--panel); box-shadow: none; }
+html[data-ui-variant="b1"] :is(.sharing-preview, .sharing-identity, .sharing-grants, .sharing-presence, .sharing-public, .shared-lyric-footer, .shared-viewers, .shared-writer-recovery) {
+  border-radius: .75rem;
+  background: var(--surface);
+}
+html[data-ui-variant="b1"] .shared-writer-recovery { border-color: color-mix(in srgb, var(--danger) 55%, var(--line)); }
+html[data-ui-variant="b1"] :is(.dialog-backdrop, .editor-sheet-backdrop, .lyric-display-backdrop, .sharing-backdrop) {
+  background: rgb(0 0 0 / 64%);
+}
+
+@media (max-width: 1080px) {
+  html[data-ui-variant="b1"] .lyric-editor-workspace { grid-template-columns: minmax(9rem, 10rem) minmax(22rem, 1fr); }
+  html[data-ui-variant="b1"] .editor-resource-shell.is-desktop-open { grid-column: 1 / -1; display: block; }
+  html[data-ui-variant="b1"] .editor-resource-shell.is-desktop-open .editor-resource-panel { max-height: 30rem; }
+}
+
+@media (max-width: 960px) {
+  html[data-ui-variant="b1"] .editor-resource-shell.is-desktop-open:not(.is-mobile-open) { display: none; }
+}
+
+@media (max-width: 720px) {
+  html[data-ui-variant="b1"] :is(.lyric-editor-page, .rhyme-editor-page, .prompt-editor-page) {
+    padding: .65rem max(.65rem, var(--lc-safe-right)) calc(5.5rem + var(--lc-safe-bottom)) max(.65rem, var(--lc-safe-left));
+  }
+  html[data-ui-variant="b1"] :is(.lyric-editor-header, .rhyme-editor-header, .prompt-editor-header) {
+    padding: .65rem;
+    border-radius: .85rem .85rem 0 0;
+  }
+  html[data-ui-variant="b1"] .editor-save-strip { align-items: flex-start; flex-direction: column; gap: .35rem; }
+  html[data-ui-variant="b1"] .editor-save-strip .local-draft-state { margin-left: 0; }
+  html[data-ui-variant="b1"] :is(.lyric-editor-title, .rhyme-editor-title, .prompt-editor-title) { padding: .7rem; }
+  html[data-ui-variant="b1"] .lyric-editor-workspace,
+  html[data-ui-variant="b1"] :is(.rhyme-editor-workspace, .prompt-editor-workspace) { display: block; width: 100%; }
+  html[data-ui-variant="b1"] :is(.lyric-editor-document, .rhyme-editor-document, .prompt-builder-card, .prompt-sentence-card, .prompt-editor-info) { border-radius: .85rem; }
+  html[data-ui-variant="b1"] :is(.mobile-editor-dock, .rhyme-mobile-dock, .prompt-editor-actions) button,
+  html[data-ui-variant="b1"] .editor-resource-actions :is(button, a),
+  html[data-ui-variant="b1"] :is(.sharing-dialog, .shared-writer-recovery, .auth-card, .beta-signup) :is(button, a, input, select) { min-height: 2.75rem; }
+  html[data-ui-variant="b1"] .editor-resource-shell.is-mobile-open { inset: 0 0 calc(4.3rem + var(--lc-safe-bottom)); display: grid; padding: 0; }
+  html[data-ui-variant="b1"] .editor-resource-shell.is-mobile-open .editor-resource-panel {
+    width: 100%;
+    max-height: calc(100dvh - 1rem);
+    border-radius: 1rem 1rem 0 0;
+    background: var(--panel);
+  }
+  html[data-ui-variant="b1"] .sharing-backdrop { align-items: end; padding: .5rem 0 0; }
+  html[data-ui-variant="b1"] .sharing-dialog { width: 100%; max-height: 92dvh; margin: auto 0 0; border-width: 1px 0 0; border-radius: 1rem 1rem 0 0; }
 }

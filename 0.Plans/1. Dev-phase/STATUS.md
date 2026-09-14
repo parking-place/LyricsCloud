@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.6"
-current_phase: "../2.Patch-phase/1.1.6/1phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.6/2phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.6 P2에서 편집·복구 화면 실패 우선 계약 시험과 B-1 상세 화면 구현을 착수한다"
+next_action: "1.1.6 P2 로컬 수용 후보를 push하고 CI·네 dev image·동일 SHA 개발 서버와 공개 smoke를 인수한다"
 ```
 
 ## 승인과 기준
@@ -163,6 +163,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.6/P2 | LC-NF-1.1.6-P2-01~06 | web editor/auth/share/recovery surfaces·editor contract·runtime metadata·tests·상태/Future | P1 `3e7eaa4`; main merge `033620d`; B-1 계약 | 2026-09-14 | in_progress |
 | Codex | 1.1.6/P1 | LC-NF-1.1.6-P1-01~06 | P1 계획·편집/복구 계약·STATUS·요구 추적·Future 인수 | main 기록 `98c2a29`; 제품 source `17fb4a9`; B-1 승인 | 2026-09-14 | complete |
 | Codex | 1.1.5/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | 1.1.5 P5 `074782e`; main/tag `17fb4a9` | 2026-09-14 | complete |
 | Codex | 1.1.5/P5 | LC-NF-1.1.5-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 후보 `074782e`; Actions `34814063096`·`34814075649`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
