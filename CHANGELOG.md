@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.1.7] - 2026-09-15
+
+### Changed
+
+- 곡 대시보드에서 새 라임·프롬프트를 만든 뒤 명시적으로 전달된 내부 호출 URL로 정확히 복귀하고 legacy 직접 URL의 기존 목록 복귀를 보존
+- 목록 filter·sort·view query를 대시보드·가사·공유·Suno 작업 뒤에도 복원하며 dialog/mobile More focus, 보호 새 탭, 접힌 rail keyboard tooltip을 보완
+- reduced transparency·increased contrast·forced colors에서 불투명하고 판독 가능한 fallback을 제공하고 reduced motion·720px reflow를 유지
+
+### Compatibility and validation
+
+- API·DB·29개 migration·CodeMirror/Yjs·copy/export·owner/actor/capability/epoch를 변경하지 않고 실제 PostgreSQL·Chromium 전체 회귀와 지원 5-browser 집중 검증을 통과
+- P2~P4 네 signed dev image와 동일 SHA 공개 개발 환경에서 exact 복귀·focus·theme·reflow·4x CPU 입력, API/CRDT 저장과 서비스 재시작 지속성을 확인
+- P5 최종 CI·동일 SHA 개발 인수와 정식 릴리스 결과는 후보 확정 뒤 기록
+
+### Documentation and release safety
+
+- 사용자 동선과 Windows/Linux/macOS/Android/iOS 공통 계약·플랫폼 차이, 29개 migration·환경·dependency/font license·digest-only release manifest를 1.1.7 artifact로 봉인
+- 실제 native SDK/앱·물리 기기·OS IME/AT/OS zoom·서명/스토어 미실행과 `OPS-100-001` backup 예외를 알려진 제한으로 유지
+
 ## [1.1.6] - 2026-09-15
 
 ### Changed

@@ -24,3 +24,9 @@
 | 18 공유 쓰기 | 정상/오류 | IME·offline·미전송·철회·자기 입력 복구 | W/L/M | safe area/tools | back/tools |
 
 W/L/M은 각각 Windows 제목 문맥, Linux Wayland/X11 문맥, macOS 창 문맥을 뜻한다. 이는 HTML 시각 구분이며 실제 OS 동작 검증을 뜻하지 않는다.
+
+## 1.1.7 웹 인수 상태
+
+- PC Chromium/Firefox/WebKit과 Chromium/WebKit mobile viewport에서 가입→목록→곡→가사, 생성 exact 복귀, 목록 query, 공유/Suno, focus·keyboard 대안을 자동 검증했다.
+- reduced motion/transparency, increased contrast/forced colors, 720px reflow와 Chromium 4x CPU 입력·서비스 재시작 영속을 개발 공개 환경에서 확인했다.
+- iOS/Android 열의 safe area·native back/keyboard/lifecycle과 W/L/M의 OS IME·창/메뉴·보호 저장소는 HTML/browser 결과로 통과시키지 않고 1.1.8~1.1.14의 실제 플랫폼 gate로 넘긴다.

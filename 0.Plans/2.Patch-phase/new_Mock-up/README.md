@@ -4,6 +4,8 @@ UX P2에서 사용자가 선택한 **B-1(통합 작업공간 + Flat-depth)**을 
 
 UX P5에서 [승인 design manifest](../../../docs/ux/ux-p5-approved-design-manifest.md)로 구현 인수를 확정했다. 제품 적용은 1.1.5 이후 각 Phase의 실제 회귀·동일 SHA 개발 인수와 별도 release gate를 따라야 한다.
 
+1.1.7 P1~P4에서 browser 제품 동선을 다시 관찰해 새 라임/프롬프트 exact 복귀, 목록 query 복원, dialog/More focus, 보호 새 탭, 접힌 rail keyboard tooltip과 접근성 fallback을 실제 구현·개발 환경에서 인수했다. PC/iOS/Android 표시는 아래 행렬의 웹 viewport/engine 대리 범위이며 실제 native SDK·앱·기기 합격이 아니다. 공통 계약과 플랫폼별 다음 gate는 [1.1.7 플랫폼 인계](../../../docs/architecture/1.1.7-PLATFORM-HANDOFF.md)에 고정한다.
+
 ## 검토 시작
 
 - [전체 화면 인덱스](index.html)

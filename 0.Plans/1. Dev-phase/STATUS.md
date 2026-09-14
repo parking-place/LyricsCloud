@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.7"
-current_phase: "../2.Patch-phase/1.1.7/4phase.md"
+current_phase: "../2.Patch-phase/1.1.7/5phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-15"
-next_action: "PR #138을 main에 병합한 뒤 1.1.7 P5 웹 인수·플랫폼 개발안 인계를 착수한다"
+next_action: "PR #139로 1.1.7 P5 완료 기록을 main에 병합하고 main CI 뒤 annotated v1.1.7·정식 image·릴리스 서버 exact digest·공개 smoke를 수행한다"
 ```
 
 ## 승인과 기준
@@ -167,11 +167,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.7 P2 | complete | 후보 `206b14f`, Actions `34881741352`·`34881745605`, 첫 후보의 기존 URL 14 FAIL 보정·네 signed dev image·동일 SHA 공개 quick-add 복귀/본문/focus/overflow 인수 완료 |
 | 1.1.7 P3 | complete | 후보 `740b1e3`, Actions `34887398291`·`34887401584`, Vitest 264 PASS·5-browser P3 5 PASS·네 signed dev image·동일 SHA 공개 PC/mobile×dark/light 복귀/focus/새 탭/tooltip 인수 완료 |
 | 1.1.7 P4 | complete | 후보 `66f2f79`, Actions `34894853203`·`34894869965`, 네 signed dev image·동일 SHA 공개 reduced motion/reflow/forced colors·4x CPU 저장·서비스 재시작 영속 인수 완료 |
+| 1.1.7 P5 | complete | 후보 `b1a1e2c`, Actions `34900342849`·`34900363577`, Vitest 376 PASS·E2E 379 PASS·네 signed dev image·동일 SHA 공개 접근성 fallback/저장·복귀·서비스 재시작 영속 인수 완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7/P5 | LC-NF-1.1.7-P5-01~03 | 사용자 안내·플랫폼 탐색/공통 계약·최종 artifact/CI·개발 공개 인수·상태/Future | 후보 `b1a1e2c`; Actions `34900342849`·`34900363577`; 네 signed dev image·동일 SHA 개발 공개 인수 완료, native gate 미실행 | 2026-09-15 | complete |
 | Codex | 1.1.7/P4 | LC-NF-1.1.7-P4-01~03 | 1.1.7 회귀·접근성/성능 대리·협업/presence/font/IME 영향·상태/Future | 후보 `66f2f79`, 두 CI·네 signed dev image·동일 SHA 개발 공개 저장/재시작 인수 완료; 실제 OS/기기·AT·OS zoom은 별도 미실행 | 2026-09-15 | complete |
 | Codex | 1.1.7/P3 | LC-NF-1.1.7-P3-01~03 | 목록/편집/공유/Suno 복귀·drag/context 대안·PC/mobile 회귀·상태/Future | 후보 `740b1e3`, 두 CI·네 signed dev image·동일 SHA 공개 PC/mobile×dark/light PASS; 실제 OS/기기·AT는 browser 대리와 분리 | 2026-09-15 | complete |
 | Codex | 1.1.7/P2 | LC-NF-1.1.7-P2-01~03 | quick-add·rhyme/prompt new route/screen·returnTo 회귀·상태/Future | 후보 `206b14f`; Actions `34881741352`·`34881745605`; 네 signed dev image·동일 SHA 공개 인수 | 2026-09-15 | complete |
@@ -297,6 +299,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | Astra (astra_worker, 문서 단일 작성자) | 1.0.0/P6 인계·1.0.1 P1 준비 | LC-100-P6-08 | 0.Plans/2.Patch-phase·docs/adr/product/operations/planning·문서 색인·Agent/AGENTS | 문서 인계: 29버전·제품150 Phase+UX5·846 task·요구48, 원래730 task와 후보129 체크/설명/예시 보존. 문서 validator PASS(686 MD/15화면), 범위 링크/ID 검사 이상 없음. 원본 193파일/ZIP SHA256 일치는 부모 확인, 재승인 삭제도 자동 검토 blocked by policy로 거부되어 원본/백업 보존·commit 제외. 구현/원격 작업은 부모 인수 | 2026-09-09 | review |
 
 ## 인계
+
+1.1.7 P5 후보 `b1a1e2c17b4385ed2d9acb267664197692186897`은 사용자/목업 탐색과 Windows/Linux/macOS/Android/iOS 공통 CodeMirror/Yjs·URL·저장/권한/복구 계약, 29개 migration·환경·license·release artifact를 봉인했다. Node 24 로컬 artifact/final/document/environment·11 workspace typecheck/build·1.1.7 계약 6건과 push/PR Actions `34900342849`·`34900363577` 전체 PASS, 실제 PostgreSQL Vitest 376 PASS/4 조건부 skip, Chromium 전체 E2E 379 PASS/43 조건부 skip, release matrix 10 PASS를 통과했다. push 첫 시도의 migration DB pool 종료 정리 `57P01`은 같은 SHA failed job 재실행에서 통과했다. 네 signed dev image의 SHA/P5/Dev tag가 서비스별 동일 digest이고, 같은 SHA 개발 서버 `1.1.7/dev/p5`, schema `1140_sharing_stability.sql`, 네 서비스 healthy에서 공개 reduced motion·720px reflow·forced colors·focus·4배 CPU mobile 저장과 서비스 재시작 뒤 API/CRDT/revision exact 원문·목록 복귀를 PASS했다. fixture를 제거하고 DB volume·secret·allowlist를 보존했다. 신규 P0/P1·원문 유실·인가 우회·무음 저장 실패는 0건이다. 실제 native SDK·앱·OS/물리 기기·IME/AT/zoom·서명/스토어는 미실행이며 승인된 main/tag/image/릴리스 서버 gate로 이동한다.
 
 1.1.7 P2 후보 `206b14feb20c6c050662c2eda29c53bfba19e0bb`는 quick-add의 현재 가사 경로를 새 라임·프롬프트에 명시적 `returnTo`로 전달하고 생성 성공·편집 back에서 같은 경로로 복귀시킨다. 첫 후보 `5ae6f30`의 기본 목록 query가 깨뜨린 기존 직접 생성·template·offline recovery 14건을 CI에서 확인하고 명시적 입력에만 query를 붙여 기존/신규 16 PASS로 보정했다. push/PR Actions `34881741352`·`34881745605`, 네 signed dev image와 서비스별 SHA/Phase/Dev tag 동일 digest를 통과했다. 같은 SHA 개발 서버 `1.1.7/dev/p2`, schema `1140_sharing_stability.sql`, B-1 root와 네 서비스 healthy에서 공개 1440/390px×light/dark 새 라임·프롬프트 생성→중첩 가사 URL·exact 한글 본문 복귀, focus·overflow를 PASS하고 fixture를 제거했다. API·DB·migration·권한·copy 변화는 0이며 실제 Android/iOS 앱·물리 기기·OS IME·AT·zoom은 미실행이다. P3는 이 경계를 유지하며 플랫폼별 목록→편집→공유·Suno 복귀와 보이는 drag/context 대안을 검토한다.
 

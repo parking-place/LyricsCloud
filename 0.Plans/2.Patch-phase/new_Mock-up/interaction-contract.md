@@ -29,3 +29,7 @@
 - iOS는 safe-area와 interactive keyboard inset을, Android는 system back과 predictive back 후보를 각 구현 Phase에서 실제 SDK로 확인한다.
 - Windows/Linux/macOS 제목·menu·shortcut 차이는 shell 장식이 아니라 native 계획의 실제 focus/IME/창 lifecycle gate에서 확정한다.
 - 이 문서는 실제 native 동작이 검증됐다는 증거가 아니다.
+
+## 1.1.7 제품 연결
+
+제품은 새 자료 생성에 명시적 same-origin `returnTo`만 사용하고, 없거나 유효하지 않으면 기존 목록으로 복귀한다. 목록 filter·sort·view query는 곡·가사·공유·Suno 왕복에도 유지된다. 공유 dialog와 mobile More는 닫힐 때 trigger focus를 복원하고, 접힌 rail tooltip은 hover와 keyboard focus 모두에서 보인다. 이 연결은 웹 browser 인수이며 iOS/Android system back·keyboard inset과 desktop OS별 focus/IME gate를 대체하지 않는다.
