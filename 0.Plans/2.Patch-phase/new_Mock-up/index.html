@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LyricsCloud B-1 화면 인덱스</title>
+  <style>
+    :root { color-scheme: light dark; font: 15px/1.55 system-ui, sans-serif; }
+    body { max-width: 1180px; margin: auto; padding: 24px; background: Canvas; color: CanvasText; }
+    h1 { margin-bottom: 4px; }
+    p { color: GrayText; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+    article { padding: 16px; border: 1px solid GrayText; border-radius: 14px; }
+    article strong { display: block; margin-bottom: 9px; }
+    nav { display: flex; flex-wrap: wrap; gap: 6px; }
+    a { min-height: 40px; display: inline-flex; align-items: center; padding: 0 10px; border: 1px solid GrayText; border-radius: 9px; color: LinkText; }
+    a:focus-visible { outline: 3px solid Highlight; outline-offset: 3px; }
+  </style>
+</head>
+<body>
+  <h1>B-1 통합 작업공간</h1>
+  <p>서버에 연결하지 않는 합성 정적 prototype. 각 링크는 독립적으로 테마·플랫폼·안전 상태를 연다.</p>
+  <main class="grid" id="screens"></main>
+  <script>
+    const screens = [
+      ['01-auth','로그인 · 베타 가입','code-expired'],['02-songs','곡 목록','empty'],['03-song-form','곡 정보','unsent'],
+      ['04-song-dashboard','곡 작업공간','offline'],['05-lyrics-editor','가사 편집','ime'],['06-rhyme-notes','라임 노트','error'],
+      ['07-rhyme-editor','라임 편집','unsent'],['08-prompts','프롬프트','empty'],['09-prompt-editor','프롬프트 편집','offline'],
+      ['10-search','통합 검색','error'],['11-recent','최근 작업','empty'],['12-favorites','즐겨찾기 · 핀','error'],
+      ['13-trash','휴지통','empty'],['14-templates','템플릿','loading'],['15-settings','설정 · 계정','offline'],
+      ['16-share-settings','공유 설정','revoked'],['17-share-read','공유 읽기','revoked'],['18-share-write','공유 쓰기 · 복구','unsent']
+    ];
+    document.querySelector('#screens').innerHTML = screens.map(([id,title,state]) => `<article><strong>${id} · ${title}</strong><nav><a href="${id}/mockup.html?theme=light&platform=windows">PC Light</a><a href="${id}/mockup.html?theme=dark&platform=macos">PC Dark</a><a href="${id}/mockup.html?theme=light&platform=ios">iOS</a><a href="${id}/mockup.html?theme=dark&platform=android">Android</a><a href="${id}/mockup.html?theme=dark&platform=windows&state=${state}">${state}</a></nav></article>`).join('');
+  </script>
+</body>
+</html>

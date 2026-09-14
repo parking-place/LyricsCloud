@@ -1,6 +1,6 @@
 # UX Phase 3 — new_Mock-up·상태별 프로토타입
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`)
 - 단계 목적: 보호된 과거 목업과 분리된 새 화면안을 만든다.
 - 적용 범위: 설계·목업 마일스톤 (런타임 미배포)
 
@@ -44,14 +44,14 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-DESIGN-UX-P3-01` new_Mock-up 아래 각 화면 README·light/dark·PC/모바일 목업 및 전체 index를 만든다.
-- [ ] `LC-DESIGN-UX-P3-02` 가입 code 실패·IME 조합·미전송 초안·권한 철회 등 안전성 상태를 목업에 포함한다.
-- [ ] `LC-DESIGN-UX-P3-03` 리스트/세 grid·송폼subtag·Extend·문장형 prompt·공유 상태를 누락 없이 반영한다.
-- [ ] `LC-DESIGN-UX-P3-04` 정적 목업과 동작 prototype을 명시적으로 구분하고 없는 서버 기능을 완료로 표시하지 않는다.
-- [ ] `LC-DESIGN-UX-P3-05` 합성 콘텐츠와 검증된 자산 출처만 사용하고 실제 사용자 screenshot은 넣지 않는다.
-- [ ] `LC-DESIGN-UX-P3-06` 컴포넌트 단위 구현 매핑과 기존 state/API를 유지하는 전환 초안을 작성한다.
+- [x] `LC-DESIGN-UX-P3-01` new_Mock-up 아래 각 화면 README·light/dark·PC/모바일 목업 및 전체 index를 만든다.
+- [x] `LC-DESIGN-UX-P3-02` 가입 code 실패·IME 조합·미전송 초안·권한 철회 등 안전성 상태를 목업에 포함한다.
+- [x] `LC-DESIGN-UX-P3-03` 리스트/세 grid·송폼subtag·Extend·문장형 prompt·공유 상태를 누락 없이 반영한다.
+- [x] `LC-DESIGN-UX-P3-04` 정적 목업과 동작 prototype을 명시적으로 구분하고 없는 서버 기능을 완료로 표시하지 않는다.
+- [x] `LC-DESIGN-UX-P3-05` 합성 콘텐츠와 검증된 자산 출처만 사용하고 실제 사용자 screenshot은 넣지 않는다.
+- [x] `LC-DESIGN-UX-P3-06` 컴포넌트 단위 구현 매핑과 기존 state/API를 유지하는 전환 초안을 작성한다.
 
-- [ ] `LC-DESIGN-UX-P3-07` PC(Windows/Linux/macOS 차이)·iOS·Android 목업을 구분하고 공유 presence/cursor·사전 tooltip·폰트·오류/철회/복구 상태를 선택안으로 구체화한다.
+- [x] `LC-DESIGN-UX-P3-07` PC(Windows/Linux/macOS 차이)·iOS·Android 목업을 구분하고 공유 presence/cursor·사전 tooltip·폰트·오류/철회/복구 상태를 선택안으로 구체화한다.
 
 ## 구체적 검증
 
@@ -60,16 +60,20 @@
 
 ## 실행·증거 기록
 
-현재 명령은 [QUALITY-GATES.md](../../QUALITY-GATES.md)를 따른다. 작업별 실제 test 파일/명령·환경·실패/성공 수·SHA를 인수 로그에 기록한다. DB/E2E는 전용 테스트 DB에서만 수행한다. 실제 IME/기기/Google 설정 검증을 synthetic 이벤트나 이전 PASS로 대체하지 않는다. 문서-only Phase는 링크/범위/결정/목업 검토를 수행하며 앱 테스트 결과를 꾸미지 않는다.
+- P2 merge `7e290c145833eb9cd7092b516f2f462b8b42a435`에서 시작해 B-1 목업 산출물 commit `ad1acedf6c9b86f4b8dcc89bcb340c61a97ec5fd`를 만들었다. [new_Mock-up index](../../new_Mock-up/index.html), 18개 화면별 README/HTML, [상태 행렬](../../new_Mock-up/screen-matrix.md), [토큰](../../new_Mock-up/design-tokens.md), [제품 전환 매핑](../../new_Mock-up/component-mapping.md)을 연결했다.
+- Node 24에서 공통 JS와 index inline script syntax를 통과했고, Playwright 1.62.1 Chromium에서 18화면×5 플랫폼 문맥×2 theme 180조합과 안전 상태 17×PC/iOS/Android 51조합, 총 231조합을 검사했다. horizontal overflow 0건, serious/critical Axe 위반 0건이다. 첫 실행의 label/select-name/color-contrast/aria-prohibited 40건은 label 연결·cursor 대비·loading role을 수정한 뒤 같은 전수 행렬에서 0건으로 재검증했다.
+- 대표 7개 화면 capture와 기계 판독 summary는 ignored private evidence에 보존했다. 가사 IME·미전송, mobile dashboard, 라임 사전 미연결, 공유 철회/복구를 육안 대조했다. 전부 합성 fixture이며 실제 창작물·실제 계정·외부 업로드를 사용하지 않았다.
+- prototype 상단에 `서버 저장 없음 · 합성 콘텐츠`를 고정하고 README/매핑에서 OAuth·저장·사전·공유 연결을 수행하지 않는다고 명시했다. 사전 tooltip은 1.0.13 provider no-go를 유지하며 실제 정의처럼 표시하지 않는다.
+- 보호된 `0.Plans/Mock-up/**` diff는 0이고 앱/runtime `VERSION`·DB·서버는 변경하지 않았다. 실제 Windows/Linux/macOS/iOS/Android, OS IME, NVDA/VoiceOver/TalkBack, 물리 touch/safe-area/keyboard, 저사양 GPU는 실행하지 않았으며 P4의 수행/미수행 행렬로 넘긴다.
 
 ## 완료 조건
 
-- [ ] 모든 작업 ID와 구체적 수용 기준에 실제 산출물/증거가 있다.
-- [ ] 원문·인가·복구·기존 사용자 동작을 손상시키지 않았고 확인된 차이는 승인됐다.
-- [ ] 검사하지 못한 항목·외부 제한·남은 위험을 숨기지 않고 기록했다.
-- [ ] 현재 문서와 체크 상태·담당 경로·정확한 SHA가 일치한다.
-- [ ] 구현 Phase는 CI·정확한 SHA의 개발 인수를, 설계-only는 검토/승인을 완료했다.
-- [ ] release/main/production 변경은 별도 승인 없이 실행하지 않았다.
+- [x] 모든 작업 ID와 구체적 수용 기준에 실제 산출물/증거가 있다.
+- [x] 원문·인가·복구·기존 사용자 동작을 손상시키지 않았고 B-1의 기능 보존 전환을 명시했다.
+- [x] 검사하지 못한 항목·외부 제한·남은 위험을 숨기지 않고 기록했다.
+- [x] 현재 문서와 체크 상태·담당 경로·정확한 산출물 SHA가 일치한다.
+- [x] 설계-only P3의 문서·목업·자동 접근성/반응형 검토를 완료했다.
+- [x] release/main/production·앱/runtime/DB 변경을 수행하지 않았다.
 
 ## 산출물
 
