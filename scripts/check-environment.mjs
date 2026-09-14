@@ -17,6 +17,7 @@ export function validateEnvironment(service, source) {
     if (rule.type === "integer" && !Number.isInteger(value)) invalid.push(name);
     if (rule.type === "string" && typeof value !== "string") invalid.push(name);
     if (rule.const !== undefined && value !== rule.const) invalid.push(name);
+    if (Array.isArray(rule.enum) && !rule.enum.includes(value)) invalid.push(name);
     if (rule.pattern && (typeof value !== "string" || !new RegExp(rule.pattern).test(value))) invalid.push(name);
     if (rule.minLength && (typeof value !== "string" || value.length < rule.minLength)) invalid.push(name);
     if (rule.minimum !== undefined && (typeof value !== "number" || value < rule.minimum)) invalid.push(name);

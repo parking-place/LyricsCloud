@@ -110,13 +110,13 @@ for (const tag of [currentVersion, "1.0.2", releasedVersion, "Release", "latest"
 for (const marker of [`APP_VERSION: ${currentVersion}`, "APP_PHASE: p5", "test:migration:1002", "test:environment:101"]) {
   assert(workflow.includes(marker), `P5 CI marker missing: ${marker}`);
 }
-for (const marker of ["NF-REQ-034", "NF-REQ-035", "NF-REQ-036", `AC-${currentVersion}-01`, `AC-${currentVersion}-04`, "복원", "계정 전환", "bounded queue", "P0/P1", "OPS-100-001", "1140_sharing_stability.sql"]) {
+for (const marker of ["NF-REQ-037", "NF-REQ-039", `AC-${currentVersion}-01`, `AC-${currentVersion}-04`, "B-1", "CodeMirror", "deep link", "P0/P1", "OPS-100-001", "1140_sharing_stability.sql"]) {
   assert(candidateTraceability.includes(marker), `${currentVersion} traceability marker missing: ${marker}`);
 }
 for (const marker of ["P5", "P0/P1", "OPS-100-001", "동일 SHA 개발 인수"]) {
   assert(formalTraceability.includes(marker), `${currentVersion} traceability marker missing: ${marker}`);
 }
-for (const marker of ["공동 편집", "복원", "계정 전환", "bounded queue", "실제 OS", "알려진 제한", "OPS-100-001"]) {
+for (const marker of ["B-1", "CodeMirror", "더보기", "실제 OS", "알려진 제한", "OPS-100-001"]) {
   assert(formalReleaseNotes.includes(marker), `${currentVersion} release notes marker missing: ${marker}`);
 }
 for (const marker of [`annotated \`v${currentVersion}\``, "publish=true", "release=true", "Release-latest", "application-first rollback"]) {

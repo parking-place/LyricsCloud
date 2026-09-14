@@ -14,6 +14,7 @@ const common = {
 
 assert(validateEnvironment("web", {
   ...common,
+  LC_UI_VARIANT: "b1",
   APP_ORIGIN: "https://lyrics.example",
   GOOGLE_CLIENT_ID: "client.apps.googleusercontent.com",
   GOOGLE_CLIENT_SECRET: "secret",
@@ -27,6 +28,26 @@ assert(validateEnvironment("web", {
   BETA_CODE_INDEX_KEY_FILE: "/run/secrets/beta-index",
   COLLABORATION_INTERNAL_URL: "http://collaboration:3001"
 }));
+assert(validateEnvironment("web", {
+  ...common,
+  LC_UI_VARIANT: "classic",
+  APP_ORIGIN: "https://lyrics.example",
+  GOOGLE_CLIENT_ID: "client.apps.googleusercontent.com",
+  GOOGLE_CLIENT_SECRET: "secret",
+  SESSION_SECRET: "s".repeat(32),
+  AUTH_ALLOWED_EMAILS_FILE: "/run/secrets/allowed",
+  AUTH_ALLOWLIST_FORMAT: "hmac-v1",
+  AUTH_ALLOWLIST_ENVIRONMENT: "release",
+  AUTH_ALLOWLIST_HMAC_KEYRING_FILE: "/run/secrets/allowlist-keyring",
+  BETA_ENVIRONMENT: "release",
+  BETA_CODE_INDEX_KID: "release-v1",
+  BETA_CODE_INDEX_KEY_FILE: "/run/secrets/beta-index",
+  COLLABORATION_INTERNAL_URL: "http://collaboration:3001"
+}));
+assert.throws(() => validateEnvironment("web", {
+  ...common,
+  LC_UI_VARIANT: "unapproved"
+}), /LC_UI_VARIANT/);
 assert(validateEnvironment("collaboration", { ...common, APP_ORIGIN: "https://lyrics.example", COLLABORATION_PORT: "3001" }));
 assert(validateEnvironment("worker", { ...common, WORKER_HEALTH_PORT: "3002" }));
 assert(validateEnvironment("migrate", common));

@@ -1,6 +1,6 @@
 # 1.1.5 Phase 5 — 문서·개발 인수·후속 연결
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **검토** (`review`, 문서·artifact 후보 준비, 최종 CI/동일 SHA 개발 인수 대기)
 - 단계 목적: 승인 디자인 적용·탐색 셸의 문서·개발 인수·후속 연결을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -12,10 +12,10 @@
 
 ## 선행조건
 
-- [1.1.5 P4](4phase.md)의 산출물·검증/승인과 실제 최종 SHA 인수.
-- 현재 실행 STATUS·Agent/AGENTS·수정 파일 담당자 충돌 확인.
-- [품질 게이트](../QUALITY-GATES.md)의 격리 환경·지원 런타임·필수 물리 기기 확보.
-- [UX 설계 P5](../design/UX/5phase.md)의 사용자 승인.
+- [x] [1.1.5 P4](4phase.md)의 산출물·검증/승인과 실제 후보 `8fb03becfe27a95f019defb4cbdfee10b55f6812` 인수.
+- [x] 현재 실행 STATUS·Agent/AGENTS·수정 파일 담당자 충돌 확인.
+- [x] [품질 게이트](../QUALITY-GATES.md)의 격리 환경·지원 런타임 확인. 실제 물리 기기·OS IME/AT/OS zoom 미실행은 최종 인수에 별도 기록한다.
+- [x] [UX 설계 P5](../design/UX/5phase.md)의 사용자 B-1 승인.
 
 ## 기준 링크
 
@@ -41,12 +41,12 @@
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.5-P5-01` 1.1.5의 요구 범위와 각 수용 사례를 정확한 source SHA·변경 파일·migration·실행 명령·결과에 연결한다.
-- [ ] `LC-NF-1.1.5-P5-02` 사용자 가이드·README·지원·보안·자가호스팅·현재 계획/결정 문서를 승인 디자인 적용·탐색 셸의 실제 동작에 맞춰 갱신하고 과거 검증 기록은 보존한다.
+- [x] `LC-NF-1.1.5-P5-01` 1.1.5의 요구 범위와 각 수용 사례를 정확한 source SHA·변경 파일·migration·실행 명령·결과에 연결한다. — P4 source와 `NF-REQ-037/039`, AC 4건, 29개 불변 migration·release artifact를 최종 추적 문서에 연결했다.
+- [x] `LC-NF-1.1.5-P5-02` 사용자 가이드·README·지원·보안·자가호스팅·현재 계획/결정 문서를 승인 디자인 적용·탐색 셸의 실제 동작에 맞춰 갱신하고 과거 검증 기록은 보존한다. — B-1 rail/header/mobile More/Flat-depth, classic rollback, 실제 OS 미실행 경계를 갱신했다.
 - [ ] `LC-NF-1.1.5-P5-03` 원격 CI와 허용된 개발 산출물·동일 SHA의 개발 환경을 확인한다. 문서-only 결과면 문서 승인만 기록하고 앱 배포 성공을 주장하지 않는다.
 - [ ] `LC-NF-1.1.5-P5-04` 확인된 P0/P1, 원문 유실, 인증 우회, 무음 저장 실패가 없음을 실제 범위에서 판정한다. 신규 범위의 필수 안전성을 다음 안정화 패치로 미루지 않는다.
 - [ ] `LC-NF-1.1.5-P5-05` 다섯 Phase 후보 인수 이후에만 별도 release go/no-go를 요청할 수 있다. main 병합·정식 별칭·app.example.test 배포는 현재 승인 범위를 확인하고 실행한다.
-- [ ] `LC-NF-1.1.5-P5-06` 후속 패치에 계약·미해결/보류·실기기/운영 증거·중단/복구 조건을 인계한다. 같은 제품 계열을 유지하고 빈 릴리스·자동 minor 승격을 만들지 않는다.
+- [x] `LC-NF-1.1.5-P5-06` 후속 패치에 계약·미해결/보류·실기기/운영 증거·중단/복구 조건을 인계한다. 같은 제품 계열을 유지하고 빈 릴리스·자동 minor 승격을 만들지 않는다. — 1.1.6에 동일 child/store/API/DB·classic rollback과 실제 OS/native gate 미실행을 인계했다.
 
 ## 구체적 검증
 
@@ -62,6 +62,10 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 ## 실행·증거 기록
 
 [공통 명령·검증](../QUALITY-GATES.md)을 먼저 읽는다. 기존 runner의 영향받은 검사를 우선 사용하고 필요할 때만 회귀를 보강한다. 지원 환경에서 관련 DB/E2E를 선택하며 동일 변경의 full suite는 로컬/CI 중 한 곳과 필수 게이트만 따른다. native은 승인된 SDK/플랫폼 명령을 기록한다. 없는 도구·실제 IME·물리 기기 검증을 모사 결과로 통과시켰다고 표시하지 않는다. 문서-only Phase는 링크·범위·결정·설계 검토로 별도 인수한다.
+
+- 기준 source: P4 merge `2ea54f950c50e3c7dc3f264c5c36b32df2000c51`, 제품 UI/API/DB/migration 변경 없음.
+- 준비 artifact: 1.1.5 environment/migration/license/release manifest, 최종 traceability/release notes/인수·릴리스 runbook. release web은 `LC_UI_VARIANT=b1|classic`만 허용하고 기본 B-1·classic rollback을 검증한다.
+- 남은 gate: Node 24 문서/artifact/check, 최종 후보 commit/push·전체 CI·네 dev image·동일 SHA 개발 배포와 공개/재시작 smoke. 완료 전 P0/P1 0건·정식 release go를 선언하지 않는다.
 
 ## 완료 조건
 

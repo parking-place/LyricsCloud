@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.5"
-current_phase: "../2.Patch-phase/1.1.5/4phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.5/5phase.md"
+state: "review"
 owner: "Codex"
 started_at: "2026-09-14"
 updated_at: "2026-09-14"
-next_action: "1.1.5 P4 PR #126을 main에 병합한 뒤 P5 문서·봉인·최종 CI와 동일 SHA 개발 인수를 수행한다"
+next_action: "1.1.5 P5 문서·artifact 후보를 검증하고 최종 후보 CI·네 dev image·동일 SHA 개발 인수를 수행한다"
 ```
 
 ## 승인과 기준
@@ -155,11 +155,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.5 P2 | complete | 후보 `43980ba`, Actions `34803929839`, 네 dev image tag 동일 digest·동일 SHA 개발 배포, 공개 PC/mobile×dark/light token과 저장→재진입·최근 복귀·deep link 인수 완료 |
 | 1.1.5 P3 | complete | 후보 `24cef7e`, Actions `34808547591`·`34808550793`, 전체 E2E 361 PASS·네 dev image·동일 SHA 공개 B-1 context shell/mobile More와 저장·재진입 인수 완료 |
 | 1.1.5 P4 | complete | 후보 `8fb03be`, Actions `34811056142`·`34811076974`, 전체 E2E 365 PASS·네 dev image·동일 SHA 공개 offline 저장/recent deep link·서비스 재시작 인수 완료 |
+| 1.1.5 P5 | review | 문서·환경/migration/license/release manifest·후속 인계 후보 준비, 최종 CI·동일 SHA 개발 인수 대기 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.5/P5 | LC-NF-1.1.5-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 1.1.5 P4 merge `2ea54f9`; 최종 후보 준비 | 2026-09-14 | review |
 | Codex | 1.1.5/P4 | LC-NF-1.1.5-P4-01~06 | 저장/복구·권한·offline/reconnect/restart·지원 browser 회귀·상태/요구/Future | 후보 `8fb03be`; Actions `34811056142`·`34811076974`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P3 | LC-NF-1.1.5-P3-01~06 | 공통 header·rail/mobile nav·목록/grid·곡 workspace·PC/mobile E2E·상태/요구/Future | 후보 `24cef7e`; Actions `34808547591`·`34808550793`; 동일 SHA 개발 인수 | 2026-09-14 | complete |
 | Codex | 1.1.5/P2 | LC-NF-1.1.5-P2-01~06 | config/root layout/token/styles/version/compose·신규 PC/mobile 회귀·상태/요구/Future | 후보 `43980ba`; Actions `34803929839`; 동일 SHA 개발 인수 | 2026-09-14 | complete |

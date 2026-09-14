@@ -40,3 +40,4 @@
 - [`1.1.2 지정 사용자 공동 편집 최종 추적`](./1.1.2-FINAL-TRACEABILITY.md)
 - [`1.1.3 공개 링크 비로그인 공동 편집 최종 추적`](./1.1.3-FINAL-TRACEABILITY.md)
 - [`1.1.4 공유 안정성·복구 최종 추적`](./1.1.4-FINAL-TRACEABILITY.md)
+- [`1.1.5 승인 B-1 탐색 셸 최종 추적`](./1.1.5-FINAL-TRACEABILITY.md)
