@@ -13,7 +13,7 @@ set -euo pipefail
 artifact="$IMAGE@$IMAGE_DIGEST"
 identity="https://github.com/$GITHUB_WORKFLOW_REF"
 issuer=https://token.actions.githubusercontent.com
-cosign sign --yes --registry-referrers-mode=oci-1-1 "$artifact"
+COSIGN_EXPERIMENTAL=1 cosign sign --yes --registry-referrers-mode=oci-1-1 "$artifact"
 
 signature_verified=false
 signature_attempts=30
