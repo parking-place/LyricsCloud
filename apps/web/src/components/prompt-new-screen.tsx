@@ -13,7 +13,7 @@ import { writingDisplayVariables } from "../lib/font-assets.js";
 import { withReturnTo } from "../lib/workspace-return.js";
 import { PromptTokenBuilder, type PromptBuilderItem } from "./prompt-token-builder.js";
 
-export function PromptNewScreen({ ownerId, templateId, displaySettings, returnTo = "/prompts" }: { ownerId: string; templateId?: string; displaySettings: WritingDisplaySettings; returnTo?: string }) {
+export function PromptNewScreen({ ownerId, templateId, displaySettings, returnTo }: { ownerId: string; templateId?: string; displaySettings: WritingDisplaySettings; returnTo?: string }) {
   const [title, setTitle] = useState("");
   const [items, setItems] = useState<readonly PromptBuilderItem[]>([]);
   const [promptMode, setPromptMode] = useState<PromptMode>("tags");
@@ -86,7 +86,7 @@ export function PromptNewScreen({ ownerId, templateId, displaySettings, returnTo
         await clearPromptCreationDraft(ownerId, leaseRef.current!.key);
         if (abandonedRef.current || !activeRef.current) return false;
         created.current = true; dirtySince.current = null;
-        router.replace(withReturnTo(`/prompts/${id}`, returnTo)); router.refresh();
+        router.replace(returnTo ? withReturnTo(`/prompts/${id}`, returnTo) : `/prompts/${id}`); router.refresh();
         return true;
       } catch { if (activeRef.current && !abandonedRef.current) setState("error"); return false; }
       finally { creating.current = null; }
@@ -177,7 +177,7 @@ export function PromptNewScreen({ ownerId, templateId, displaySettings, returnTo
     await writes.current.catch(() => undefined);
     try { if (leaseRef.current) await clearPromptCreationDraft(ownerId, leaseRef.current.key); }
     catch { abandonedRef.current = false; setState("error"); setCancelOpen(false); return; }
-    router.push(returnTo);
+    router.push(returnTo ?? "/prompts");
   }
   function cancel() { if (titleRef.current || itemsRef.current.length || sentenceRef.current || modeRef.current !== "tags") setCancelOpen(true); else void discard(); }
 

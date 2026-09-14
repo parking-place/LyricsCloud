@@ -12,7 +12,7 @@ export default async function NewRhymePage({ searchParams }: { searchParams: Pro
   const user = await resolvePageUser();
   if (!user) redirect("/auth");
   const query = await searchParams;
-  const returnTo = safeWorkspaceReturnTo(query.returnTo, "/rhymes");
+  const returnTo = query.returnTo === undefined ? undefined : safeWorkspaceReturnTo(query.returnTo, "/rhymes");
   const displaySettings = await getAuthContext().displaySettings.getUserSettings(user.userId);
   return <WorkspaceShell profile={user} active="rhymes"><RhymeNewScreen ownerId={user.userId} displaySettings={displaySettings} returnTo={returnTo} /></WorkspaceShell>;
 }

@@ -21,10 +21,12 @@ describe("1.1.7 safe creation return contract", () => {
       expect(source).toContain("safeWorkspaceReturnTo(query.returnTo");
       expect(source).toContain("returnTo={returnTo}");
     }
-    expect(rhymeNew).toContain('returnTo = "/rhymes"');
-    expect(promptNew).toContain('returnTo = "/prompts"');
-    expect(rhymeNew).toContain("withReturnTo(`/rhymes/${result.rhyme.id}`, returnTo)");
-    expect(promptNew).toContain("withReturnTo(`/prompts/${id}`, returnTo)");
+    expect(rhymePage).toContain("query.returnTo === undefined ? undefined");
+    expect(promptPage).toContain("query.returnTo === undefined ? undefined");
+    expect(rhymeNew).toContain("returnTo ? withReturnTo(`/rhymes/${result.rhyme.id}`, returnTo)");
+    expect(promptNew).toContain("returnTo ? withReturnTo(`/prompts/${id}`, returnTo)");
+    expect(rhymeNew).toContain('returnTo ?? "/rhymes"');
+    expect(promptNew).toContain('returnTo ?? "/prompts"');
   });
 
   it("accepts only same-workspace returns", () => {

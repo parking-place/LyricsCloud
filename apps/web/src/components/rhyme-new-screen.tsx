@@ -9,7 +9,7 @@ import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 import { writingDisplayVariables } from "../lib/font-assets.js";
 import { withReturnTo } from "../lib/workspace-return.js";
 
-export function RhymeNewScreen({ ownerId, displaySettings, returnTo = "/rhymes" }: { ownerId: string; displaySettings: WritingDisplaySettings; returnTo?: string }) {
+export function RhymeNewScreen({ ownerId, displaySettings, returnTo }: { ownerId: string; displaySettings: WritingDisplaySettings; returnTo?: string }) {
   const titleRef = useRef("");
   const bodyRef = useRef("");
   const requestIdRef = useRef("");
@@ -65,7 +65,7 @@ export function RhymeNewScreen({ ownerId, displaySettings, returnTo = "/rhymes" 
         if (abandonedRef.current || !activeRef.current) return false;
         createdRef.current = true;
         dirtySinceRef.current = null;
-        router.replace(withReturnTo(`/rhymes/${result.rhyme.id}`, returnTo)); router.refresh();
+        router.replace(returnTo ? withReturnTo(`/rhymes/${result.rhyme.id}`, returnTo) : `/rhymes/${result.rhyme.id}`); router.refresh();
         return true;
       } catch { if (activeRef.current && !abandonedRef.current) setState("error"); return false; }
       finally { creatingRef.current = null; }
@@ -134,7 +134,7 @@ export function RhymeNewScreen({ ownerId, displaySettings, returnTo = "/rhymes" 
     await draftWritesRef.current.catch(() => undefined);
     try { if (leaseRef.current) await clearRhymeCreationDraft(ownerId, leaseRef.current.key); }
     catch { abandonedRef.current = false; setState("error"); setCancelOpen(false); return; }
-    router.push(returnTo);
+    router.push(returnTo ?? "/rhymes");
   }
 
   function requestCancel() {

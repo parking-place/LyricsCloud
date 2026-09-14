@@ -169,7 +169,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.7/P2 | LC-NF-1.1.7-P2-01~03 | quick-add·rhyme/prompt new route/screen·returnTo 회귀·상태/Future | P1 main `ce28a63`; 로컬 24 unit+3 신규+9 영향 PASS, CI/개발 인수 대기 | 2026-09-15 | review |
+| Codex | 1.1.7/P2 | LC-NF-1.1.7-P2-01~03 | quick-add·rhyme/prompt new route/screen·returnTo 회귀·상태/Future | 첫 후보 CI 기존 URL 14 FAIL; 명시적 returnTo로 보정 후 로컬 24 unit+16 기존/신규 E2E PASS, CI 재검증 대기 | 2026-09-15 | review |
 | Codex | 1.1.7/P1 | LC-NF-1.1.7-P1-01~03 | 실제 과제·동선 관찰·P1 문서·STATUS·요구 추적·Future | 1.1.6 release `f8d24c6`; 기록 main `5a72780` | 2026-09-15 | complete |
 | Codex | 1.1.6/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | 1.1.6 P5 `7f4ac5b`; main/tag `f8d24c6` | 2026-09-15 | complete |
 | Codex | 1.1.6/P5 | LC-NF-1.1.6-P5-01~06 | 요구 추적·사용자/지원/보안/자가호스팅·봉인 artifact·최종 CI·개발/정식 인수 | 후보 `7f4ac5b`; Actions `34864142932`·`34864188502`; 동일 SHA 개발 인수 | 2026-09-15 | complete |

@@ -22,6 +22,7 @@
 - Node 24.20.0에서 architecture boundary·lint·typecheck·Next production build가 통과했다.
 - 격리 PostgreSQL에서 Chromium desktop·Chromium mobile(Android browser 대리)·WebKit mobile(iOS browser 대리)의 새 라임/프롬프트 생성→정확한 중첩 `returnTo`→가사 본문 복귀가 3 PASS다.
 - 같은 세 환경에서 기존 곡→가사→라임 삽입→문장형 프롬프트→Suno→재진입, 1.1.6 생성·연결 화면과 신규 복귀의 영향 회귀가 9 PASS다.
+- 첫 원격 후보 `5ae6f30ca44dc7771059677035ab6f448967702a`는 명시되지 않은 기본 목록 복귀도 편집 URL query에 붙여 기존 직접 생성·템플릿·오프라인 복구 14건을 실패시켰다. 기존 URL 계약을 유지하도록 명시적 `returnTo`에만 query를 붙인 뒤 실패 14건과 신규 복귀 2건을 desktop/mobile에서 16 PASS했고 전체 CI를 다시 요구한다.
 - API·DB schema·migration·권한·copy 형식은 변경하지 않았다. 실제 Android/iOS 앱·물리 기기·OS IME·AT·OS zoom은 미실행이며 browser 대리 PASS로 바꾸어 쓰지 않는다.
 - 상세 명령·공개 개발 인수/rollback 조건은 [P2 인수 문서](../../../docs/runbooks/1.1.7-phase2-return-flow.md)에 고정했다. 필수 CI·네 dev image·동일 SHA 개발 공개 smoke 전에는 Phase 완료가 아니다.
 
