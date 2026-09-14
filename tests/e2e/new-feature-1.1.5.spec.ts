@@ -39,7 +39,7 @@ test.describe("1.1.5 P3 B-1 shell and flow", () => {
       await expect(page.locator("html")).toHaveAttribute("data-ui-variant", "b1");
       await expect(page.locator(".workspace-tabs")).toBeHidden();
 
-      if (testInfo.project.name === "desktop") {
+      if (!testInfo.project.name.includes("mobile")) {
         const contextHeading = page.getByRole("group", { name: "현재 작업 영역" });
         await expect(contextHeading).toContainText("라이브러리");
         await expect(contextHeading).toContainText("곡 · 가사");
@@ -65,7 +65,7 @@ test.describe("1.1.5 P3 B-1 shell and flow", () => {
       }
       await page.emulateMedia({ colorScheme: "light" });
       await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-      await page.setViewportSize(testInfo.project.name === "mobile" ? { width: 320, height: 720 } : { width: 720, height: 500 });
+      await page.setViewportSize(testInfo.project.name.includes("mobile") ? { width: 320, height: 720 } : { width: 720, height: 500 });
       await expect(page.getByRole("navigation", { name: "모바일 주 메뉴" })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
     } finally {
@@ -88,7 +88,7 @@ test.describe("1.1.5 P3 B-1 shell and flow", () => {
       await page.keyboard.insertText(" 한글 입력 유지");
       await expect(editor).toContainText("한글 입력 유지");
 
-      if (testInfo.project.name === "desktop") {
+      if (!testInfo.project.name.includes("mobile")) {
         await page.getByRole("button", { name: "좌측 메뉴 접기" }).click();
       } else {
         await page.getByRole("navigation", { name: "모바일 주 메뉴" }).getByRole("button", { name: "더보기" }).click();
@@ -131,7 +131,7 @@ test.describe("1.1.5 P3 B-1 shell and flow", () => {
       await expect(page.getByRole("heading", { name: "검색 결과가 없습니다" })).toBeVisible();
       await search.fill("B-1 failure");
       await expect(page.locator(".search-error")).toBeVisible();
-      if (testInfo.project.name === "desktop") await expect(page.getByRole("group", { name: "현재 작업 영역" })).toContainText("검색");
+      if (!testInfo.project.name.includes("mobile")) await expect(page.getByRole("group", { name: "현재 작업 영역" })).toContainText("검색");
       else await expect(page.getByRole("navigation", { name: "모바일 주 메뉴" })).toBeVisible();
 
       const anonymous = await browser.newContext({ baseURL: origin });

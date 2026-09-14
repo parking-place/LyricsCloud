@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { expect, test, type BrowserContext } from "@playwright/test";
+import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 import { hashToken, withE2eDatabase } from "./fixtures.js";
 
 const origin = "http://127.0.0.1:3000";
@@ -9,7 +9,7 @@ test.describe("1.1.6 P2 stable editor surfaces", () => {
   test.skip(!process.env.E2E_DATABASE_URL, "requires the isolated E2E database");
 
   test("keeps a 10000-line editor mounted across theme, panel and responsive changes", async ({ browser }, testInfo) => {
-    test.skip(testInfo.project.name !== "desktop", "Chromium CDP memory evidence runs once on desktop");
+    test.skip(!["desktop", "chromium-desktop"].includes(testInfo.project.name), "Chromium CDP memory evidence runs once on desktop");
     test.setTimeout(120_000);
     const context = await browser.newContext({ baseURL: origin, viewport: { width: 1440, height: 1000 }, colorScheme: "dark", serviceWorkers: "block" });
     const account = await createAccount(context);
@@ -62,6 +62,8 @@ test.describe("1.1.6 P2 stable editor surfaces", () => {
       await page.keyboard.insertText("X");
       await expect(editor).toContainText("끝 입력X");
       await page.keyboard.press("Control+z");
+      await expect(editor).not.toContainText("끝 입력X");
+      if ((await editor.textContent())?.includes("끝 입력")) await page.keyboard.press("Control+z");
       await expect(editor).not.toContainText("끝 입력");
       await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 20_000 });
       await expect.poll(async () => (await (await context.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body, { timeout: 20_000 })
@@ -78,7 +80,7 @@ test.describe("1.1.6 P3 creation and connection flows", () => {
 
   test("keeps B-1 creation input and connection states themed on desktop and mobile", async ({ context, page }, testInfo) => {
     test.setTimeout(90_000);
-    if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 390, height: 620 });
+    if (testInfo.project.name.includes("mobile")) await page.setViewportSize({ width: 390, height: 620 });
     const account = await createAccount(context, "1.1.6 P3 합성 사용자");
     const song = await context.request.post("/api/songs", {
       headers, data: { requestId: randomUUID(), title: "1.1.6 P3 테마 곡" }
@@ -151,6 +153,54 @@ test.describe("1.1.6 P3 creation and connection flows", () => {
   });
 });
 
+test.describe("1.1.6 P4 design-independent recovery regression", () => {
+  test.skip(!process.env.E2E_DATABASE_URL, "requires the isolated E2E database");
+
+  test("keeps exact copy and export payloads reachable in the configured UI variant", async ({ context, page }) => {
+    test.setTimeout(90_000);
+    const account = await createAccount(context, `1.1.6 P4 ${process.env.LC_UI_VARIANT ?? "b1"} 합성 사용자`);
+    const body = "[Verse: 첫 절]\n바라봐 <태그> 👩‍🎤\n\n[Hook]\n마냥, 마땅한";
+    try {
+      await installClipboardRecorder(page);
+      const lyricId = await createLyric(context, body);
+      await page.goto(`/lyrics/${lyricId}`);
+      await expect(page.locator("html")).toHaveAttribute("data-ui-variant", process.env.LC_UI_VARIANT === "classic" ? "classic" : "b1");
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 20_000 });
+
+      await page.getByRole("button", { name: "전체 복사", exact: true }).click();
+      await expect.poll(() => copiedText(page)).toBe(body);
+
+      const archiveResponse = await page.request.get("/api/export");
+      expect(archiveResponse.status()).toBe(200);
+      const lyricEntries = [...readStoredZip(await archiveResponse.body()).entries()].filter(([name]) => name.startsWith("lyrics/") && name.endsWith(".txt"));
+      expect(lyricEntries).toHaveLength(1);
+      expect(lyricEntries[0]![1].toString("utf8").endsWith(`\n\n${body}`)).toBe(true);
+
+      // A 720 CSS-pixel viewport exercises the responsive layout reached by a
+      // 1440px browser at 200% zoom. It is browser-runner evidence, not an OS
+      // zoom or physical keyboard claim.
+      await page.setViewportSize({ width: 720, height: 500 });
+      const resourceButton = page.getByRole("group", { name: "가사 편집 도구" }).getByRole("button", { name: /다른 가사 .*자료/ });
+      await resourceButton.click();
+      const sheet = page.getByRole("dialog", { name: "작업 자료" });
+      await expect(sheet).toBeVisible();
+      await page.setViewportSize({ width: 390, height: 360 });
+      await expect(sheet.getByRole("button", { name: "닫기" })).toBeVisible();
+      const bounds = await sheet.boundingBox();
+      expect(bounds).not.toBeNull();
+      expect(bounds!.x).toBeGreaterThanOrEqual(0);
+      expect(bounds!.y).toBeGreaterThanOrEqual(0);
+      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(391);
+      expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(361);
+      expect(await hasHorizontalOverflow(page)).toBe(false);
+      await sheet.getByRole("button", { name: "닫기" }).click();
+      await expect(page.locator(".cm-content")).toBeFocused();
+    } finally {
+      await deleteAccount(account.userId);
+    }
+  });
+});
+
 function metric(result: { metrics: Array<{ name: string; value: number }> }, name: string) {
   const value = result.metrics.find((item) => item.name === name)?.value;
   if (value === undefined) throw new Error(`missing performance metric ${name}`);
@@ -182,6 +232,44 @@ async function expectSemanticBackground(locator: import("@playwright/test").Loca
 
 async function hasHorizontalOverflow(page: import("@playwright/test").Page) {
   return page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+}
+
+async function installClipboardRecorder(page: Page) {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: {
+      writeText: (text: string) => {
+        (window as typeof window & { __copiedText?: string }).__copiedText = text;
+        return Promise.resolve();
+      }
+    } });
+  });
+}
+
+async function copiedText(page: Page) {
+  return page.evaluate(() => (window as typeof window & { __copiedText?: string }).__copiedText ?? "");
+}
+
+function readStoredZip(archive: Buffer): Map<string, Buffer> {
+  const end = archive.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+  if (end < 0) throw new Error("ZIP_END_MISSING");
+  const count = archive.readUInt16LE(end + 10);
+  let central = archive.readUInt32LE(end + 16);
+  const entries = new Map<string, Buffer>();
+  for (let index = 0; index < count; index++) {
+    if (archive.readUInt32LE(central) !== 0x02014b50) throw new Error("ZIP_CENTRAL_INVALID");
+    const size = archive.readUInt32LE(central + 24);
+    const nameLength = archive.readUInt16LE(central + 28);
+    const extraLength = archive.readUInt16LE(central + 30);
+    const commentLength = archive.readUInt16LE(central + 32);
+    const localOffset = archive.readUInt32LE(central + 42);
+    const name = archive.subarray(central + 46, central + 46 + nameLength).toString("utf8");
+    const localNameLength = archive.readUInt16LE(localOffset + 26);
+    const localExtraLength = archive.readUInt16LE(localOffset + 28);
+    const start = localOffset + 30 + localNameLength + localExtraLength;
+    entries.set(name, archive.subarray(start, start + size));
+    central += 46 + nameLength + extraLength + commentLength;
+  }
+  return entries;
 }
 
 async function createLyric(context: BrowserContext, body: string) {
