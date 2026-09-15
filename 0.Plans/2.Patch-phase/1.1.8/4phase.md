@@ -1,6 +1,6 @@
 # 1.1.8 Phase 4 — 실패·권한·복구 회귀
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **실제 Windows 인수 대기** (`review`, P3 merge main `b995ffe`, 공유 UI/cache 보정 기능 후보 `fe40556`의 두 CI·네 dev image·동일 SHA 개발 공개 인수 PASS)
 - 단계 목적: Windows 네이티브 개발안·읽기와 복사의 실패·권한·복구 회귀을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -61,7 +61,25 @@ Windows 앱의 기술·인증·IME/CRDT 개발안을 먼저 승인받고, 승인
 
 P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다. P2/P3은 관련 재현·수정과 사용자 흐름을 실행하며, P4에서 전체 교차 검증하고 P5에서 실제 결과를 인수한다. 표가 있다는 이유로 테스트 완료로 처리하지 않는다.
 
+## 2026-09-15 자동 검증·개발 인수 (P4 최종 완료 아님)
+
+- 후보 `44d00e4d0497049c662105876fb35aadee3f19bd` / PR #144. Windows callback은 origin-form/exact path/단일 code·state/base64url·constant-time state만 수락하고 절대 URL/wrong state/중복 query를 거부한다. 로그아웃·origin/account 전환·401은 in-flight 목록/상세 요청을 무효화하고 visible copy/token/해당 계정 DPAPI cache를 비운다. `403/404`는 상세와 복사를 비우며 network 오류에서 다른 account/shared body를 새로 채우지 않는다. 새 토큰은 서버 read session 검증 후에만 기기에 저장한다. schema/migration/API/write 경계는 변경하지 않았다.
+- 로컬 .NET 10 core **39 assertions PASS**와 Windows UI/recovery 정적 계약 PASS. Node 24 `pnpm check`·production build PASS. 격리 PostgreSQL 18의 migration 두 번·Vitest **385 PASS / 별도 beta 4 조건부 skip**, native HTTP desktop **3 PASS**. 처음 E2E는 migration-before-readiness 순서 문제, 첫 통합 DB 실행은 `lyricscloud_test` 이름 guard 위반으로 실패했으며 올바른 격리 DB로 재실행해 PASS했다. 실패한 실행을 PASS로 세지 않는다.
+- 같은 후보의 push Actions `34926436515`와 PR Actions `34926460700` 전체 verify·Windows WinUI x64 build **PASS**. 개발 artifact `windows-x64-read-only-44d00e4d0497049c662105876fb35aadee3f19bd` (7일)은 서명 installer가 아니다. web/collaboration/worker/migrate의 개발 image 발행·signature/provenance도 모두 PASS.
+- 같은 SHA를 개발 서버에 배포해 공개 live/ready `1.1.8/dev/p4`, schema `1150_native_read_sessions.sql`, native contract `lyricscloud.native.read.v1`·writes `false`, 비로그인 곡/가사 `401`, invalid callback `400`, 네 서비스 healthy를 확인했다. web/collaboration 실제 재시작 후 ready·health도 PASS했다. 재시작 직후 502/health warming은 비공개 검사 대기 순서를 보정해 재검증했다. 기존 DB volume·secret·allowlist를 보존했고 릴리스 서버는 변경하지 않았다.
+- P4-01의 승인 없음 분기는 이번 실행 입력이 아니다: 사용자의 `1.1.8 Windows 권고안 승인`이 P1에서 먼저 기록됐다. P4-02~04의 자동 DB/API/fixture 증거는 확보했지만 네이티브 UI 실기기의 OAuth 취소/회수/cache/reconnect/copy를 실행하지 못했다. P4-05~07의 실제 Windows launch·process kill/DPAPI·clipboard·Microsoft 한국어 IME·다국어 font fallback·Narrator/high contrast·200% DPI/다중 monitor·권한/presence·서명 MSIX 설치/업데이트/제거는 **미실행**. 자동 Windows runner의 build와 웹 성공은 실제 OS PASS가 아니며 P4 체크박스/완료와 P5/정식 릴리스는 해당 증거 전까지 남긴다.
+
 ## 실행·증거 기록
+
+2026-09-16 03:15 KST 사용자 보고: Windows PC에서 앱이 실행되지 않아 Windows 앱은 일단 넘어가겠다고 했다. 실제 사용한 artifact·Windows 버전·오류 화면/로그는 아직 제공되지 않아 실패 원인이나 self-contained 배포 자체의 결함을 단정하지 않는다. 수동 Actions [34987340477](https://github.com/parking-place/LyricsCloud/actions/runs/34987340477)의 Windows job과 전체 `verify`는 최종 PASS였지만 `publish=false`의 네 개발 image job은 skip이며 사용자 PC 실패를 뒤집는 증거가 아니다. 사용자 요청에 따라 실기기 재시도·원인 수정은 보류한다. P4 `review`와 P5·main/Release·릴리스 서버 보류를 유지하며, [1.1.9](../1.1.9/README.md)는 1.1.8 P5, [1.1.10](../1.1.10/README.md)은 1.1.9 P5 인수가 선행조건이라 자동 건너뛰지 않는다. 비Windows 작업을 먼저 진행하려면 버전 범위/의존성 재계획을 별도로 결정해야 한다.
+
+2026-09-16 사용자 인계: 별도 런타임 설치 없이 실행 가능한 Windows 빌드가 준비되면 사용자 PC에서 실행해 보겠다고 했고, 그 전 실기기 검증은 보류해 달라고 요청했다. 이 발언은 Windows 앱 launch/OAuth/DPAPI/clipboard/IME/AT/DPI·서명 설치/업데이트 PASS가 아니다. `P4-06`은 기존 framework-dependent 개발 artifact와 별개로 .NET/Windows App SDK runtime을 담는 unpackaged x64 시험 폴더를 CI에 추가했다. workflow YAML parse와 diff check는 PASS. P4 `review`, P5·main/Release·릴리스 서버 보류를 유지한다.
+
+`3fecc85db02656bbb70bae6316f27c424754de72`의 수동 Actions [34987340477](https://github.com/parking-place/LyricsCloud/actions/runs/34987340477)에서 Windows 계약·WinUI x64 build와 별도 self-contained publish/upload가 PASS했다. CI는 EXE·`coreclr.dll`·`Microsoft.UI.Xaml.dll`·외부 .NET framework 참조 부재를 확인했고 GitHub artifact `windows-x64-self-contained-3fecc85db02656bbb70bae6316f27c424754de72`를 14일 보관한다. 이 시점 전체 저장소 verify는 진행 중이며 네 개발 image publish는 수동 입력 `publish=false`로 실행하지 않았다. 깔끔한 물리 Windows PC에서 별도 runtime 없이 실제 launch되는지, OAuth/DPAPI/cache/clipboard/IME/AT/DPI와 신뢰 서명 MSIX 설치/업데이트는 여전히 **미실행**이다.
+
+2026-09-15 보정: 앞선 자동 인수 뒤 Windows 화면에서 선택 공유 가사를 여는 경로와 계정별 보호 캐시 읽기 경로가 실제로 연결되지 않은 결함을 발견했다. `fe4055626757458a4eecbff0bfa0b55bed3bc40d`에서 공유 UUID-only GET·권한 epoch 동등성/온라인 재검증 뒤 cache 노출·오프라인 공유 본문/복사 차단·회수 시 해당 cache 삭제·계정 전환 시 UUID/token/cache 정리·선택한 owner 가사의 계정별 DPAPI 오프라인 복구·공유 복사 직전/창 복귀 시 재확인을 구현했다. 합성 C# HTTP/복사/cache 계약 **48 assertions PASS**, 두 Windows 정적 validator PASS. 새 SHA의 push Actions `34929434984`와 PR Actions `34929437966` 모두 verify·Windows WinUI x64 build PASS, push에서 네 개발 image 발행 PASS. 동일 기능 SHA 개발 배포 `1.1.8/dev/p4`의 공개 live/ready·schema `1150_native_read_sessions.sql`·native `lyricscloud.native.read.v1`·writes false·anonymous 곡/가사 401·invalid callback 400, web/collaboration 재시작 후 postgres/web/collaboration/worker healthy PASS. 기존 개발 DB 볼륨·secret·allowlist를 보존했고 운영 서버는 변경하지 않았다. 실제 WinUI launch·DPAPI·공유 회수·IME/AT/설치 증거는 **미실행**, P4/P5 완료·main/Release는 아직 아니다. [실기기 수용 순서](../../../docs/runbooks/1.1.8-windows-installation.md)를 따른다.
+
+`P4-07` 계획 범위 충돌: 승인된 1.1.8 native 앱은 읽기·복사 전용이며 presence 표시 연결은 [Windows ADR](../../../docs/adr/ADR-NF-004-windows-native.md)에서 선택 사항이다. 실제 앱에는 presence UI가 없으므로 “native presence 제거”를 실기기 PASS로 주장할 수 없다. 사전 provider는 `ADR-NF-006` NO-GO라 native 사전 요청·오류 UI도 없다. 두 항목은 미실행이자 현 native 제품에서 재현 불가로 기록하고, 기존 read/copy 범위를 임의로 확대하거나 빈 테스트로 통과시키지 않는다. 실제 Windows 권한/회수·재접속·폰트/IME 인수와 이 두 항목의 단계 해석(N/A 또는 이후 범위 이관)이 결정되기 전 P4 review를 유지한다.
 
 [공통 명령·검증](../QUALITY-GATES.md)을 먼저 읽는다. 기존 runner의 영향받은 검사를 우선 사용하고 필요할 때만 회귀를 보강한다. 지원 환경에서 관련 DB/E2E를 선택하며 동일 변경의 full suite는 로컬/CI 중 한 곳과 필수 게이트만 따른다. native은 승인된 SDK/플랫폼 명령을 기록한다. 없는 도구·실제 IME·물리 기기 검증을 모사 결과로 통과시켰다고 표시하지 않는다. 문서-only Phase는 링크·범위·결정·설계 검토로 별도 인수한다.
 

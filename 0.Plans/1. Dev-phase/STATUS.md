@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.8"
-current_phase: "../2.Patch-phase/1.1.8/3phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.8/4phase.md"
+state: "review"
 owner: "Codex"
 started_at: "2026-09-15"
-updated_at: "2026-09-15"
-next_action: "PR #143의 P3 완료 기록을 main에 병합한 뒤 1.1.8 P4 실패·권한·복구 회귀를 시작한다"
+updated_at: "2026-09-16"
+next_action: "사용자가 2026-09-16 Windows PC에서 앱 실행 실패를 보고하고 Windows 앱 일시 보류를 요청했다. 사용한 artifact와 오류 형태는 미확인; 수동 CI 34987340477의 Windows job·verify PASS는 실제 기기 PASS가 아니다. 1.1.8 P4 review·P5/릴리스 보류를 유지한다. 1.1.9는 1.1.8 P5, 1.1.10은 1.1.9 P5를 요구하므로 순차 진행/버전 건너뛰기 전에 범위 재계획 결정을 받는다"
 ```
 
 ## 승인과 기준
@@ -174,11 +174,14 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.8 P1 | complete | 기준 main `b288dcf`, 승인 검토 proposal `e26fe58`; WinUI 3/read-copy-only·system browser/loopback PKCE·DPAPI cache 승인, JS reference copy/Yjs/auth 34 PASS; Windows SDK/OS/IME/서명은 후속 gate |
 | 1.1.8 P2 | complete | 후보 `dbfca88`, Actions `34918857197`·`34918859682` 전체 verify·Windows WinUI x64 build·네 signed dev image, 동일 SHA 개발 `1.1.8/dev/p2`·schema 1150·native read-only/인증 차단 인수 완료; 실제 Windows launch/IME/AT/MSIX 서명은 후속 gate |
 | 1.1.8 P3 | complete | 후보 `b96200c`, Actions `34922705406`·`34922708443` 전체 verify·Windows WinUI x64 build/개발 artifact·네 signed dev image, 동일 SHA 개발 `1.1.8/dev/p3`·schema 1150·native 곡/가사 비로그인 401 인수 완료; 실제 Windows/IME/AT/서명은 P4/P5 gate |
+| 1.1.8 P4 | review | 공유 UI/cache 기능 후보 `fe40556`, push/PR Actions `34929434984`·`34929437966` 전체 verify·Windows build·네 dev image PASS, 같은 기능 SHA 개발 `1.1.8/dev/p4`·재시작·native read-only 인수 PASS; C# 48 assertions/정적 validator PASS. 실제 Windows OAuth/DPAPI·권한/reconnect·IME/AT/clipboard/DPI 및 MSIX gate 미실행, Phase 완료 아님 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | `.github/workflows/ci.yml`, `apps/windows/README.md`, Windows 설치 runbook·P4/STATUS 기록 | SHA `3fecc85` 수동 Actions `34987340477` Windows publish/upload·verify PASS. 사용자 PC 실행 실패 보고(artifact·오류 미확인), Windows 앱 보류. 실제 기기·서명 gate 미통과 | 2026-09-16 00:12 KST | review |
+| Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-01~07 | native auth/read 회귀, Windows contract/UI harness, 서버 restart·상태/Future | 공유 가사/보호 cache 기능 `fe40556` C# 48·두 CI verify/Windows build·네 dev image·동일 기능 SHA 개발 공개 인수 PASS. 실제 Windows OS/IME/AT/DPI/다중 monitor·신뢰 서명 증거 없이는 P4/P5 미통과 | 2026-09-15 12:32 KST | review |
 | Codex | 1.1.8/P3 | LC-NF-1.1.8-P3-01~06 | `apps/windows`, native read API, Windows platform/UI contract test, 상태/Future | 후보 `b96200c`; Actions `34922705406`·`34922708443`; Windows build/artifact·네 signed dev image·동일 SHA 개발 인수 완료. 실제 Windows UI/IME/AT/다중 모니터·정식 서명은 P4/P5 gate | 2026-09-15 11:27 KST | complete |
 | Codex | 1.1.8/P2 | LC-NF-1.1.8-P2-01~06 | `apps/windows`, native auth/API/DB, C#·TS contract test, 상태/Future | 후보 `dbfca88`; Actions `34918857197`·`34918859682`; Windows build·네 signed dev image·동일 SHA 개발 인수, 실제 Windows UX gate는 P3~P5 | 2026-09-15 09:15 KST | complete |
 | Codex | 1.1.8/P1 | LC-NF-1.1.8-P1-01~07 | Windows 기술 비교·인증/copy/Yjs fixture·실패/권한/복구·담당/승인 gate·상태/Future | 1.1.7 release `edb8b4a`; 기록 main `b288dcf`; 승인 proposal `e26fe58`; JS reference 34 PASS | 2026-09-15 08:43 KST | complete |

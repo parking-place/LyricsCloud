@@ -16,6 +16,10 @@ for (const marker of [
   "ProgressRing", "AutomationProperties.LiveSetting", "AutomationProperties.AcceleratorKey", "AdaptiveTrigger",
   "ThemeResource CardBackgroundFillColorDefaultBrush", "원문은 서버의 현재 읽기 응답입니다."
 ]) includes(xaml, marker, `XAML ${marker}`);
+for (const marker of ["SharedLyricIdTextBox", "OpenSharedButton", "공유 권한이 있을 때 서버에서 다시 확인"])
+  includes(xaml, marker, `shared read-only UI ${marker}`);
+includes(contracts, "GetSharedLyricAsync", "selected shared lyric API consumed");
+includes(windowCode, "NativeLibraryPresentation.Copy(verified)", "shared copy projection");
 
 for (const marker of [
   "ListSongsAsync", "ListLyricsAsync", "ListRhymesAsync", "ListPromptsAsync", "LogoutAsync",

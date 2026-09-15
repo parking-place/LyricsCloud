@@ -65,6 +65,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
@@ -89,7 +90,18 @@
                         <Button Grid.Column="1" x:Name="RefreshButton" Content="새로 고침" VerticalAlignment="Bottom"
                                 Click="RefreshButton_Click" IsEnabled="False" />
                     </Grid>
-                    <Grid Grid.Row="3">
+                    <Grid Grid.Row="3" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="SharedLyricIdTextBox" Header="선택 공유 가사 UUID"
+                                 PlaceholderText="공유받은 가사 ID를 입력하세요"
+                                 AutomationProperties.HelpText="공유 권한이 있을 때 서버에서 다시 확인하며, 오프라인에서는 표시하지 않습니다." />
+                        <Button Grid.Column="1" x:Name="OpenSharedButton" Content="공유 가사 열기"
+                                VerticalAlignment="Bottom" Click="OpenSharedButton_Click" IsEnabled="False" />
+                    </Grid>
+                    <Grid Grid.Row="4">
                         <ListView x:Name="ResourceListView" SelectionMode="Single"
                                   SelectionChanged="ResourceListView_SelectionChanged"
                                   AutomationProperties.Name="자료 목록">
@@ -106,7 +118,7 @@
                                       HorizontalAlignment="Center" VerticalAlignment="Center"
                                       AutomationProperties.Name="자료를 불러오는 중" />
                     </Grid>
-                    <Button Grid.Row="4" x:Name="LoadMoreButton" Content="다음 자료 불러오기" HorizontalAlignment="Stretch"
+                    <Button Grid.Row="5" x:Name="LoadMoreButton" Content="다음 자료 불러오기" HorizontalAlignment="Stretch"
                             Click="LoadMoreButton_Click" Visibility="Collapsed" />
                 </Grid>
             </Border>

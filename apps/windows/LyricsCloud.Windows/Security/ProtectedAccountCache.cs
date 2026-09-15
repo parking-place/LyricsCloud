@@ -25,7 +25,7 @@ public sealed class ProtectedAccountCache
         if (!AccountCachePolicy.CanExpose(access, onlinePermissionRevalidated)) return null;
         try
         {
-            var folder = await AccountFolderAsync(origin, userId, CreationCollisionOption.FailIfExists);
+            var folder = await ApplicationData.Current.LocalFolder.GetFolderAsync(AccountCachePolicy.Namespace(origin, userId));
             var name = AccountCachePolicy.Namespace("https://resource.invalid", resourceId) + ".bin";
             var clear = await new DataProtectionProvider().UnprotectAsync(await FileIO.ReadBufferAsync(await folder.GetFileAsync(name)));
             CryptographicBuffer.CopyToByteArray(clear, out var bytes);
@@ -38,6 +38,17 @@ public sealed class ProtectedAccountCache
     public async Task PurgeAccountAsync(string origin, string userId)
     {
         try { await (await ApplicationData.Current.LocalFolder.GetFolderAsync(AccountCachePolicy.Namespace(origin, userId))).DeleteAsync(StorageDeleteOption.PermanentDelete); }
+        catch (FileNotFoundException) { }
+    }
+
+    public async Task DeleteResourceAsync(string origin, string userId, string resourceId)
+    {
+        try
+        {
+            var folder = await ApplicationData.Current.LocalFolder.GetFolderAsync(AccountCachePolicy.Namespace(origin, userId));
+            var name = AccountCachePolicy.Namespace("https://resource.invalid", resourceId) + ".bin";
+            await (await folder.GetFileAsync(name)).DeleteAsync(StorageDeleteOption.PermanentDelete);
+        }
         catch (FileNotFoundException) { }
     }
 
