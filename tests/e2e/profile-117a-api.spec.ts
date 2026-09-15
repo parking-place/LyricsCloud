@@ -57,12 +57,13 @@ test.describe("1.1.7a owner profile HTTP boundary", () => {
       } });
       expect(uploaded.status()).toBe(200);
       const saved = (await uploaded.json()).profile;
-      expect(saved.avatarUrl).toMatch(/^\/api\/profile\/avatar\?photo=/);
+      expect(saved.avatarUrl).toBe("/api/profile/avatar");
       const photo = await a.get(saved.avatarUrl);
       expect(photo.status()).toBe(200);
       expect(photo.headers()["content-type"]).toContain("image/webp");
       expect(photo.headers()["cache-control"]).toContain("no-store");
       expect((await b.get(saved.avatarUrl)).status()).toBe(404);
+      expect((await a.get("/api/profile/avatar?photo=attacker-supplied-id")).status()).toBe(404);
       const reset = await a.patch("/api/profile", { headers: { Origin: origin },
         data: { expectedRowVersion: saved.rowVersion, avatar: null } });
       expect(reset.status()).toBe(200);

@@ -13,3 +13,5 @@
 ## 검증·인계
 
 입력: 빈 닉네임, 닉네임만 변경, 사진만 변경/제거, 위장 이미지/과대 파일, 두 owner, 재로그인, 서버 실패, 동시 두 탭. 기대: `AC-117A-01~03`과 공유 개인정보 정책을 지키며 기존 데이터·Google 인증/베타 가입이 그대로 작동한다. 관련 단위·실제 격리 PostgreSQL migration/RLS/API 테스트를 기록하고 실패/미실행은 구분한다. 산출물은 [P3](3phase.md)에 정확한 API/상태/rollback 계약으로 전달한다.
+
+P2 첫 후보 `b7b9687`는 로컬 Node24 check/build, 실제 채워진 1140→1151 반복/비파괴 복구, Vitest 389 PASS/조건부 5 skip, 별도 beta 가입 5 PASS, PC/mobile Chromium auth+프로필 15 PASS/조건부 1 skip을 확인했다. PR #147 수동 Actions `35025390806`은 사진 ID URL query/접근 로그 위험을 발견해 **cancelled**했으며 CI PASS가 아니다. 서버 ID를 노출하지 않는 `/api/profile/avatar`로 보정한 후보는 production build와 desktop/mobile 실제 HTTP 2 PASS다. 새 전체 CI·네 signed dev image·동일 SHA 개발 공개 인수 전까지 체크박스는 완료로 표시하지 않는다.

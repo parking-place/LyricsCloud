@@ -35,7 +35,6 @@ export type ProfilePatchResult =
   | { readonly state: "missing" };
 
 export interface CurrentAvatarPhoto {
-  readonly id: string;
   readonly bytes: Buffer;
   readonly sha256: string;
 }
@@ -158,12 +157,12 @@ export class PostgresOwnedDataStore {
 
   getCurrentAvatarPhoto(authenticatedUserId: string): Promise<CurrentAvatarPhoto | null> {
     return this.#withUserClient(authenticatedUserId, async (client) => {
-      const result = await client.query<{ id: string; webp_bytes: Buffer; content_sha256: string }>(`
-        select a.id,a.webp_bytes,a.content_sha256 from user_profiles p
+      const result = await client.query<{ webp_bytes: Buffer; content_sha256: string }>(`
+        select a.webp_bytes,a.content_sha256 from user_profiles p
         join profile_avatar_photos a on a.owner_id=p.owner_id and a.id=p.avatar_photo_id
         where p.owner_id=$1`, [authenticatedUserId]);
       const photo = result.rows[0];
-      return photo ? { id: photo.id, bytes: photo.webp_bytes, sha256: photo.content_sha256 } : null;
+      return photo ? { bytes: photo.webp_bytes, sha256: photo.content_sha256 } : null;
     });
   }
 
@@ -234,7 +233,7 @@ function providerName(value: string): string { return value.trim() || "사용자
 
 function mapSqlProfile(row: ProfileRow): UserProfile {
   return { userId: row.owner_id, displayName: row.display_name,
-    avatarUrl: row.avatar_photo_id ? `/api/profile/avatar?photo=${row.avatar_photo_id}` : row.avatar_url,
+    avatarUrl: row.avatar_photo_id ? "/api/profile/avatar" : row.avatar_url,
     rowVersion: Number(row.row_version), displayNameSource: row.display_name_source,
     avatarSource: row.avatar_source, accountStatus: "active",
     createdAt: row.created_at, updatedAt: row.updated_at };
@@ -244,7 +243,7 @@ function mapProfile(row: typeof userProfiles.$inferSelect): UserProfile {
   return {
     userId: row.ownerId,
     displayName: row.displayName,
-    avatarUrl: row.avatarPhotoId ? `/api/profile/avatar?photo=${row.avatarPhotoId}` : row.avatarUrl,
+    avatarUrl: row.avatarPhotoId ? "/api/profile/avatar" : row.avatarUrl,
     rowVersion: row.rowVersion,
     displayNameSource: row.displayNameSource as UserProfile["displayNameSource"],
     avatarSource: row.avatarSource as UserProfile["avatarSource"],

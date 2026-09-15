@@ -77,7 +77,7 @@ describe.runIf(enabled)("1.1.7a owner profile customization", () => {
     const first = await owned!.replaceAvatarPhoto(alice, before.rowVersion, bytes, hash);
     expect(first.state).toBe("saved");
     if (first.state !== "saved") throw new Error("unexpected result");
-    expect(first.profile.avatarUrl).toMatch(/^\/api\/profile\/avatar\?photo=/);
+    expect(first.profile.avatarUrl).toBe("/api/profile/avatar");
     expect(await owned!.getCurrentAvatarPhoto(alice)).toMatchObject({ bytes, sha256: hash });
     expect(await owned!.getCurrentAvatarPhoto(bob)).toBeNull();
     const denied = await pool!.connect();

@@ -11,9 +11,9 @@ export const runtime = "nodejs";
 export async function GET(request: Request): Promise<Response> {
   try {
     const auth = await resolveRequestAuth(request);
-    const photoId = new URL(request.url).searchParams.get("photo");
+    if (new URL(request.url).search) return errorResponse("NOT_FOUND", 404);
     const photo = await getAuthContext().ownedData.getCurrentAvatarPhoto(auth.userId);
-    if (!photo || photo.id !== photoId) return errorResponse("NOT_FOUND", 404);
+    if (!photo) return errorResponse("NOT_FOUND", 404);
     return new Response(new Uint8Array(photo.bytes), { headers: {
       ...privateResponseHeaders, "Content-Type": "image/webp", "Content-Length": String(photo.bytes.length),
       "X-Content-Type-Options": "nosniff",
