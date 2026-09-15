@@ -16,6 +16,9 @@ public static class AccountCachePolicy
     public static bool CanExpose(CachedResourceAccess access, bool onlinePermissionRevalidated) =>
         access == CachedResourceAccess.Owner || onlinePermissionRevalidated;
 
+    public static bool CanExposeSharedEpoch(long cachedEpoch, long freshEpoch, bool onlinePermissionRevalidated) =>
+        onlinePermissionRevalidated && cachedEpoch > 0 && cachedEpoch == freshEpoch;
+
     public static bool MustPurge(int statusCode, bool permissionEpochChanged, bool accountChanged) =>
         accountChanged || permissionEpochChanged || statusCode is 401 or 403 or 404;
 }

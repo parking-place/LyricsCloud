@@ -27,6 +27,12 @@ for (const marker of [
   "NativeRecoveryPolicy.For(error)", "case NativeRecoveryAction.ClearSession", "case NativeRecoveryAction.ClearResource",
   "ClearLocalIdentityAsync(origin, userId)", "_accountCache.PurgeAccountAsync", "_authenticatedUserId = null"
 ]) includes(windowCode, marker, `window recovery ${marker}`);
+for (const marker of [
+  "GetSharedLyricAsync(id", "GetLyricAsync(lyric.Id", "AccountCachePolicy.CanExposeSharedEpoch",
+  "CachedResourceAccess.Shared, true", "CachedResourceAccess.Owner, false",
+  "_accountCache.DeleteResourceAsync", "_visibleSharedId", "MainWindow_Activated",
+  "await RevalidateSharedAsync(sharedId)", "오프라인에서는 공유 권한을 확인할 수 없어"
+]) includes(windowCode, marker, `actual UI cache/read recovery ${marker}`);
 
 for (const marker of [
   "exact loopback callback", "absolute-form callback rejection", "wrong callback path rejection",

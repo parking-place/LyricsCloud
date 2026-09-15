@@ -45,8 +45,14 @@ public static class NativeLibraryPresentation
         value.Status, NativeResourceKind.Songs, value);
 
     public static NativeCopyView Copy(NativeLyric value)
+        => LyricCopy(value.Body);
+
+    public static NativeCopyView Copy(NativeSharedLyric value)
+        => LyricCopy(value.Body);
+
+    private static NativeCopyView LyricCopy(string body)
     {
-        var payload = CopyContract.BuildLyricPayload(value.Body);
+        var payload = CopyContract.BuildLyricPayload(body);
         return new(payload.Payload, payload.CodePointCount, payload.ExceedsRecommendedLimit,
             payload.ExceedsRecommendedLimit
                 ? $"{payload.CodePointCount:N0}자로 3,000자 권장 기준을 넘었습니다. 내용은 줄이지 않고 그대로 복사했습니다."

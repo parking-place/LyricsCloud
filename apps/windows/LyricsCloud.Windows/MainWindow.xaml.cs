@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Net;
+using System.Text.Json;
 using LyricsCloud.Windows.Authentication;
 using LyricsCloud.Windows.Core;
 using LyricsCloud.Windows.Security;
@@ -27,16 +29,30 @@ public sealed partial class MainWindow : Window
     private long _sessionGeneration;
     private string? _authenticatedUserId;
     private bool _authenticated;
+    private string? _visibleSharedId;
+    private static readonly JsonSerializerOptions CacheJson = new(JsonSerializerDefaults.Web);
 
     public MainWindow()
     {
         InitializeComponent();
+        Activated += MainWindow_Activated;
         ResourceListView.ItemsSource = _resources;
         LyricListView.ItemsSource = _lyrics;
         if (global::Windows.Storage.ApplicationData.Current.LocalSettings.Values["serverOrigin"] is string origin)
             ServerOriginTextBox.Text = origin;
         SetAuthenticated(false);
         SetState(NativeLibraryState.Disconnected);
+    }
+
+    private async void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+    {
+        if (_visibleSharedId is not { } id) return;
+        if (args.WindowActivationState == WindowActivationState.Deactivated)
+        {
+            ClearCopyOnly();
+            return;
+        }
+        await RevalidateSharedAsync(id);
     }
 
     private async void ConnectButton_Click(object sender, RoutedEventArgs e)
@@ -203,6 +219,7 @@ public sealed partial class MainWindow : Window
     private async void ResourceListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         CancelDetailLoad();
+        ClearDetails();
         if (ResourceListView.SelectedItem is not NativeLibraryEntry entry || _api is not { } api) return;
         var generation = _sessionGeneration;
         _lyrics.Clear();
@@ -249,22 +266,129 @@ public sealed partial class MainWindow : Window
             ShowCopy(entry.Title, entry.Subtitle, prompt.PlainText, NativeLibraryPresentation.Copy(prompt));
     }
 
-    private void LyricListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void LyricListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (LyricListView.SelectedItem is NativeLibraryEntry { Resource: NativeLyric lyric } entry)
-            ShowCopy(entry.Title, $"{lyric.Status} · 현재 서버 원문 · 수정 불가", lyric.Body, NativeLibraryPresentation.Copy(lyric));
+        CancelDetailLoad();
+        ClearCopyOnly();
+        if (LyricListView.SelectedItem is not NativeLibraryEntry { Resource: NativeLyric lyric } entry
+            || _api is not { } api || _origin is null || _authenticatedUserId is null) return;
+        var generation = _sessionGeneration;
+        var origin = NativeCredentialPolicy.NormalizeOrigin(_origin);
+        var userId = _authenticatedUserId;
+        _detailCancellation = new CancellationTokenSource();
+        try
+        {
+            SetBusy(true, "가사 권한 확인 중…");
+            var current = (await api.GetLyricAsync(lyric.Id, _detailCancellation.Token)).Lyric;
+            if (generation != _sessionGeneration || !ReferenceEquals(LyricListView.SelectedItem, entry)) return;
+            await _accountCache.StoreAsync(origin, userId, $"owner-lyric:{lyric.Id}", JsonSerializer.Serialize(current, CacheJson));
+            if (generation != _sessionGeneration) { await _accountCache.PurgeAccountAsync(origin, userId); return; }
+            ShowCopy(current.Title, $"{current.Status} · 현재 서버 원문 · 수정 불가", current.Body, NativeLibraryPresentation.Copy(current));
+        }
+        catch (OperationCanceledException) { }
+        catch (HttpRequestException error) when (error is not NativeApiException)
+        {
+            if (generation != _sessionGeneration) return;
+            NativeLyric? cached = null;
+            try
+            {
+                var stored = await _accountCache.ReadAsync(origin, userId, $"owner-lyric:{lyric.Id}", CachedResourceAccess.Owner, false);
+                if (stored is not null) cached = JsonSerializer.Deserialize<NativeLyric>(stored, CacheJson);
+            }
+            catch (Exception)
+            {
+                await _accountCache.DeleteResourceAsync(origin, userId, $"owner-lyric:{lyric.Id}");
+            }
+            if (generation != _sessionGeneration) return;
+            if (cached?.Id == lyric.Id)
+            {
+                ShowCopy(cached.Title, $"{cached.Status} · 이 계정의 마지막 보호 원문 (오프라인)", cached.Body, NativeLibraryPresentation.Copy(cached));
+                SetState(new(NativeViewState.Ready, "오프라인: 마지막으로 확인한 본인을 소유한 가사입니다. 재연결하면 새로 확인합니다.", false));
+            }
+            else SetState(NativeLibraryState.Failure(error));
+        }
+        catch (Exception error)
+        {
+            if (generation == _sessionGeneration) { await RecoverAsync(error); SetState(NativeLibraryState.Failure(error)); }
+        }
+        finally { if (generation == _sessionGeneration) SetBusy(false); }
     }
 
-    private void CopyButton_Click(object sender, RoutedEventArgs e) => CopySelected();
-
-    private void CopyKeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    private async void OpenSharedButton_Click(object sender, RoutedEventArgs e)
     {
-        CopySelected();
+        CancelDetailLoad();
+        ClearDetails();
+        if (_api is null || _origin is null || _authenticatedUserId is null) return;
+        var id = SharedLyricIdTextBox.Text.Trim();
+        if (!Guid.TryParse(id, out _))
+        {
+            SetState(new(NativeViewState.Error, "공유 가사 UUID를 확인해 주세요.", false));
+            return;
+        }
+        _visibleSharedId = id;
+        await RevalidateSharedAsync(id);
+    }
+
+    private async Task<bool> RevalidateSharedAsync(string id)
+    {
+        if (_api is not { } api || _origin is null || _authenticatedUserId is null || _visibleSharedId != id) return false;
+        var generation = _sessionGeneration;
+        var origin = NativeCredentialPolicy.NormalizeOrigin(_origin);
+        var userId = _authenticatedUserId;
+        CancelDetailLoad();
+        _detailCancellation = new CancellationTokenSource();
+        try
+        {
+            SetBusy(true, "공유 권한 재확인 중…");
+            ClearCopyOnly();
+            var fresh = (await api.GetSharedLyricAsync(id, _detailCancellation.Token)).Lyric;
+            if (generation != _sessionGeneration || _visibleSharedId != id) return false;
+            var resourceKey = $"shared-lyric:{id}";
+            await _accountCache.StoreAsync(origin, userId, resourceKey, JsonSerializer.Serialize(fresh, CacheJson));
+            if (generation != _sessionGeneration || _visibleSharedId != id)
+            {
+                await _accountCache.DeleteResourceAsync(origin, userId, resourceKey);
+                return false;
+            }
+            var protectedJson = await _accountCache.ReadAsync(origin, userId, resourceKey, CachedResourceAccess.Shared, true);
+            var cached = protectedJson is null ? null : JsonSerializer.Deserialize<NativeSharedLyric>(protectedJson, CacheJson);
+            if (generation != _sessionGeneration || _visibleSharedId != id) return false;
+            var verified = cached is not null && cached.Id == fresh.Id
+                && AccountCachePolicy.CanExposeSharedEpoch(cached.Access.PermissionEpoch, fresh.Access.PermissionEpoch, true)
+                ? cached : fresh;
+            ShowCopy(verified.Title, $"{verified.Status} · {verified.OwnerDisplayName}의 공유 가사 · 온라인 권한 확인됨",
+                verified.Body, NativeLibraryPresentation.Copy(verified));
+            SetState(new(NativeViewState.Ready, "공유 가사 읽기 권한을 서버에서 확인했습니다.", false));
+            return true;
+        }
+        catch (OperationCanceledException) { return false; }
+        catch (Exception error)
+        {
+            if (generation != _sessionGeneration) return false;
+            ClearDetails();
+            if (error is NativeApiException { ResponseStatusCode: HttpStatusCode.Forbidden or HttpStatusCode.NotFound })
+                await _accountCache.DeleteResourceAsync(origin, userId, $"shared-lyric:{id}");
+            await RecoverAsync(error);
+            SetState(error is HttpRequestException and not NativeApiException
+                ? new(NativeViewState.NoAccess, "오프라인에서는 공유 권한을 확인할 수 없어 원문을 표시하지 않습니다.", false)
+                : NativeLibraryState.Failure(error));
+            return false;
+        }
+        finally { if (generation == _sessionGeneration) SetBusy(false); }
+    }
+
+    private async void CopyButton_Click(object sender, RoutedEventArgs e) => await CopySelectedAsync();
+
+    private async void CopyKeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
         args.Handled = true;
+        await CopySelectedAsync();
     }
 
-    private void CopySelected()
+    private async Task CopySelectedAsync()
     {
+        if (_copy is null) return;
+        if (_visibleSharedId is { } sharedId && !await RevalidateSharedAsync(sharedId)) return;
         if (_copy is null) return;
         try
         {
@@ -296,6 +420,8 @@ public sealed partial class MainWindow : Window
         LogoutButton.IsEnabled = authenticated;
         RefreshButton.IsEnabled = authenticated;
         ResourceKindComboBox.IsEnabled = authenticated;
+        OpenSharedButton.IsEnabled = authenticated;
+        SharedLyricIdTextBox.IsEnabled = authenticated;
     }
 
     private void SetBusy(bool busy, string? message = null)
@@ -310,6 +436,8 @@ public sealed partial class MainWindow : Window
             LogoutButton.IsEnabled = false;
             RefreshButton.IsEnabled = false;
             ResourceKindComboBox.IsEnabled = false;
+            OpenSharedButton.IsEnabled = false;
+            SharedLyricIdTextBox.IsEnabled = false;
             LoadMoreButton.IsEnabled = false;
         }
         else
@@ -353,11 +481,17 @@ public sealed partial class MainWindow : Window
 
     private void ClearDetails()
     {
+        _visibleSharedId = null;
         _lyrics.Clear();
-        _copy = null;
         LyricListView.Visibility = Visibility.Collapsed;
         DetailTitle.Text = "자료를 선택해 주세요";
         DetailMetadata.Text = "선택한 자료의 원문을 수정 없이 표시합니다.";
+        ClearCopyOnly();
+    }
+
+    private void ClearCopyOnly()
+    {
+        _copy = null;
         DetailBody.Text = "";
         CopyButton.IsEnabled = false;
         CopyLengthText.Text = "복사할 자료 없음";
