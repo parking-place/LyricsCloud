@@ -45,7 +45,7 @@
 | `NF-REQ-037` | light/dark 디자인 개편안 | [UX 설계](design/UX/README.md), [1.1.5](1.1.5/README.md), [1.1.6](1.1.6/README.md), [NF-REQ-048의 시안 계약](contracts/DESIGN-NATIVE.md) | 대안·토큰·접근성·승인 후 점진 적용 | UX B-1 승인, 1.1.5 완료; 1.1.6 P2~P5 양 theme flat surface, classic rollback, exact copy/export·저장 재진입·서비스 재시작과 최종 artifact/CI/동일 SHA 개발 인수 완료 |
 | `NF-REQ-038` | new_Mock-up·도구 필요 문서 | [UX 설계](design/UX/README.md) | 원본 목업 보존·새 화면/상태·skill/MCP 요구 | UX P1~P5 완료: old Mock-up 보존, B-1 18화면/상태/플랫폼/도구·승인 manifest 봉인 |
 | `NF-REQ-039` | UI/UX 동선 개선·개편 | [UX 설계](design/UX/README.md), [1.1.5](1.1.5/README.md), [1.1.6](1.1.6/README.md), [1.1.7](1.1.7/README.md) | 현행 과제 관찰·설계 비교·비파괴 전환 | UX B-1·1.1.5~1.1.6와 1.1.7 P1~P5 완료. P4 후보 `66f2f79`에서 reduced transparency·contrast/forced-colors fallback과 공개 reflow/4x CPU 저장·재시작을 인수했다. P5 후보 `b1a1e2c`에서 사용자/목업 탐색·플랫폼 공통/차이·29 migration 환경/license/release artifact를 봉인하고 Actions `34900342849`·`34900363577`, 네 signed dev image와 동일 SHA 공개 저장/복귀·접근성 fallback·서비스 재시작 영속을 PASS했다. 실제 native SDK/OS/기기·IME/AT/OS zoom/서명/스토어는 미실행 |
-| `NF-REQ-040` | Windows 네이티브 개발안 | [1.1.8](1.1.8/README.md), [1.1.9](1.1.9/README.md) | 기술/IME/protocol 승인→구현/서명/실기기 인수 | 계획됨 |
+| `NF-REQ-040` | Windows 네이티브 개발안 | [1.1.8](1.1.8/README.md), [1.1.9](1.1.9/README.md) | 기술/IME/protocol 승인→구현/서명/실기기 인수 | 1.1.8 P1 WinUI 3/read-copy 권고안 사용자 승인과 JS reference fixture 34 PASS; P2~P5 Windows 구현/실기기/서명과 1.1.9 editor gate 미완료 |
 | `NF-REQ-041` | Android 네이티브 개발안 | [1.1.10](1.1.10/README.md), [1.1.11](1.1.11/README.md) | Kotlin 등 비교·IME/수명주기·서명/실기기 인수 | 계획됨 |
 
 | `NF-REQ-042` | 실제 여러 사용자 동시 보기·편집과 presence/cursor | [1.1.0](1.1.0/README.md)~[1.1.4](1.1.4/README.md) | 서로 다른 3계정·동시 한글 수렴·누가 어디 작업하는지·철회/재연결/구독 경계 | 1.1.0 다계정 read presence·철회/재연결 담당 완료, 편집/cursor 계획됨 |

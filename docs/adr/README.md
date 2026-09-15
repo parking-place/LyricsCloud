@@ -31,7 +31,7 @@ ADR가 Accepted 되기 전에는 해당 선택에 종속되는 package manifest�
 - [ADR-NF-001](./ADR-NF-001-beta-access.md): 베타 가입·해시 seed·접근권 부여
 - [ADR-NF-002](./ADR-NF-002-external-metadata.md): 외부 메타데이터
 - [ADR-NF-003](./ADR-NF-003-sharing.md): 공유 인가
-- [ADR-NF-004](./ADR-NF-004-windows-native.md): Windows 네이티브 개발안
+- [ADR-NF-004](./ADR-NF-004-windows-native.md): Windows 네이티브 개발안, WinUI 3/read-copy 승인·1.1.9 editor gate 유지
 - [ADR-NF-005](./ADR-NF-005-android-native.md): Android 네이티브 개발안
 
 
