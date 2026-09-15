@@ -1,10 +1,10 @@
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
+import { createRequire } from "node:module";
 import { expect, test } from "@playwright/test";
 import { hashToken, withE2eDatabase } from "./fixtures.js";
 
 const origin = "http://127.0.0.1:3000";
-const tinyPng = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEklEQVQImWPoWby9Z/F2BggFADSKB5luc7lQAAAAAElFTkSuQmCC", "base64");
+const sharp = createRequire(`${process.cwd()}/apps/web/package.json`)("sharp");
 
 test.describe("1.1.7a owner profile HTTP boundary", () => {
   test.skip(!process.env.E2E_DATABASE_URL, "disposable E2E database is required");
@@ -52,8 +52,25 @@ test.describe("1.1.7a owner profile HTTP boundary", () => {
           buffer: Buffer.from("<svg></svg>") }
       } });
       expect(spoof.status()).toBe(400);
+      const largeInvalid = await a.patch("/api/profile/avatar", { headers: { Origin: origin }, multipart: {
+        expectedRowVersion: String(named.rowVersion), avatar: { name: "invalid-large.png", mimeType: "image/png",
+          buffer: Buffer.alloc(1200 * 1024, 65) }
+      } });
+      expect(largeInvalid.status()).toBe(400); // Avatar-only proxy limit allows decoding to reject it.
+      const tooLarge = await a.patch("/api/profile/avatar", { headers: { Origin: origin }, multipart: {
+        expectedRowVersion: String(named.rowVersion), avatar: { name: "over-limit.png", mimeType: "image/png",
+          buffer: Buffer.alloc(2200 * 1024, 65) }
+      } });
+      expect(tooLarge.status()).toBe(413);
+      const generalLarge = await a.patch("/api/profile", { headers: { Origin: origin },
+        data: { expectedRowVersion: named.rowVersion, displayName: "x".repeat(1200 * 1024) } });
+      expect(generalLarge.status()).toBe(413);
+      const validLargePng: Buffer = await sharp(randomBytes(640 * 640 * 3),
+        { raw: { width: 640, height: 640, channels: 3 } }).png().toBuffer();
+      expect(validLargePng.length).toBeGreaterThan(1024 * 1024);
+      expect(validLargePng.length).toBeLessThan(2 * 1024 * 1024);
       const uploaded = await a.patch("/api/profile/avatar", { headers: { Origin: origin }, multipart: {
-        expectedRowVersion: String(named.rowVersion), avatar: { name: "untrusted.png", mimeType: "image/png", buffer: tinyPng }
+        expectedRowVersion: String(named.rowVersion), avatar: { name: "untrusted.png", mimeType: "image/png", buffer: validLargePng }
       } });
       expect(uploaded.status()).toBe(200);
       const saved = (await uploaded.json()).profile;

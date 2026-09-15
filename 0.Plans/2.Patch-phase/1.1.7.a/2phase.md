@@ -15,3 +15,5 @@
 입력: 빈 닉네임, 닉네임만 변경, 사진만 변경/제거, 위장 이미지/과대 파일, 두 owner, 재로그인, 서버 실패, 동시 두 탭. 기대: `AC-117A-01~03`과 공유 개인정보 정책을 지키며 기존 데이터·Google 인증/베타 가입이 그대로 작동한다. 관련 단위·실제 격리 PostgreSQL migration/RLS/API 테스트를 기록하고 실패/미실행은 구분한다. 산출물은 [P3](3phase.md)에 정확한 API/상태/rollback 계약으로 전달한다.
 
 P2 첫 후보 `b7b9687`는 로컬 Node24 check/build, 실제 채워진 1140→1151 반복/비파괴 복구, Vitest 389 PASS/조건부 5 skip, 별도 beta 가입 5 PASS, PC/mobile Chromium auth+프로필 15 PASS/조건부 1 skip을 확인했다. PR #147 수동 Actions `35025390806`은 사진 ID URL query/접근 로그 위험을 발견해 **cancelled**했으며 CI PASS가 아니다. 서버 ID를 노출하지 않는 `/api/profile/avatar`로 보정한 후보는 production build와 desktop/mobile 실제 HTTP 2 PASS다. 새 전체 CI·네 signed dev image·동일 SHA 개발 공개 인수 전까지 체크박스는 완료로 표시하지 않는다.
+
+두 번째 Actions `35025801502`는 신규 route 추가 후 과거 고정 보안 inventory `74` vs 실제 `75`에서 **FAIL**, image skipped였다. 전체 현행 75 route·68 same-origin mutation·56 table을 기존 감사와 P2 addendum에 1:1 대조하도록 보정하고 로컬 security audit PASS. 동시에 proxy의 일반 1 MiB body 상한은 그대로 두고 avatar PATCH만 2 MiB 파일+50 KiB multipart로 제한했다. 실제 1 MiB 초과 합성 PNG 정상 upload, 위장 400·한도 초과 413·일반 API 413을 desktop/mobile 2 PASS로 확인했다. 새 SHA의 필수 전체 CI 전까지 P2 인수 미완료다.
