@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="LyricsCloud.Windows.Core/LyricsCloud.Windows.Core.csproj" />
+  <Project Path="LyricsCloud.Windows/LyricsCloud.Windows.csproj" />
+  <Project Path="../../tests/native/windows/LyricsCloud.Windows.ContractTests/LyricsCloud.Windows.ContractTests.csproj" />
+</Solution>

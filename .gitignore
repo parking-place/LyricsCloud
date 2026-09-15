@@ -10,6 +10,10 @@ out/
 coverage/
 .turbo/
 *.tsbuildinfo
+apps/windows/**/[Bb]in/
+apps/windows/**/[Oo]bj/
+tests/native/windows/**/[Bb]in/
+tests/native/windows/**/[Oo]bj/
 
 # Test output
 playwright-report/

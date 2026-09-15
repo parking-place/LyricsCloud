@@ -7,14 +7,20 @@ const read = (relative) => readFile(path.join(root, relative), "utf8");
 const routeRoot = path.join(root, "apps/web/src/app/api");
 const routeFiles = (await filesBelow(routeRoot)).filter((file) => file.endsWith("/route.ts")).sort();
 const routePaths = routeFiles.map((file) => `/api/${path.relative(routeRoot, path.dirname(file)).split(path.sep).join("/")}`);
-assertEqual(routePaths.length, 74, "API route files");
+assertEqual(routePaths.length, 90, "API route files");
 
 const ownership = await read("docs/security/0.9.1-api-ownership-matrix.md");
 for (const routePath of routePaths) {
   assertCount(ownership, new RegExp("`" + escapeRegExp(routePath) + "`", "g"), 1, `ownership route ${routePath}`);
 }
 
+const nativeBrokerMutations = new Set([
+  "/api/native/v1/auth/logout",
+  "/api/native/v1/auth/token",
+  "/api/native/v1/auth/transactions"
+]);
 let mutationCount = 0;
+let nativeBrokerMutationCount = 0;
 for (const routeFile of routeFiles) {
   const source = await read(path.relative(root, routeFile));
   const starts = [...source.matchAll(/^export async function (POST|PUT|PATCH|DELETE)\b/gm)];
@@ -23,10 +29,19 @@ for (const routeFile of routeFiles) {
     const start = starts[index].index;
     const end = source.indexOf("\nexport async function ", start + 1);
     const handler = source.slice(start, end === -1 ? undefined : end);
-    assert(handler.includes("mutationOriginAllowed(request)"), `${routePaths[routeFiles.indexOf(routeFile)]} ${starts[index][1]} lacks Origin guard`);
+    const routePath = routePaths[routeFiles.indexOf(routeFile)];
+    if (nativeBrokerMutations.has(routePath)) {
+      nativeBrokerMutationCount += 1;
+      assert(!handler.includes("resolveRequestAuth(request)"), `${routePath} must not consume a browser cookie session`);
+      assert(handler.includes("requestRateLimiter.consume"), `${routePath} lacks a native broker rate limit`);
+      assert(handler.includes("nativeResponseHeaders"), `${routePath} lacks the native contract response boundary`);
+    } else {
+      assert(handler.includes("mutationOriginAllowed(request)"), `${routePath} ${starts[index][1]} lacks Origin guard`);
+    }
   }
 }
-assertEqual(mutationCount, 67, "mutation handlers");
+assertEqual(mutationCount, 70, "mutation handlers");
+assertEqual(nativeBrokerMutationCount, 3, "native broker mutation handlers");
 
 const migrationRoot = path.join(root, "packages/database/migrations");
 const migrationFiles = (await filesBelow(migrationRoot)).filter((file) => file.endsWith(".sql"));
@@ -35,7 +50,7 @@ for (const migrationFile of migrationFiles) {
   const source = await read(path.relative(root, migrationFile));
   for (const match of source.matchAll(/create table(?: if not exists)?\s+([a-z_][a-z0-9_]*)/gi)) tableNames.add(match[1]);
 }
-assertEqual(tableNames.size, 55, "database tables");
+assertEqual(tableNames.size, 57, "database tables");
 for (const tableName of [...tableNames].sort()) {
   assertCount(ownership, new RegExp("`" + tableName + "`", "g"), 1, `ownership table ${tableName}`);
 }
@@ -71,6 +86,10 @@ for (const marker of ["apiBodyExceedsLimit(request)", "PAYLOAD_TOO_LARGE", "'non
 const rateContracts = [
   ["apps/web/src/app/api/auth/login/route.ts", "auth-login:${requestClientKey(request)}", "40, 5 * 60_000"],
   ["apps/web/src/app/api/auth/callback/route.ts", "auth-callback:${requestClientKey(request)}", "40, 5 * 60_000"],
+  ["apps/web/src/app/api/native/v1/auth/transactions/route.ts", "native-auth-start:${requestClientKey(request)}", "20, 5 * 60_000"],
+  ["apps/web/src/app/api/native/v1/auth/authorize/route.ts", "native-auth-authorize:${requestClientKey(request)}", "30, 5 * 60_000"],
+  ["apps/web/src/app/api/native/v1/auth/token/route.ts", "native-auth-token:${requestClientKey(request)}", "30, 5 * 60_000"],
+  ["apps/web/src/app/api/native/v1/auth/logout/route.ts", "native-auth-logout:${requestClientKey(request)}", "120, 5 * 60_000"],
   ["apps/web/src/app/api/search/route.ts", "search:${auth.userId}", "120, 60_000"],
   ["apps/web/src/app/api/export/route.ts", "export:${auth.userId}", "6, 60_000"]
 ];

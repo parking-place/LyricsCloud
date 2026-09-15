@@ -7,5 +7,6 @@
 - [`web`](./web/): 화면, HTTP 경계, Google 로그인·세션, 사용자 요청
 - [`collaboration`](./collaboration/): 같은 사용자의 여러 기기·탭 CRDT 연결과 영속화
 - [`worker`](./worker/): 30일 휴지통 정리, 7일 탈퇴 처리, revision 정리 등 재실행 가능한 예약 작업
+- [`windows`](./windows/): 1.1.8부터 승인된 WinUI 3 읽기·복사 client와 Windows 전용 보호 저장소
 
 책임이 한 프로세스로 합쳐지더라도 디렉터리 간 의존 방향과 보안 경계는 ADR에 기록합니다.

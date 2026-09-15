@@ -1,6 +1,6 @@
 # 1.1.8 — Windows 네이티브 개발안·읽기와 복사
 
-상태: **P1 기술 검토·reference spike·사용자 승인 완료 / P2 착수 준비**. 번호는 미발행 작업 배정이며 배포 완료가 아니다. 사용자는 2026-09-15 09:11 KST [권고 결정안](../../../docs/runbooks/1.1.8-phase1-windows-native-decision.md)의 WinUI 3/read-copy 범위를 승인했다.
+상태: **P1 승인·P2 기반/전체 CI·동일 SHA 개발 인수 완료 / P3 착수 준비**. P2 후보는 `dbfca8800743e6c3ab1ddb3213b3839377e00256`이며 사용자는 2026-09-15 09:11 KST [권고 결정안](../../../docs/runbooks/1.1.8-phase1-windows-native-decision.md)의 WinUI 3/read-copy 범위를 승인했다. 실제 Windows UI/IME/AT·MSIX 배포 서명은 후속 gate다.
 
 ## 목표
 

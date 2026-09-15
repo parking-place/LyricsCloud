@@ -1,6 +1,6 @@
 # 1.1.8 Phase 2 — 핵심 기반·저장과 서버
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`, 후보 `dbfca88` 동일 SHA 개발 인수)
 - 단계 목적: Windows 네이티브 개발안·읽기와 복사의 핵심 기반·저장과 서버을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -41,12 +41,12 @@ Windows 앱의 기술·인증·IME/CRDT 개발안을 먼저 승인받고, 승인
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.8-P2-01` 구현 전 `1.1.8` 수용 사례의 실패 테스트를 작성한다. 제안 위치는 `tests/new-feature/1.1.8.contract.test.ts`이며 runner 포함 여부를 확인한 뒤 실패 이유를 기록한다.
-- [ ] `LC-NF-1.1.8-P2-02` 승인된 Windows client 프로젝트와 서버 capability 협상을 구현한다.
-- [ ] `LC-NF-1.1.8-P2-03` 시스템 브라우저 OAuth/PKCE·인증된 callback·OS 보호 토큰 저장을 연결한다.
-- [ ] `LC-NF-1.1.8-P2-04` 자료 읽기 API와 개인/공유 권한 범위를 유지하고 캐시의 계정 분리를 구현한다.
-- [ ] `LC-NF-1.1.8-P2-05` 웹과 같은 copy golden fixture·모델/링크 metadata를 읽으며 새 프로토콜을 임의 발명하지 않는다.
-- [ ] `LC-NF-1.1.8-P2-06` 추가 schema가 있으면 실제 테스트 DB의 빈 설치·이전 schema 업그레이드·권한·되돌림을 검사한다. 원인 수정 후 동일 실패 테스트와 기존 관련 회귀를 다시 실행한다.
+- [x] `LC-NF-1.1.8-P2-01` 구현 전 `1.1.8` 수용 사례의 실패 테스트를 작성한다. 제안 위치는 `tests/new-feature/1.1.8.contract.test.ts`이며 runner 포함 여부를 확인한 뒤 실패 이유를 기록한다.
+- [x] `LC-NF-1.1.8-P2-02` 승인된 Windows client 프로젝트와 서버 capability 협상을 구현한다.
+- [x] `LC-NF-1.1.8-P2-03` 시스템 브라우저 OAuth/PKCE·인증된 callback·OS 보호 토큰 저장을 연결한다.
+- [x] `LC-NF-1.1.8-P2-04` 자료 읽기 API와 개인/공유 권한 범위를 유지하고 캐시의 계정 분리를 구현한다.
+- [x] `LC-NF-1.1.8-P2-05` 웹과 같은 copy golden fixture·모델/링크 metadata를 읽으며 새 프로토콜을 임의 발명하지 않는다.
+- [x] `LC-NF-1.1.8-P2-06` 추가 schema가 있으면 실제 테스트 DB의 빈 설치·이전 schema 업그레이드·권한·되돌림을 검사한다. 원인 수정 후 동일 실패 테스트와 기존 관련 회귀를 다시 실행한다.
 
 ## 구체적 검증
 
@@ -65,12 +65,19 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
+- [x] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+
+## 완료 증거
+
+- 제품 후보: `dbfca8800743e6c3ab1ddb3213b3839377e00256` (P1 main `c80b05b73112669d8e51ac1cdc42b45aba63622d` 기반).
+- Actions: push `34918857197`, PR `34918859682`의 전체 verify와 Windows native contracts/WinUI x64 build가 모두 PASS했다. push 경로에서 web·collaboration·worker·migrate 개발 이미지를 게시하고 exact digest signature/provenance를 확인했다.
+- 개발 인수: 동일 SHA `1.1.8/dev/p2`, `1150_native_read_sessions.sql`, PostgreSQL·web·collaboration·worker healthy. 공개 capability `lyricscloud.native.read.v1`, write `false`, read scope, anonymous read `401`, 잘못된 `localhost` callback `400`을 확인했다.
+- `config/environment-schema.1.1.8.json`의 여섯 서비스 환경·secret-file 경계를 검증했다. 기존 개발 DB volume·secret·allowlist를 보존했고 릴리스 서버는 변경하지 않았다. 실제 Windows launch·system browser/DPAPI/process kill·clipboard/keyboard/Narrator/high contrast/DPI와 MSIX 설치/업데이트/제거·배포 서명은 P3~P5의 실제 gate로 남아 있으며 P2 PASS에 포함하지 않는다.
 
 ## 산출물
 

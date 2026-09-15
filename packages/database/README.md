@@ -33,3 +33,5 @@ readiness는 인증 실패, 시간 초과, 연결 불가, schema 미적용, 기�
 0802는 자료와 owner 템플릿에 정확한 30일 purge deadline, 계정에 7일 탈퇴 유예 상태, 내용 없는 purge 실행 기록을 추가합니다. 사용자 영구 삭제는 owner 문맥을 재확인하는 함수로만 허용하며 worker purge는 작은 배치로 멱등 실행합니다. `pnpm test:migration:0802`는 시간 제약, rollback/reapply를 검사합니다.
 
 0900은 환경별 베타코드 epoch·발급 batch·과거 digest tombstone, 짧은 가입 intent, 검증 principal admission grant, 원자 소비 receipt와 재시작 후에도 유지되는 실패 budget을 추가합니다. 코드 원문은 관리자 전용 AEAD envelope로 미사용 기간에만 보관하며 사용·폐기·만료 뒤 제거합니다. 일반 앱 role에는 테이블 직접 권한을 주지 않고 P4의 제한된 가입 함수가 별도 migration에서 필요한 동작만 노출합니다. `pnpm test:migration:0900`은 신규/업그레이드·제약·rollback guard를 검사합니다.
+
+1150은 Windows native browser broker의 transaction digest와 별도 read-only session hash를 추가합니다. code/verifier/session 원문은 저장하지 않고 `lyricscloud_app` role의 직접 table 권한을 막습니다. 교환은 transaction row lock 안에서 single-use consume과 native session 생성을 함께 commit합니다. rollback은 native route를 먼저 비활성화하고 table/record를 보존하는 forward-fix이며, `pnpm test:migration:1150`은 fresh/repeat apply, read scope, role isolation, populated data preservation을 검사합니다.
