@@ -1,6 +1,6 @@
 # 1.1.8 Phase 4 — 실패·권한·복구 회귀
 
-- 상태: **진행 중** (`in_progress`, P3 merge main `b995ffe` 인수)
+- 상태: **실제 Windows 인수 대기** (`review`, P3 merge main `b995ffe`, P4 자동 검증 후보 `44d00e4` 인수)
 - 단계 목적: Windows 네이티브 개발안·읽기와 복사의 실패·권한·복구 회귀을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -60,6 +60,14 @@ Windows 앱의 기술·인증·IME/CRDT 개발안을 먼저 승인받고, 승인
 | `AC-1.1.8-04` | 웹/Windows 동일 자료 복사 | 문장형·송폼·Extend·길이 경고 계약이 같다. |
 
 P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다. P2/P3은 관련 재현·수정과 사용자 흐름을 실행하며, P4에서 전체 교차 검증하고 P5에서 실제 결과를 인수한다. 표가 있다는 이유로 테스트 완료로 처리하지 않는다.
+
+## 2026-09-15 자동 검증·개발 인수 (P4 최종 완료 아님)
+
+- 후보 `44d00e4d0497049c662105876fb35aadee3f19bd` / PR #144. Windows callback은 origin-form/exact path/단일 code·state/base64url·constant-time state만 수락하고 절대 URL/wrong state/중복 query를 거부한다. 로그아웃·origin/account 전환·401은 in-flight 목록/상세 요청을 무효화하고 visible copy/token/해당 계정 DPAPI cache를 비운다. `403/404`는 상세와 복사를 비우며 network 오류에서 다른 account/shared body를 새로 채우지 않는다. 새 토큰은 서버 read session 검증 후에만 기기에 저장한다. schema/migration/API/write 경계는 변경하지 않았다.
+- 로컬 .NET 10 core **39 assertions PASS**와 Windows UI/recovery 정적 계약 PASS. Node 24 `pnpm check`·production build PASS. 격리 PostgreSQL 18의 migration 두 번·Vitest **385 PASS / 별도 beta 4 조건부 skip**, native HTTP desktop **3 PASS**. 처음 E2E는 migration-before-readiness 순서 문제, 첫 통합 DB 실행은 `lyricscloud_test` 이름 guard 위반으로 실패했으며 올바른 격리 DB로 재실행해 PASS했다. 실패한 실행을 PASS로 세지 않는다.
+- 같은 후보의 push Actions `34926436515`와 PR Actions `34926460700` 전체 verify·Windows WinUI x64 build **PASS**. 개발 artifact `windows-x64-read-only-44d00e4d0497049c662105876fb35aadee3f19bd` (7일)은 서명 installer가 아니다. web/collaboration/worker/migrate의 개발 image 발행·signature/provenance도 모두 PASS.
+- 같은 SHA를 개발 서버에 배포해 공개 live/ready `1.1.8/dev/p4`, schema `1150_native_read_sessions.sql`, native contract `lyricscloud.native.read.v1`·writes `false`, 비로그인 곡/가사 `401`, invalid callback `400`, 네 서비스 healthy를 확인했다. web/collaboration 실제 재시작 후 ready·health도 PASS했다. 재시작 직후 502/health warming은 비공개 검사 대기 순서를 보정해 재검증했다. 기존 DB volume·secret·allowlist를 보존했고 릴리스 서버는 변경하지 않았다.
+- P4-01의 승인 없음 분기는 이번 실행 입력이 아니다: 사용자의 `1.1.8 Windows 권고안 승인`이 P1에서 먼저 기록됐다. P4-02~04의 자동 DB/API/fixture 증거는 확보했지만 네이티브 UI 실기기의 OAuth 취소/회수/cache/reconnect/copy를 실행하지 못했다. P4-05~07의 실제 Windows launch·process kill/DPAPI·clipboard·Microsoft 한국어 IME·다국어 font fallback·Narrator/high contrast·200% DPI/다중 monitor·권한/presence·서명 MSIX 설치/업데이트/제거는 **미실행**. 자동 Windows runner의 build와 웹 성공은 실제 OS PASS가 아니며 P4 체크박스/완료와 P5/정식 릴리스는 해당 증거 전까지 남긴다.
 
 ## 실행·증거 기록
 
