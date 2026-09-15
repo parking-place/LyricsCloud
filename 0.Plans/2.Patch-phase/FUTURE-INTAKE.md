@@ -323,6 +323,8 @@
 
 | 2026-09-16 1.1.8 P4 self-contained 시험 artifact 준비 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `c81032562312a569b29b45e8ce2efec2d5bbd941` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 사용자의 별도 런타임 설치 없는 Windows 실행 요청에 맞춰 기존 P4 검증 장애를 줄이는 unpackaged x64 시험 폴더 CI만 준비. 실제 Windows OS/OAuth/DPAPI/clipboard/IME/AT/DPI 및 신뢰 서명 MSIX 미실행이므로 P4 review·P5/release·1.1.9 이후와 다른 Future 범위 선소비 없음 | 1.1.8 P4 보정 CI·개발 인수 문서 push 전 행 |
 
+| 2026-09-16 1.1.8 P4 self-contained Windows CI artifact 인계 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `3fecc85db02656bbb70bae6316f27c424754de72` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; P4 시험 artifact의 Windows runner publish/upload PASS만 인계한다. 전체 verify·물리 Windows 실기기·신뢰 서명 MSIX·P4-07 해석은 별개 미완료이며 P4 review·P5/release·1.1.9 이후와 다른 Future 범위 선소비 없음 | 1.1.8 P4 self-contained 시험 artifact 준비 push 전 행 |
+
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
 자동 hook·새 검수 스크립트·별도 스케줄을 만들지 않는다. Agent.md의 필수 단계와 이 절차 한 곳을 사용한다.
