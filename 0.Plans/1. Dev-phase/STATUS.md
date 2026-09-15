@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.7a"
-current_phase: "../2.Patch-phase/1.1.7.a/2phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.7.a/3phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-16"
-next_action: "P2 PR #147을 전용 release/1.1.7a에 병합하고 P3 프로필 UI·홈 로고 동선을 착수한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
+next_action: "P2 PR #147 merge d319d4f 기반 P3 전용 브랜치에서 설정 계정 프로필 편집, 셸 반영·서버 재조회, 브랜드 홈 이동·이탈 guard를 PC/모바일 구현·검증한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
 ```
 
 ## 승인과 기준
@@ -189,6 +189,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7a/P3 | LC-PLAN-117A-P3-01~05 | 설정 계정 프로필 UI·셸 avatar/닉네임·브랜드 `/workspace` 이동·저장 이탈 guard·PC/mobile E2E/상태/Future | P2 PR #147 merge `d319d4f`, Actions `35026679109` 전체 verify/네 signed dev image·동일 SHA 개발 공개 합성 프로필 영속 PASS | 2026-09-16 | in_progress |
 | Codex | 1.1.7a/P2 | LC-PLAN-117A-P2-01~05 | 1151 migration·owned/auth/beta/signup·profile/photo API·공유/export/lifecycle·관련 검증·상태/Future | PR #147 기능 `4c2a42a`, Actions `35026679109` verify/네 signed dev image PASS·동일 SHA 공개 live/ready/합성 owner GET→PATCH→재조회→복귀 PASS; P3 UI 인계 | 2026-09-16 | complete |
 | Codex | 1.1.7a/P1 | LC-PLAN-117A-P1-01~06 | 계약·단일 버전 경계·P1 CI/개발 인수 | `v1.1.7` source `edb8b4a`; 후보 `38cced2`, Actions `35019632430` 전체 verify/네 signed dev image PASS·동일 SHA 공개 live/ready/auth/네 health PASS; 제품 기능은 P2~P5 인계 | 2026-09-16 | complete |
 | Codex | 1.1.7/P5 | LC-NF-1.1.7-P5-01~03 | 사용자 안내·플랫폼 탐색/공통 계약·최종 artifact/CI·개발 공개 인수·상태/Future | 후보 `b1a1e2c`; Actions `34900342849`·`34900363577`; 네 signed dev image·동일 SHA 개발 공개 인수 완료, native gate 미실행 | 2026-09-15 | complete |

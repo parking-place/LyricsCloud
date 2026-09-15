@@ -10,6 +10,16 @@ export const revalidate = 0;
 export default async function SettingsPage() {
   const user = await resolvePageUser();
   if (!user) redirect("/auth");
-  const settings = await getAuthContext().displaySettings.getUserSettings(user.userId);
-  return <WorkspaceShell profile={user} active="settings"><SettingsScreen initialSettings={settings} ownerId={user.userId} /></WorkspaceShell>;
+  const context = getAuthContext();
+  const [settings, profile, googleEmail] = await Promise.all([
+    context.displaySettings.getUserSettings(user.userId),
+    context.ownedData.getProfile(user.userId),
+    context.ownedData.getVerifiedGoogleEmail(user.userId)
+  ]);
+  if (!profile) redirect("/auth");
+  return <WorkspaceShell profile={user} active="settings"><SettingsScreen initialSettings={settings}
+    ownerId={user.userId} initialProfile={{ userId: profile.userId, displayName: profile.displayName,
+      avatarUrl: profile.avatarUrl, rowVersion: profile.rowVersion,
+      displayNameSource: profile.displayNameSource, avatarSource: profile.avatarSource }}
+    googleEmail={googleEmail} /></WorkspaceShell>;
 }

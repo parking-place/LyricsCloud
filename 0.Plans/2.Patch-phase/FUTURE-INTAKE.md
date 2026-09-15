@@ -335,6 +335,8 @@
 
 | 2026-09-16 `1.1.7a` P2 완료·P3 인계 push 전 | `Future_Feature.md`·P2 CI/개발 공개 인수 | 현행 후보 대조 | 최종 기능 SHA `4c2a42ab3a2df08ec2a9833ef0ede5d06c39abf1` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 129개 ID·체크·본문 변경 없음; 새 Future 파일 없음 | P2 전체 CI·네 signed dev image·동일 SHA 개발 migration/health·공개 합성 owner 프로필 영속 인수만 완료. P3 UI·홈 로고, P4/P5, 1.1.8와 다른 Future 범위 선소비 없음 | 직전 1.1.7a P2 보안 inventory·업로드 상한 보정 push 전 행 |
 
+| 2026-09-16 `1.1.7a` P3 UI 후보 push 전 | `Future_Feature.md`·계정 화면/홈 이동 | 현행 후보 대조 | P2 merge `d319d4f02e01c8b9a67b9cc10d48a05327624e70` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 129개 ID·체크·본문 변경 없음; 새 Future 파일 없음 | 승인된 1.1.7a P3 프로필 편집·서버 재조회·우측 홈 mark·저장 이탈 guard 범위만 구현. P4/P5 및 1.1.8 Windows/main과 다른 Future 범위 선소비 없음 | 직전 1.1.7a P2 완료·P3 인계 push 전 행 |
+
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
 자동 hook·새 검수 스크립트·별도 스케줄을 만들지 않는다. Agent.md의 필수 단계와 이 절차 한 곳을 사용한다.

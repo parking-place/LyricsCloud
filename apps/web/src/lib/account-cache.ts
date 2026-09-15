@@ -21,6 +21,14 @@ async function saveOpenEditors(): Promise<boolean> {
   } finally { clearTimeout(timer); }
 }
 
+export async function guardWorkspaceNavigation(userId: string, composing: boolean): Promise<boolean> {
+  if (composing || !navigator.onLine || document.querySelector('[data-pending-profile="true"]')) return false;
+  if (!await saveOpenEditors().catch(() => false)) return false;
+  const { hasOwnerPendingDrafts } = await import("@lyricscloud/editor");
+  if (await hasOwnerPendingDrafts(userId).catch(() => true)) return false;
+  return !document.querySelector('[data-pending-input="true"]');
+}
+
 export async function downloadRecoveryDrafts(userId: string): Promise<void> {
   const { readOwnerPendingDrafts } = await import("@lyricscloud/editor");
   const drafts = new Map<string, RecoveryDraft>((await readOwnerPendingDrafts(userId)).map((draft) => [draft.resourceId, draft]));
