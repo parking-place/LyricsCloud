@@ -1,6 +1,6 @@
 # 1.1.8 — Windows 네이티브 개발안·읽기와 복사
 
-상태: **P1 승인·P2 기반/전체 CI·동일 SHA 개발 인수 완료 / P3 착수 준비**. P2 후보는 `dbfca8800743e6c3ab1ddb3213b3839377e00256`이며 사용자는 2026-09-15 09:11 KST [권고 결정안](../../../docs/runbooks/1.1.8-phase1-windows-native-decision.md)의 WinUI 3/read-copy 범위를 승인했다. 실제 Windows UI/IME/AT·MSIX 배포 서명은 후속 gate다.
+상태: **P1 승인·P2 기반·P3 Windows 읽기 UI/전체 CI/동일 SHA 개발 인수 완료 / P4 착수 준비**. P3 후보는 `b96200cb4adf967401df1e7bf3bab8ff853d709a`이며 사용자는 2026-09-15 09:11 KST [권고 결정안](../../../docs/runbooks/1.1.8-phase1-windows-native-decision.md)의 WinUI 3/read-copy 범위를 승인했다. Windows runner x64 build와 7일 개발 artifact는 PASS했지만 실제 Windows launch·IME/AT·DPAPI/process kill·clipboard·DPI/다중 monitor와 신뢰 서명 MSIX 설치/업데이트/제거는 P4/P5 gate다.
 
 ## 목표
 

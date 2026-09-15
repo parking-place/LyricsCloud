@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.8"
 current_phase: "../2.Patch-phase/1.1.8/3phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-15"
-next_action: "main d889f5c의 P2 기반에서 Windows 읽기·복사 UI, 자료 탐색, 상태/접근성 계약과 개발용 설치 artifact를 구현·검증한다"
+next_action: "PR #143의 P3 완료 기록을 main에 병합한 뒤 1.1.8 P4 실패·권한·복구 회귀를 시작한다"
 ```
 
 ## 승인과 기준
@@ -173,12 +173,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.7 Release | complete | main/tag `edb8b4a`, main CI `34904079990`·tag CI `34906725749`, 네 signed exact digest 운영 배포·공개 복귀/접근성/공유/복구/재시작·전역 beta CLI·GitHub Release 완료 |
 | 1.1.8 P1 | complete | 기준 main `b288dcf`, 승인 검토 proposal `e26fe58`; WinUI 3/read-copy-only·system browser/loopback PKCE·DPAPI cache 승인, JS reference copy/Yjs/auth 34 PASS; Windows SDK/OS/IME/서명은 후속 gate |
 | 1.1.8 P2 | complete | 후보 `dbfca88`, Actions `34918857197`·`34918859682` 전체 verify·Windows WinUI x64 build·네 signed dev image, 동일 SHA 개발 `1.1.8/dev/p2`·schema 1150·native read-only/인증 차단 인수 완료; 실제 Windows launch/IME/AT/MSIX 서명은 후속 gate |
+| 1.1.8 P3 | complete | 후보 `b96200c`, Actions `34922705406`·`34922708443` 전체 verify·Windows WinUI x64 build/개발 artifact·네 signed dev image, 동일 SHA 개발 `1.1.8/dev/p3`·schema 1150·native 곡/가사 비로그인 401 인수 완료; 실제 Windows/IME/AT/서명은 P4/P5 gate |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.8/P3 | LC-NF-1.1.8-P3-01~06 | `apps/windows`, native read API, Windows platform/UI contract test, 상태/Future | P2 merge main `d889f5c`; 실제 Windows UI/IME/AT/다중 모니터·정식 서명은 증거 전 미통과 | 2026-09-15 11:27 KST | in_progress |
+| Codex | 1.1.8/P3 | LC-NF-1.1.8-P3-01~06 | `apps/windows`, native read API, Windows platform/UI contract test, 상태/Future | 후보 `b96200c`; Actions `34922705406`·`34922708443`; Windows build/artifact·네 signed dev image·동일 SHA 개발 인수 완료. 실제 Windows UI/IME/AT/다중 모니터·정식 서명은 P4/P5 gate | 2026-09-15 11:27 KST | complete |
 | Codex | 1.1.8/P2 | LC-NF-1.1.8-P2-01~06 | `apps/windows`, native auth/API/DB, C#·TS contract test, 상태/Future | 후보 `dbfca88`; Actions `34918857197`·`34918859682`; Windows build·네 signed dev image·동일 SHA 개발 인수, 실제 Windows UX gate는 P3~P5 | 2026-09-15 09:15 KST | complete |
 | Codex | 1.1.8/P1 | LC-NF-1.1.8-P1-01~07 | Windows 기술 비교·인증/copy/Yjs fixture·실패/권한/복구·담당/승인 gate·상태/Future | 1.1.7 release `edb8b4a`; 기록 main `b288dcf`; 승인 proposal `e26fe58`; JS reference 34 PASS | 2026-09-15 08:43 KST | complete |
 | Codex | 1.1.7/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | P5 `b1a1e2c`; main/tag `edb8b4a`; Actions `34904079990`·`34906725749` | 2026-09-15 | complete |
@@ -310,6 +311,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 ## 인계
 
 1.1.8 P2 후보 `dbfca8800743e6c3ab1ddb3213b3839377e00256`는 WinUI 3/.NET client foundation, system browser+first-party loopback PKCE broker, digest-only single-use grant와 read-only bearer session, 계정별 DPAPI cache, owner/selected-read API와 web 동등 copy/model/link fixture, `1150` migration과 1.1.8 환경 schema를 구현했다. 로컬 native service/DB 6 PASS, migration fresh/repeat/권한/data-preserving rollback, native HTTP 2 PASS, C# 16 assertions·여섯 서비스 환경 계약과 관련 JS/TypeScript/build/security gate를 통과했다. push/PR Actions `34918857197`·`34918859682` 전체 verify와 Windows native contracts/WinUI x64 build, 네 개발 image의 signature/provenance가 PASS했고, 동일 SHA 개발 서버 `1.1.8/dev/p2`, schema `1150_native_read_sessions.sql`, 네 서비스 healthy에서 read-only capability·anonymous `401`·invalid callback `400`을 확인했다. 개발 DB volume·secret·allowlist를 보존하고 릴리스 서버는 변경하지 않았다. 실제 Windows launch·system browser/DPAPI/process kill·clipboard/keyboard/Narrator/high contrast/DPI와 MSIX 설치/업데이트/제거·정식 서명은 P3~P5에서만 실제 증거로 판정한다.
+
+1.1.8 P3 후보 `b96200cb4adf967401df1e7bf3bab8ff853d709a`는 Windows native 곡/가사·라임·프롬프트 목록/상세/원문 복사, loading/empty/no-access/error 상태, adaptive layout·theme/keyboard/UI Automation 계약, origin/user/expiry 결합 DPAPI credential과 owner 가사 목록 GET을 구현했다. Node 24 check·production build, Vitest 272 PASS·117 조건부 skip, C# 30 assertions, P3 validator와 격리 PostgreSQL 18 migration·native API 2 PASS를 통과했다. push/PR Actions `34922705406`·`34922708443`은 전체 verify, Windows WinUI x64 build와 7일 개발 artifact, E2E 381 PASS·45 조건부 skip 및 후속 지원 브라우저 행렬, 네 개발 image signature/provenance를 통과했다. 동일 SHA 개발 서버 `1.1.8/dev/p3`, schema `1150_native_read_sessions.sql`, 네 서비스 healthy에서 native read-only capability, 비로그인 곡/가사 `401`, invalid callback `400`을 확인했다. 실제 Windows launch·system browser OAuth·DPAPI/process kill·clipboard·Microsoft 한국어 IME·Narrator·high contrast·100/200% DPI·다중 monitor와 신뢰 서명 MSIX 설치/업데이트/제거는 실행하지 않았고 P4/P5 gate로 인계한다. 개발 DB volume·secret·allowlist는 보존했으며 릴리스 서버는 변경하지 않았다.
 
 1.1.7은 PR #139 merge 뒤 main과 annotated `v1.1.7`이 `edb8b4aca833fbf48a3111177db9060dceac42ba`을 가리킨다. main Actions `34904079990`와 tag Actions `34906725749`의 전체 verify와 네 정식 image 발행·서명/provenance/SBOM을 통과했다. 서비스별 `1.1.7`·source SHA·`Release`·`latest`·`Release-latest` 동일 digest를 확인하고 릴리스 서버에 migrate 우선 exact digest로 배포해 `1.1.7/release`, phase 없음, schema `1140_sharing_stability.sql`, 네 서비스 healthy를 확인했다. 공개 PC/mobile×dark/light 생성·연결, 3계정 공유/복구·offline writer 병합·bounded/drained outbox·reader 회수·계정/메모 격리, reduced motion·720px reflow·forced colors·4배 CPU 저장과 실제 서비스 재시작 뒤 API·CRDT·revision exact 원문·목록 복귀가 PASS했고 fixture를 제거했다. 기존 DB volume·secret·HMAC allowlist·beta code와 `/usr/local/bin/LyricsCloud betacode ls`를 보존하고 active/unique 25건을 원문 노출 없이 확인했으며 GitHub Release를 발행했다. 실제 native SDK·앱·OS/물리 기기·IME/AT/zoom·서명/스토어 미실행과 `OPS-100-001` backup 예외를 유지하며 1.1.8 P1로 이동한다.
 
