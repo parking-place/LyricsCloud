@@ -319,12 +319,12 @@ public sealed partial class MainWindow : Window
         CancelDetailLoad();
         ClearDetails();
         if (_api is null || _origin is null || _authenticatedUserId is null) return;
-        var id = SharedLyricIdTextBox.Text.Trim();
-        if (!Guid.TryParse(id, out _))
+        if (!Guid.TryParse(SharedLyricIdTextBox.Text.Trim(), out var parsedId))
         {
             SetState(new(NativeViewState.Error, "공유 가사 UUID를 확인해 주세요.", false));
             return;
         }
+        var id = parsedId.ToString("D");
         _visibleSharedId = id;
         await RevalidateSharedAsync(id);
     }
@@ -538,6 +538,7 @@ public sealed partial class MainWindow : Window
         await _tokenVault.ClearAsync();
         if (origin is not null && userId is not null)
             await _accountCache.PurgeAccountAsync(NativeCredentialPolicy.NormalizeOrigin(origin), userId);
+        SharedLyricIdTextBox.Text = "";
         _authenticatedUserId = null;
     }
 
