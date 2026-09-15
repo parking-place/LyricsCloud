@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.8"
-current_phase: "../2.Patch-phase/1.1.8/2phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.8/3phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-15"
-next_action: "P2 완료 기록을 PR #142로 main에 병합한 뒤 1.1.8 P3 native 읽기·복사 사용자 흐름을 시작한다"
+next_action: "main d889f5c의 P2 기반에서 Windows 읽기·복사 UI, 자료 탐색, 상태/접근성 계약과 개발용 설치 artifact를 구현·검증한다"
 ```
 
 ## 승인과 기준
@@ -178,6 +178,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.8/P3 | LC-NF-1.1.8-P3-01~06 | `apps/windows`, native read API, Windows platform/UI contract test, 상태/Future | P2 merge main `d889f5c`; 실제 Windows UI/IME/AT/다중 모니터·정식 서명은 증거 전 미통과 | 2026-09-15 11:27 KST | in_progress |
 | Codex | 1.1.8/P2 | LC-NF-1.1.8-P2-01~06 | `apps/windows`, native auth/API/DB, C#·TS contract test, 상태/Future | 후보 `dbfca88`; Actions `34918857197`·`34918859682`; Windows build·네 signed dev image·동일 SHA 개발 인수, 실제 Windows UX gate는 P3~P5 | 2026-09-15 09:15 KST | complete |
 | Codex | 1.1.8/P1 | LC-NF-1.1.8-P1-01~07 | Windows 기술 비교·인증/copy/Yjs fixture·실패/권한/복구·담당/승인 gate·상태/Future | 1.1.7 release `edb8b4a`; 기록 main `b288dcf`; 승인 proposal `e26fe58`; JS reference 34 PASS | 2026-09-15 08:43 KST | complete |
 | Codex | 1.1.7/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | P5 `b1a1e2c`; main/tag `edb8b4a`; Actions `34904079990`·`34906725749` | 2026-09-15 | complete |
