@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { Pool } from "pg";
+import { dropMigrationTestDatabase } from "./migration-test-cleanup.mjs";
 
 const source = new URL(process.env.DATABASE_URL ?? "");
 if (!source.pathname.slice(1).endsWith("_test")) throw new Error("requires disposable *_test database");
@@ -47,7 +48,8 @@ try {
   } finally { await target.end(); }
   console.log("1110 public-link fresh/repeat, minimal projection, RLS, revoke, rollback and recovery: OK");
 } finally {
-  await admin.query(`drop database if exists "${databaseName}" with (force)`).catch(() => undefined); await admin.end();
+  try { await dropMigrationTestDatabase(admin, databaseName); }
+  finally { await admin.end(); }
 }
 
 async function user(pool, displayName) {

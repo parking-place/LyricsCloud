@@ -12,7 +12,7 @@ version=$(tr -d '\r\n' < "$repository_root/VERSION")
 status_version=$(awk -F'"' '/^current_version:/ { print $2; exit }' \
   "$repository_root/0.Plans/1. Dev-phase/STATUS.md")
 
-if [[ ! $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+if [ "$version" != "1.1.7a" ] && [[ ! $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
   printf 'VERSION must contain one stable semantic version.\n' >&2
   exit 2
 fi
@@ -34,14 +34,17 @@ esac
 
 case "$channel:$ref_type" in
   dev:branch)
-    if [[ "$ref_name" =~ ^phase/([0-9]+\.[0-9]+\.[0-9]+)- ]]; then
+    if [[ "$ref_name" =~ ^phase/([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a)- ]]; then
       ref_version=${BASH_REMATCH[1]}
+    elif [[ "$ref_name" == phase/* ]]; then
+      printf 'Development phase branch has an invalid version.\n' >&2
+      exit 6
     else
       ref_version=$version
     fi
     ;;
   release:tag)
-    if [[ ! "$ref_name" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+    if [[ ! "$ref_name" =~ ^v([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a)$ ]]; then
       printf 'Release Git tag must contain one stable semantic version.\n' >&2
       exit 6
     fi
