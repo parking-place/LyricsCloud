@@ -321,6 +321,8 @@
 
 | 2026-09-16 `1.1.7a` P1 Playwright fixture 보정 push 전 | 원격 CI 오류·`Future_Feature.md` | 현행 후보 대조 | P1 후보 `b6031851ecea1361b39274cd6be6412c93f71311` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 129개 ID·체크·본문 변경 없음; 새 Future 파일 없음 | 기존 Playwright production fixture/health 버전 기대값만 `1.1.7a`로 정렬하고 회귀 추가. 프로필 구현·홈 UI·1.1.8·다른 Future 범위는 선소비하지 않음 | 직전 1.1.7a 독립 release base·P1 승인 기록 push 전 행 |
 
+| 2026-09-16 `1.1.7a` P1 1110 cleanup 보정 push 전 | CI 1110 종료 경쟁·`Future_Feature.md` | 현행 후보 대조 | P1 후보 `6b62ad1503bbb76776512f0cd54db96e6c86392e` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 129개 ID·체크·본문 변경 없음; 새 Future 파일 없음 | 1110 임시 DB cleanup만 UUID 범위 비강제 재시도로 바꿔 기존 rollback/RLS 수용을 유지. 프로필/홈 UI·1.1.8·다른 Future 범위는 선소비하지 않음 | 직전 1.1.7a P1 Playwright fixture 보정 push 전 행 |
+
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
 자동 hook·새 검수 스크립트·별도 스케줄을 만들지 않는다. Agent.md의 필수 단계와 이 절차 한 곳을 사용한다.
