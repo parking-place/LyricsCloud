@@ -3,14 +3,16 @@
 ```yaml
 current_version: "1.1.8"
 current_phase: "../2.Patch-phase/1.1.8/1phase.md"
-state: "review"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-15"
-next_action: "사용자가 ADR-NF-004의 WinUI 3/read-copy 권고 범위를 승인하면 P1 최초 소비 결정과 source SHA를 봉인하고 P2를 시작한다"
+next_action: "P1 승인 기록을 PR #141로 main에 병합한 뒤에만 승인된 1.1.8 P2 Windows 기반 구현을 시작한다"
 ```
 
 ## 승인과 기준
+
+2026-09-15 09:11 KST 사용자가 ``1.1.8 Windows 권고안 승인``이라고 명시했다. 승인 범위는 WinUI 3/.NET native UI, 1.1.8 read/copy-only, WebView2 미포함, system browser+first-party loopback PKCE, 계정별 DPAPI cache다. 1.1.9 native editor/Yjs와 실패 시 WebView2 대안은 별도 gate로 남고, Windows 실제 OS/IME/AT/MSIX 서명 증거 없이 후속 Phase나 릴리스를 통과로 표시하지 않는다. 승인 검토 proposal source는 `e26fe58c49c1d67b5435bab6018148bb8a75eca0`이다.
 
 2026-09-14 사용자가 직전 UX P2 권고안 `B-1` 확인 질문에 ``1.1.14까지 달렷``이라고 답했다. 이를 통합 workspace+Flat-depth의 명시 선택과 UX P3~P5, 1.1.5~1.1.14의 계획된 Phase·각 출시 가능한 버전의 정식 릴리스 실행 승인으로 기록한다. 기존 기능 삭제는 승인하지 않았으며 CodeMirror/Yjs·IME·selection/undo·초안·권한/복구·URL/API/DB 계약을 유지한다. 네이티브 SDK·실기기·서명·스토어 등 각 계획의 조건부 gate는 별도 실제 증거 없이 완료나 릴리스로 표시하지 않는다.
 
@@ -169,13 +171,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.7 P4 | complete | 후보 `66f2f79`, Actions `34894853203`·`34894869965`, 네 signed dev image·동일 SHA 공개 reduced motion/reflow/forced colors·4x CPU 저장·서비스 재시작 영속 인수 완료 |
 | 1.1.7 P5 | complete | 후보 `b1a1e2c`, Actions `34900342849`·`34900363577`, Vitest 376 PASS·E2E 379 PASS·네 signed dev image·동일 SHA 공개 접근성 fallback/저장·복귀·서비스 재시작 영속 인수 완료 |
 | 1.1.7 Release | complete | main/tag `edb8b4a`, main CI `34904079990`·tag CI `34906725749`, 네 signed exact digest 운영 배포·공개 복귀/접근성/공유/복구/재시작·전역 beta CLI·GitHub Release 완료 |
-| 1.1.8 P1 | review | 기준 main `b288dcf`, WinUI 3/read-copy-only·system browser/loopback PKCE·DPAPI cache 권고, JS reference copy/Yjs/auth 34 PASS; 사용자 기술·범위 승인과 Windows SDK/OS/IME/서명 미완료 |
+| 1.1.8 P1 | complete | 기준 main `b288dcf`, 승인 검토 proposal `e26fe58`; WinUI 3/read-copy-only·system browser/loopback PKCE·DPAPI cache 승인, JS reference copy/Yjs/auth 34 PASS; Windows SDK/OS/IME/서명은 후속 gate |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.8/P1 | LC-NF-1.1.8-P1-01~07 | Windows 기술 비교·인증/copy/Yjs fixture·실패/권한/복구·담당/승인 gate·상태/Future | 1.1.7 release `edb8b4a`; 기록 main `b288dcf`; JS reference 34 PASS; 플랫폼 선택 미승인 | 2026-09-15 08:43 KST | review |
+| Codex | 1.1.8/P1 | LC-NF-1.1.8-P1-01~07 | Windows 기술 비교·인증/copy/Yjs fixture·실패/권한/복구·담당/승인 gate·상태/Future | 1.1.7 release `edb8b4a`; 기록 main `b288dcf`; 승인 proposal `e26fe58`; JS reference 34 PASS | 2026-09-15 08:43 KST | complete |
 | Codex | 1.1.7/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | P5 `b1a1e2c`; main/tag `edb8b4a`; Actions `34904079990`·`34906725749` | 2026-09-15 | complete |
 | Codex | 1.1.7/P5 | LC-NF-1.1.7-P5-01~03 | 사용자 안내·플랫폼 탐색/공통 계약·최종 artifact/CI·개발 공개 인수·상태/Future | 후보 `b1a1e2c`; Actions `34900342849`·`34900363577`; 네 signed dev image·동일 SHA 개발 공개 인수 완료, native gate 미실행 | 2026-09-15 | complete |
 | Codex | 1.1.7/P4 | LC-NF-1.1.7-P4-01~03 | 1.1.7 회귀·접근성/성능 대리·협업/presence/font/IME 영향·상태/Future | 후보 `66f2f79`, 두 CI·네 signed dev image·동일 SHA 개발 공개 저장/재시작 인수 완료; 실제 OS/기기·AT·OS zoom은 별도 미실행 | 2026-09-15 | complete |

@@ -7,7 +7,7 @@
 | `ADR-NF-001` | 베타 접근·해시 allowlist·원자 grant | 1.0.1 P1 | Accepted | [결정](../../docs/adr/ADR-NF-001-beta-access.md) |
 | `ADR-NF-002` | 외부 metadata 취득·보안 경계 | 1.0.11 P1 | Deferred / no-go; 공식 계약 확보 시 재개 | [결정](../../docs/adr/ADR-NF-002-external-metadata.md) |
 | `ADR-NF-003` | owner/actor·공유 protocol | 1.1.0 P1; 링크 읽기 1.1.1; 쓰기 확장 1.1.2~1.1.3; 안정화 1.1.4 | Accepted through 1.1.4 event ordering and recovery contract | [결정](../../docs/adr/ADR-NF-003-sharing.md) |
-| `ADR-NF-004` | Windows 기술·인증·편집 | 1.1.8 P1; 편집 인수 1.1.9 | Recommended; 사용자 기술·범위 승인 대기 | [결정](../../docs/adr/ADR-NF-004-windows-native.md) |
+| `ADR-NF-004` | Windows 기술·인증·편집 | 1.1.8 P1; 편집 인수 1.1.9 | Accepted for 1.1.8 read/copy; 1.1.9 editor gate pending | [결정](../../docs/adr/ADR-NF-004-windows-native.md) |
 | `ADR-NF-005` | Android 기술·수명주기 | 1.1.10 P1; 편집 인수 1.1.11 | Proposed | [결정](../../docs/adr/ADR-NF-005-android-native.md) |
 | `PROD-NF-001` | 가입·일회용 코드 동선 | 1.0.1 P1 | Accepted | [결정](../../docs/product/PROD-NF-001-beta-onboarding.md) |
 | `PROD-NF-002` | 원문·mode·송폼·복사 경고 | 1.0.3 P1; 1.0.4~1.0.6 확장 | Accepted through 1.0.6 | [결정](../../docs/product/PROD-NF-002-editor-output.md) |

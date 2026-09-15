@@ -1,10 +1,12 @@
 # ADR-NF-004 — Windows native 기술·편집기·인증
 
-- 상태: **Recommended / 사용자 기술·범위 승인 대기**
+- 상태: **Accepted for 1.1.8 read/copy foundation / 1.1.9 editor gate 유지**
 - 작성일: 2026-09-09
 - P1 재검토일: 2026-09-15
 - 결정 Phase: 1.1.8 P1, 편집 인수 1.1.9
-- 승인자/시각: **미승인 — 아래 권고안을 사용자가 명시적으로 승인하기 전에는 1.1.8 P2에 진입하지 않는다.**
+- 승인자/시각: **사용자 / 2026-09-15 09:11 KST**
+- 승인 문구: **`1.1.8 Windows 권고안 승인`**
+- 승인한 적용 범위: **WinUI 3/.NET native UI, 1.1.8 read/copy-only, WebView2 미포함, system browser + first-party loopback PKCE, 계정별 DPAPI cache. 1.1.9 native editor/Yjs는 별도 gate이며 실패 시 WebView2 대안을 다시 승인받는다.**
 - 기준 source: `b288dcfd5d3d0a69868b5201c878df7a221e63f3` (`v1.1.7` 릴리스 기록이 병합된 main)
 
 ## 해결할 질문과 범위
@@ -26,7 +28,7 @@ Microsoft는 신규 native Windows desktop 앱에 WinUI 3와 Windows App SDK를 
 
 ## 권고 결정
 
-사용자 승인 시 다음 조합을 선택한다.
+사용자 승인에 따라 다음 조합을 선택한다.
 
 1. `apps/windows/LyricsCloud.Windows`에 C#/.NET WinUI 3 packaged app을 만든다.
 2. 1.1.8 제품 화면은 WinUI control로 구성하고 WebView2를 ship하지 않는다.
@@ -83,7 +85,7 @@ canonical copy 구현은 `packages/editor/src/copy.ts`다. P2 C# 구현은 다�
 
 WinUI 3 기본 packaged MSIX를 사용한다. [Microsoft packaging 안내](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/packaging/)에 따라 P2/P3의 개발용 test-signed package와 P5의 배포 서명을 구분한다. Store 또는 신뢰된 인증서가 없는 build를 정식 release로 표시하지 않는다.
 
-P2 진입 전 필요한 승인:
+P2 진입 전 필요했던 승인은 2026-09-15 09:11 KST 사용자 응답으로 충족됐다.
 
 - WinUI 3/.NET native UI, 1.1.8 read/copy-only, WebView2 미포함
 - 시스템 브라우저 + first-party broker + loopback PKCE
@@ -104,7 +106,7 @@ P5 완료/릴리스 전 실제 증거:
 
 | 소유 경로 | P2 이후 책임 | P1 상태 |
 |---|---|---|
-| `apps/windows/LyricsCloud.Windows/**` | WinUI UI, broker client, DPAPI cache, clipboard | 미생성 / 승인 대기 |
+| `apps/windows/LyricsCloud.Windows/**` | WinUI UI, broker client, DPAPI cache, clipboard | 미생성 / P2 구현 대기 |
 | `packages/auth/src/**`, native auth API | single-use broker grant·PKCE·bearer session | 설계만 완료 |
 | `packages/domain/src/**` | 기존 JSON/error/copy 상수의 공유 가능한 계약 | 의미 변경 없음 |
 | `tests/new-feature/1.1.8.contract.test.ts` | Node reference fixture 검증 | P1 spike |
@@ -122,4 +124,4 @@ native 배포 채널만 중단하고 웹·서버 JSON·DB·Yjs 원문·기존 se
 - [요구 추적](../../0.Plans/2.Patch-phase/Requirements-Traceability.md)
 - [1.1.7 플랫폼 인계](../architecture/1.1.7-PLATFORM-HANDOFF.md)
 
-이 문서와 P1 fixture 생성은 앱 구현, SDK/유료 계정 설치, 서명 키 사용, Store 등록, main/tag/image/서버 배포 승인이 아니다. 사용자 승인 시 선택 대안·시각·정확한 적용 범위와 남은 실제 Windows gate를 이 원문에 추가한다.
+이 문서와 P1 fixture 생성은 앱 구현, SDK/유료 계정 설치, 서명 키 사용, Store 등록, main/tag/image/서버 배포 완료가 아니다. 위 승인은 1.1.8 P2~P5 구현 범위와 이미 승인된 버전별 릴리스 절차의 기술 입력이며, 남은 실제 Windows gate를 우회하지 않는다.
