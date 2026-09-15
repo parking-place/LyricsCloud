@@ -131,6 +131,8 @@ jobs:
         run: pnpm test:performance:0700-release
       - name: Static checks
         run: pnpm check
+      - name: Verify 1.1.8 Windows read-only UI contract
+        run: pnpm test:windows-ui:118
       - name: Verify 0.9.0 UI audit baseline
         run: pnpm test:audit:0901 && pnpm test:release:0905
       - name: Shell and Docker cleanup contract
@@ -260,8 +262,15 @@ jobs:
           dotnet-version: 10.0.401
       - name: Verify shared Windows read and copy contracts
         run: dotnet run --project ../../tests/native/windows/LyricsCloud.Windows.ContractTests/LyricsCloud.Windows.ContractTests.csproj --configuration Release
-      - name: Build WinUI 3 x64 foundation
+      - name: Build WinUI 3 x64 read-only app
         run: dotnet build LyricsCloud.Windows/LyricsCloud.Windows.csproj --configuration Release -p:Platform=x64
+      - name: Preserve x64 development build
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-x64-read-only-${{ github.sha }}
+          path: apps/windows/LyricsCloud.Windows/bin/x64/Release/**
+          if-no-files-found: error
+          retention-days: 7
 
   publish:
     name: Publish ${{ matrix.service }} image

@@ -53,6 +53,9 @@ test.describe("1.1.8 Windows read-only API", () => {
     expect(await (await request.get(`/api/native/v1/songs/${song}`, { headers: aliceHeaders })).json())
       .toMatchObject({ song: { id: song, title: "합성 Windows 곡", workNotes: "합성 작업 메모" } });
     expect((await request.get(`/api/native/v1/songs/${song}`, { headers: bobHeaders })).status()).toBe(404);
+    expect(await (await request.get(`/api/native/v1/songs/${song}/lyrics`, { headers: aliceHeaders })).json())
+      .toMatchObject({ items: [{ id: lyric, title: "합성 Windows 가사", body: "바라봐, 마냥" }] });
+    expect((await request.get(`/api/native/v1/songs/${song}/lyrics`, { headers: bobHeaders })).status()).toBe(404);
     expect(await (await request.get(`/api/native/v1/lyrics/${lyric}`, { headers: aliceHeaders })).json())
       .toMatchObject({ lyric: { body: "바라봐, 마냥", memo: "합성 메모" } });
     expect(await (await request.get(`/api/native/v1/songs/${song}/links?type=rhyme_note&state=linked`, { headers: aliceHeaders })).json())
