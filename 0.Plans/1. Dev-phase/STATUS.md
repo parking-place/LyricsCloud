@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.8"
-current_phase: "../2.Patch-phase/1.1.8/3phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.8/4phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-15"
-next_action: "PR #143의 P3 완료 기록을 main에 병합한 뒤 1.1.8 P4 실패·권한·복구 회귀를 시작한다"
+next_action: "main b995ffe의 P3 기반에서 1.1.8 native 인증 취소/회수·계정 격리·offline/reconnect·서버 재시작과 실제 Windows gate를 검증한다"
 ```
 
 ## 승인과 기준
@@ -179,6 +179,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-01~07 | native auth/read 회귀, Windows contract/UI harness, 서버 restart·상태/Future | P3 merge main `b995ffe`; 실제 Windows OS/IME/AT/DPI/다중 monitor·신뢰 서명 증거 없이는 P4/P5 미통과 | 2026-09-15 12:32 KST | in_progress |
 | Codex | 1.1.8/P3 | LC-NF-1.1.8-P3-01~06 | `apps/windows`, native read API, Windows platform/UI contract test, 상태/Future | 후보 `b96200c`; Actions `34922705406`·`34922708443`; Windows build/artifact·네 signed dev image·동일 SHA 개발 인수 완료. 실제 Windows UI/IME/AT/다중 모니터·정식 서명은 P4/P5 gate | 2026-09-15 11:27 KST | complete |
 | Codex | 1.1.8/P2 | LC-NF-1.1.8-P2-01~06 | `apps/windows`, native auth/API/DB, C#·TS contract test, 상태/Future | 후보 `dbfca88`; Actions `34918857197`·`34918859682`; Windows build·네 signed dev image·동일 SHA 개발 인수, 실제 Windows UX gate는 P3~P5 | 2026-09-15 09:15 KST | complete |
 | Codex | 1.1.8/P1 | LC-NF-1.1.8-P1-01~07 | Windows 기술 비교·인증/copy/Yjs fixture·실패/권한/복구·담당/승인 gate·상태/Future | 1.1.7 release `edb8b4a`; 기록 main `b288dcf`; 승인 proposal `e26fe58`; JS reference 34 PASS | 2026-09-15 08:43 KST | complete |
