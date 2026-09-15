@@ -7,7 +7,7 @@ const read = (relative) => readFile(path.join(root, relative), "utf8");
 const routeRoot = path.join(root, "apps/web/src/app/api");
 const routeFiles = (await filesBelow(routeRoot)).filter((file) => file.endsWith("/route.ts")).sort();
 const routePaths = routeFiles.map((file) => `/api/${path.relative(routeRoot, path.dirname(file)).split(path.sep).join("/")}`);
-assertEqual(routePaths.length, 90, "API route files");
+assertEqual(routePaths.length, 91, "API route files");
 
 const ownership = await read("docs/security/0.9.1-api-ownership-matrix.md");
 for (const routePath of routePaths) {

@@ -100,17 +100,17 @@ P5 완료/릴리스 전 실제 증거:
 - 같은 fixture의 web/Windows copy 동등성
 - Windows runner의 build/test, 설치/제거/업데이트, 정식 배포용 서명과 provenance
 
-현재 Linux host에서는 실제 Windows UI/OS 상호작용을 실행할 수 없다. GitHub `windows-latest`의 고정 SDK restore·C# 계약·WinUI x64 build는 후보 `dbfca88`에서 PASS했지만, 위 실제 launch·IME/AT·설치/서명 항목을 대신하지 않는다.
+현재 Linux host에서는 실제 Windows UI/OS 상호작용을 실행할 수 없다. GitHub `windows-latest`의 고정 SDK restore·C# 계약·WinUI x64 build와 개발 artifact는 P3 후보 `b96200c`에서 PASS했지만, 위 실제 launch·IME/AT·설치/서명 항목을 대신하지 않는다.
 
 ## 영향받는 인터페이스와 담당
 
 | 소유 경로 | P2 이후 책임 | P1 상태 |
 |---|---|---|
-| `apps/windows/LyricsCloud.Windows/**` | WinUI UI, broker client, DPAPI cache, clipboard | P2 foundation·Windows CI WinUI x64 build PASS; 실제 Windows launch/clipboard 대기 |
-| `packages/auth/src/**`, native auth API | single-use broker grant·PKCE·bearer session | P2 구현·Linux/HTTP·전체 CI·동일 SHA 개발 API PASS |
+| `apps/windows/LyricsCloud.Windows/**` | WinUI UI, broker client, DPAPI cache, clipboard | P3 read/copy UI·Windows CI WinUI x64 build/개발 artifact PASS; 실제 Windows launch/clipboard 대기 |
+| `packages/auth/src/**`, native auth API | single-use broker grant·PKCE·bearer session | P2 구현, P3 owner 가사 목록·Linux/HTTP·전체 CI·동일 SHA 개발 API PASS |
 | `packages/domain/src/**` | 기존 JSON/error/copy 상수의 공유 가능한 계약 | 의미 변경 없음 |
 | `tests/new-feature/1.1.8.contract.test.ts` | Node reference fixture 검증 | P1 spike |
-| `tests/native/windows/**` | 공통 fixture와 이후 Windows runner | C# 16 assertions와 Windows runner PASS; 실제 UI/OS 상호작용 대기 |
+| `tests/native/windows/**` | 공통 fixture와 이후 Windows runner | P3 C# 30 assertions와 Windows runner PASS; 실제 UI/OS 상호작용 대기 |
 | DB migration | native grant/session 저장이 필요하면 forward/rollback과 RLS | `1150` read-only session·role isolation·data-preserving rollback·동일 SHA 개발 적용 PASS |
 
 ## rollback과 중단 조건

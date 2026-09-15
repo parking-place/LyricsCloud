@@ -1,6 +1,6 @@
 # 1.1.8 Phase 3 — PC·모바일 사용자 흐름
 
-- 상태: **검토** (`review`, 계획 미착수)
+- 상태: **완료** (`complete`, 후보 `b96200cb4adf967401df1e7bf3bab8ff853d709a`)
 - 단계 목적: Windows 네이티브 개발안·읽기와 복사의 PC·모바일 사용자 흐름을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -41,12 +41,12 @@ Windows 앱의 기술·인증·IME/CRDT 개발안을 먼저 승인받고, 승인
 
 ## 작업 체크리스트
 
-- [ ] `LC-NF-1.1.8-P3-01` 곡·가사·라임·프롬프트 탐색과 정확한 복사를 네이티브 UI로 제공한다.
-- [ ] `LC-NF-1.1.8-P3-02` 인증/연결/권한 없음·앱 버전·원문 보관 한계를 표시한다.
-- [ ] `LC-NF-1.1.8-P3-03` 키보드·고DPI·다중 모니터·스크린리더를 검사한다.
-- [ ] `LC-NF-1.1.8-P3-04` 승인된 배포 방식의 서명 installer·업데이트/제거 안내를 준비하고 읽기 전용 범위를 분명히 한다.
-- [ ] `LC-NF-1.1.8-P3-05` 제안 `tests/e2e/new-feature-1.1.8.spec.ts`에 실제 기능 경로를 등록하고 정상·빈 상태·실패·권한 없음·로딩을 PC와 모바일에서 검사한다. native이면 플랫폼 runner와 UI 테스트로 대체/병행한다.
-- [ ] `LC-NF-1.1.8-P3-06` 입력·선택·IME·undo·로컬 초안·서버 저장 상태의 연속성을 확인한다. 정상 UI만 보여주기 위해 오류/권한 검사를 제거하지 않는다.
+- [x] `LC-NF-1.1.8-P3-01` 곡·가사·라임·프롬프트 탐색과 정확한 복사를 네이티브 UI로 제공한다.
+- [x] `LC-NF-1.1.8-P3-02` 인증/연결/권한 없음·앱 버전·원문 보관 한계를 표시한다.
+- [x] `LC-NF-1.1.8-P3-03` 키보드·고DPI·다중 모니터·스크린리더를 검사한다. P3에서는 adaptive XAML·accessible name/live region·keyboard accelerator와 Windows runner build를 검사했고 실제 OS 상호작용은 P4/P5 미실행 gate로 기록했다.
+- [x] `LC-NF-1.1.8-P3-04` 승인된 배포 방식의 서명 installer·업데이트/제거 안내를 준비하고 읽기 전용 범위를 분명히 한다. 개발 artifact와 설치 안내만 준비했으며 신뢰 서명 installer 통과를 주장하지 않는다.
+- [x] `LC-NF-1.1.8-P3-05` 제안 `tests/e2e/new-feature-1.1.8.spec.ts`에 실제 기능 경로를 등록하고 정상·빈 상태·실패·권한 없음·로딩을 PC와 모바일에서 검사한다. native이면 플랫폼 runner와 UI 테스트로 대체/병행한다.
+- [x] `LC-NF-1.1.8-P3-06` 입력·선택·IME·undo·로컬 초안·서버 저장 상태의 연속성을 확인한다. 1.1.8 native는 쓰기 경로를 제공하지 않고, 기존 웹 편집 회귀와 read-only 오류/권한 상태를 유지했다. 실제 Windows IME는 P4/P5 gate다.
 
 ## 구체적 검증
 
@@ -63,14 +63,22 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 [공통 명령·검증](../QUALITY-GATES.md)을 먼저 읽는다. 기존 runner의 영향받은 검사를 우선 사용하고 필요할 때만 회귀를 보강한다. 지원 환경에서 관련 DB/E2E를 선택하며 동일 변경의 full suite는 로컬/CI 중 한 곳과 필수 게이트만 따른다. native은 승인된 SDK/플랫폼 명령을 기록한다. 없는 도구·실제 IME·물리 기기 검증을 모사 결과로 통과시켰다고 표시하지 않는다. 문서-only Phase는 링크·범위·결정·설계 검토로 별도 인수한다.
 
+- 기준 main `d889f5ca9c3c105e27f2361f51981e08640d4d29`, 구현/개발 인수 후보 `b96200cb4adf967401df1e7bf3bab8ff853d709a`.
+- 로컬 Node 24: `pnpm check`, `pnpm build`, Vitest 272 PASS·117 DB 조건부 skip, P3 Windows UI validator PASS, C# core 30 assertions PASS. 격리 PostgreSQL 18에서 `1150` migration PASS와 native owner/cross-account/PKCE 2 PASS.
+- push/PR Actions `34922705406`·`34922708443`: 전체 verify와 Windows native contracts/WinUI x64 build PASS. 전체 E2E 381 PASS·45 조건부 skip, 지원 브라우저 후속 행렬 PASS. 개발 artifact ID `10378183472`, 이름 `windows-x64-read-only-b96200cb4adf967401df1e7bf3bab8ff853d709a`, 7일 보존.
+- 개발 image signature/provenance PASS: web `sha256:e96e2bbd297fb1d0fbd5ac6c7af232ec04161f72aebcd63e32c9b8f75748739f`, collaboration `sha256:04f5320c991aadfcb0641d50134d82b8912f5a27cebb98c4b03a20655883f3c6`, worker `sha256:f55040d462bde017008de8fbef5cebae6b7795d9ef1a366d06d12a091d48dd06`, migrate `sha256:46d89e5a00d23990241fb66a909e2c56e2c78921294160ca13d7167dfcd31f4e`.
+- 동일 SHA 개발 공개 인수: `1.1.8/dev/p3`, schema `1150_native_read_sessions.sql`, contract `lyricscloud.native.read.v1`, writes `false`, 비로그인 곡/가사 조회 `401`, invalid callback `400`, postgres/web/collaboration/worker healthy. volume·secret·allowlist 보존, 릴리스 서버 무변경.
+- `node scripts/validate-1004-documentation.mjs`는 P3에서 실행했으나 현재 버전 CHANGELOG와 `1.1.8 Phase 5` 정책 marker 두 항목을 요구해 FAIL했다. 이는 P5 담당 산출물이며 P3 PASS로 기록하거나 미리 채우지 않는다. 현재 변경은 `git diff --check`와 아래 Future 검수를 통과했다.
+- 미실행: 실제 Windows app launch·system browser OAuth·DPAPI/process kill·clipboard·Microsoft 한국어 IME·Narrator·high contrast·100/200% DPI·다중 monitor, 신뢰 서명 MSIX 설치/업데이트/제거. 자동 build/정적 UI 계약을 실제 OS PASS로 승격하지 않고 P4/P5에 인계한다.
+
 ## 완료 조건
 
-- [ ] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
-- [ ] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
-- [ ] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
-- [ ] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
-- [ ] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
-- [ ] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
+- [x] 작업 ID마다 코드/설계·실행/검토 증거·정확한 SHA가 연결되어 있다.
+- [x] 현재 패치의 원문·권한·복구·오류 처리가 정상 동작과 함께 검증되었다.
+- [x] 미실행·남은 결함·외부 차단·보류한 기술 결정이 숨김없이 기록되었다.
+- [x] 현재 상태/담당/변경 파일·관련 문서가 실제 수행 내용과 일치한다.
+- [x] 구현 Phase는 CI·동일 SHA 개발 인수를, 설계-only는 승인 증거를 갖췄다.
+- [x] main·Release·운영 변경은 별도 현재 승인 없이 수행하지 않았다.
 
 ## 산출물
 

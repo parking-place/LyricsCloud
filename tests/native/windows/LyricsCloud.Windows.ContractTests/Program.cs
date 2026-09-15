@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using LyricsCloud.Windows.Core;
 
+var assertions = 0;
 using var fixture = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "fixture.json")));
 var root = fixture.RootElement;
 Equal("lyricscloud.windows.contract.v1", root.GetProperty("schemaVersion").GetString(), "fixture schema");
@@ -43,14 +45,49 @@ var workspace = JsonSerializer.Deserialize<NativeSunoWorkspace>("""
 Equal("v5", workspace?.ModelLabel, "model metadata");
 Equal("합성 링크", workspace?.Links.Single().Title, "link metadata");
 
-Console.WriteLine("Windows core contract: 16 assertions PASS");
+var list = JsonSerializer.Deserialize<NativeListResult<NativeSong>>("""
+    {"items":[{"id":"00000000-0000-4000-8000-000000000010","title":"합성 곡","description":"","workNotes":"메모","status":"draft","color":null,"isFavorite":false,"isPinned":false,"pinOrder":null,"rowVersion":1,"createdAt":"2026-09-15T00:00:00Z","updatedAt":"2026-09-15T00:00:00Z","lyricCount":2}],"totalCount":1,"nextCursor":"next"}
+    """, jsonOptions);
+Equal(1, list?.Items.Count, "native song list items");
+Equal("next", list?.NextCursor, "native cursor");
+Equal("가사 2개 · draft", NativeLibraryPresentation.Entry(list!.Items.Single()).Subtitle, "song list presentation");
 
-static void Equal<T>(T expected, T actual, string name)
+Equal(NativeViewState.Loading, NativeLibraryState.Loading("곡").State, "loading state");
+Equal(NativeViewState.Empty, NativeLibraryState.Loaded("곡", 0).State, "empty state");
+Equal(NativeViewState.Ready, NativeLibraryState.Loaded("곡", 1).State, "ready state");
+Equal(NativeViewState.NoAccess,
+    NativeLibraryState.Failure(new NativeApiException(System.Net.HttpStatusCode.Forbidden, "FORBIDDEN")).State,
+    "forbidden state");
+Equal(NativeViewState.Error, NativeLibraryState.Failure(new HttpRequestException()).State, "network failure state");
+
+var prompt = new NativePrompt("00000000-0000-4000-8000-000000000011", "합성 프롬프트", [], "sentence", "",
+    "문장\r\n원문", "문장\r\n원문", false, false, null, null, 1, [], 0, null,
+    DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch);
+Equal("문장\r\n원문", NativeLibraryPresentation.Copy(prompt).Payload, "prompt exact copy");
+True(!NativeLibraryPresentation.Copy(prompt).ExceedsRecommendedLimit, "prompt warning below limit");
+var longPrompt = prompt with { PlainText = string.Concat(Enumerable.Repeat("🙂", 1_001)) };
+True(NativeLibraryPresentation.Copy(longPrompt).ExceedsRecommendedLimit, "prompt Unicode warning");
+
+var origin = new Uri("https://DEV.Example.Test/path");
+var credential = new NativeStoredCredential("https://dev.example.test", "00000000-0000-4000-8000-000000000012",
+    new string('a', 43), DateTimeOffset.UtcNow.AddMinutes(5));
+True(NativeCredentialPolicy.IsUsable(credential, origin, DateTimeOffset.UtcNow), "credential exact origin");
+True(!NativeCredentialPolicy.IsUsable(credential, new Uri("https://other.example.test"), DateTimeOffset.UtcNow),
+    "credential cross-origin rejection");
+True(!NativeCredentialPolicy.IsUsable(credential with { ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(-1) }, origin,
+    DateTimeOffset.UtcNow), "credential expiry rejection");
+True(!NativeLibraryPresentation.SupportsWrites, "read-only presentation");
+
+Console.WriteLine($"Windows core contract: {assertions} assertions PASS");
+
+void Equal<T>(T expected, T actual, string name)
 {
     if (!EqualityComparer<T>.Default.Equals(expected, actual)) throw new InvalidOperationException($"{name}: expected {expected}, got {actual}");
+    assertions += 1;
 }
 
-static void True(bool condition, string name)
+void True(bool condition, string name)
 {
     if (!condition) throw new InvalidOperationException($"{name}: failed");
+    assertions += 1;
 }
