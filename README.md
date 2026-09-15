@@ -43,11 +43,11 @@ AI 생성과 미디어 업로드는 1.1.7 범위가 아니다.
 
 | 항목 | 상태 |
 |---|---|
-| 소스·runtime version | `1.1.7` |
-| 현재 작업 | [1.1.7 Phase 5 — 웹 인수·플랫폼 개발안 인계](<./0.Plans/2.Patch-phase/1.1.7/5phase.md>) |
+| 소스·runtime version | `1.1.8` |
+| 현재 작업 | [1.1.8 Phase 2 — Windows 핵심 기반·저장과 서버](<./0.Plans/2.Patch-phase/1.1.8/2phase.md>) 완료, P3 준비 |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
-| 정식 릴리스 | `v1.1.6`, main/tag `f8d24c6`, exact digest 운영 배포·공개 B-1 생성/연결·공유/복구·재시작·전역 beta CLI smoke 완료 |
-| 개발 인수 | 1.1.7 P1~P5·동일 SHA 개발 인수·정식 릴리스 완료 |
+| 정식 릴리스 | `v1.1.7`, main/tag `edb8b4a`, exact digest 운영 배포·공개 복귀/접근성/공유/복구·재시작·전역 beta CLI smoke 완료 |
+| 개발 인수 | 1.1.8 P2 후보 `dbfca88`, 전체 CI·Windows WinUI x64 build·네 signed dev image·동일 SHA 개발 native read-only smoke 완료 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.
@@ -63,6 +63,8 @@ AI 생성과 미디어 업로드는 1.1.7 범위가 아니다.
 1.1.6은 같은 CodeMirror와 store를 유지한 채 가사·라임·프롬프트 편집기, 자료 패널, 새 자료 생성, 곡 연결 관리, beta 가입·공유 회수·guest 복구·탈퇴 재인증 화면까지 B-1 상태 언어를 확장한다. light/dark·desktop/mobile 전환 중 입력·selection·undo·초점을 보존하고 서버 ACK 전에는 저장 완료를 표시하지 않는다. classic/B-1의 copy/export payload와 기존 URL·deep link·API·DB·capability는 동일하다.
 
 1.1.7은 새 라임·프롬프트 생성에 명시적 내부 `returnTo`를 사용해 호출 화면으로 정확히 복귀하고, 곡 목록의 filter·sort·view query를 대시보드·가사·공유·Suno 작업 뒤에도 보존한다. 공유 dialog와 모바일 More는 trigger focus를 복원하며 접힌 rail·drag/context 기능에는 keyboard/버튼 대안이 있다. reduced transparency·contrast/forced-colors fallback은 표현만 바꾸고 CodeMirror/Yjs·API·DB·권한·저장 원문을 바꾸지 않는다.
+
+1.1.8 P2는 WinUI 3/.NET 읽기·복사 전용 Windows 기반과 system browser+first-party loopback PKCE, 계정별 DPAPI cache, owner/지정 공유 읽기 API를 추가한다. native session은 `read` scope만 가지며 기존 쓰기 route에는 사용할 수 없다. 실제 Windows 실행·한국어 IME·Narrator·DPI·MSIX 설치/업데이트/제거와 배포 서명은 P3~P5 gate라 아직 정식 릴리스 기능으로 표시하지 않는다.
 
 ## 화면
 
