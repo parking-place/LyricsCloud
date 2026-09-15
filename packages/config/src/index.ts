@@ -75,13 +75,13 @@ export function readRuntimeConfig(env: NodeJS.ProcessEnv): RuntimeConfig {
   if (env.APP_PHASE !== undefined && !/^p[1-9][0-9]*$/.test(env.APP_PHASE)) invalid.push("APP_PHASE");
   if (env.LC_UI_VARIANT !== undefined && env.LC_UI_VARIANT !== "classic" && env.LC_UI_VARIANT !== "b1") invalid.push("LC_UI_VARIANT");
   if ((env.APP_CHANNEL ?? "release") === "release" && env.APP_PHASE !== undefined) invalid.push("APP_PHASE");
-  if (runtime === "production" && env.APP_VERSION !== "1.1.7") invalid.push("APP_VERSION");
+  if (runtime === "production" && env.APP_VERSION !== "1.1.8") invalid.push("APP_VERSION");
   if (runtime === "production" && !/^[0-9a-f]{40}$/.test(env.BUILD_ID ?? "")) invalid.push("BUILD_ID");
   if (invalid.length) throw new ConfigError([...new Set(invalid)]);
   return {
     runtime: runtime as RuntimeName,
     databaseUrl: env.DATABASE_URL!,
-    appVersion: env.APP_VERSION ?? "1.1.7",
+    appVersion: env.APP_VERSION ?? "1.1.8",
     buildId: env.BUILD_ID ?? "local",
     appChannel: env.APP_CHANNEL === "dev" ? "dev" : "release",
     appPhase: env.APP_CHANNEL === "dev" ? env.APP_PHASE ?? null : null,
