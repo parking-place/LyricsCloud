@@ -28,6 +28,31 @@ export const authIdentities = pgTable("auth_identities", {
   lastLoginAt: timestamp("last_login_at", { withTimezone: true }).notNull().defaultNow()
 });
 
+export const nativeAuthTransactions = pgTable("native_auth_transactions", {
+  transactionHash: text("transaction_hash").primaryKey(),
+  stateHash: text("state_hash").notNull(),
+  pkceChallenge: text("pkce_challenge").notNull(),
+  redirectUriHash: text("redirect_uri_hash").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  authorizedUserId: uuid("authorized_user_id"),
+  codeHash: text("code_hash"),
+  codeExpiresAt: timestamp("code_expires_at", { withTimezone: true }),
+  authorizedAt: timestamp("authorized_at", { withTimezone: true }),
+  consumedAt: timestamp("consumed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const nativeSessions = pgTable("native_sessions", {
+  tokenHash: text("token_hash").primaryKey(),
+  userId: uuid("user_id").notNull(),
+  scope: text("scope").$type<"read">().notNull().default("read"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  absoluteExpiresAt: timestamp("absolute_expires_at", { withTimezone: true }).notNull(),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow()
+});
+
 export const resources = pgTable("resources", {
   id: uuid("id").primaryKey().defaultRandom(),
   ownerId: uuid("owner_id").notNull(),

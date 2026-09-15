@@ -1,8 +1,9 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "1140_sharing_stability.sql";
+export const CURRENT_SCHEMA_VERSION = "1150_native_read_sessions.sql";
 
 export * from "./auth.js";
+export * from "./native-auth.js";
 export * from "./beta-access.js";
 export * from "./beta-signup.js";
 export * from "./owned.js";

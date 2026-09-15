@@ -1,10 +1,11 @@
-import { AuthService, cookieNames, GoogleOidcAdapter, readCookie, sessionCookie, tokenHash } from "@lyricscloud/auth";
+import { AuthService, NativeAuthService, cookieNames, GoogleOidcAdapter, readCookie, sessionCookie, tokenHash } from "@lyricscloud/auth";
 import { readAuthConfig, readBetaSignupConfig, readRuntimeConfig, type AuthConfig } from "@lyricscloud/config";
-import { PostgresAuthStore, PostgresBetaSignupStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresLyricSharingStore, PostgresPublicLyricSharingStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLibraryViewSettingsStore, PostgresLifecycleStore, PostgresExportStore, PostgresSunoWorkspaceStore, type PendingWithdrawalSession } from "@lyricscloud/database";
+import { PostgresAuthStore, PostgresNativeAuthStore, PostgresBetaSignupStore, PostgresOwnedDataStore, PostgresSongStore, PostgresLyricStore, PostgresLyricSharingStore, PostgresPublicLyricSharingStore, PostgresRhymeStore, PostgresRhymeInsertionStore, PostgresPromptStore, PostgresSearchStore, PostgresRecentWorkStore, PostgresSavedResourceStore, PostgresTemplateStore, PostgresDisplaySettingsStore, PostgresLibraryViewSettingsStore, PostgresLifecycleStore, PostgresExportStore, PostgresSunoWorkspaceStore, type PendingWithdrawalSession } from "@lyricscloud/database";
 
 interface AuthContext {
   readonly config: AuthConfig;
   readonly service: AuthService;
+  readonly nativeService: NativeAuthService;
   readonly ownedData: PostgresOwnedDataStore;
   readonly songs: PostgresSongStore;
   readonly lyrics: PostgresLyricStore;
@@ -39,11 +40,13 @@ export function getAuthContext(): AuthContext {
   if (cached?.key === key) return cached.context;
   const liveConfig = config;
   const store = new PostgresAuthStore(runtime.databaseUrl);
+  const nativeStore = new PostgresNativeAuthStore(runtime.databaseUrl);
   const betaStore = new PostgresBetaSignupStore(runtime.databaseUrl);
   const context = {
     config: liveConfig,
     service: new AuthService(liveConfig, store, new GoogleOidcAdapter(liveConfig), undefined,
       { config: betaConfig, store: betaStore }),
+    nativeService: new NativeAuthService(liveConfig, nativeStore),
     ownedData: new PostgresOwnedDataStore(runtime.databaseUrl),
     songs: new PostgresSongStore(runtime.databaseUrl),
     lyrics: new PostgresLyricStore(runtime.databaseUrl),
@@ -85,4 +88,11 @@ export async function resolveRequestAuth(request: Request): Promise<{ userId: st
     userId: session.userId,
     ...(session.renewed ? { renewalCookie: sessionCookie(context.config, token, session.maxAge) } : {})
   };
+}
+
+export async function resolveNativeRequestAuth(request: Request): Promise<{ userId: string; scope: "read"; expiresAt: string }> {
+  const authorization = request.headers.get("authorization") ?? "";
+  const match = /^Bearer ([A-Za-z0-9_-]{43})$/.exec(authorization);
+  if (!match) throw new RequestAuthError();
+  return getAuthContext().nativeService.resolveSession(match[1]!);
 }

@@ -1,0 +1,16 @@
+<Window
+    x:Class="LyricsCloud.Windows.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="LyricsCloud">
+    <Grid Padding="32">
+        <StackPanel Spacing="12" MaxWidth="640" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <TextBlock Text="LYRICSCLOUD" FontWeight="SemiBold" />
+            <TextBlock Text="Windows 읽기 기반" FontSize="28" FontWeight="SemiBold" />
+            <TextBlock Text="시스템 브라우저 로그인과 읽기 전용 API 연결 준비가 완료되었습니다. 목록과 자료 화면은 다음 단계에서 연결됩니다."
+                       TextWrapping="Wrap" />
+            <InfoBar IsOpen="True" Severity="Informational" Title="읽기 전용"
+                     Message="이 빌드는 자료를 수정하거나 Yjs update를 만들지 않습니다." />
+        </StackPanel>
+    </Grid>
+</Window>

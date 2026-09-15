@@ -123,6 +123,8 @@ jobs:
         run: pnpm test:migration:1130
       - name: Verify 1.1.4 sharing stability migration recovery
         run: pnpm test:migration:1140
+      - name: Verify 1.1.8 native read-session migration recovery
+        run: pnpm test:migration:1150
       - name: Verify 0.7.0 fresh and 0.6.0 upgrade release paths
         run: pnpm test:migration:0700-release
       - name: Measure 0.7.0 navigation release baseline
@@ -242,9 +244,28 @@ jobs:
           E2E_PROVIDER_TOKEN: synthetic-provider-token-never-persisted
         run: pnpm check:secrets apps/web/.next
 
+  windows-native:
+    name: Windows native contracts and build
+    runs-on: windows-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: apps/windows
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.401
+      - name: Verify shared Windows read and copy contracts
+        run: dotnet run --project ../../tests/native/windows/LyricsCloud.Windows.ContractTests/LyricsCloud.Windows.ContractTests.csproj --configuration Release
+      - name: Build WinUI 3 x64 foundation
+        run: dotnet build LyricsCloud.Windows/LyricsCloud.Windows.csproj --configuration Release -p:Platform=x64
+
   publish:
     name: Publish ${{ matrix.service }} image
-    needs: verify
+    needs: [verify, windows-native]
     # P6 must not auto-publish or move another developer's channel before handoff.
     if: >-
       ((github.event_name == 'push' && !startsWith(github.ref, 'refs/heads/phase/1.0.0-p6-')) ||

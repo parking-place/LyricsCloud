@@ -106,12 +106,12 @@ P5 완료/릴리스 전 실제 증거:
 
 | 소유 경로 | P2 이후 책임 | P1 상태 |
 |---|---|---|
-| `apps/windows/LyricsCloud.Windows/**` | WinUI UI, broker client, DPAPI cache, clipboard | 미생성 / P2 구현 대기 |
-| `packages/auth/src/**`, native auth API | single-use broker grant·PKCE·bearer session | 설계만 완료 |
+| `apps/windows/LyricsCloud.Windows/**` | WinUI UI, broker client, DPAPI cache, clipboard | P2 foundation 후보; 실제 Windows build/launch 대기 |
+| `packages/auth/src/**`, native auth API | single-use broker grant·PKCE·bearer session | P2 구현·Linux/HTTP 검증, Windows CI 대기 |
 | `packages/domain/src/**` | 기존 JSON/error/copy 상수의 공유 가능한 계약 | 의미 변경 없음 |
 | `tests/new-feature/1.1.8.contract.test.ts` | Node reference fixture 검증 | P1 spike |
-| `tests/native/windows/**` | 공통 fixture와 이후 Windows runner | fixture/경계 문서만 생성 |
-| DB migration | native grant/session 저장이 필요하면 forward/rollback과 RLS | P1에서 없음; P2 결정 |
+| `tests/native/windows/**` | 공통 fixture와 이후 Windows runner | C# 16 assertions PASS; Windows runner 대기 |
+| DB migration | native grant/session 저장이 필요하면 forward/rollback과 RLS | `1150` read-only session·role isolation·data-preserving rollback PASS |
 
 ## rollback과 중단 조건
 

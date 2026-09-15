@@ -160,6 +160,7 @@
 - [`1.1.7 정식 릴리스 실행`](./1.1.7-release.md)
 - [`1.1.7 정식 릴리스 체크리스트`](./1.1.7-release-checklist.md)
 - [`1.1.8 Phase 1 Windows native 기술·범위 결정안`](./1.1.8-phase1-windows-native-decision.md)
+- [`1.1.8 Phase 2 Windows 읽기 기반·native broker`](./1.1.8-phase2-windows-foundation.md)
 - [`1.1.1 Phase 2 공개 링크 서버 기반`](./1.1.1-phase2-public-link-foundation.md)
 - [`1.1.1 Phase 3 공개 링크 사용자 흐름`](./1.1.1-phase3-public-reader-ui.md)
 - [`1.1.1 Phase 4 공개 공유 권한·복구 회귀`](./1.1.1-phase4-public-sharing-regression.md)
