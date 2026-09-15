@@ -73,6 +73,8 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 2026-09-15 보정: 앞선 자동 인수 뒤 Windows 화면에서 선택 공유 가사를 여는 경로와 계정별 보호 캐시 읽기 경로가 실제로 연결되지 않은 결함을 발견했다. `fe4055626757458a4eecbff0bfa0b55bed3bc40d`에서 공유 UUID-only GET·권한 epoch 동등성/온라인 재검증 뒤 cache 노출·오프라인 공유 본문/복사 차단·회수 시 해당 cache 삭제·계정 전환 시 UUID/token/cache 정리·선택한 owner 가사의 계정별 DPAPI 오프라인 복구·공유 복사 직전/창 복귀 시 재확인을 구현했다. 합성 C# HTTP/복사/cache 계약 **48 assertions PASS**, 두 Windows 정적 validator PASS. 새 SHA의 push Actions `34929434984`와 PR Actions `34929437966` 모두 verify·Windows WinUI x64 build PASS, push에서 네 개발 image 발행 PASS. 동일 기능 SHA 개발 배포 `1.1.8/dev/p4`의 공개 live/ready·schema `1150_native_read_sessions.sql`·native `lyricscloud.native.read.v1`·writes false·anonymous 곡/가사 401·invalid callback 400, web/collaboration 재시작 후 postgres/web/collaboration/worker healthy PASS. 기존 개발 DB 볼륨·secret·allowlist를 보존했고 운영 서버는 변경하지 않았다. 실제 WinUI launch·DPAPI·공유 회수·IME/AT/설치 증거는 **미실행**, P4/P5 완료·main/Release는 아직 아니다. [실기기 수용 순서](../../../docs/runbooks/1.1.8-windows-installation.md)를 따른다.
 
+`P4-07` 계획 범위 충돌: 승인된 1.1.8 native 앱은 읽기·복사 전용이며 presence 표시 연결은 [Windows ADR](../../../docs/adr/ADR-NF-004-windows-native.md)에서 선택 사항이다. 실제 앱에는 presence UI가 없으므로 “native presence 제거”를 실기기 PASS로 주장할 수 없다. 사전 provider는 `ADR-NF-006` NO-GO라 native 사전 요청·오류 UI도 없다. 두 항목은 미실행이자 현 native 제품에서 재현 불가로 기록하고, 기존 read/copy 범위를 임의로 확대하거나 빈 테스트로 통과시키지 않는다. 실제 Windows 권한/회수·재접속·폰트/IME 인수와 이 두 항목의 단계 해석(N/A 또는 이후 범위 이관)이 결정되기 전 P4 review를 유지한다.
+
 [공통 명령·검증](../QUALITY-GATES.md)을 먼저 읽는다. 기존 runner의 영향받은 검사를 우선 사용하고 필요할 때만 회귀를 보강한다. 지원 환경에서 관련 DB/E2E를 선택하며 동일 변경의 full suite는 로컬/CI 중 한 곳과 필수 게이트만 따른다. native은 승인된 SDK/플랫폼 명령을 기록한다. 없는 도구·실제 IME·물리 기기 검증을 모사 결과로 통과시켰다고 표시하지 않는다. 문서-only Phase는 링크·범위·결정·설계 검토로 별도 인수한다.
 
 ## 완료 조건

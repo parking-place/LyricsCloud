@@ -7,7 +7,7 @@ state: "review"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-15"
-next_action: "P4 공유 UI/cache 보정 기능 SHA fe40556의 두 CI·네 개발 image·동일 SHA 개발 공개 인수 PASS. 실제 Windows OS 앱 OAuth·DPAPI·계정/공유 회수·offline/reconnect·IME/AT/DPI/clipboard, 신뢰 서명 MSIX 증거를 확보한 뒤 P4-07을 판정한다; 미실행 상태에서 P5/릴리스로 이동하지 않는다"
+next_action: "P4 기능 SHA fe40556의 두 CI·네 개발 image·동일 SHA 개발 공개 인수 PASS. 실제 Windows OAuth·DPAPI·계정/공유 회수·offline/reconnect·IME/AT/DPI/clipboard·신뢰 서명 MSIX 증거를 확보한다. P4-07 native presence UI·사전 오류는 승인된 read/copy 앱에 없고 provider NO-GO라 실기기 PASS 불가능: N/A 또는 후속 이관을 결정하기 전 P4 review·P5/릴리스 보류"
 ```
 
 ## 승인과 기준
