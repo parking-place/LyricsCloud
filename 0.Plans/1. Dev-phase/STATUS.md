@@ -3,14 +3,16 @@
 ```yaml
 current_version: "1.1.7a"
 current_phase: "../2.Patch-phase/1.1.7.a/1phase.md"
-state: "review"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-16"
-next_action: "P1 CI의 Playwright production fixture 버전 잔존을 보정·재검증하고 같은 SHA 개발 인수 뒤 P1 완료를 기록한다. release/1.1.7a 별도 브랜치로만 통합하며 P5 gate 전 정식 tag/image·릴리스 서버를 변경하지 않는다"
+next_action: "P1 PR을 release/1.1.7a 전용 브랜치에 통합하고, P2 owner 프로필 저장·사진 경계를 착수한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
 ```
 
 ## 승인과 기준
+
+P1 최종 기능 후보 `38cced2c2276d89a9a56a4aa7daa500ce8ca7305`의 Actions [35019632430](https://github.com/parking-place/LyricsCloud/actions/runs/35019632430)는 전체 verify와 네 signed dev image job이 모두 **PASS**였다. 전체 owner E2E는 **379 PASS / 조건부 43 skip**, release candidate browser matrix 10 PASS로 구분한다. 개발 서버는 첫 시도에서 기존 checkout의 구형 numeric-only 배포 스크립트가 목표 checkout으로 전환한 뒤 빌드 전 exit 6으로 중단됐고, 기존 `1.1.8` 런타임을 확인했다. 같은 SHA의 새 checkout 스크립트 재시도에서 production image build·migration·네 지속 서비스 health·static asset·Docker cleanup PASS. 공개 HTTPS live/ready가 `1.1.7a/dev/p1`과 전체 목표 SHA를 반환하고 ready schema `1140_sharing_stability.sql`, `/auth` 200이다. 기존 DB/volume/secret을 보존했다. 이는 P1 **설계·단일 버전 경계** 완료의 증거이고 P2~P5 닉네임·사진·홈 UI 구현 PASS는 아니다.
 
 P1 후보 `b6031851ecea1361b39274cd6be6412c93f71311`의 Actions [35014698215](https://github.com/parking-place/LyricsCloud/actions/runs/35014698215)는 verify 중 `Auth and ownership E2E`에서 **FAIL**이었다. `playwright.config.ts`의 production webServer가 기존 `APP_VERSION=1.1.7`을 고정해 런타임의 정확한 `1.1.7a` 검증에 거부됐고, 발행 job은 skipped다. 개발 서버는 기존 `1.1.8` SHA `fe4055626757458a4eecbff0bfa0b55bed3bc40d`로 남아 있다. fixture와 browser health 기대값을 수정했지만 새 전체 CI·네 image·같은 SHA 개발 smoke 전까지 P1은 `review`다.
 
@@ -181,7 +183,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.7a/P1 | LC-PLAN-117A-P1-01~06 | `0.Plans/2.Patch-phase/1.1.7.a`, `VERSION`, `STATUS.md`, `VERSIONING.md`, `docs/runbooks/1.1.7a-phase1-profile-home-contract.md`, one-off version 검증 경로 | `v1.1.7` source `edb8b4a`; 주 개발선 1.1.8 P4 review·별도 release branch 예외 확인 대기 | 2026-09-16 | review |
+| Codex | 1.1.7a/P1 | LC-PLAN-117A-P1-01~06 | 계약·단일 버전 경계·P1 CI/개발 인수 | `v1.1.7` source `edb8b4a`; 후보 `38cced2`, Actions `35019632430` 전체 verify/네 signed dev image PASS·동일 SHA 공개 live/ready/auth/네 health PASS; 제품 기능은 P2~P5 인계 | 2026-09-16 | complete |
 | Codex | 1.1.7/P5 | LC-NF-1.1.7-P5-01~03 | 사용자 안내·플랫폼 탐색/공통 계약·최종 artifact/CI·개발 공개 인수·상태/Future | 후보 `b1a1e2c`; Actions `34900342849`·`34900363577`; 네 signed dev image·동일 SHA 개발 공개 인수 완료, native gate 미실행 | 2026-09-15 | complete |
 | Codex | 1.1.7/P4 | LC-NF-1.1.7-P4-01~03 | 1.1.7 회귀·접근성/성능 대리·협업/presence/font/IME 영향·상태/Future | 후보 `66f2f79`, 두 CI·네 signed dev image·동일 SHA 개발 공개 저장/재시작 인수 완료; 실제 OS/기기·AT·OS zoom은 별도 미실행 | 2026-09-15 | complete |
 | Codex | 1.1.7/P3 | LC-NF-1.1.7-P3-01~03 | 목록/편집/공유/Suno 복귀·drag/context 대안·PC/mobile 회귀·상태/Future | 후보 `740b1e3`, 두 CI·네 signed dev image·동일 SHA 공개 PC/mobile×dark/light PASS; 실제 OS/기기·AT는 browser 대리와 분리 | 2026-09-15 | complete |

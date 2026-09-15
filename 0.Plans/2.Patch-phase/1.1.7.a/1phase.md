@@ -1,6 +1,6 @@
 # 1.1.7.a P1 — 기준 화면·프로필/이동 계약
 
-상태: **P1 검토 중 (`review`)**. 계약과 한 번짜리 버전 경계는 작성·로컬 검증했지만 원격 필수 CI·같은 SHA 개발 서버 인수가 남았다. [목표](README.md)·[버전 규칙](../VERSIONING.md)·[결정 권한](../Decision-Ownership.md)을 따른다.
+상태: **P1 완료 (`complete`)**. 계약·단일 버전 경계와 동일 SHA 원격 CI·개발 서버/공개 인수를 마쳤다. [목표](README.md)·[버전 규칙](../VERSIONING.md)·[결정 권한](../Decision-Ownership.md)을 따른다.
 
 ## 작업
 
@@ -22,3 +22,5 @@
 두 번째 Actions `35016348844`는 1110 rollback/RLS 본문 OK 직후 해당 임시 DB의 `DROP ... FORCE`가 닫히는 PostgreSQL pool에 `57P01`을 보내 **FAIL**, publish skipped였다. 1110 verifier만 공용 비강제 UUID-scope cleanup으로 바꿨다. 별도 disposable PostgreSQL 18.3에서 실제 1110 fresh/repeat·RLS·rollback/recovery PASS, cleanup 계약 7 PASS. 기존 두 CI를 PASS로 재분류하지 않는다.
 
 세 번째 Actions `35016930875`의 전체 E2E는 377 PASS / desktop·mobile baseline 2 FAIL / 43 skip이었다. 실패 두 건은 health version의 숫자-only regex가 정확한 승인 버전 `1.1.7a`를 거부했다. 기대값을 `APP_VERSION`/현재 one-off 기본값으로 정렬하고 별도 disposable PostgreSQL + 실제 Chromium desktop/mobile baseline 2 PASS, 앞선 browser health/owner 2 PASS, one-off source regression을 확인했다. 제품 배포·전체 CI/이미지 발행은 여전히 미완료다.
+
+최종 후보 `38cced2c2276d89a9a56a4aa7daa500ce8ca7305`: Actions `35019632430` 전체 verify/네 signed dev image PASS. owner E2E **379 PASS / 조건부 43 skip**이며 candidate browser matrix 10 PASS; P2~P5 기능 시험을 선소비하지 않았다. 첫 개발 배포는 이전 checkout 스크립트의 숫자-only 검사에서 checkout 전환 뒤 **빌드 전 중단**됐고 공개 1.1.8 health를 재확인했다. 새 checkout 스크립트로 같은 SHA 재시도하여 네 production build·migration·healthy·static CSS·Docker cleanup PASS. 공개 live/ready 모두 `1.1.7a/dev/p1` 전체 SHA, ready schema `1140_sharing_stability.sql`, `/auth` 200. 기존 DB/volume/secret 보존, 릴리스 서버·정식 tag/alias 변경 없음. P1 Future 재검수는 기존 129개 후보 blob 동일로 재배정 없음. 이제 P1 계약을 [P2](2phase.md)에 인계한다.
