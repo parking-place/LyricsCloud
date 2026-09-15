@@ -55,6 +55,14 @@ export class PostgresOwnedDataStore {
     });
   }
 
+  async getVerifiedGoogleEmail(authenticatedUserId: string): Promise<string | null> {
+    if (!UUID.test(authenticatedUserId)) throw new Error("AUTH_CONTEXT_INVALID");
+    const result = await this.#pool.query<{ email: string }>(
+      `select email from auth_identities where user_id=$1 and email_verified=true
+       order by last_login_at desc limit 1`, [authenticatedUserId]);
+    return result.rows[0]?.email ?? null;
+  }
+
   saveProfile(authenticatedUserId: string, input: ProfileInput): Promise<UserProfile> {
     return this.#withUserClient(authenticatedUserId, async (client) => {
       const prior = await client.query<{ avatar_photo_id: string | null }>(

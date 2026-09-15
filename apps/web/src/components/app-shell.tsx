@@ -1,11 +1,12 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { clearAccountCache, clearOtherAccountCaches, coordinateAccountLogout, downloadRecoveryDrafts } from "../lib/account-cache.js";
+import type { MouseEvent, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { clearAccountCache, clearOtherAccountCaches, coordinateAccountLogout, downloadRecoveryDrafts, guardWorkspaceNavigation } from "../lib/account-cache.js";
 import { trapDialogTab } from "../lib/dialog-focus.js";
 import { commandForKeyboardEvent, isEditableShortcutTarget, requestShortcutNavigation } from "../lib/shortcut-runtime.js";
-import { Brand } from "./auth-screen.js";
+import { PROFILE_UPDATED_EVENT, profileChannelName, type ProfileView } from "../lib/profile-state.js";
+import { Brand, BrandMark } from "./auth-screen.js";
 import { PwaManager } from "./pwa-manager.js";
 import { QuickAdd } from "./quick-add.js";
 import { ShortcutHelpDialog } from "./shortcut-help.js";
@@ -24,7 +25,10 @@ interface ShellProfile {
   readonly userId: string;
   readonly displayName: string;
   readonly avatarUrl: string | null;
+  readonly rowVersion?: number;
 }
+
+const CurrentProfile = createContext<ShellProfile | null>(null);
 
 type ThemeShellWindow = Window & { __lcApplyTheme?: (theme: "system" | "light" | "dark") => void };
 
@@ -55,6 +59,8 @@ export function WorkspaceShell({
   children: ReactNode;
 }) {
   const [contextGroup, contextTitle] = WORKSPACE_CONTEXT[active];
+  const [shownProfile, setShownProfile] = useState<ShellProfile>(profile);
+  const visibleProfile = shownProfile.userId === profile.userId ? shownProfile : profile;
   const [collapsed, setCollapsed] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState("");
@@ -63,14 +69,61 @@ export function WorkspaceShell({
   const [accountPaused, setAccountPaused] = useState(false);
   const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
+  const [homeMessage, setHomeMessage] = useState("");
   const logoutPending = useRef(false);
   const mainShell = useRef<HTMLDivElement>(null);
   const pausedFocus = useRef<HTMLElement | null>(null);
   const guard = useRef<ReturnType<typeof coordinateAccountLogout> | null>(null);
   const mobileMoreButton = useRef<HTMLButtonElement>(null);
   const mobileMoreDialog = useRef<HTMLElement>(null);
+  const homePending = useRef(false);
+  const homeComposing = useRef(false);
   const closeShortcutHelp = useCallback(() => setShortcutHelpOpen(false), []);
   const closeMobileMore = useCallback(() => setMobileMoreOpen(false), []);
+
+  useEffect(() => {
+    let mounted = true;
+    setShownProfile(profile);
+    const channel = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel(profileChannelName(profile.userId));
+    async function refreshProfile() {
+      try {
+        const response = await fetch("/api/profile", { cache: "no-store" });
+        if (!mounted || !response.ok) return;
+        const latest = ((await response.json()) as { profile: ProfileView }).profile;
+        if (mounted && latest.userId === profile.userId) setShownProfile(latest);
+      } catch { /* Keep the server-rendered profile during an outage. */ }
+    }
+    const updated = (event: Event) => {
+      const latest = (event as CustomEvent<ProfileView>).detail;
+      if (latest?.userId === profile.userId) setShownProfile(latest);
+    };
+    void refreshProfile();
+    window.addEventListener("focus", refreshProfile);
+    window.addEventListener("online", refreshProfile);
+    window.addEventListener("pageshow", refreshProfile);
+    window.addEventListener(PROFILE_UPDATED_EVENT, updated);
+    channel?.addEventListener("message", refreshProfile);
+    return () => { mounted = false; window.removeEventListener("focus", refreshProfile);
+      window.removeEventListener("online", refreshProfile); window.removeEventListener("pageshow", refreshProfile);
+      window.removeEventListener(PROFILE_UPDATED_EVENT, updated); channel?.removeEventListener("message", refreshProfile); channel?.close(); };
+  }, [profile.userId]);
+
+  function navigateHome(event: MouseEvent<HTMLAnchorElement>) {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    if (active === "home") { setHomeMessage("이미 창작 홈입니다. 현재 화면을 새로고침하지 않았습니다."); return; }
+    if (homePending.current) return;
+    homePending.current = true; setHomeMessage("");
+    void guardWorkspaceNavigation(profile.userId, homeComposing.current).then((safe) => {
+      if (!safe) {
+        setHomeMessage("아직 저장되지 않은 입력이나 사진 선택, 오프라인 작업이 있어 홈으로 이동하지 않았습니다. 현재 화면에서 저장 또는 취소한 뒤 다시 시도하세요.");
+        return;
+      }
+      window.location.assign("/workspace");
+    }).catch(() => {
+      setHomeMessage("저장 상태를 확인하지 못해 홈으로 이동하지 않았습니다. 연결을 확인한 뒤 다시 시도하세요.");
+    }).finally(() => { homePending.current = false; });
+  }
 
   useEffect(() => {
     if (!mobileMoreOpen) return;
@@ -89,8 +142,8 @@ export function WorkspaceShell({
 
   useEffect(() => {
     let composing = false;
-    const compositionStart = () => { composing = true; };
-    const compositionEnd = () => { composing = false; };
+    const compositionStart = () => { composing = true; homeComposing.current = true; };
+    const compositionEnd = () => { composing = false; homeComposing.current = false; };
     function keyboard(event: KeyboardEvent) {
       if (composing || event.isComposing || isEditableShortcutTarget(event.target) || document.querySelector('[aria-modal="true"]')) return;
       const command = commandForKeyboardEvent(event, "global");
@@ -212,10 +265,10 @@ export function WorkspaceShell({
     catch { setLogoutError("초안을 내려받지 못했습니다. 현재 입력을 직접 복사해 보관해 주세요."); }
   }
 
-  return <main className={`workspace-shell${collapsed ? " is-collapsed" : ""}${sessionExpired || logoutError ? " has-account-error" : ""}`}>
+  return <CurrentProfile.Provider value={visibleProfile}><main className={`workspace-shell${collapsed ? " is-collapsed" : ""}${sessionExpired || logoutError || homeMessage ? " has-account-error" : ""}`}>
     {loginCompleted ? <p className="sr-only" role="status">로그인이 완료되었습니다. 개인 작업 공간으로 이동했습니다.</p> : null}
     <aside className="side-nav">
-      <Brand />
+      <a className="brand-home-link" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateHome}><Brand /></a>
       <button className="rail-toggle" type="button" onClick={() => setCollapsed((value) => !value)} aria-expanded={!collapsed} aria-label={collapsed ? "좌측 메뉴 펼치기" : "좌측 메뉴 접기"}>☰</button>
       <p className="nav-label">Workspace</p>
       <nav className="nav-list" aria-label="데스크톱 주 메뉴">
@@ -231,25 +284,26 @@ export function WorkspaceShell({
         <a className={`nav-item${active === "settings" ? " active" : ""}`} href="/settings" title="설정" aria-label="설정" aria-current={active === "settings" ? "page" : undefined}><span aria-hidden="true">⚙</span><span className="nav-text">설정</span></a>
       </nav>
       <div className="side-spacer" />
-      <div className="profile-mini"><Avatar profile={profile} /><span className="nav-text"><strong>{profile.displayName}</strong><small>개인 작업 공간</small></span></div>
+      <div className="profile-mini"><Avatar key={`${visibleProfile.userId}-${visibleProfile.rowVersion ?? 0}`} profile={visibleProfile} /><span className="nav-text"><strong>{visibleProfile.displayName}</strong><small>개인 작업 공간</small></span></div>
       <button className="logout-button" type="button" title="로그아웃" aria-label={loggingOut ? "로그아웃 중" : "로그아웃"} onClick={() => void logout()} disabled={loggingOut || accountPaused}><span aria-hidden="true">↗</span><span className="nav-text">{loggingOut ? "로그아웃 중" : "로그아웃"}</span></button>
     </aside>
     <div className="main-shell" ref={mainShell}>
       <header className="topbar">
         <nav className="workspace-tabs" aria-label="창작 영역"><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트</a><a href="/prompts" className={`workspace-tab${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}>프롬프트</a><a href="/templates" className={`workspace-tab${active === "templates" ? " active" : ""}`} aria-current={active === "templates" ? "page" : undefined}>▦ 템플릿</a><a href="/favorites" className={`workspace-tab${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}>★ 즐겨찾기</a><a href="/recent" className={`workspace-tab${active === "recent" ? " active" : ""}`} aria-current={active === "recent" ? "page" : undefined}>↺ 최근</a><a href="/search" className={`workspace-tab${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}>⌕ 검색</a></nav>
         <div className="b1-topbar-context" role="group" aria-label="현재 작업 영역"><span>{contextGroup}</span><strong>{contextTitle}</strong></div>
-        <span className="topbar-spacer" /><button className="top-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`top-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button>
+        <span className="topbar-spacer" /><button className="top-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`top-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button><a className="top-home-mark" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateHome}><BrandMark /></a>
       </header>
       <PwaManager ownerId={profile.userId} />
-      {sessionExpired || logoutError ? <div className="account-messages">
+      {sessionExpired || logoutError || homeMessage ? <div className="account-messages">
       {sessionExpired ? <div className="account-error" role="alert"><p>로그인이 만료되었습니다. 미전송 초안과 현재 입력을 보존했습니다. <a href="/auth" target="_blank" rel="noopener noreferrer">다시 로그인</a>한 뒤 동기화를 다시 시도해 주세요.</p><button className="secondary-button" type="button" onClick={() => void downloadDrafts()}>초안 내려받기</button></div> : null}
       {logoutError ? <div className="account-error" role="alert"><p>{logoutError}</p>{logoutBlocked ? <><p>문서가 삭제되어 저장할 수 없다면 초안을 보관한 뒤 로그아웃할 수 있습니다.</p><div className="account-actions"><button className="secondary-button" type="button" onClick={() => void downloadDrafts()}>초안 내려받기</button><button className="danger-button" type="button" onClick={() => {
         if (window.confirm("이 기기의 미전송 초안을 삭제하고 모든 기기에서 로그아웃할까요? 다른 탭의 저장되지 않은 입력도 먼저 내려받거나 복사해 보관해 주세요.")) void logout(true);
       }}>초안을 지우고 로그아웃</button></div></> : null}</div> : null}
+      {homeMessage ? <p className="account-error" role={active === "home" ? "status" : "alert"}>{homeMessage}</p> : null}
       </div> : null}
       {children}
     </div>
-    <header className="mobile-header"><Brand /><span className="mobile-account"><button className="mobile-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`mobile-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><Avatar profile={profile} /><button className="mobile-logout" type="button" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button></span></header>
+    <header className="mobile-header"><a className="brand-home-link" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateHome}><Brand /></a><span className="mobile-account"><button className="mobile-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`mobile-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><Avatar key={`${visibleProfile.userId}-${visibleProfile.rowVersion ?? 0}`} profile={visibleProfile} /><strong className="mobile-profile-name" title={visibleProfile.displayName}>{visibleProfile.displayName}</strong><button className="mobile-logout" type="button" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button></span><a className="mobile-home-icon" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateHome}><BrandMark /></a></header>
     <nav className="mobile-bottom-nav" aria-label="모바일 주 메뉴">
       <a href="/songs" className={`mobile-nav-item${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><strong>곡</strong></a>
       <a href="/rhymes" className={`mobile-nav-item${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><strong>라임</strong></a>
@@ -275,19 +329,29 @@ export function WorkspaceShell({
     </div> : null}
     <QuickAdd ownerId={profile.userId} currentSongId={currentSongId} />
     <ShortcutHelpDialog open={shortcutHelpOpen} onClose={closeShortcutHelp} />
-  </main>;
+  </main></CurrentProfile.Provider>;
 }
 
 export function AppShell({ profile, loginCompleted }: { profile: ShellProfile; loginCompleted: boolean }) {
   return <WorkspaceShell profile={profile} loginCompleted={loginCompleted} active="home">
     <section className="workspace-content" aria-labelledby="workspace-title">
       <p className="eyebrow">Private beta workspace</p>
-      <h1 tabIndex={-1} data-login-focus id="workspace-title">안녕하세요, {profile.displayName}님.</h1>
+      <HomeGreeting fallback={profile} />
       <p>안전한 개인 작업 공간이 준비됐습니다.</p>
       <div className="empty-state"><span aria-hidden="true">✦</span><h2>첫 곡을 정리해볼까요?</h2><p>곡 목록에서 아이디어부터 완성까지 작업 상태를 관리할 수 있어요.</p><a className="primary-link" href="/songs">곡 목록 열기</a></div>
     </section>
   </WorkspaceShell>;
 }
 
+function HomeGreeting({ fallback }: { fallback: ShellProfile }) {
+  const current = useContext(CurrentProfile) ?? fallback;
+  return <h1 tabIndex={-1} data-login-focus id="workspace-title">안녕하세요, {current.displayName}님.</h1>;
+}
+
 function PlannedItem({ icon, label, version }: { icon: string; label: string; version: string }) { return <span className="nav-item disabled" aria-disabled="true" title={`${version}에서 제공 예정`}><span aria-hidden="true">{icon}</span><span className="nav-text">{label}<small>{version} 예정</small></span></span>; }
-function Avatar({ profile }: { profile: Pick<ShellProfile, "displayName" | "avatarUrl"> }) { return profile.avatarUrl ? <img className="avatar" src={profile.avatarUrl} alt="" referrerPolicy="no-referrer" /> : <span className="avatar" aria-hidden="true">{profile.displayName.slice(0, 1)}</span>; }
+function Avatar({ profile }: { profile: Pick<ShellProfile, "displayName" | "avatarUrl"> }) {
+  const [failed, setFailed] = useState(false);
+  const fallback = Array.from(profile.displayName.trim())[0] || "•";
+  return profile.avatarUrl && !failed ? <img className="avatar" src={profile.avatarUrl} alt="" referrerPolicy="no-referrer"
+    onError={() => setFailed(true)} /> : <span className="avatar" aria-label={`${profile.displayName || "사용자"}의 기본 사진`}>{fallback}</span>;
+}

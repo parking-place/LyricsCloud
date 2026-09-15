@@ -2,17 +2,23 @@
 
 ```yaml
 current_version: "1.1.7a"
-current_phase: "../2.Patch-phase/1.1.7.a/2phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.7.a/3phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-16"
-next_action: "P2 PR #147을 전용 release/1.1.7a에 병합하고 P3 프로필 UI·홈 로고 동선을 착수한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
+next_action: "P2 PR #147 merge d319d4f 기반 P3 전용 브랜치에서 설정 계정 프로필 편집, 셸 반영·서버 재조회, 브랜드 홈 이동·이탈 guard를 PC/모바일 구현·검증한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
 ```
 
 ## 승인과 기준
 
 P2 최종 기능 SHA `4c2a42ab3a2df08ec2a9833ef0ede5d06c39abf1`의 Actions [35026679109](https://github.com/parking-place/LyricsCloud/actions/runs/35026679109)은 전체 verify·네 signed dev image **PASS**다. Unit **393 PASS / 조건부 5 skip**, owner E2E **381 PASS / 조건부 43 skip**, release browser matrix **10 PASS**. 같은 SHA 개발 서버에서 1151 migration·네 production service health·CSS asset·Docker cleanup PASS, 공개 HTTPS live/ready는 `1.1.7a/dev/p2`와 정확한 SHA, ready schema `1151_profile_customization.sql`, `/auth` 200·비인증 사진 401이다. 합성 owner의 공개 인증 프로필 GET→닉네임 PATCH→재조회 영속→provider 복귀와 빈 사진 404 PASS 후 합성 자료를 삭제했다. 처음 로컬 쿠키 이름을 사용한 합성 probe 401은 HTTPS 보안 쿠키 이름으로 정정한 뒤 PASS했으며 제품 실패가 아니다. 이는 P2 저장·파일·소유권 계약의 완료이고 P3~P5 UI/전체 보안·릴리스 PASS를 의미하지 않는다. `main`·정식 tag/image·릴리스 서버 변경 없음.
+
+P3 첫 기능 후보 `86db1b2e5e9e155cae3cc2705d99a32542235bdd`는 로컬 check·production build·PC/mobile E2E 6 PASS, 격리 PostgreSQL API/UI 저장·다른 탭·사진 업로드·320px 양 테마를 확인했다. 그러나 Actions [35032479652](https://github.com/parking-place/LyricsCloud/actions/runs/35032479652)는 기존 탈퇴 JSX 격리 fixture가 신규 프로필 자식 import를 허용하지 않아 P6 회귀 4 FAIL·image skipped로 종료했다. 신규 자식을 실행하지 않는 fixture stub을 추가하고 로컬 P6 회귀 PASS, verify runtime Phase를 p3로 정렬했다. 첫 CI는 PASS로 재분류하지 않으며 수정 SHA의 전체 CI·네 image·동일 SHA 개발 공개 인수 전에는 P3를 완료하지 않는다.
+
+P3 두 번째 SHA `0f4d82d4074bcbd8160fb678611c8654ee5e01a8`의 Actions [35032673845](https://github.com/parking-place/LyricsCloud/actions/runs/35032673845)는 migration·393 통합 unit·생산 이미지/backup/rollback 단계를 진행했으나, 별도 로컬 전체 430건에서 **383 PASS / 4 FAIL / 조건부 43 skip**을 발견하여 이미지 scan 단계에서 취소했다. FAIL은 실제 desktop 상단 quick-add가 도움말을 가린 클릭 충돌 1, 신규 모바일 이름으로 모호해진 기존 계정 전환 선택자 1, 의도대로 변경된 모바일 셸/템플릿 화면의 과거 시각 기준 2다. 선택자 scope와 quick-add 위치를 보정하고 변경된 두 기준 이미지를 시각 확인 후 정확히 재생성했다. 실패/취소 실행을 PASS로 기록하지 않으며 수정 후 집중 5건 PASS, 전체 무재시도 로컬 회귀 재실행과 새 SHA CI/개발 인수는 진행 중이다.
+
+P3 보정 뒤 격리 PostgreSQL/Chromium desktop·mobile **전체 430건 중 387 PASS / 조건부 43 skip / 0 FAIL**(무재시도, 12.5분), 집중 desktop 도움말·계정 전환·721~1440px 홈/설정/빠른 추가 클릭 3 PASS와 변경된 모바일 셸/템플릿 스냅샷 2 PASS다. 구버전 증거 PNG 90개는 시험 자동 출력으로 바뀌었을 뿐 기능 범위가 아니므로 기존 Git blob으로 정확히 복원했고 새 모바일 기준 2개만 후보에 포함한다. 이는 로컬 수용이며 원격 전체 CI·네 signed dev image·동일 SHA 개발 공개 인수 완료 전에는 P3 PASS/완료가 아니다.
 
 P2 첫 기능 후보 `b7b968710983550d0f4bd51905828da75aa32dbe`는 PR [#147](https://github.com/parking-place/LyricsCloud/pull/147)과 같은 SHA 수동 Actions [35025390806](https://github.com/parking-place/LyricsCloud/actions/runs/35025390806)를 시작했으나, 사진 ID가 비공개 URL query와 프록시 접근 로그에 남을 수 있음을 검토 중 발견해 Actions가 migration 검증 중일 때 **cancelled** 처리했다. 이 실행은 CI/이미지 PASS가 아니며 개발 서버는 P1 SHA `38cced2`에 그대로 있다. 식별자 없는 owner 현재사진 전용 `/api/profile/avatar`로 좁히고 source/production build·desktop/mobile 실제 HTTP 2 PASS를 확인했다. 새 후보 전체 CI·네 image·동일 SHA 개발 공개 인수 전까지 P2는 `in_progress`다.
 
@@ -189,6 +195,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7a/P3 | LC-PLAN-117A-P3-01~05 | 설정 계정 프로필 UI·셸 avatar/닉네임·브랜드 `/workspace` 이동·저장 이탈 guard·PC/mobile E2E/상태/Future | P2 PR #147 merge `d319d4f`, Actions `35026679109` 전체 verify/네 signed dev image·동일 SHA 개발 공개 합성 프로필 영속 PASS | 2026-09-16 | in_progress |
 | Codex | 1.1.7a/P2 | LC-PLAN-117A-P2-01~05 | 1151 migration·owned/auth/beta/signup·profile/photo API·공유/export/lifecycle·관련 검증·상태/Future | PR #147 기능 `4c2a42a`, Actions `35026679109` verify/네 signed dev image PASS·동일 SHA 공개 live/ready/합성 owner GET→PATCH→재조회→복귀 PASS; P3 UI 인계 | 2026-09-16 | complete |
 | Codex | 1.1.7a/P1 | LC-PLAN-117A-P1-01~06 | 계약·단일 버전 경계·P1 CI/개발 인수 | `v1.1.7` source `edb8b4a`; 후보 `38cced2`, Actions `35019632430` 전체 verify/네 signed dev image PASS·동일 SHA 공개 live/ready/auth/네 health PASS; 제품 기능은 P2~P5 인계 | 2026-09-16 | complete |
 | Codex | 1.1.7/P5 | LC-NF-1.1.7-P5-01~03 | 사용자 안내·플랫폼 탐색/공통 계약·최종 artifact/CI·개발 공개 인수·상태/Future | 후보 `b1a1e2c`; Actions `34900342849`·`34900363577`; 네 signed dev image·동일 SHA 개발 공개 인수 완료, native gate 미실행 | 2026-09-15 | complete |
