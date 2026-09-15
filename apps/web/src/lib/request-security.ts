@@ -2,6 +2,7 @@ import { createRequestId } from "@lyricscloud/observability";
 import { privateResponseHeaders } from "./http-response.js";
 
 export const MAX_API_BODY_BYTES = 1024 * 1024;
+export const MAX_PROFILE_AVATAR_BODY_BYTES = 2 * 1024 * 1024 + 50 * 1024;
 
 export interface RateLimitDecision {
   readonly allowed: boolean;

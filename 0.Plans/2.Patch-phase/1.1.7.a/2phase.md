@@ -1,15 +1,21 @@
 # 1.1.7.a P2 — 소유자 프로필 저장·안전한 사진 경로
 
-상태: **계획 초안**. [P1](1phase.md)의 클릭 대상·파일 정책·숫자 patch/선행 승인 뒤 구현한다.
+상태: **완료**. [P1](1phase.md)의 클릭 대상·파일 정책·승인된 단일 `1.1.7a` 예외를 사용한다. 구현 전용 기준은 `release/1.1.7a`의 P1 merge `86fa946`이며 1.1.8 Windows/main은 포함하지 않는다.
 
 ## 작업
 
-- [ ] `LC-PLAN-117A-P2-01`: 순서 있는 migration과 서버 측 소유권/RLS로 Google 제공 기본값과 사용자 지정 닉네임/사진을 분리한다. 기존 `user_profiles`·`auth_identities`·현재 URL 값을 무손실 이행하며, 기존 데이터에서 override 여부를 임의 추정하지 않는다. migration 반복 적용·역방향/복구 절차를 문서화한다.
-- [ ] `LC-PLAN-117A-P2-02`: 인증/동일 출처를 요구하는 프로필 부분 수정 계약을 만든다. 생략은 **유지**, 명시적 제거는 **기본값 복귀**로 구분하고 닉네임만 저장 시 사진을 지우지 않는다. 유효성 실패·세션 만료·동시 수정은 서버 값과 사용자의 입력을 숨기지 않으며, 재시도/중복 요청은 안전하게 처리한다.
-- [ ] `LC-PLAN-117A-P2-03`: 파일 업로드는 P1이 승인한 형식·시그니처·크기/픽셀 제한·디코드/재인코드·메타데이터 제거를 서버에서 검증한다. 파일명/경로를 신뢰하지 않고 owner와 서버 생성 ID로 저장·제공한다. 실패/취소/재시도에서 현재 사진을 유지하고, 새 사진 성공 뒤 이전 파일 정리와 orphan cleanup을 회복 가능하게 처리한다.
-- [ ] `LC-PLAN-117A-P2-04`: Google OIDC `upsertIdentity`와 가입 재시도 경로에서 provider 기본값은 갱신하되 **사용자 override는 보존**한다. 사용자 override를 제거한 뒤에는 최신 provider 값 또는 지정 fallback이 나타나야 한다. 로그인 직전/직후 프로필 업데이트 경합을 테스트한다.
-- [ ] `LC-PLAN-117A-P2-05`: 공유 표시명 projection·export·탈퇴/완전 삭제·사진 제공 cache 헤더를 P1 공개 정책에 맞춘다. 비공개 사진 URL/파일이 로그·분석·공유 토큰에 노출되지 않도록 한다. 보안 inventory와 두 사용자 교차 접근 차단 테스트를 갱신한다.
+- [x] `LC-PLAN-117A-P2-01`: 순서 있는 migration과 서버 측 소유권/RLS로 Google 제공 기본값과 사용자 지정 닉네임/사진을 분리한다. 기존 `user_profiles`·`auth_identities`·현재 URL 값을 무손실 이행하며, 기존 데이터에서 override 여부를 임의 추정하지 않는다. migration 반복 적용·역방향/복구 절차를 문서화한다.
+- [x] `LC-PLAN-117A-P2-02`: 인증/동일 출처를 요구하는 프로필 부분 수정 계약을 만든다. 생략은 **유지**, 명시적 제거는 **기본값 복귀**로 구분하고 닉네임만 저장 시 사진을 지우지 않는다. 유효성 실패·세션 만료·동시 수정은 서버 값과 사용자의 입력을 숨기지 않으며, 재시도/중복 요청은 안전하게 처리한다.
+- [x] `LC-PLAN-117A-P2-03`: 파일 업로드는 P1이 승인한 형식·시그니처·크기/픽셀 제한·디코드/재인코드·메타데이터 제거를 서버에서 검증한다. 파일명/경로를 신뢰하지 않고 owner와 서버 생성 ID로 저장·제공한다. 실패/취소/재시도에서 현재 사진을 유지하고, 새 사진 성공 뒤 이전 파일 정리와 orphan cleanup을 회복 가능하게 처리한다.
+- [x] `LC-PLAN-117A-P2-04`: Google OIDC `upsertIdentity`와 가입 재시도 경로에서 provider 기본값은 갱신하되 **사용자 override는 보존**한다. 사용자 override를 제거한 뒤에는 최신 provider 값 또는 지정 fallback이 나타나야 한다. 로그인 직전/직후 프로필 업데이트 경합을 테스트한다.
+- [x] `LC-PLAN-117A-P2-05`: 공유 표시명 projection·export·탈퇴/완전 삭제·사진 제공 cache 헤더를 P1 공개 정책에 맞춘다. 비공개 사진 URL/파일이 로그·분석·공유 토큰에 노출되지 않도록 한다. 보안 inventory와 두 사용자 교차 접근 차단 테스트를 갱신한다.
 
 ## 검증·인계
 
 입력: 빈 닉네임, 닉네임만 변경, 사진만 변경/제거, 위장 이미지/과대 파일, 두 owner, 재로그인, 서버 실패, 동시 두 탭. 기대: `AC-117A-01~03`과 공유 개인정보 정책을 지키며 기존 데이터·Google 인증/베타 가입이 그대로 작동한다. 관련 단위·실제 격리 PostgreSQL migration/RLS/API 테스트를 기록하고 실패/미실행은 구분한다. 산출물은 [P3](3phase.md)에 정확한 API/상태/rollback 계약으로 전달한다.
+
+P2 첫 후보 `b7b9687`는 로컬 Node24 check/build, 실제 채워진 1140→1151 반복/비파괴 복구, Vitest 389 PASS/조건부 5 skip, 별도 beta 가입 5 PASS, PC/mobile Chromium auth+프로필 15 PASS/조건부 1 skip을 확인했다. PR #147 수동 Actions `35025390806`은 사진 ID URL query/접근 로그 위험을 발견해 **cancelled**했으며 CI PASS가 아니다. 서버 ID를 노출하지 않는 `/api/profile/avatar`로 보정한 후보는 production build와 desktop/mobile 실제 HTTP 2 PASS다. 새 전체 CI·네 signed dev image·동일 SHA 개발 공개 인수 전까지 체크박스는 완료로 표시하지 않는다.
+
+두 번째 Actions `35025801502`는 신규 route 추가 후 과거 고정 보안 inventory `74` vs 실제 `75`에서 **FAIL**, image skipped였다. 전체 현행 75 route·68 same-origin mutation·56 table을 기존 감사와 P2 addendum에 1:1 대조하도록 보정하고 로컬 security audit PASS. 동시에 proxy의 일반 1 MiB body 상한은 그대로 두고 avatar PATCH만 2 MiB 파일+50 KiB multipart로 제한했다. 실제 1 MiB 초과 합성 PNG 정상 upload, 위장 400·한도 초과 413·일반 API 413을 desktop/mobile 2 PASS로 확인했다. 새 SHA의 필수 전체 CI 전까지 P2 인수 미완료다.
+
+최종 기능 SHA `4c2a42ab3a2df08ec2a9833ef0ede5d06c39abf1`의 [Actions 35026679109](https://github.com/parking-place/LyricsCloud/actions/runs/35026679109)은 전체 verify, Vitest **393 PASS / 조건부 5 skip**, owner E2E **381 PASS / 조건부 43 skip**, 5-browser release matrix **10 PASS**, 네 signed dev image job 모두 **PASS**다. 동일 SHA 개발 서버에서 1140→1151 migration·네 production service health·CSS asset·Docker cleanup PASS. 공개 HTTPS live/ready는 `1.1.7a/dev/p2`와 정확한 SHA, ready schema `1151_profile_customization.sql`; `/auth` 200, 인증 없는 사진 401. 보안 쿠키를 가진 합성 owner는 공개 `/api/profile` GET→닉네임 PATCH→재조회 영속→provider 기본값 복귀와 빈 사진 404 PASS이며 합성 owner/session/profile을 즉시 삭제했다. 첫 합성 probe의 로컬 쿠키 이름 401은 HTTPS `__Host-lc_session`으로 정정 후 PASS했으며 제품 실패가 아니다. P3는 [프로필 API/rollback 인계](../../../docs/runbooks/1.1.7a-phase2-profile-storage.md)를 따른다. `main`·정식 tag/image·릴리스 서버는 변경하지 않았다.

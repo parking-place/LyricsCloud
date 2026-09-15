@@ -327,6 +327,14 @@
 
 | 2026-09-16 `1.1.7a` P1 완료·P2 인계 push 전 | `Future_Feature.md`·P1 계약/개발 인수 | 현행 후보 대조 | 최종 후보 `38cced2c2276d89a9a56a4aa7daa500ce8ca7305` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 129개 ID·체크·본문 변경 없음; 새 Future 파일 없음 | P1 계약·한 번짜리 버전 경계·전체 CI/네 signed dev image·같은 SHA 공개 개발 인수만 완료. P2 저장/사진, P3 UI/홈, P4 보안 회귀, P5 정식 릴리스와 주 개발선 1.1.8은 선소비하지 않음 | 직전 1.1.7a P1 baseline health 보정 push 전 행 |
 
+| 2026-09-16 `1.1.7a` P2 구현 후보 push 전 | `Future_Feature.md`·프로필/사진 P2 계약 | 현행 후보 대조 | P2 기준 `release/1.1.7a` merge `86fa9461218ccd321fce4e8df0b855388ed66fdb` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 129개 ID·체크·본문 변경 없음; 별도 새 Future 후보 없음 | provider/override 무손실 1151·owner 사진·CAS/API·가입/공유/export/탈퇴 P2만 구현. P3 UI·홈, P4/P5, 주 개발선 1.1.8과 다른 Future 범위 선소비 없음 | 직전 1.1.7a P1 완료·P2 인계 push 전 행 |
+
+| 2026-09-16 `1.1.7a` P2 비공개 사진 URL 보정 push 전 | `Future_Feature.md`·P2 사진 공개 경계 | 현행 후보 대조 | 첫 후보 `b7b968710983550d0f4bd51905828da75aa32dbe` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 129개 ID·체크·본문 변경 없음; 새 Future 파일 없음 | 서버 사진 ID가 프록시 URL 로그에 남지 않도록 식별자 없는 현재 owner 사진 URL로만 보정. P2 범위 외 P3/P4/P5·1.1.8과 다른 Future 아이디어 선소비 없음 | 직전 1.1.7a P2 구현 후보 push 전 행 |
+
+| 2026-09-16 `1.1.7a` P2 보안 inventory·업로드 상한 보정 push 전 | `Future_Feature.md`·P2 소유권/파일 제한 | 현행 후보 대조 | 두 번째 후보 `0d610198a0d9c5dacaa4a2c5f48f68e22afb2f75` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 129개 ID·체크·본문 변경 없음; 새 Future 파일 없음 | 신규 avatar route/RLS table의 현행 감사 수를 검증하고 P2 사진 PATCH 한 경로만 2 MiB+multipart envelope를 수용; 일반 API 1 MiB는 유지. P3/P4/P5·1.1.8/Future 선소비 없음 | 직전 1.1.7a P2 비공개 사진 URL 보정 push 전 행 |
+
+| 2026-09-16 `1.1.7a` P2 완료·P3 인계 push 전 | `Future_Feature.md`·P2 CI/개발 공개 인수 | 현행 후보 대조 | 최종 기능 SHA `4c2a42ab3a2df08ec2a9833ef0ede5d06c39abf1` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 129개 ID·체크·본문 변경 없음; 새 Future 파일 없음 | P2 전체 CI·네 signed dev image·동일 SHA 개발 migration/health·공개 합성 owner 프로필 영속 인수만 완료. P3 UI·홈 로고, P4/P5, 1.1.8와 다른 Future 범위 선소비 없음 | 직전 1.1.7a P2 보안 inventory·업로드 상한 보정 push 전 행 |
+
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
 자동 hook·새 검수 스크립트·별도 스케줄을 만들지 않는다. Agent.md의 필수 단계와 이 절차 한 곳을 사용한다.

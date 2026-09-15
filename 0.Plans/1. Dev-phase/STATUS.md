@@ -2,15 +2,21 @@
 
 ```yaml
 current_version: "1.1.7a"
-current_phase: "../2.Patch-phase/1.1.7.a/1phase.md"
+current_phase: "../2.Patch-phase/1.1.7.a/2phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-16"
-next_action: "P1 PR을 release/1.1.7a 전용 브랜치에 통합하고, P2 owner 프로필 저장·사진 경계를 착수한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
+next_action: "P2 PR #147을 전용 release/1.1.7a에 병합하고 P3 프로필 UI·홈 로고 동선을 착수한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
 ```
 
 ## 승인과 기준
+
+P2 최종 기능 SHA `4c2a42ab3a2df08ec2a9833ef0ede5d06c39abf1`의 Actions [35026679109](https://github.com/parking-place/LyricsCloud/actions/runs/35026679109)은 전체 verify·네 signed dev image **PASS**다. Unit **393 PASS / 조건부 5 skip**, owner E2E **381 PASS / 조건부 43 skip**, release browser matrix **10 PASS**. 같은 SHA 개발 서버에서 1151 migration·네 production service health·CSS asset·Docker cleanup PASS, 공개 HTTPS live/ready는 `1.1.7a/dev/p2`와 정확한 SHA, ready schema `1151_profile_customization.sql`, `/auth` 200·비인증 사진 401이다. 합성 owner의 공개 인증 프로필 GET→닉네임 PATCH→재조회 영속→provider 복귀와 빈 사진 404 PASS 후 합성 자료를 삭제했다. 처음 로컬 쿠키 이름을 사용한 합성 probe 401은 HTTPS 보안 쿠키 이름으로 정정한 뒤 PASS했으며 제품 실패가 아니다. 이는 P2 저장·파일·소유권 계약의 완료이고 P3~P5 UI/전체 보안·릴리스 PASS를 의미하지 않는다. `main`·정식 tag/image·릴리스 서버 변경 없음.
+
+P2 첫 기능 후보 `b7b968710983550d0f4bd51905828da75aa32dbe`는 PR [#147](https://github.com/parking-place/LyricsCloud/pull/147)과 같은 SHA 수동 Actions [35025390806](https://github.com/parking-place/LyricsCloud/actions/runs/35025390806)를 시작했으나, 사진 ID가 비공개 URL query와 프록시 접근 로그에 남을 수 있음을 검토 중 발견해 Actions가 migration 검증 중일 때 **cancelled** 처리했다. 이 실행은 CI/이미지 PASS가 아니며 개발 서버는 P1 SHA `38cced2`에 그대로 있다. 식별자 없는 owner 현재사진 전용 `/api/profile/avatar`로 좁히고 source/production build·desktop/mobile 실제 HTTP 2 PASS를 확인했다. 새 후보 전체 CI·네 image·동일 SHA 개발 공개 인수 전까지 P2는 `in_progress`다.
+
+P2 두 번째 후보 `0d610198a0d9c5dacaa4a2c5f48f68e22afb2f75`의 Actions [35025801502](https://github.com/parking-place/LyricsCloud/actions/runs/35025801502)는 1151 migration/recovery·정적 검사·전체 Unit tests 이후 `validate-0912-security-hardening`의 당시 고정 HTTP 수 74와 신규 avatar route 75가 달라 **FAIL**했다. 네 dev image는 skipped이며 개발 서버는 P1 SHA 그대로다. 로컬 보정은 현행 75 route/68 Origin mutation/56 DB table 전량을 inventory와 실제 파일에 1:1 대조해 보안 감사 PASS였다. 추가로 일반 API 1 MiB body 제한은 유지하고 사진 PATCH에만 2 MiB 파일+50 KiB multipart 상한을 적용하여 synthetic 실제 1 MiB 초과 정상 PNG 업로드·과대 413·위장 400·일반 API 413을 desktop/mobile HTTP 2 PASS로 확인했다. 새 전체 CI 전에는 완료로 재분류하지 않는다.
 
 P1 최종 기능 후보 `38cced2c2276d89a9a56a4aa7daa500ce8ca7305`의 Actions [35019632430](https://github.com/parking-place/LyricsCloud/actions/runs/35019632430)는 전체 verify와 네 signed dev image job이 모두 **PASS**였다. 전체 owner E2E는 **379 PASS / 조건부 43 skip**, release candidate browser matrix 10 PASS로 구분한다. 개발 서버는 첫 시도에서 기존 checkout의 구형 numeric-only 배포 스크립트가 목표 checkout으로 전환한 뒤 빌드 전 exit 6으로 중단됐고, 기존 `1.1.8` 런타임을 확인했다. 같은 SHA의 새 checkout 스크립트 재시도에서 production image build·migration·네 지속 서비스 health·static asset·Docker cleanup PASS. 공개 HTTPS live/ready가 `1.1.7a/dev/p1`과 전체 목표 SHA를 반환하고 ready schema `1140_sharing_stability.sql`, `/auth` 200이다. 기존 DB/volume/secret을 보존했다. 이는 P1 **설계·단일 버전 경계** 완료의 증거이고 P2~P5 닉네임·사진·홈 UI 구현 PASS는 아니다.
 
@@ -183,6 +189,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7a/P2 | LC-PLAN-117A-P2-01~05 | 1151 migration·owned/auth/beta/signup·profile/photo API·공유/export/lifecycle·관련 검증·상태/Future | PR #147 기능 `4c2a42a`, Actions `35026679109` verify/네 signed dev image PASS·동일 SHA 공개 live/ready/합성 owner GET→PATCH→재조회→복귀 PASS; P3 UI 인계 | 2026-09-16 | complete |
 | Codex | 1.1.7a/P1 | LC-PLAN-117A-P1-01~06 | 계약·단일 버전 경계·P1 CI/개발 인수 | `v1.1.7` source `edb8b4a`; 후보 `38cced2`, Actions `35019632430` 전체 verify/네 signed dev image PASS·동일 SHA 공개 live/ready/auth/네 health PASS; 제품 기능은 P2~P5 인계 | 2026-09-16 | complete |
 | Codex | 1.1.7/P5 | LC-NF-1.1.7-P5-01~03 | 사용자 안내·플랫폼 탐색/공통 계약·최종 artifact/CI·개발 공개 인수·상태/Future | 후보 `b1a1e2c`; Actions `34900342849`·`34900363577`; 네 signed dev image·동일 SHA 개발 공개 인수 완료, native gate 미실행 | 2026-09-15 | complete |
 | Codex | 1.1.7/P4 | LC-NF-1.1.7-P4-01~03 | 1.1.7 회귀·접근성/성능 대리·협업/presence/font/IME 영향·상태/Future | 후보 `66f2f79`, 두 CI·네 signed dev image·동일 SHA 개발 공개 저장/재시작 인수 완료; 실제 OS/기기·AT·OS zoom은 별도 미실행 | 2026-09-15 | complete |

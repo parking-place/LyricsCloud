@@ -182,11 +182,13 @@ test.describe("A/B ownership boundary", () => {
     await context.addCookies([{ name: "lc_session", value: fixtureTokens.bob, url: baseURL, httpOnly: true, sameSite: "Lax" }]);
     const queryAttack = await page.request.get(`/api/profile?ownerId=${fixtureUsers.alice.id}`);
     expect(queryAttack.status()).toBe(200);
-    expect((await queryAttack.json()).profile).toMatchObject({ userId: fixtureUsers.bob.id });
+    const current = (await queryAttack.json()).profile;
+    expect(current).toMatchObject({ userId: fixtureUsers.bob.id });
 
     const bodyAttack = await page.request.patch(`/api/profile?userId=${fixtureUsers.alice.id}`, {
       headers: { Origin: baseURL },
-      data: { displayName: `B 격리 확인 ${testInfo.project.name}`, avatarUrl: null, ownerId: fixtureUsers.alice.id }
+      data: { expectedRowVersion: current.rowVersion,
+        displayName: `B 격리 확인 ${testInfo.project.name}`, ownerId: fixtureUsers.alice.id }
     });
     expect(bodyAttack.status()).toBe(200);
     expect((await bodyAttack.json()).profile).toMatchObject({
