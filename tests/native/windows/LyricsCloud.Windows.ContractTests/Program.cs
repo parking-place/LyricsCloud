@@ -78,6 +78,37 @@ True(!NativeCredentialPolicy.IsUsable(credential with { ExpiresAt = DateTimeOffs
     DateTimeOffset.UtcNow), "credential expiry rejection");
 True(!NativeLibraryPresentation.SupportsWrites, "read-only presentation");
 
+var callbackOrigin = new Uri("http://127.0.0.1:49152/lyricscloud/oauth/callback-token");
+var callbackCode = new string('c', 43);
+var callbackState = new string('s', 43);
+Equal(callbackCode, NativeLoopbackCallbackPolicy.Validate(callbackOrigin,
+    $"/lyricscloud/oauth/callback-token?code={callbackCode}&state={callbackState}", callbackState),
+    "exact loopback callback");
+Throws<InvalidDataException>(() => NativeLoopbackCallbackPolicy.Validate(callbackOrigin,
+    $"http://example.test/lyricscloud/oauth/callback-token?code={callbackCode}&state={callbackState}", callbackState),
+    "absolute-form callback rejection");
+Throws<InvalidDataException>(() => NativeLoopbackCallbackPolicy.Validate(callbackOrigin,
+    $"/lyricscloud/oauth/other?code={callbackCode}&state={callbackState}", callbackState),
+    "wrong callback path rejection");
+Throws<InvalidDataException>(() => NativeLoopbackCallbackPolicy.Validate(callbackOrigin,
+    $"/lyricscloud/oauth/callback-token?code={callbackCode}&state={callbackState}&state={callbackState}", callbackState),
+    "duplicate callback state rejection");
+Throws<InvalidDataException>(() => NativeLoopbackCallbackPolicy.Validate(callbackOrigin,
+    $"/lyricscloud/oauth/callback-token?code={callbackCode}&state={new string('x', 43)}", callbackState),
+    "wrong callback state rejection");
+
+Equal(NativeRecoveryAction.ClearSession,
+    NativeRecoveryPolicy.For(new NativeApiException(System.Net.HttpStatusCode.Unauthorized, "UNAUTHORIZED")),
+    "401 clears session");
+Equal(NativeRecoveryAction.ClearResource,
+    NativeRecoveryPolicy.For(new NativeApiException(System.Net.HttpStatusCode.Forbidden, "FORBIDDEN")),
+    "403 clears resource");
+Equal(NativeRecoveryAction.ClearResource,
+    NativeRecoveryPolicy.For(new NativeApiException(System.Net.HttpStatusCode.NotFound, "NOT_FOUND")),
+    "404 clears resource");
+Equal(NativeRecoveryAction.PreserveOwnerData, NativeRecoveryPolicy.For(new HttpRequestException()),
+    "offline owner data can remain visible");
+
 Console.WriteLine($"Windows core contract: {assertions} assertions PASS");
 
 void Equal<T>(T expected, T actual, string name)
@@ -90,4 +121,11 @@ void True(bool condition, string name)
 {
     if (!condition) throw new InvalidOperationException($"{name}: failed");
     assertions += 1;
+}
+
+void Throws<T>(Action action, string name) where T : Exception
+{
+    try { action(); }
+    catch (T) { assertions += 1; return; }
+    throw new InvalidOperationException($"{name}: expected {typeof(T).Name}");
 }

@@ -14,6 +14,7 @@ public sealed partial class MainWindow : Window
     private readonly ObservableCollection<NativeLibraryEntry> _resources = [];
     private readonly ObservableCollection<NativeLibraryEntry> _lyrics = [];
     private readonly DpapiTokenVault _tokenVault = new();
+    private readonly ProtectedAccountCache _accountCache = new();
     private HttpClient? _brokerHttp;
     private HttpClient? _authenticatedHttp;
     private NativeApiClient? _brokerApi;
@@ -22,6 +23,9 @@ public sealed partial class MainWindow : Window
     private string? _nextCursor;
     private NativeCopyView? _copy;
     private CancellationTokenSource? _loadCancellation;
+    private CancellationTokenSource? _detailCancellation;
+    private long _sessionGeneration;
+    private string? _authenticatedUserId;
     private bool _authenticated;
 
     public MainWindow()
@@ -41,6 +45,8 @@ public sealed partial class MainWindow : Window
         {
             var origin = ParseOrigin(ServerOriginTextBox.Text);
             SetBusy(true, "서버 계약 확인 중…");
+            if (_origin is not null && NativeCredentialPolicy.NormalizeOrigin(_origin) != NativeCredentialPolicy.NormalizeOrigin(origin))
+                await ClearLocalIdentityAsync(_origin, _authenticatedUserId);
             ResetClients();
             _origin = origin;
             _brokerHttp = CreateHttpClient(origin);
@@ -65,6 +71,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception error)
         {
+            await RecoverAsync(error);
             SetAuthenticated(false);
             SetState(NativeLibraryState.Failure(error));
         }
@@ -78,16 +85,21 @@ public sealed partial class MainWindow : Window
         {
             SetBusy(true, "시스템 브라우저 로그인 대기 중…");
             var token = await new LoopbackSignIn(_brokerApi).SignInAsync();
+            var credential = new NativeStoredCredential(NativeCredentialPolicy.NormalizeOrigin(_origin),
+                token.User.Id, token.AccessToken, token.ExpiresAt);
+            await ActivateCredentialAsync(credential);
             await _tokenVault.StoreAsync(_origin, token);
-            await ActivateCredentialAsync(new NativeStoredCredential(NativeCredentialPolicy.NormalizeOrigin(_origin),
-                token.User.Id, token.AccessToken, token.ExpiresAt));
             await LoadResourcesAsync(false);
         }
         catch (OperationCanceledException)
         {
             SetState(new(NativeViewState.Error, "로그인이 취소되거나 제한 시간을 넘었습니다. 세션은 만들지 않았습니다.", false));
         }
-        catch (Exception error) { SetState(NativeLibraryState.Failure(error)); }
+        catch (Exception error)
+        {
+            await RecoverAsync(error);
+            SetState(NativeLibraryState.Failure(error));
+        }
         finally { SetBusy(false); }
     }
 
@@ -97,24 +109,35 @@ public sealed partial class MainWindow : Window
         _authenticatedHttp?.Dispose();
         _authenticatedHttp = CreateHttpClient(_origin);
         _api = new NativeApiClient(_authenticatedHttp, credential.AccessToken);
+        _authenticatedUserId = credential.UserId;
         var session = await _api.GetSessionAsync();
         if (!session.Authenticated || session.Scope != "read" || session.User.Id != credential.UserId)
+        {
+            await ClearLocalIdentityAsync(_origin, credential.UserId);
             throw new InvalidDataException("NATIVE_SESSION_INVALID");
+        }
         SetAuthenticated(true);
     }
 
     private async void LogoutButton_Click(object sender, RoutedEventArgs e)
     {
-        try { if (_api is not null) await _api.LogoutAsync(); }
+        var api = _api;
+        var origin = _origin;
+        var userId = _authenticatedUserId;
+        InvalidateAuthenticatedWork();
+        SetAuthenticated(false);
+        ClearLibrary();
+        SetBusy(true, "로그아웃 중…");
+        try { if (api is not null) await api.LogoutAsync(); }
         catch (HttpRequestException) { }
         finally
         {
-            await _tokenVault.ClearAsync();
+            await ClearLocalIdentityAsync(origin, userId);
             _api = null;
             _authenticatedHttp?.Dispose();
             _authenticatedHttp = null;
             SetAuthenticated(false);
-            ClearLibrary();
+            SetBusy(false);
             SetState(new(NativeViewState.Ready, "이 기기의 로그인 정보를 지웠습니다. 서버에 다시 로그인할 수 있습니다.", false));
         }
     }
@@ -129,7 +152,8 @@ public sealed partial class MainWindow : Window
 
     private async Task LoadResourcesAsync(bool append)
     {
-        if (_api is null) return;
+        if (_api is not { } api) return;
+        var generation = _sessionGeneration;
         _loadCancellation?.Cancel();
         _loadCancellation?.Dispose();
         _loadCancellation = new CancellationTokenSource();
@@ -142,19 +166,22 @@ public sealed partial class MainWindow : Window
             if (!append) ClearLibrary();
             if (kind == NativeResourceKind.Songs)
             {
-                var result = await _api.ListSongsAsync(append ? _nextCursor : null, token);
+                var result = await api.ListSongsAsync(append ? _nextCursor : null, token);
+                if (generation != _sessionGeneration) return;
                 foreach (var item in result.Items) _resources.Add(NativeLibraryPresentation.Entry(item));
                 _nextCursor = result.NextCursor;
             }
             else if (kind == NativeResourceKind.Rhymes)
             {
-                var result = await _api.ListRhymesAsync(append ? _nextCursor : null, token);
+                var result = await api.ListRhymesAsync(append ? _nextCursor : null, token);
+                if (generation != _sessionGeneration) return;
                 foreach (var item in result.Items) _resources.Add(NativeLibraryPresentation.Entry(item));
                 _nextCursor = result.NextCursor;
             }
             else
             {
-                var result = await _api.ListPromptsAsync(append ? _nextCursor : null, token);
+                var result = await api.ListPromptsAsync(append ? _nextCursor : null, token);
+                if (generation != _sessionGeneration) return;
                 foreach (var item in result.Items) _resources.Add(NativeLibraryPresentation.Entry(item));
                 _nextCursor = result.NextCursor;
             }
@@ -164,25 +191,28 @@ public sealed partial class MainWindow : Window
         catch (OperationCanceledException) { }
         catch (Exception error)
         {
-            if (error is NativeApiException { ResponseStatusCode: System.Net.HttpStatusCode.Unauthorized })
+            if (generation == _sessionGeneration)
             {
-                await _tokenVault.ClearAsync();
-                SetAuthenticated(false);
+                await RecoverAsync(error);
+                SetState(NativeLibraryState.Failure(error));
             }
-            SetState(NativeLibraryState.Failure(error));
         }
-        finally { SetBusy(false); }
+        finally { if (generation == _sessionGeneration) SetBusy(false); }
     }
 
     private async void ResourceListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (ResourceListView.SelectedItem is not NativeLibraryEntry entry || _api is null) return;
+        CancelDetailLoad();
+        if (ResourceListView.SelectedItem is not NativeLibraryEntry entry || _api is not { } api) return;
+        var generation = _sessionGeneration;
         _lyrics.Clear();
         LyricListView.Visibility = Visibility.Collapsed;
         _copy = null;
         CopyButton.IsEnabled = false;
         if (entry.Resource is NativeSong song)
         {
+            _detailCancellation = new CancellationTokenSource();
+            var token = _detailCancellation.Token;
             DetailTitle.Text = song.Title;
             DetailMetadata.Text = $"{song.Status} · 가사 {song.LyricCount}개 · 곡 메모는 읽기 전용입니다.";
             DetailBody.Text = string.IsNullOrEmpty(song.WorkNotes) ? song.Description : song.WorkNotes;
@@ -190,7 +220,8 @@ public sealed partial class MainWindow : Window
             try
             {
                 SetBusy(true, "가사 불러오는 중…");
-                var result = await _api.ListLyricsAsync(song.Id);
+                var result = await api.ListLyricsAsync(song.Id, token);
+                if (generation != _sessionGeneration || !ReferenceEquals(ResourceListView.SelectedItem, entry)) return;
                 foreach (var lyric in result.Items) _lyrics.Add(NativeLibraryPresentation.Entry(lyric));
                 if (_lyrics.Count == 0) SetState(NativeLibraryState.Loaded("가사", 0));
                 else
@@ -200,8 +231,16 @@ public sealed partial class MainWindow : Window
                     SetState(NativeLibraryState.Loaded("가사", _lyrics.Count));
                 }
             }
-            catch (Exception error) { SetState(NativeLibraryState.Failure(error)); }
-            finally { SetBusy(false); }
+            catch (OperationCanceledException) { }
+            catch (Exception error)
+            {
+                if (generation == _sessionGeneration)
+                {
+                    await RecoverAsync(error);
+                    SetState(NativeLibraryState.Failure(error));
+                }
+            }
+            finally { if (generation == _sessionGeneration) SetBusy(false); }
             return;
         }
         if (entry.Resource is NativeRhyme rhyme)
@@ -304,13 +343,19 @@ public sealed partial class MainWindow : Window
 
     private void ClearLibrary()
     {
+        CancelDetailLoad();
         _resources.Clear();
-        _lyrics.Clear();
         _nextCursor = null;
-        _copy = null;
         ResourceListView.SelectedItem = null;
-        LyricListView.Visibility = Visibility.Collapsed;
         LoadMoreButton.Visibility = Visibility.Collapsed;
+        ClearDetails();
+    }
+
+    private void ClearDetails()
+    {
+        _lyrics.Clear();
+        _copy = null;
+        LyricListView.Visibility = Visibility.Collapsed;
         DetailTitle.Text = "자료를 선택해 주세요";
         DetailMetadata.Text = "선택한 자료의 원문을 수정 없이 표시합니다.";
         DetailBody.Text = "";
@@ -320,15 +365,62 @@ public sealed partial class MainWindow : Window
 
     private void ResetClients()
     {
-        _loadCancellation?.Cancel();
+        InvalidateAuthenticatedWork();
         _brokerHttp?.Dispose();
         _authenticatedHttp?.Dispose();
         _brokerHttp = null;
         _authenticatedHttp = null;
         _brokerApi = null;
         _api = null;
+        _authenticatedUserId = null;
         SetAuthenticated(false);
         ClearLibrary();
+    }
+
+    private async Task RecoverAsync(Exception error)
+    {
+        switch (NativeRecoveryPolicy.For(error))
+        {
+            case NativeRecoveryAction.ClearSession:
+                var origin = _origin;
+                var userId = _authenticatedUserId;
+                InvalidateAuthenticatedWork();
+                await ClearLocalIdentityAsync(origin, userId);
+                _api = null;
+                _authenticatedHttp?.Dispose();
+                _authenticatedHttp = null;
+                SetAuthenticated(false);
+                ClearLibrary();
+                SetBusy(false);
+                break;
+            case NativeRecoveryAction.ClearResource:
+                ClearDetails();
+                break;
+        }
+    }
+
+    private async Task ClearLocalIdentityAsync(Uri? origin, string? userId)
+    {
+        await _tokenVault.ClearAsync();
+        if (origin is not null && userId is not null)
+            await _accountCache.PurgeAccountAsync(NativeCredentialPolicy.NormalizeOrigin(origin), userId);
+        _authenticatedUserId = null;
+    }
+
+    private void InvalidateAuthenticatedWork()
+    {
+        _sessionGeneration += 1;
+        _loadCancellation?.Cancel();
+        _loadCancellation?.Dispose();
+        _loadCancellation = null;
+        CancelDetailLoad();
+    }
+
+    private void CancelDetailLoad()
+    {
+        _detailCancellation?.Cancel();
+        _detailCancellation?.Dispose();
+        _detailCancellation = null;
     }
 
     private NativeResourceKind SelectedKind() => ResourceKindComboBox.SelectedIndex switch
