@@ -1,6 +1,6 @@
 # 1.1.8 Phase 4 — 실패·권한·복구 회귀
 
-- 상태: **실제 Windows 인수 대기** (`review`, P3 merge main `b995ffe`, P4 자동 검증 후보 `44d00e4` 인수)
+- 상태: **실제 Windows 인수 대기** (`review`, P3 merge main `b995ffe`, 공유 UI/cache 보정 기능 후보 `fe40556`의 두 CI·네 dev image·동일 SHA 개발 공개 인수 PASS)
 - 단계 목적: Windows 네이티브 개발안·읽기와 복사의 실패·권한·복구 회귀을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -70,6 +70,8 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 - P4-01의 승인 없음 분기는 이번 실행 입력이 아니다: 사용자의 `1.1.8 Windows 권고안 승인`이 P1에서 먼저 기록됐다. P4-02~04의 자동 DB/API/fixture 증거는 확보했지만 네이티브 UI 실기기의 OAuth 취소/회수/cache/reconnect/copy를 실행하지 못했다. P4-05~07의 실제 Windows launch·process kill/DPAPI·clipboard·Microsoft 한국어 IME·다국어 font fallback·Narrator/high contrast·200% DPI/다중 monitor·권한/presence·서명 MSIX 설치/업데이트/제거는 **미실행**. 자동 Windows runner의 build와 웹 성공은 실제 OS PASS가 아니며 P4 체크박스/완료와 P5/정식 릴리스는 해당 증거 전까지 남긴다.
 
 ## 실행·증거 기록
+
+2026-09-15 보정: 앞선 자동 인수 뒤 Windows 화면에서 선택 공유 가사를 여는 경로와 계정별 보호 캐시 읽기 경로가 실제로 연결되지 않은 결함을 발견했다. `fe4055626757458a4eecbff0bfa0b55bed3bc40d`에서 공유 UUID-only GET·권한 epoch 동등성/온라인 재검증 뒤 cache 노출·오프라인 공유 본문/복사 차단·회수 시 해당 cache 삭제·계정 전환 시 UUID/token/cache 정리·선택한 owner 가사의 계정별 DPAPI 오프라인 복구·공유 복사 직전/창 복귀 시 재확인을 구현했다. 합성 C# HTTP/복사/cache 계약 **48 assertions PASS**, 두 Windows 정적 validator PASS. 새 SHA의 push Actions `34929434984`와 PR Actions `34929437966` 모두 verify·Windows WinUI x64 build PASS, push에서 네 개발 image 발행 PASS. 동일 기능 SHA 개발 배포 `1.1.8/dev/p4`의 공개 live/ready·schema `1150_native_read_sessions.sql`·native `lyricscloud.native.read.v1`·writes false·anonymous 곡/가사 401·invalid callback 400, web/collaboration 재시작 후 postgres/web/collaboration/worker healthy PASS. 기존 개발 DB 볼륨·secret·allowlist를 보존했고 운영 서버는 변경하지 않았다. 실제 WinUI launch·DPAPI·공유 회수·IME/AT/설치 증거는 **미실행**, P4/P5 완료·main/Release는 아직 아니다. [실기기 수용 순서](../../../docs/runbooks/1.1.8-windows-installation.md)를 따른다.
 
 [공통 명령·검증](../QUALITY-GATES.md)을 먼저 읽는다. 기존 runner의 영향받은 검사를 우선 사용하고 필요할 때만 회귀를 보강한다. 지원 환경에서 관련 DB/E2E를 선택하며 동일 변경의 full suite는 로컬/CI 중 한 곳과 필수 게이트만 따른다. native은 승인된 SDK/플랫폼 명령을 기록한다. 없는 도구·실제 IME·물리 기기 검증을 모사 결과로 통과시켰다고 표시하지 않는다. 문서-only Phase는 링크·범위·결정·설계 검토로 별도 인수한다.
 
