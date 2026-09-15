@@ -271,6 +271,29 @@ jobs:
           path: apps/windows/LyricsCloud.Windows/bin/x64/Release/**
           if-no-files-found: error
           retention-days: 7
+      - name: Publish x64 self-contained test folder
+        shell: pwsh
+        run: |
+          $publish = Join-Path $env:RUNNER_TEMP 'lyricscloud-windows-x64-self-contained'
+          dotnet publish LyricsCloud.Windows/LyricsCloud.Windows.csproj --configuration Release -p:Platform=x64 --runtime win-x64 --self-contained true -p:WindowsAppSDKSelfContained=true -p:PublishSingleFile=false -p:PublishTrimmed=false --output $publish
+          if ($LASTEXITCODE -ne 0) { throw 'Windows self-contained publish failed' }
+          foreach ($required in @('LyricsCloud.Windows.exe', 'coreclr.dll')) {
+            if (-not (Test-Path (Join-Path $publish $required))) { throw "Self-contained output missing $required" }
+          }
+          if (-not (Get-ChildItem -Path $publish -Recurse -File -Filter 'Microsoft.UI.Xaml.dll' | Select-Object -First 1)) {
+            throw 'Windows App SDK runtime is missing from self-contained output'
+          }
+          $runtimeConfig = Get-Content (Join-Path $publish 'LyricsCloud.Windows.runtimeconfig.json') -Raw | ConvertFrom-Json
+          if ($runtimeConfig.runtimeOptions.framework -or $runtimeConfig.runtimeOptions.frameworks) {
+            throw '.NET runtimeconfig still requires a separately installed framework'
+          }
+      - name: Preserve x64 self-contained test folder
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-x64-self-contained-${{ github.sha }}
+          path: ${{ runner.temp }}/lyricscloud-windows-x64-self-contained/**
+          if-no-files-found: error
+          retention-days: 14
 
   publish:
     name: Publish ${{ matrix.service }} image
