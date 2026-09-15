@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.8"
-current_phase: "../2.Patch-phase/1.1.8/1phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.8/2phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-15"
-next_action: "P1 승인 기록을 PR #141로 main에 병합한 뒤에만 승인된 1.1.8 P2 Windows 기반 구현을 시작한다"
+next_action: "main c80b05b의 승인된 P1을 입력으로 Windows client·native broker/PKCE·계정별 보호 cache·copy contract 실패 테스트와 최소 구현을 수행한다"
 ```
 
 ## 승인과 기준
@@ -177,6 +177,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.8/P2 | LC-NF-1.1.8-P2-01~06 | `apps/windows`, native auth/API/DB, C#·TS contract test, 상태/Future | P1 승인 proposal `e26fe58`; P1 merge main `c80b05b`; Linux host에 Windows OS/SDK 없음 | 2026-09-15 09:15 KST | in_progress |
 | Codex | 1.1.8/P1 | LC-NF-1.1.8-P1-01~07 | Windows 기술 비교·인증/copy/Yjs fixture·실패/권한/복구·담당/승인 gate·상태/Future | 1.1.7 release `edb8b4a`; 기록 main `b288dcf`; 승인 proposal `e26fe58`; JS reference 34 PASS | 2026-09-15 08:43 KST | complete |
 | Codex | 1.1.7/Release | 승인된 release gate | main CI·annotated tag·정식 image·릴리스 서버 exact digest·공개 smoke·전역 beta CLI | P5 `b1a1e2c`; main/tag `edb8b4a`; Actions `34904079990`·`34906725749` | 2026-09-15 | complete |
 | Codex | 1.1.7/P5 | LC-NF-1.1.7-P5-01~03 | 사용자 안내·플랫폼 탐색/공통 계약·최종 artifact/CI·개발 공개 인수·상태/Future | 후보 `b1a1e2c`; Actions `34900342849`·`34900363577`; 네 signed dev image·동일 SHA 개발 공개 인수 완료, native gate 미실행 | 2026-09-15 | complete |
