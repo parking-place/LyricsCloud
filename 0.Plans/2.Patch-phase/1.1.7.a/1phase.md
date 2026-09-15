@@ -20,3 +20,5 @@
 첫 원격 Actions `35014698215`는 `b603185`에서 DB·단위·정적 검사·production image·backup/rollback/security 단계까지 진행했으나 Playwright production fixture의 `APP_VERSION=1.1.7` 잔존으로 webServer 설정이 `CONFIG_INVALID(APP_VERSION)`을 반환해 E2E **FAIL**, 네 image publish **skipped**였다. fixture·health 기대값을 `1.1.7a`로 보정하고 regression 테스트 4 PASS, Node 24 `pnpm check` PASS, 로컬 production web `/api/health/live`에서 `1.1.7a/dev/p1` PASS를 확인했다. 이는 전체 E2E/CI PASS를 대신하지 않으며 새 후보 SHA로 재실행해야 한다.
 
 두 번째 Actions `35016348844`는 1110 rollback/RLS 본문 OK 직후 해당 임시 DB의 `DROP ... FORCE`가 닫히는 PostgreSQL pool에 `57P01`을 보내 **FAIL**, publish skipped였다. 1110 verifier만 공용 비강제 UUID-scope cleanup으로 바꿨다. 별도 disposable PostgreSQL 18.3에서 실제 1110 fresh/repeat·RLS·rollback/recovery PASS, cleanup 계약 7 PASS. 기존 두 CI를 PASS로 재분류하지 않는다.
+
+세 번째 Actions `35016930875`의 전체 E2E는 377 PASS / desktop·mobile baseline 2 FAIL / 43 skip이었다. 실패 두 건은 health version의 숫자-only regex가 정확한 승인 버전 `1.1.7a`를 거부했다. 기대값을 `APP_VERSION`/현재 one-off 기본값으로 정렬하고 별도 disposable PostgreSQL + 실제 Chromium desktop/mobile baseline 2 PASS, 앞선 browser health/owner 2 PASS, one-off source regression을 확인했다. 제품 배포·전체 CI/이미지 발행은 여전히 미완료다.

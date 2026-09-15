@@ -45,7 +45,9 @@ test('shell publication guard enforces exact branch and tag without moving old v
 test('production browser fixture and health assertion use the one-off product version', () => {
   const browserConfig = readFileSync('playwright.config.ts', 'utf8');
   const healthSpec = readFileSync('tests/e2e/new-feature-1.1.5.spec.ts', 'utf8');
+  const baselineSpec = readFileSync('tests/e2e/baseline.spec.ts', 'utf8');
   assert.match(browserConfig, /APP_VERSION: process\.env\.APP_VERSION \?\? "1\.1\.7a"/);
   assert.match(browserConfig, /APP_PHASE: process\.env\.APP_PHASE \?\? "p1"/);
   assert.match(healthSpec, /health\.build\.version\)\.toBe\(process\.env\.APP_VERSION \?\? "1\.1\.7a"\)/);
+  assert.match(baselineSpec, /version: process\.env\.APP_VERSION \?\? "1\.1\.7a"/);
 });
