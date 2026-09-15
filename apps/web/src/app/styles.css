@@ -1478,7 +1478,7 @@ html[data-theme="dark"] .brand-mark-dark { display: block !important; }
 
 /* 0.6.0 global quick add and lyric parent picker */
 .workspace-shell { position: relative; }
-.top-quick-add { position: absolute; z-index: 12; top: 1.05rem; right: 14.05rem; min-height: 2.35rem; padding: 0 .8rem; border: 1px solid rgb(200 255 61 / 35%); border-radius: .55rem; background: rgb(200 255 61 / 8%); color: var(--acid); font-size: .74rem; font-weight: 800; cursor: pointer; }
+.top-quick-add { position: absolute; z-index: 12; top: 1.05rem; right: 20rem; min-height: 2.35rem; padding: 0 .8rem; border: 1px solid rgb(200 255 61 / 35%); border-radius: .55rem; background: rgb(200 255 61 / 8%); color: var(--acid); font-size: .74rem; font-weight: 800; cursor: pointer; }
 .quick-add { display: none; }
 .quick-add-notice { position: fixed; z-index: 18; right: 1rem; bottom: 1rem; max-width: min(30rem, calc(100vw - 2rem)); margin: 0; padding: .7rem .9rem; border: 1px solid var(--line); border-radius: .65rem; background: var(--surface-raised); color: var(--muted); font-size: .7rem; line-height: 1.5; box-shadow: 0 16px 45px rgb(0 0 0 / 45%); }
 .quick-add-notice a { color: var(--acid); font-weight: 800; }

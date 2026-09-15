@@ -100,6 +100,18 @@ test.describe("1.1.7a profile UI and home mark", () => {
       } else {
         await page.getByRole("button", { name: "좌측 메뉴 접기" }).click();
         await expect(page.locator(".side-nav .brand-home-link")).toBeVisible();
+        for (const width of [1440, 1200, 960, 721]) {
+          await page.setViewportSize({ width, height: 1000 });
+          for (const selector of [".top-home-mark", ".top-shortcut-help", ".top-settings", ".top-quick-add"]) {
+            const unobscured = await page.locator(selector).evaluate((element) => {
+              const rect = element.getBoundingClientRect();
+              const center = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+              return rect.width > 0 && rect.height > 0 && Boolean(center && (element === center || element.contains(center)));
+            });
+            expect(unobscured, `${selector} must remain clickable at ${width}px`).toBe(true);
+          }
+        }
+        await page.setViewportSize({ width: 1440, height: 1000 });
       }
       await page.locator("#profile-display-name").fill("홈 이동 전에 남길 입력");
       await homeTarget(page).click();
