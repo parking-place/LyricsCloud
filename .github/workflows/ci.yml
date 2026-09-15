@@ -44,10 +44,10 @@ jobs:
       NODE_ENV: test
       DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
       AUTH_DATABASE_INTEGRATION: "true"
-      APP_VERSION: 1.1.7
+      APP_VERSION: 1.1.7a
       BUILD_ID: ${{ github.sha }}
       APP_CHANNEL: dev
-      APP_PHASE: p5
+      APP_PHASE: p1
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -62,6 +62,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: P6 stabilization regression
         run: node --test scripts/tests/p6-*.mjs
+      - name: One-off 1.1.7a version boundary regression
+        run: node --test scripts/tests/oneoff-117a-version.mjs
       - name: P6 whole-tree codebase inventory and syntax audit
         run: node scripts/audit-p6-codebase.mjs
       - name: Audit production dependencies

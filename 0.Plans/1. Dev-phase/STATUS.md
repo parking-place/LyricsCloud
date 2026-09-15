@@ -1,16 +1,18 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.1.7"
-current_phase: "../2.Patch-phase/1.1.7/5phase.md"
-state: "complete"
+current_version: "1.1.7a"
+current_phase: "../2.Patch-phase/1.1.7.a/1phase.md"
+state: "review"
 owner: "Codex"
 started_at: "2026-09-15"
-updated_at: "2026-09-15"
-next_action: "PR #139로 1.1.7 P5 완료 기록을 main에 병합하고 main CI 뒤 annotated v1.1.7·정식 image·릴리스 서버 exact digest·공개 smoke를 수행한다"
+updated_at: "2026-09-16"
+next_action: "v1.1.7 기반 1.1.7a P1 계약·one-off 버전 검증을 진행한다. main에는 미완료 Windows 1.1.8이 있어 별도 release branch/tag 예외의 사용자 확인 전 정식 tag/image·릴리스 서버를 변경하지 않는다"
 ```
 
 ## 승인과 기준
+
+2026-09-16 사용자가 이번 한 번 `1.1.7a`를 그대로 제품 버전으로 사용하고 닉네임·프로필 사진 변경, 우측 상단 로고/아이콘 홈 이동을 P1~P5 및 릴리스까지 진행하도록 지시했다. 작업은 이미 발행된 `v1.1.7` SHA `edb8b4aca833fbf48a3111177db9060dceac42ba`에서 분기한 독립 후보로 수행하며 기존 tag/DB를 덮지 않는다. 현재 main의 미완료 `1.1.8` Windows P3가 릴리스에 섞이지 않도록 별도 release branch/tag 방식의 추가 승인을 요청했다. 이 STATUS는 독립 후보 브랜치의 실행 상태이며 main/1.1.8 P4의 원본 상태를 소급 변경하지 않는다. 정확한 제품 버전은 `1.1.7a`, 계획 폴더는 `1.1.7.a`, private npm package version은 SemVer 제약으로 `1.1.7`을 유지한다.
 
 2026-09-14 사용자가 직전 UX P2 권고안 `B-1` 확인 질문에 ``1.1.14까지 달렷``이라고 답했다. 이를 통합 workspace+Flat-depth의 명시 선택과 UX P3~P5, 1.1.5~1.1.14의 계획된 Phase·각 출시 가능한 버전의 정식 릴리스 실행 승인으로 기록한다. 기존 기능 삭제는 승인하지 않았으며 CodeMirror/Yjs·IME·selection/undo·초안·권한/복구·URL/API/DB 계약을 유지한다. 네이티브 SDK·실기기·서명·스토어 등 각 계획의 조건부 gate는 별도 실제 증거 없이 완료나 릴리스로 표시하지 않는다.
 
@@ -173,6 +175,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7a/P1 | LC-PLAN-117A-P1-01~06 | `0.Plans/2.Patch-phase/1.1.7.a`, `VERSION`, `STATUS.md`, `VERSIONING.md`, `docs/runbooks/1.1.7a-phase1-profile-home-contract.md`, one-off version 검증 경로 | `v1.1.7` source `edb8b4a`; 주 개발선 1.1.8 P4 review·별도 release branch 예외 확인 대기 | 2026-09-16 | review |
 | Codex | 1.1.7/P5 | LC-NF-1.1.7-P5-01~03 | 사용자 안내·플랫폼 탐색/공통 계약·최종 artifact/CI·개발 공개 인수·상태/Future | 후보 `b1a1e2c`; Actions `34900342849`·`34900363577`; 네 signed dev image·동일 SHA 개발 공개 인수 완료, native gate 미실행 | 2026-09-15 | complete |
 | Codex | 1.1.7/P4 | LC-NF-1.1.7-P4-01~03 | 1.1.7 회귀·접근성/성능 대리·협업/presence/font/IME 영향·상태/Future | 후보 `66f2f79`, 두 CI·네 signed dev image·동일 SHA 개발 공개 저장/재시작 인수 완료; 실제 OS/기기·AT·OS zoom은 별도 미실행 | 2026-09-15 | complete |
 | Codex | 1.1.7/P3 | LC-NF-1.1.7-P3-01~03 | 목록/편집/공유/Suno 복귀·drag/context 대안·PC/mobile 회귀·상태/Future | 후보 `740b1e3`, 두 CI·네 signed dev image·동일 SHA 공개 PC/mobile×dark/light PASS; 실제 OS/기기·AT는 browser 대리와 분리 | 2026-09-15 | complete |
