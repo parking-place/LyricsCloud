@@ -7,7 +7,7 @@ state: "review"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-16"
-next_action: "P4-06 self-contained x64 시험 artifact는 SHA 3fecc85의 Windows CI job PASS로 준비됐다. 전체 verify는 진행 중이고 사용자 실기기 실행은 보류됐다. 실제 OAuth·DPAPI·계정/공유 회수·offline/reconnect·IME/AT/DPI/clipboard, P4-07 presence/사전 범위 해석과 신뢰 서명 MSIX gate가 남아 P4 review·P5/릴리스 보류"
+next_action: "사용자가 2026-09-16 Windows PC에서 앱 실행 실패를 보고하고 Windows 앱 일시 보류를 요청했다. 사용한 artifact와 오류 형태는 미확인; 수동 CI 34987340477의 Windows job·verify PASS는 실제 기기 PASS가 아니다. 1.1.8 P4 review·P5/릴리스 보류를 유지한다. 1.1.9는 1.1.8 P5, 1.1.10은 1.1.9 P5를 요구하므로 순차 진행/버전 건너뛰기 전에 범위 재계획 결정을 받는다"
 ```
 
 ## 승인과 기준
@@ -180,7 +180,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | `.github/workflows/ci.yml`, `apps/windows/README.md`, Windows 설치 runbook·P4/STATUS 기록 | 사용자 실기기 실행 보류; SHA `3fecc85` 수동 Actions `34987340477` Windows publish/upload PASS, 저장소 verify 진행 중. artifact는 unsigned 개발 후보이며 P4 review 유지 | 2026-09-16 00:12 KST | review |
+| Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | `.github/workflows/ci.yml`, `apps/windows/README.md`, Windows 설치 runbook·P4/STATUS 기록 | SHA `3fecc85` 수동 Actions `34987340477` Windows publish/upload·verify PASS. 사용자 PC 실행 실패 보고(artifact·오류 미확인), Windows 앱 보류. 실제 기기·서명 gate 미통과 | 2026-09-16 00:12 KST | review |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-01~07 | native auth/read 회귀, Windows contract/UI harness, 서버 restart·상태/Future | 공유 가사/보호 cache 기능 `fe40556` C# 48·두 CI verify/Windows build·네 dev image·동일 기능 SHA 개발 공개 인수 PASS. 실제 Windows OS/IME/AT/DPI/다중 monitor·신뢰 서명 증거 없이는 P4/P5 미통과 | 2026-09-15 12:32 KST | review |
 | Codex | 1.1.8/P3 | LC-NF-1.1.8-P3-01~06 | `apps/windows`, native read API, Windows platform/UI contract test, 상태/Future | 후보 `b96200c`; Actions `34922705406`·`34922708443`; Windows build/artifact·네 signed dev image·동일 SHA 개발 인수 완료. 실제 Windows UI/IME/AT/다중 모니터·정식 서명은 P4/P5 gate | 2026-09-15 11:27 KST | complete |
 | Codex | 1.1.8/P2 | LC-NF-1.1.8-P2-01~06 | `apps/windows`, native auth/API/DB, C#·TS contract test, 상태/Future | 후보 `dbfca88`; Actions `34918857197`·`34918859682`; Windows build·네 signed dev image·동일 SHA 개발 인수, 실제 Windows UX gate는 P3~P5 | 2026-09-15 09:15 KST | complete |

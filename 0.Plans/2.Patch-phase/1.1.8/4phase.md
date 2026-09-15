@@ -71,6 +71,8 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 ## 실행·증거 기록
 
+2026-09-16 03:15 KST 사용자 보고: Windows PC에서 앱이 실행되지 않아 Windows 앱은 일단 넘어가겠다고 했다. 실제 사용한 artifact·Windows 버전·오류 화면/로그는 아직 제공되지 않아 실패 원인이나 self-contained 배포 자체의 결함을 단정하지 않는다. 수동 Actions [34987340477](https://github.com/parking-place/LyricsCloud/actions/runs/34987340477)의 Windows job과 전체 `verify`는 최종 PASS였지만 `publish=false`의 네 개발 image job은 skip이며 사용자 PC 실패를 뒤집는 증거가 아니다. 사용자 요청에 따라 실기기 재시도·원인 수정은 보류한다. P4 `review`와 P5·main/Release·릴리스 서버 보류를 유지하며, [1.1.9](../1.1.9/README.md)는 1.1.8 P5, [1.1.10](../1.1.10/README.md)은 1.1.9 P5 인수가 선행조건이라 자동 건너뛰지 않는다. 비Windows 작업을 먼저 진행하려면 버전 범위/의존성 재계획을 별도로 결정해야 한다.
+
 2026-09-16 사용자 인계: 별도 런타임 설치 없이 실행 가능한 Windows 빌드가 준비되면 사용자 PC에서 실행해 보겠다고 했고, 그 전 실기기 검증은 보류해 달라고 요청했다. 이 발언은 Windows 앱 launch/OAuth/DPAPI/clipboard/IME/AT/DPI·서명 설치/업데이트 PASS가 아니다. `P4-06`은 기존 framework-dependent 개발 artifact와 별개로 .NET/Windows App SDK runtime을 담는 unpackaged x64 시험 폴더를 CI에 추가했다. workflow YAML parse와 diff check는 PASS. P4 `review`, P5·main/Release·릴리스 서버 보류를 유지한다.
 
 `3fecc85db02656bbb70bae6316f27c424754de72`의 수동 Actions [34987340477](https://github.com/parking-place/LyricsCloud/actions/runs/34987340477)에서 Windows 계약·WinUI x64 build와 별도 self-contained publish/upload가 PASS했다. CI는 EXE·`coreclr.dll`·`Microsoft.UI.Xaml.dll`·외부 .NET framework 참조 부재를 확인했고 GitHub artifact `windows-x64-self-contained-3fecc85db02656bbb70bae6316f27c424754de72`를 14일 보관한다. 이 시점 전체 저장소 verify는 진행 중이며 네 개발 image publish는 수동 입력 `publish=false`로 실행하지 않았다. 깔끔한 물리 Windows PC에서 별도 runtime 없이 실제 launch되는지, OAuth/DPAPI/cache/clipboard/IME/AT/DPI와 신뢰 서명 MSIX 설치/업데이트는 여전히 **미실행**이다.
