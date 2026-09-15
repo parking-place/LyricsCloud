@@ -21,8 +21,11 @@ export async function PATCH(request: Request): Promise<Response> {
     if (!mutationOriginAllowed(request)) return errorResponse("FORBIDDEN", 403);
     const auth = await resolveRequestAuth(request);
     const input = parseProfileInput(await request.json());
-    const profile = await getAuthContext().ownedData.saveProfile(auth.userId, input);
-    return Response.json({ profile }, { headers: responseHeaders(auth.renewalCookie) });
+    const result = await getAuthContext().ownedData.patchProfile(auth.userId, input);
+    if (result.state === "missing") return errorResponse("NOT_FOUND", 404);
+    if (result.state === "conflict") return errorResponse("VERSION_CONFLICT", 409, undefined, undefined,
+      { profile: result.profile });
+    return Response.json({ profile: result.profile }, { headers: responseHeaders(auth.renewalCookie) });
   } catch (error) { return profileError(error); }
 }
 

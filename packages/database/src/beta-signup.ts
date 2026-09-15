@@ -245,9 +245,26 @@ async function upsertIdentity(client: PoolClient, identity: AuthIdentityInput, n
   );
   await client.query("update app_users set updated_at=$2 where id=$1", [userId, now]);
   await client.query(
-    `insert into user_profiles(owner_id,display_name,avatar_url,updated_at) values($1,$2,$3,$4)
-     on conflict(owner_id) do update set display_name=excluded.display_name,avatar_url=excluded.avatar_url,updated_at=excluded.updated_at`,
-    [userId, identity.displayName ?? "", identity.avatarUrl ?? null, now]
+    `insert into user_profiles(owner_id,display_name,avatar_url,provider_display_name,
+       provider_avatar_url,display_name_source,avatar_source,updated_at)
+     values($1,$2,$3,$2,$3,'provider','provider',$4)
+     on conflict(owner_id) do update set
+       provider_display_name=excluded.provider_display_name,
+       provider_avatar_url=excluded.provider_avatar_url,
+       display_name=case when user_profiles.display_name_source='provider'
+         then excluded.display_name else user_profiles.display_name end,
+       avatar_url=case when user_profiles.avatar_source='provider'
+         then excluded.avatar_url else user_profiles.avatar_url end,
+       row_version=user_profiles.row_version+case when
+         (user_profiles.display_name_source='provider' and user_profiles.display_name is distinct from excluded.display_name)
+         or (user_profiles.avatar_source='provider' and user_profiles.avatar_url is distinct from excluded.avatar_url)
+         then 1 else 0 end,
+       updated_at=case when
+         (user_profiles.display_name_source='provider' and user_profiles.display_name is distinct from excluded.display_name)
+         or (user_profiles.avatar_source='provider' and user_profiles.avatar_url is distinct from excluded.avatar_url)
+         then excluded.updated_at else user_profiles.updated_at end`,
+    [userId, (identity.displayName ?? "").slice(0, 120) || "사용자",
+      identity.avatarUrl && identity.avatarUrl.length <= 2048 ? identity.avatarUrl : null, now]
   );
   return userId;
 }

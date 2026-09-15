@@ -107,6 +107,24 @@ describe.runIf(enabled)("PostgreSQL beta signup", () => {
     await pool!.query("update app_users set status='active' where id=$1", [userId]);
     expect(await store!.admitIdentity({ environment: "test", identity, bootstrapAllowed: true, now })).toBeNull();
   });
+
+  it("updates provider defaults during allowed retry without replacing a user's profile override", async () => {
+    const now = new Date("2026-09-09T16:00:00.000Z");
+    const original = syntheticIdentity("profile-retry", "profile-retry@example.test");
+    const userId = await store!.admitIdentity({ environment: "test", identity: original,
+      bootstrapAllowed: true, now });
+    expect(userId).toBeTruthy();
+    await pool!.query(`update user_profiles set display_name='Custom Beta',
+      display_name_override='Custom Beta',display_name_source='override' where owner_id=$1`, [userId]);
+    const refreshed = { ...original, displayName: "New Google Name", avatarUrl: "https://example.test/provider.png" };
+    expect(await store!.admitIdentity({ environment: "test", identity: refreshed,
+      bootstrapAllowed: true, now: new Date(now.getTime() + 1_000) })).toBe(userId);
+    expect((await pool!.query(`select display_name,provider_display_name,avatar_url,provider_avatar_url,
+      display_name_source from user_profiles where owner_id=$1`, [userId])).rows[0]).toEqual({
+      display_name: "Custom Beta", provider_display_name: "New Google Name",
+      avatar_url: "https://example.test/provider.png", provider_avatar_url: "https://example.test/provider.png",
+      display_name_source: "override" });
+  });
 });
 
 afterAll(async () => {

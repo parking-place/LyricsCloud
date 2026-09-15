@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.7a"
-current_phase: "../2.Patch-phase/1.1.7.a/1phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.7.a/2phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-16"
-next_action: "P1 PR을 release/1.1.7a 전용 브랜치에 통합하고, P2 owner 프로필 저장·사진 경계를 착수한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
+next_action: "P2에서 provider/override 무손실 migration, owner 프로필 CAS, 비공개 사진 저장·제공, OAuth/가입·공유·삭제 경계를 구현·검증한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
 ```
 
 ## 승인과 기준
@@ -183,6 +183,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7a/P2 | LC-PLAN-117A-P2-01~05 | 1151 migration·owned/auth/beta/signup·profile/photo API·공유/export/lifecycle·관련 검증·상태/Future | P1 PR #146 merge `86fa946`, phase branch `phase/1.1.7a-p2-profile-storage`; P1 동일 SHA 개발 인수 완료 | 2026-09-16 | in_progress |
 | Codex | 1.1.7a/P1 | LC-PLAN-117A-P1-01~06 | 계약·단일 버전 경계·P1 CI/개발 인수 | `v1.1.7` source `edb8b4a`; 후보 `38cced2`, Actions `35019632430` 전체 verify/네 signed dev image PASS·동일 SHA 공개 live/ready/auth/네 health PASS; 제품 기능은 P2~P5 인계 | 2026-09-16 | complete |
 | Codex | 1.1.7/P5 | LC-NF-1.1.7-P5-01~03 | 사용자 안내·플랫폼 탐색/공통 계약·최종 artifact/CI·개발 공개 인수·상태/Future | 후보 `b1a1e2c`; Actions `34900342849`·`34900363577`; 네 signed dev image·동일 SHA 개발 공개 인수 완료, native gate 미실행 | 2026-09-15 | complete |
 | Codex | 1.1.7/P4 | LC-NF-1.1.7-P4-01~03 | 1.1.7 회귀·접근성/성능 대리·협업/presence/font/IME 영향·상태/Future | 후보 `66f2f79`, 두 CI·네 signed dev image·동일 SHA 개발 공개 저장/재시작 인수 완료; 실제 OS/기기·AT·OS zoom은 별도 미실행 | 2026-09-15 | complete |
