@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { getImagePublication } from '../image-publication-plan.mjs';
 import { validateReleasePhase } from '../release-phase-state.mjs';
@@ -39,4 +40,12 @@ test('shell publication guard enforces exact branch and tag without moving old v
   assert.equal(run('tag', 'v1.1.7a', 'release').stdout.trim(), '1.1.7a');
   assert.notEqual(run('tag', 'v1.1.7', 'release').status, 0);
   assert.notEqual(run('branch', 'phase/1.1.7b-p1-invalid', 'dev').status, 0);
+});
+
+test('production browser fixture and health assertion use the one-off product version', () => {
+  const browserConfig = readFileSync('playwright.config.ts', 'utf8');
+  const healthSpec = readFileSync('tests/e2e/new-feature-1.1.5.spec.ts', 'utf8');
+  assert.match(browserConfig, /APP_VERSION: process\.env\.APP_VERSION \?\? "1\.1\.7a"/);
+  assert.match(browserConfig, /APP_PHASE: process\.env\.APP_PHASE \?\? "p1"/);
+  assert.match(healthSpec, /health\.build\.version\)\.toBe\(process\.env\.APP_VERSION \?\? "1\.1\.7a"\)/);
 });

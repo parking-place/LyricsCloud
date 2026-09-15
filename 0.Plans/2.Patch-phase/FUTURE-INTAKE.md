@@ -319,6 +319,8 @@
 | 2026-09-16 `1.1.7a` P1 독립 후보 push 전 | 사용자 추가 계획·정확한 제품 버전 예외 지시·`0.Plans/2.Patch-phase/Future_Feature.md` | 요청 계획·현행 후보 대조 | 기준 `edb8b4aca833fbf48a3111177db9060dceac42ba` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 기존 129개 후보 ID·체크·본문 변경 없음; 새 Future 파일 없음 | [1.1.7.a 계획](1.1.7.a/README.md)을 `v1.1.7` 기반 `1.1.7a` 독립 후보로 진행. 이미 발행된 1.1.7을 이동하지 않고 주 개발선 1.1.8 P4 완료를 주장하지 않는다. 별도 release branch/tag 예외 확인 전 정식 발행·운영 배포 보류 | 1.1.7 P5 완료·정식 릴리스 실행 push 전 행 |
 | 2026-09-16 `1.1.7a` 독립 release base·P1 승인 기록 push 전 | 사용자 명시 main 절차 추가 예외·`Future_Feature.md` | 현행 후보 대조 | `edb8b4aca833fbf48a3111177db9060dceac42ba` 및 P1 후보 `85dfa5d37c07841d5c4bd180beabdd53fa585ae2` / 동일 blob `8f42d20b638e245eb775415ccfdabef56a96f694` | 후보 ID·체크·본문 변경 없음; 새 Future 파일 없음 | `release/1.1.7a` base를 기존 v1.1.7 SHA에 고정하고 P1 승인 기록만 별도 Phase branch에서 진행. 미완료 1.1.8/main 코드·Future 후보 재배정·정식 tag/서버 변경 없음 | 직전 1.1.7a P1 독립 후보 push 전 행 |
 
+| 2026-09-16 `1.1.7a` P1 Playwright fixture 보정 push 전 | 원격 CI 오류·`Future_Feature.md` | 현행 후보 대조 | P1 후보 `b6031851ecea1361b39274cd6be6412c93f71311` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 129개 ID·체크·본문 변경 없음; 새 Future 파일 없음 | 기존 Playwright production fixture/health 버전 기대값만 `1.1.7a`로 정렬하고 회귀 추가. 프로필 구현·홈 UI·1.1.8·다른 Future 범위는 선소비하지 않음 | 직전 1.1.7a 독립 release base·P1 승인 기록 push 전 행 |
+
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
 자동 hook·새 검수 스크립트·별도 스케줄을 만들지 않는다. Agent.md의 필수 단계와 이 절차 한 곳을 사용한다.

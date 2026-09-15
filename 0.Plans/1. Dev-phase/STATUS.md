@@ -7,10 +7,12 @@ state: "review"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-16"
-next_action: "v1.1.7 기반 1.1.7a P1 계약·one-off 버전 검증을 진행한다. 승인된 release/1.1.7a 별도 브랜치로만 PR/최종 릴리스를 통합하고 P5 gate 전 정식 tag/image·릴리스 서버를 변경하지 않는다"
+next_action: "P1 CI의 Playwright production fixture 버전 잔존을 보정·재검증하고 같은 SHA 개발 인수 뒤 P1 완료를 기록한다. release/1.1.7a 별도 브랜치로만 통합하며 P5 gate 전 정식 tag/image·릴리스 서버를 변경하지 않는다"
 ```
 
 ## 승인과 기준
+
+P1 후보 `b6031851ecea1361b39274cd6be6412c93f71311`의 Actions [35014698215](https://github.com/parking-place/LyricsCloud/actions/runs/35014698215)는 verify 중 `Auth and ownership E2E`에서 **FAIL**이었다. `playwright.config.ts`의 production webServer가 기존 `APP_VERSION=1.1.7`을 고정해 런타임의 정확한 `1.1.7a` 검증에 거부됐고, 발행 job은 skipped다. 개발 서버는 기존 `1.1.8` SHA `fe4055626757458a4eecbff0bfa0b55bed3bc40d`로 남아 있다. fixture와 browser health 기대값을 수정했지만 새 전체 CI·네 image·같은 SHA 개발 smoke 전까지 P1은 `review`다.
 
 2026-09-16 사용자가 이번 한 번 `1.1.7a`를 그대로 제품 버전으로 사용하고 닉네임·프로필 사진 변경, 우측 상단 로고/아이콘 홈 이동을 P1~P5 및 릴리스까지 진행하도록 지시했다. 작업은 이미 발행된 `v1.1.7` SHA `edb8b4aca833fbf48a3111177db9060dceac42ba`에서 분기한 독립 후보로 수행하며 기존 tag/DB를 덮지 않는다. 현재 main의 미완료 `1.1.8` Windows P3가 릴리스에 섞이지 않도록 사용자가 **별도 `release/1.1.7a` 브랜치 PR/CI/tag 발행의 추가 예외를 승인**했다. 이 STATUS는 독립 후보 브랜치의 실행 상태이며 main/1.1.8 P4의 원본 상태를 소급 변경하지 않는다. 정확한 제품 버전은 `1.1.7a`, 계획 폴더는 `1.1.7.a`, private npm package version은 SemVer 제약으로 `1.1.7`을 유지한다.
 

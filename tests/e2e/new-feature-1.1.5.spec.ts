@@ -231,7 +231,7 @@ test.describe("1.1.5 P4 B-1 recovery and access regression", () => {
       await expect(otherPage.getByRole("heading", { name: "표시할 최근 작업이 없습니다." })).toBeVisible();
       await expect(otherPage.locator("html")).toHaveAttribute("data-ui-variant", "b1");
       const health = await (await page.request.get("/api/health/ready")).json();
-      expect(health.build.version).toBe("1.1.7");
+      expect(health.build.version).toBe(process.env.APP_VERSION ?? "1.1.7a");
     } finally {
       await otherContext.close();
       await deleteAccounts([owner.userId, other.userId]);
