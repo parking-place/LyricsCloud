@@ -343,6 +343,8 @@
 
 | 2026-09-16 `1.1.7a` P3 모바일 탐색 기준 보정 push 전 | `Future_Feature.md`·P3 변경된 두 줄 상단바 | 현행 후보 대조 | 세 번째 후보 `388c9d9f7a021441f078c0cc5ad7c9f1c26a5236` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 129개 ID·체크·본문 변경 없음; 새 Future 파일 없음 | CI #35035083548의 모바일 최근 빈 상태 스냅샷 실패에 맞춰 탐색 상태 5장의 과거 기준만 현재 P3 상단바로 갱신. 허용 차이·P4/P5·1.1.8/Future 범위 변경 없음 | 직전 1.1.7a P3 전체 브라우저 회귀 보정 push 전 행 |
 
+| 2026-09-16 `1.1.7a` P3 완료·P4 인계 push 전 | `Future_Feature.md`·P3 CI/개발 공개 인수 | 현행 후보 대조 | 최종 기능 SHA `675dbafa6716324f44e3c5a3c8e78663cec07122` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 129개 ID·체크·본문 변경 없음; 새 Future 파일 없음 | P3 닉네임·사진 편집/셸 재조회·홈/dirty guard, 전체 CI·네 signed dev image·동일 SHA 공개 합성 desktop/mobile 인수만 완료. P4 권한·파일·이탈 전체 회귀, P5 정식 릴리스, 1.1.8/Future 선소비 없음 | 직전 1.1.7a P3 모바일 탐색 기준 보정 push 전 행 |
+
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
 자동 hook·새 검수 스크립트·별도 스케줄을 만들지 않는다. Agent.md의 필수 단계와 이 절차 한 곳을 사용한다.

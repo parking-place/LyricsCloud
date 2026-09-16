@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.7a"
 current_phase: "../2.Patch-phase/1.1.7.a/3phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-16"
-next_action: "P2 PR #147 merge d319d4f 기반 P3 전용 브랜치에서 설정 계정 프로필 편집, 셸 반영·서버 재조회, 브랜드 홈 이동·이탈 guard를 PC/모바일 구현·검증한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
+next_action: "P3 PR #148의 문서-only 완료 commit을 release/1.1.7a에 병합한 뒤 P4 전용 Phase 브랜치에서 교차 계정·재로그인·이탈·보안 회귀를 수행한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
 ```
 
 ## 승인과 기준
@@ -21,6 +21,8 @@ P3 두 번째 SHA `0f4d82d4074bcbd8160fb678611c8654ee5e01a8`의 Actions [3503267
 P3 보정 뒤 격리 PostgreSQL/Chromium desktop·mobile **전체 430건 중 387 PASS / 조건부 43 skip / 0 FAIL**(무재시도, 12.5분), 집중 desktop 도움말·계정 전환·721~1440px 홈/설정/빠른 추가 클릭 3 PASS와 변경된 모바일 셸/템플릿 스냅샷 2 PASS다. 구버전 증거 PNG 90개는 시험 자동 출력으로 바뀌었을 뿐 기능 범위가 아니므로 기존 Git blob으로 정확히 복원했고 새 모바일 기준 2개만 후보에 포함한다. 이는 로컬 수용이며 원격 전체 CI·네 signed dev image·동일 SHA 개발 공개 인수 완료 전에는 P3 PASS/완료가 아니다.
 
 P3 세 번째 SHA `388c9d9f7a021441f078c0cc5ad7c9f1c26a5236`의 Actions [35035083548](https://github.com/parking-place/LyricsCloud/actions/runs/35035083548)는 migration·393 통합 unit·production image/security 등은 통과했지만 owner E2E에서 **386 PASS / 1 FAIL / 조건부 43 skip**, 네 dev image skipped로 종료했다. 단일 FAIL은 변경된 모바일 두 줄 header가 반영되지 않은 과거 `recent-empty` 스냅샷의 CI 픽셀 차이 7%가 허용 6%를 넘은 것이다. 같은 Playwright Linux 이미지와 `CI=true`의 로컬 집중 test는 PASS했고, 모바일 탐색 시각 상태 5장의 기준 화면을 새 상단바에 맞춰 강제 재생성·시각 확인한 뒤 허용 비율을 바꾸지 않은 무재시도 test도 PASS했다. 실패 실행을 PASS로 분류하거나 이 SHA를 개발 서버에 배포하지 않는다. 새 후보의 원격 전체 CI·네 signed dev image·동일 SHA 공개 개발 인수까지 P3는 진행 중이다.
+
+P3 최종 기능·시각 기준 SHA `675dbafa6716324f44e3c5a3c8e78663cec07122`의 PR [#148](https://github.com/parking-place/LyricsCloud/pull/148)과 Actions [35037281111](https://github.com/parking-place/LyricsCloud/actions/runs/35037281111)은 **전체 verify·네 signed dev image PASS**다. PostgreSQL 통합 unit **393 PASS / 조건부 5 skip**, owner Chromium E2E **387 PASS / 조건부 43 skip / 0 FAIL**, release browser matrix **10 PASS**다. 개발 서버 checkout·배포 SHA와 공개 HTTPS live/ready가 정확히 일치하고 `1.1.7a/dev/p3`, schema `1151_profile_customization.sql`, `/auth` 200·비인증 사진 401, 네 production service healthy, CSS asset·Docker 정리 PASS다. 공개 합성 계정 desktop에서 닉네임 저장→새로고침 영속, 사진 업로드→새로고침 영속, 우측 mark 홈·새 인사말, 모바일 320px에서 양 theme·사진 표시·dirty 홈 guard/취소 후 홈을 PASS했다. 합성 계정·세션·identity·프로필·사진은 삭제 후 각각 **0건**을 확인했다. 이 증거로 P3 UI/홈 Phase를 완료하며 P4 교차 권한·OAuth 변경·복구 및 P5 최종 릴리스는 아직 PASS가 아니다. `main`·정식 tag/image·릴리스 서버 변경 없음.
 
 P2 첫 기능 후보 `b7b968710983550d0f4bd51905828da75aa32dbe`는 PR [#147](https://github.com/parking-place/LyricsCloud/pull/147)과 같은 SHA 수동 Actions [35025390806](https://github.com/parking-place/LyricsCloud/actions/runs/35025390806)를 시작했으나, 사진 ID가 비공개 URL query와 프록시 접근 로그에 남을 수 있음을 검토 중 발견해 Actions가 migration 검증 중일 때 **cancelled** 처리했다. 이 실행은 CI/이미지 PASS가 아니며 개발 서버는 P1 SHA `38cced2`에 그대로 있다. 식별자 없는 owner 현재사진 전용 `/api/profile/avatar`로 좁히고 source/production build·desktop/mobile 실제 HTTP 2 PASS를 확인했다. 새 후보 전체 CI·네 image·동일 SHA 개발 공개 인수 전까지 P2는 `in_progress`다.
 
