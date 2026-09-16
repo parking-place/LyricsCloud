@@ -1,6 +1,8 @@
 # 1.1.7.a P4 — 교차 계정·재로그인·이탈 회귀
 
-상태: **계획 초안**. [P3](3phase.md)의 실제 UI/API 후보 SHA와 P1 수용표가 선행한다.
+상태: **진행 중**. [P3](3phase.md)의 실제 UI/API 후보 SHA와 P1 수용표가 선행한다. P3 PR #148 merge `b4e5200`에서 별도 P4 Phase 브랜치를 시작했으며 1.1.8 Windows/main은 포함하지 않는다.
+
+로컬 진행 증거: 실제 격리 PostgreSQL 사진/override 14 PASS, 새 권한·응답 유실·홈 guard의 Chromium PC/모바일 6 PASS, Chromium/Firefox/WebKit desktop과 Chromium/WebKit mobile 대리 15 PASS. 전체 PC/mobile 436건은 393 PASS·조건부 43 skip·0 FAIL이며 첫 저장 공간 부족 예상 실행은 중단/미완료로 구분한다. 공유 가사 경로에서 `active="home"`이 실제 홈 URL과 다른 결함을 고쳤다. 원격 CI·동일 SHA 개발 재시작/공개 인수와 실제 기기/OS 입력은 아직 완료하지 않았다.
 
 ## 검증 시나리오
 
