@@ -111,7 +111,9 @@ export function WorkspaceShell({
   function navigateHome(event: MouseEvent<HTMLAnchorElement>) {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    if (active === "home") { setHomeMessage("이미 창작 홈입니다. 현재 화면을 새로고침하지 않았습니다."); return; }
+    if (window.location.pathname.replace(/\/$/, "") === "/workspace") {
+      setHomeMessage("이미 창작 홈입니다. 현재 화면을 새로고침하지 않았습니다."); return;
+    }
     if (homePending.current) return;
     homePending.current = true; setHomeMessage("");
     void guardWorkspaceNavigation(profile.userId, homeComposing.current).then((safe) => {
