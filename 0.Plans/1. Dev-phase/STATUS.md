@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.7a"
 current_phase: "../2.Patch-phase/1.1.7.a/5phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-16"
-next_action: "P4 PR #149 merge 8d3ed3f 기반 P5 전용 브랜치에서 사용자·운영 문서/요구 추적·1151 artifact를 봉인하고 최종 CI·같은 SHA 개발 공개 인수 뒤 승인된 release/1.1.7a tag/image·운영 배포를 수행한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
+next_action: "P5 완료 후보 fd4d901a의 PR #150을 승인된 release/1.1.7a에 통합하고 merge SHA 전체 CI·동일 SHA 개발 인수 뒤 annotated v1.1.7a tag의 정식 signed image를 발행해 운영 서버에 exact digest로 배포한다. main과 미완료 1.1.8은 변경하지 않는다"
 ```
 
 ## 승인과 기준
@@ -73,6 +73,8 @@ P1 후보 `b6031851ecea1361b39274cd6be6412c93f71311`의 Actions [35014698215](ht
 사용자가 1.0.1 이전의 1.0.0 P6 안정화와 GitHub 반영을 승인했다. 착수 기준 SHA는 `9e362f60f183b6adedfe358554b077334645ed0c`, 당시 전용 브랜치는 `phase/1.0.0-p6-stabilization`이다. 2026-09-09 사용자가 PR #11을 P5에 병합하고 원격 P6 브랜치를 삭제했다. 현재 병합 기준 `7c3930b5bc2be4f25f8f7586b7ce3f02b039af99`는 후보 `405e535`와 동일 tree다. 후보 CI 통과와 별개로 병합 CI의 performance round CV 실패는 조사 중이며, [인수 출발점](../2.Patch-phase/CODEX-HANDOFF.md)에 증거를 연결했다. 운영 배포·정식 태그 재발행·다른 개발자의 작업 덮어쓰기는 승인에 포함하지 않는다.
 
 P4 완료 문서-only `646c9a7c98b1984e6a4b647b8621e5556ba611df`는 `[skip ci]`로 push했고 PR #149는 승인된 `release/1.1.7a` merge `8d3ed3fdade28902957e7c5253c341edf8ded5c4`에 통합됐다. `main`·1.1.8·정식 tag/image·릴리스 서버는 그대로다. P5 전용 Phase 브랜치는 이 merge SHA에서 분기했다.
+
+P5 최종 후보 `fd4d901a4c57626d193c88938c7889f035d69192`의 Actions [35047546033](https://github.com/parking-place/LyricsCloud/actions/runs/35047546033)은 verify와 네 signed dev image가 모두 **PASS**다. 전체 owner E2E **393 PASS / 조건부 43 skip**, release browser matrix **10 PASS**이며, 게시된 full-SHA/`dev-1.1.7a-p5` 이미지의 signature·provenance를 확인했다. 같은 SHA 개발 서버는 공개 live/ready `1.1.7a/dev/p5`·schema `1151_profile_customization.sql`, `/auth` 200·익명 사진 401, 네 서비스 healthy다. 합성 두 owner로 닉네임/사진 저장→재진입, 타 owner 사진 차단, web 재시작·새 session 지속, PC/mobile 홈 이동, 위장 파일 거부/기존 사진 유지, 최신 Google 값 복귀를 PASS했고 사용자·session·profile·photo를 각각 **0건**으로 정리했다. 첫 공개 probe는 root checkout의 로컬 `sharp` 미설치로 제품 요청 전에 중단됐고 설치된 P5 worktree 재실행은 PASS했으며 첫 시도를 PASS로 재분류하지 않았다. 실제 Windows Edge/iOS/Android/OS IME/AT는 미실행이고 `OPS-100-001` backup/RPO 예외는 사용자 승인대로 남는다. 미해결 제품 P0/P1은 0건이며 P5 gate를 완료했다. 아직 `v1.1.7a` tag·정식 image·릴리스 서버 변경은 없고 승인된 전용 release 절차로 인계한다.
 
 P5 로컬 후보는 실제 frozen lockfile과 production license 65개 package group/버전 일치, Node 24 계열 check·production web build, 1151 populated 1140→1151/반복/RLS/application-first rollback, release validator 1001/1002/1004/1005/101, 격리 PostgreSQL profile/photo **14 PASS**, Linux 5-project 영향 브라우저 **15 PASS**, 한 번짜리 버전 경계 **4 PASS**다. 첫 격리 migration/E2E 컨테이너는 `APP_CHANNEL` 누락으로 기본 release와 시험용 `APP_PHASE`가 충돌해 시작 실패했고, dev 채널 명시 재실행에서 PASS했다. Docker Git worktree 메타데이터 미마운트로 oneoff shell guard 1건이 실패했으나 로컬 Git 환경의 같은 4건은 PASS했다. 이 실패 시도는 PASS가 아니다. P4 제품 코드·전체 E2E 393 PASS는 해당 P4 SHA의 선행 근거로만 계승하고 P5 새 후보 SHA의 필수 CI·네 signed dev image·동일 SHA 개발 공개 인수 전에는 P5를 완료하지 않는다.
 
@@ -221,7 +223,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.7a/P5 | LC-PLAN-117A-P5-01~05 | 사용자/지원·요구 추적·30 migration/환경/license/manifest·최종 CI/동일 SHA 개발·승인된 전용 릴리스 | P4 PR #149 merge `8d3ed3f`, Actions `35043634916` 전체 verify/네 signed dev image·동일 SHA 공개 두 owner/재시작 PASS | 2026-09-16 | in_progress |
+| Codex | 1.1.7a/P5 | LC-PLAN-117A-P5-01~05 | 사용자/지원·요구 추적·30 migration/환경/license/manifest·최종 CI/동일 SHA 개발·승인된 전용 릴리스 | 후보 `fd4d901`, Actions `35047546033` verify/네 signed dev image·동일 SHA 공개 두 owner 저장/격리/재시작·홈 PASS, 합성 자료 0건 | 2026-09-16 | complete |
 | Codex | 1.1.7a/P4 | LC-PLAN-117A-P4-01~06 | 두 계정·재로그인·Google 제공값·사진/RLS·ACK 유실·홈 이탈·PC/mobile 및 Linux 5-project 대리 회귀·상태/Future | P3 PR #148 merge `b4e5200`, 후보 `7621e8e`, Actions `35043634916` verify/네 signed dev image·동일 SHA 공개 재시작/두 owner 격리 PASS | 2026-09-16 | complete |
 | Codex | 1.1.7a/P3 | LC-PLAN-117A-P3-01~05 | 설정 계정 프로필 UI·셸 avatar/닉네임·브랜드 `/workspace` 이동·저장 이탈 guard·PC/mobile E2E/상태/Future | 후보 `675dbafa`, PR #148 merge `b4e5200`, Actions `35037281111` verify/네 signed dev image·동일 SHA 개발 공개 합성 프로필 영속 PASS | 2026-09-16 | complete |
 | Codex | 1.1.7a/P2 | LC-PLAN-117A-P2-01~05 | 1151 migration·owned/auth/beta/signup·profile/photo API·공유/export/lifecycle·관련 검증·상태/Future | PR #147 기능 `4c2a42a`, Actions `35026679109` verify/네 signed dev image PASS·동일 SHA 공개 live/ready/합성 owner GET→PATCH→재조회→복귀 PASS; P3 UI 인계 | 2026-09-16 | complete |

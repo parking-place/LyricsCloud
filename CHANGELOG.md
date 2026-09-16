@@ -16,7 +16,7 @@
 ### Validation and release
 
 - P4 후보 `7621e8e`의 격리 DB 14 PASS, 전체 PC/mobile 393 PASS·43 조건부 skip, Linux 5-project 신규 15 PASS, 재실행 Actions `35043634916` 전체 verify·네 signed dev image 및 같은 SHA 개발 공개 두 owner/재시작/홈 guard 인수 PASS. 첫 Actions `35043201011`의 성능 측정 라운드 편차 FAIL은 그대로 기록한다
-- P5 최종 후보 CI·같은 SHA 개발 인수와 별도 `release/1.1.7a` tag/정식 image·운영 배포 결과는 gate 통과 뒤 기록한다. 기존 `v1.1.7`과 `main`의 미완료 1.1.8은 변경하지 않는다
+- P5 후보 `fd4d901`, Actions `35047546033` 전체 verify·네 signed dev image, 동일 SHA 개발 공개 저장/격리/재시작/홈 인수 PASS. 별도 `release/1.1.7a` tag/정식 image·운영 배포 결과는 실행 뒤 기록한다. 기존 `v1.1.7`과 `main`의 미완료 1.1.8은 변경하지 않는다
 
 ## [1.1.7] - 2026-09-15
 
