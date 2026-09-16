@@ -4,6 +4,12 @@
 
 > **현재 공식 릴리스 서버 상태:** 아래 도구와 절차는 CI와 격리 환경에서 검증됐지만, 외부 backup 저장소·일일 timer·실제 archive·월간 restore 훈련은 사용자의 명시적 지시로 1.0.1+까지 구축하지 않았다. 따라서 현재 운영 서버는 24시간 RPO를 보장하지 않는다. 이 예외는 backup 성공으로 간주하지 않으며, 구축 전 장애에서는 DB 호스트 상실을 복구할 지점이 없다.
 
+### 1.1.7a 프로필 사진 경계
+
+`1151_profile_customization.sql` 이후 사진은 원본 파일이나 웹 서버 업로드 디렉터리에 남지 않는다. 서버가 검증·256×256 WebP 재인코드한 현재 사진만 PostgreSQL `profile_avatar_photos.webp_bytes`에 owner 키로 저장된다. 사진 교체·명시 복귀는 profile 참조 변경과 과거 사진 삭제를 한 DB transaction으로 처리하고, 탈퇴 완전 삭제는 owner FK cascade에 포함된다. 계정 export의 `lyricscloud.export.v1` ZIP에는 본인 사진의 base64 WebP가 `profileAvatarPhotos` 항목으로 들어가므로 사용자가 만든 ZIP은 개인정보 사본이며 외부 운영 backup을 대신하지 않는다.
+
+운영 점검은 사진 bytea·파일명·사용자 식별자를 출력하지 않고 `profile_avatar_photos` 중 현재 `user_profiles.avatar_photo_id`가 가리키지 않는 **orphan 건수**만 확인한다. 정상 교체/복귀/탈퇴 뒤 orphan은 0건이어야 한다. 0건이 아니면 신규 사진 쓰기/릴리스를 멈추고 익명 건수·migration·transaction 로그로 원인을 조사한다. 운영 DB에서 수동 사진 삭제나 1151 down migration은 하지 않는다. 외부 암호화 backup·격리 restore가 아직 미구축인 승인 예외 기간에는 호스트 손실 시 이 사진과 다른 창작 자료를 복구할 보장 지점이 없음을 사용자와 운영 인수에 명시한다.
+
 ## 1. 설치와 경계
 
 1. checkout·PostgreSQL volume과 다른 호스트 또는 별도 마운트에 `/mnt/lyricscloud-backup`을 준비한다. DB host 상실과 같은 사건으로 사라지는 로컬 Docker volume은 허용하지 않는다.

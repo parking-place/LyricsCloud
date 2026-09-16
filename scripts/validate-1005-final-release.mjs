@@ -11,6 +11,7 @@ const failures = [];
 const assert = (condition, message) => { if (!condition) failures.push(message); };
 const requireRelease = process.argv.includes("--require-release");
 const currentVersion = read("VERSION").trim();
+const oneOff117a = currentVersion === "1.1.7a";
 const releasedVersion = "1.0.1";
 
 const phasePaths = [1, 2, 3, 4, 5].map((phase) => `0.Plans/1. Dev-phase/1.0.0/${phase}phase.md`);
@@ -78,7 +79,7 @@ const releaseTags = getImagePublication(publicationInput).tags;
 for (const tag of ["1.0.0", "Release", "latest", "Release-latest"]) assert(releaseTags.includes(tag), `release tag missing: ${tag}`);
 const candidateTags = getImagePublication({ ...publicationInput, refType: "branch", refName: "phase/1.0.0-p6-stabilization", release: false }).tags;
 for (const tag of ["1.0.0", "Release", "latest", "Dev", "Dev-latest"]) assert(!candidateTags.includes(tag), `P6 candidate moves protected tag: ${tag}`);
-assert(tagScript.includes("release:tag") && tagScript.includes("^v([0-9]+\\.[0-9]+\\.[0-9]+)$"), "release tag guard missing");
+assert(tagScript.includes("release:tag") && tagScript.includes("^v([0-9]+\\.[0-9]+\\.[0-9]+|1\\.1\\.7a)$"), "release tag guard missing");
 try {
   const phase6Plan = status.includes('current_phase: "1.0.0/6phase.md"') ? read("0.Plans/1. Dev-phase/1.0.0/6phase.md") : "";
   validateReleasePhase(status, { requireRelease, phase6Plan, phaseCount: currentVersion === "1.0.1" ? 10 : 5 });
@@ -110,13 +111,17 @@ for (const tag of [currentVersion, "1.0.2", releasedVersion, "Release", "latest"
 for (const marker of [`APP_VERSION: ${currentVersion}`, "APP_PHASE: p5", "test:migration:1002", "test:environment:101"]) {
   assert(workflow.includes(marker), `P5 CI marker missing: ${marker}`);
 }
-for (const marker of ["NF-REQ-037", "NF-REQ-039", `AC-${currentVersion}-01`, `AC-${currentVersion}-04`, "B-1", "CodeMirror", "deep link", "P0/P1", "OPS-100-001", "1140_sharing_stability.sql"]) {
+for (const marker of oneOff117a
+  ? ["AC-117A-01", "AC-117A-02", "AC-117A-03", "AC-117A-04", "AC-117A-05", "CodeMirror", "P0/P1", "OPS-100-001", "1151_profile_customization.sql", "release/1.1.7a"]
+  : ["NF-REQ-037", "NF-REQ-039", `AC-${currentVersion}-01`, `AC-${currentVersion}-04`, "B-1", "CodeMirror", "deep link", "P0/P1", "OPS-100-001", "1140_sharing_stability.sql"]) {
   assert(candidateTraceability.includes(marker), `${currentVersion} traceability marker missing: ${marker}`);
 }
 for (const marker of ["P5", "P0/P1", "OPS-100-001", "동일 SHA 개발 인수"]) {
   assert(formalTraceability.includes(marker), `${currentVersion} traceability marker missing: ${marker}`);
 }
-for (const marker of ["B-1", "CodeMirror", "더보기", "실제 OS", "알려진 제한", "OPS-100-001"]) {
+for (const marker of oneOff117a
+  ? ["닉네임", "사진", "Google", "실제 Windows", "알려진 제한", "OPS-100-001"]
+  : ["B-1", "CodeMirror", "더보기", "실제 OS", "알려진 제한", "OPS-100-001"]) {
   assert(formalReleaseNotes.includes(marker), `${currentVersion} release notes marker missing: ${marker}`);
 }
 for (const marker of [`annotated \`v${currentVersion}\``, "publish=true", "release=true", "Release-latest", "application-first rollback"]) {
@@ -126,7 +131,7 @@ for (const marker of ["main", `annotated \`v${currentVersion}\``, "exact digest"
   assert(formalReleaseChecklist.includes(marker), `${currentVersion} release checklist marker missing: ${marker}`);
 }
 assert(formalManifest.releaseVersion === currentVersion && formalManifest.releaseChannel === "release"
-  && formalManifest.productionAuthorized === true && formalManifest.database.requiredLatestSchema === "1140_sharing_stability.sql",
+  && formalManifest.productionAuthorized === true && formalManifest.database.requiredLatestSchema === (oneOff117a ? "1151_profile_customization.sql" : "1140_sharing_stability.sql"),
   `${currentVersion} formal release manifest boundary invalid`);
 const formalReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${currentVersion}`,
   sha: "c".repeat(40), version: currentVersion, release: true }).tags;
