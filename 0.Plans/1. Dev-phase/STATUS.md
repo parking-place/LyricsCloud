@@ -3,11 +3,11 @@
 ```yaml
 current_version: "1.1.7a"
 current_phase: "../2.Patch-phase/1.1.7.a/4phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-16"
-next_action: "P3 PR #148 merge b4e5200 기반 P4 전용 브랜치에서 두 계정·두 탭·OAuth refresh·업로드 실패·export/탈퇴·홈 이탈과 PC/모바일 대리 엔진 전체 회귀를 수행한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
+next_action: "P4 완료 증거를 [skip ci] 문서 commit으로 push하고 PR #149를 승인된 release/1.1.7a에 통합한 뒤 P5 문서·최종 검증을 시작한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
 ```
 
 ## 승인과 기준
@@ -33,6 +33,10 @@ P4 첫 5-project Linux 대리 매트릭스는 **13 PASS / 2 FAIL**이었다. Web
 
 P4 기존 실제 PostgreSQL override·OAuth 제공값 갱신·사진 RLS/orphan/export와 사진 변환 단위 **14 PASS**. 전체 Chromium desktop/mobile 436건의 첫 실행은 디스크 여유 223MB로 산출물 실패가 예상돼 218건 뒤 중단했고 **PASS가 아니다**. 별도 16GB `/tmp` 임시 산출물로 처음부터 무재시도 다시 실행한 **436건 중 393 PASS / 조건부 43 skip / 0 FAIL**(12.8분)이 전체 로컬 수용이다. 테스트 자동 출력으로 바뀐 구버전 증거 PNG 정확히 90개는 변경 확장자·기존 Git 상태를 대조한 뒤 원래 blob으로 복원했다. P4 원격 전체 CI·네 signed dev image·동일 SHA 공개 개발 재시작/합성 계정 인수 전에는 P4 완료가 아니다.
 후속 국소 재확인은 P6 회귀 **107 PASS**, `1.1.7a` 버전 경계 **4 PASS**, whole-tree syntax 감사 **0 error**이고, 전체 제품 코드 check·production web build는 공유 mark 보정 SHA 후보에서 PASS다.
+
+P4 최종 기능 SHA `7621e8e2a41abeb220155d3fc632f8d0e1da3319`의 PR [#149](https://github.com/parking-place/LyricsCloud/pull/149)와 첫 Actions [35043201011](https://github.com/parking-place/LyricsCloud/actions/runs/35043201011)은 기존 revision 성능 측정 라운드 CV **83.327% > 75%**로 verify FAIL·네 image skipped였다. 절대 p95·오류 예산은 PASS했고, 허용치를 낮추거나 이 실패를 PASS로 분류하지 않았다. 같은 SHA·기준으로 수동 재실행한 Actions [35043634916](https://github.com/parking-place/LyricsCloud/actions/runs/35043634916)은 성능 포함 전체 verify·네 signed dev image **PASS**다. Unit **393 PASS / 조건부 5 skip**, owner E2E **393 PASS / 조건부 43 skip / 0 FAIL**, release browser matrix **10 PASS**다.
+
+개발 서버 checkout과 배포 SHA `7621e8e2a41abeb220155d3fc632f8d0e1da3319`, 공개 HTTPS live/ready `1.1.7a/dev/p4`·schema `1151_profile_customization.sql`, `/auth` 200·익명 사진 401, 네 production service healthy·CSS asset·Docker cleanup가 일치한다. 공개 합성 A의 닉네임·사진 서버 저장→재진입, B의 A 사진 비공개, 최신 제공자 이름만 갱신한 뒤 override 유지, web 재시작·새 session 뒤 동일 저장값, PC·모바일 공유 가사 우측 홈 mark/icon 이동, 위장 사진 400 뒤 이전 사진 유지, 최신 Google 이름·기본 사진 명시 복귀 **PASS**다. 최종 probe 첫 실행은 사진 복귀 클릭 직후 ACK 전 읽기 200으로 실패했으나, 직후 DB의 `avatar_source=provider`·사진 참조 없음으로 제품 완료를 확인하고 ignored probe에 완료 대기를 추가해 stage→재시작→final 전체 PASS했다. 합성 사용자·세션·identity·프로필·사진은 각각 **0건**으로 삭제 확인했다. 실제 iOS/Android/Windows/Edge 물리 환경·OS IME·AT는 새로 검증하지 않았으며 P5 목록에 미실행으로 인계한다. P4 완료는 P5 최종 릴리스 인수 완료가 아니다. `main`·정식 tag/image·릴리스 서버 변경 없음.
 
 P2 첫 기능 후보 `b7b968710983550d0f4bd51905828da75aa32dbe`는 PR [#147](https://github.com/parking-place/LyricsCloud/pull/147)과 같은 SHA 수동 Actions [35025390806](https://github.com/parking-place/LyricsCloud/actions/runs/35025390806)를 시작했으나, 사진 ID가 비공개 URL query와 프록시 접근 로그에 남을 수 있음을 검토 중 발견해 Actions가 migration 검증 중일 때 **cancelled** 처리했다. 이 실행은 CI/이미지 PASS가 아니며 개발 서버는 P1 SHA `38cced2`에 그대로 있다. 식별자 없는 owner 현재사진 전용 `/api/profile/avatar`로 좁히고 source/production build·desktop/mobile 실제 HTTP 2 PASS를 확인했다. 새 후보 전체 CI·네 image·동일 SHA 개발 공개 인수 전까지 P2는 `in_progress`다.
 
@@ -204,12 +208,17 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.7 P3 | complete | 후보 `740b1e3`, Actions `34887398291`·`34887401584`, Vitest 264 PASS·5-browser P3 5 PASS·네 signed dev image·동일 SHA 공개 PC/mobile×dark/light 복귀/focus/새 탭/tooltip 인수 완료 |
 | 1.1.7 P4 | complete | 후보 `66f2f79`, Actions `34894853203`·`34894869965`, 네 signed dev image·동일 SHA 공개 reduced motion/reflow/forced colors·4x CPU 저장·서비스 재시작 영속 인수 완료 |
 | 1.1.7 P5 | complete | 후보 `b1a1e2c`, Actions `34900342849`·`34900363577`, Vitest 376 PASS·E2E 379 PASS·네 signed dev image·동일 SHA 공개 접근성 fallback/저장·복귀·서비스 재시작 영속 인수 완료 |
+| 1.1.7a P1 | complete | `v1.1.7` source `edb8b4a`, 후보 `38cced2`, Actions `35019632430` verify·네 signed dev image·동일 SHA 공개 P1 계약/버전 경계 인수 완료 |
+| 1.1.7a P2 | complete | 후보 `4c2a42a`, Actions `35026679109`, 네 signed dev image·동일 SHA 개발 1151 migration/합성 profile API 영속 인수 완료 |
+| 1.1.7a P3 | complete | 후보 `675dbafa`, Actions `35037281111`, Unit 393/E2E 387/release 10 PASS·네 signed dev image·동일 SHA 공개 PC/mobile 닉네임·사진 저장/재진입·홈 guard 인수 완료 |
+| 1.1.7a P4 | complete | 후보 `7621e8e`, 첫 CI `35043201011` performance CV FAIL 기록, 동일 SHA 재실행 `35043634916` Unit 393/E2E 393/release 10·네 signed dev image PASS·동일 SHA 공개 재시작/새 session·두 owner 격리·홈 guard 인수 완료. 실제 OS/기기·AT 미실행 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.7a/P3 | LC-PLAN-117A-P3-01~05 | 설정 계정 프로필 UI·셸 avatar/닉네임·브랜드 `/workspace` 이동·저장 이탈 guard·PC/mobile E2E/상태/Future | P2 PR #147 merge `d319d4f`, Actions `35026679109` 전체 verify/네 signed dev image·동일 SHA 개발 공개 합성 프로필 영속 PASS | 2026-09-16 | in_progress |
+| Codex | 1.1.7a/P4 | LC-PLAN-117A-P4-01~06 | 두 계정·재로그인·Google 제공값·사진/RLS·ACK 유실·홈 이탈·PC/mobile 및 Linux 5-project 대리 회귀·상태/Future | P3 PR #148 merge `b4e5200`, 후보 `7621e8e`, Actions `35043634916` verify/네 signed dev image·동일 SHA 공개 재시작/두 owner 격리 PASS | 2026-09-16 | complete |
+| Codex | 1.1.7a/P3 | LC-PLAN-117A-P3-01~05 | 설정 계정 프로필 UI·셸 avatar/닉네임·브랜드 `/workspace` 이동·저장 이탈 guard·PC/mobile E2E/상태/Future | 후보 `675dbafa`, PR #148 merge `b4e5200`, Actions `35037281111` verify/네 signed dev image·동일 SHA 개발 공개 합성 프로필 영속 PASS | 2026-09-16 | complete |
 | Codex | 1.1.7a/P2 | LC-PLAN-117A-P2-01~05 | 1151 migration·owned/auth/beta/signup·profile/photo API·공유/export/lifecycle·관련 검증·상태/Future | PR #147 기능 `4c2a42a`, Actions `35026679109` verify/네 signed dev image PASS·동일 SHA 공개 live/ready/합성 owner GET→PATCH→재조회→복귀 PASS; P3 UI 인계 | 2026-09-16 | complete |
 | Codex | 1.1.7a/P1 | LC-PLAN-117A-P1-01~06 | 계약·단일 버전 경계·P1 CI/개발 인수 | `v1.1.7` source `edb8b4a`; 후보 `38cced2`, Actions `35019632430` 전체 verify/네 signed dev image PASS·동일 SHA 공개 live/ready/auth/네 health PASS; 제품 기능은 P2~P5 인계 | 2026-09-16 | complete |
 | Codex | 1.1.7/P5 | LC-NF-1.1.7-P5-01~03 | 사용자 안내·플랫폼 탐색/공통 계약·최종 artifact/CI·개발 공개 인수·상태/Future | 후보 `b1a1e2c`; Actions `34900342849`·`34900363577`; 네 signed dev image·동일 SHA 개발 공개 인수 완료, native gate 미실행 | 2026-09-15 | complete |
