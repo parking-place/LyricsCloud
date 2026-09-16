@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.1.7a] - 2026-09-16
+
+### Added
+
+- 설정 계정의 닉네임·로컬 PNG/JPEG/WebP 프로필 사진을 각각 명시적으로 저장·취소·기본값 복귀; 새로고침·재로그인·서버 재시작 뒤에도 사용자 override 유지
+- 데스크톱 우측 상단 mark, 모바일 우측 상단 홈 icon과 기존 브랜드를 안전한 `/workspace` 홈 이동에 연결하고 미저장 편집 이탈 보호를 유지
+
+### Privacy and compatibility
+
+- `1151_profile_customization.sql` additive migration과 owner RLS 사진 WebP 저장·현재 사진 전용 인증 URL; 공개/선택 공유에는 사진을 자동 표시하지 않으며 현재 닉네임은 기존 owner 이름 노출 설정을 따른다
+- Google 이메일·인증 identity·공유 ID·가사/라임/프롬프트 원문·CodeMirror/Yjs 저장 계약은 그대로 두고, 제공자 기본 이름/사진과 사용자 지정값만 분리한다
+- 외부 backup·24시간 RPO·host-loss 복구 지점은 `OPS-100-001` 사용자 승인 예외로 여전히 미구축이다. 실제 iOS/Android/Windows Edge/OS IME·AT는 이번 버전에서 새로 실행하지 않았고 브라우저 Linux 대리와 구분한다
+
+### Validation and release
+
+- P4 후보 `7621e8e`의 격리 DB 14 PASS, 전체 PC/mobile 393 PASS·43 조건부 skip, Linux 5-project 신규 15 PASS, 재실행 Actions `35043634916` 전체 verify·네 signed dev image 및 같은 SHA 개발 공개 두 owner/재시작/홈 guard 인수 PASS. 첫 Actions `35043201011`의 성능 측정 라운드 편차 FAIL은 그대로 기록한다
+- P5 최종 후보 CI·같은 SHA 개발 인수와 별도 `release/1.1.7a` tag/정식 image·운영 배포 결과는 gate 통과 뒤 기록한다. 기존 `v1.1.7`과 `main`의 미완료 1.1.8은 변경하지 않는다
+
 ## [1.1.7] - 2026-09-15
 
 ### Changed

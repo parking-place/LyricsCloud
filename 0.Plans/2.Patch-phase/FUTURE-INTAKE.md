@@ -349,6 +349,8 @@
 
 | 2026-09-16 `1.1.7a` P4 완료·P5 인계 문서 push 전 | `Future_Feature.md`·P4 CI/개발 공개 인수 | 현행 후보 대조 | 기능 SHA `7621e8e2a41abeb220155d3fc632f8d0e1da3319` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 전역 hidden/tracked 탐색 4문서; 선택 후보 129개 FF ID·체크·본문 변경 없음, 추가 Future 선택 파일 없음 | 첫 CI 성능 측정 편차 FAIL을 보존하고 같은 SHA 재실행 전체 verify·네 signed dev image PASS, 개발 서버 동일 SHA·공개 두 계정 영속/격리·재시작/홈 guard PASS만 P4 완료로 인수. P5 문서·정식 tag/image·릴리스 서버, 1.1.8/main과 다른 Future 범위 선소비 없음 | 직전 1.1.7a P4 교차 회귀 후보 push 전 행 |
 
+| 2026-09-16 `1.1.7a` P5 문서·artifact 후보 push 전 | `Future_Feature.md`·P5 문서/최종 검증 | 현행 후보 대조 | P4 merge `8d3ed3fdade28902957e7c5253c341edf8ded5c4` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | hidden/tracked 전역 탐색 4문서, 선택 후보 129개 FF ID·체크·본문 변경 없음; 새 선택 파일 없음 | 승인된 P5 닉네임/사진/홈 사용자 안내·1151 포함 30 migration·환경/license/release manifest·1.1.7a 전용 release rollback/지원 위험·CI p5 metadata만 봉인. 정식 tag/image·운영 배포는 최종 gate 전 미실행, 1.1.8/main 및 다른 Future 범위 선소비 없음 | 직전 1.1.7a P4 완료·P5 인계 문서 push 전 행 |
+
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
 자동 hook·새 검수 스크립트·별도 스케줄을 만들지 않는다. Agent.md의 필수 단계와 이 절차 한 곳을 사용한다.

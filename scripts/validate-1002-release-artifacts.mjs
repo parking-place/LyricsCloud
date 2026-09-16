@@ -11,11 +11,12 @@ const assertIncludes = (value, expected, message) => assert(value.includes(expec
 
 const version = (await read("VERSION")).trim();
 const formalVersion = version;
-assert(/^[0-9]+\.[0-9]+\.[0-9]+$/u.test(version), "VERSION must be a stable current candidate source");
+const oneOff117a = version === "1.1.7a";
+assert(oneOff117a || /^[0-9]+\.[0-9]+\.[0-9]+$/u.test(version), "VERSION must be a stable current candidate source or the approved 1.1.7a exception");
 const packages = ["package.json", "apps/web/package.json", "apps/collaboration/package.json", "apps/worker/package.json",
   "packages/auth/package.json", "packages/config/package.json", "packages/database/package.json", "packages/domain/package.json",
   "packages/editor/package.json", "packages/observability/package.json", "packages/ui/package.json"];
-for (const path of packages) assert((await json(path)).version === version, `${path} version must equal VERSION`);
+for (const path of packages) assert((await json(path)).version === (oneOff117a ? "1.1.7" : version), `${path} version must match the approved product/package boundary`);
 
 const status = await read("0.Plans/1. Dev-phase/STATUS.md");
 assertIncludes(status, `current_version: "${version}"`, "STATUS current version does not match VERSION");
@@ -143,7 +144,7 @@ assert(formalEnvironment.properties.APP_VERSION.const === formalVersion && forma
   `${formalVersion} formal environment boundary invalid`);
 assert(formalMigrations.productVersion === formalVersion && formalMigrations.maximumCompatibleApplicationVersion === formalVersion,
   `${formalVersion} formal migration compatibility invalid`);
-assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === "1140_sharing_stability.sql",
+assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === (oneOff117a ? "1151_profile_customization.sql" : "1140_sharing_stability.sql"),
   `${formalVersion} sealed migration manifest is invalid`);
 for (const entry of formalMigrations.applyOrder) {
   assert(hash(await read(`packages/database/migrations/${entry.name}`)) === entry.sha256, `${entry.name} ${formalVersion} checksum changed`);

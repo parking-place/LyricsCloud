@@ -2,12 +2,12 @@
 
 ```yaml
 current_version: "1.1.7a"
-current_phase: "../2.Patch-phase/1.1.7.a/4phase.md"
-state: "complete"
+current_phase: "../2.Patch-phase/1.1.7.a/5phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-16"
-next_action: "P4 완료 증거를 [skip ci] 문서 commit으로 push하고 PR #149를 승인된 release/1.1.7a에 통합한 뒤 P5 문서·최종 검증을 시작한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
+next_action: "P4 PR #149 merge 8d3ed3f 기반 P5 전용 브랜치에서 사용자·운영 문서/요구 추적·1151 artifact를 봉인하고 최종 CI·같은 SHA 개발 공개 인수 뒤 승인된 release/1.1.7a tag/image·운영 배포를 수행한다. P5 gate 전 정식 tag/image·릴리스 서버는 변경하지 않는다"
 ```
 
 ## 승인과 기준
@@ -71,6 +71,10 @@ P1 후보 `b6031851ecea1361b39274cd6be6412c93f71311`의 Actions [35014698215](ht
 2026-09-09 사용자가 1.0.1 계획의 모든 Phase 실행과 전체 완료 후 릴리스 서버 배포를 승인했다. `ADR-NF-001`, `PROD-NF-001`, `OPS-NF-001`의 권장 대안을 Accepted로 확정했다. 릴리스 서버 변경 권한은 P1~P10 완료와 최종 후보 검증 뒤에만 소비하며, 그 전에는 Phase별 개발 서버 인수만 수행한다.
 
 사용자가 1.0.1 이전의 1.0.0 P6 안정화와 GitHub 반영을 승인했다. 착수 기준 SHA는 `9e362f60f183b6adedfe358554b077334645ed0c`, 당시 전용 브랜치는 `phase/1.0.0-p6-stabilization`이다. 2026-09-09 사용자가 PR #11을 P5에 병합하고 원격 P6 브랜치를 삭제했다. 현재 병합 기준 `7c3930b5bc2be4f25f8f7586b7ce3f02b039af99`는 후보 `405e535`와 동일 tree다. 후보 CI 통과와 별개로 병합 CI의 performance round CV 실패는 조사 중이며, [인수 출발점](../2.Patch-phase/CODEX-HANDOFF.md)에 증거를 연결했다. 운영 배포·정식 태그 재발행·다른 개발자의 작업 덮어쓰기는 승인에 포함하지 않는다.
+
+P4 완료 문서-only `646c9a7c98b1984e6a4b647b8621e5556ba611df`는 `[skip ci]`로 push했고 PR #149는 승인된 `release/1.1.7a` merge `8d3ed3fdade28902957e7c5253c341edf8ded5c4`에 통합됐다. `main`·1.1.8·정식 tag/image·릴리스 서버는 그대로다. P5 전용 Phase 브랜치는 이 merge SHA에서 분기했다.
+
+P5 로컬 후보는 실제 frozen lockfile과 production license 65개 package group/버전 일치, Node 24 계열 check·production web build, 1151 populated 1140→1151/반복/RLS/application-first rollback, release validator 1001/1002/1004/1005/101, 격리 PostgreSQL profile/photo **14 PASS**, Linux 5-project 영향 브라우저 **15 PASS**, 한 번짜리 버전 경계 **4 PASS**다. 첫 격리 migration/E2E 컨테이너는 `APP_CHANNEL` 누락으로 기본 release와 시험용 `APP_PHASE`가 충돌해 시작 실패했고, dev 채널 명시 재실행에서 PASS했다. Docker Git worktree 메타데이터 미마운트로 oneoff shell guard 1건이 실패했으나 로컬 Git 환경의 같은 4건은 PASS했다. 이 실패 시도는 PASS가 아니다. P4 제품 코드·전체 E2E 393 PASS는 해당 P4 SHA의 선행 근거로만 계승하고 P5 새 후보 SHA의 필수 CI·네 signed dev image·동일 SHA 개발 공개 인수 전에는 P5를 완료하지 않는다.
 
 ## 기존 기록 보존
 
@@ -217,6 +221,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7a/P5 | LC-PLAN-117A-P5-01~05 | 사용자/지원·요구 추적·30 migration/환경/license/manifest·최종 CI/동일 SHA 개발·승인된 전용 릴리스 | P4 PR #149 merge `8d3ed3f`, Actions `35043634916` 전체 verify/네 signed dev image·동일 SHA 공개 두 owner/재시작 PASS | 2026-09-16 | in_progress |
 | Codex | 1.1.7a/P4 | LC-PLAN-117A-P4-01~06 | 두 계정·재로그인·Google 제공값·사진/RLS·ACK 유실·홈 이탈·PC/mobile 및 Linux 5-project 대리 회귀·상태/Future | P3 PR #148 merge `b4e5200`, 후보 `7621e8e`, Actions `35043634916` verify/네 signed dev image·동일 SHA 공개 재시작/두 owner 격리 PASS | 2026-09-16 | complete |
 | Codex | 1.1.7a/P3 | LC-PLAN-117A-P3-01~05 | 설정 계정 프로필 UI·셸 avatar/닉네임·브랜드 `/workspace` 이동·저장 이탈 guard·PC/mobile E2E/상태/Future | 후보 `675dbafa`, PR #148 merge `b4e5200`, Actions `35037281111` verify/네 signed dev image·동일 SHA 개발 공개 합성 프로필 영속 PASS | 2026-09-16 | complete |
 | Codex | 1.1.7a/P2 | LC-PLAN-117A-P2-01~05 | 1151 migration·owned/auth/beta/signup·profile/photo API·공유/export/lifecycle·관련 검증·상태/Future | PR #147 기능 `4c2a42a`, Actions `35026679109` verify/네 signed dev image PASS·동일 SHA 공개 live/ready/합성 owner GET→PATCH→재조회→복귀 PASS; P3 UI 인계 | 2026-09-16 | complete |
