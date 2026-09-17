@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { classifyDatabaseError, CURRENT_SCHEMA_VERSION, DatabaseHealthError } from "./index.js";
 
 describe("database health diagnostics", () => {
-  it("requires the 1.1.8 native read-session migration", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("1150_native_read_sessions.sql");
+  it("requires the profile customization migration after the native read-session migration", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe("1151_profile_customization.sql");
   });
 
   it.each([

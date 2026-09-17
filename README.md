@@ -11,9 +11,9 @@
 
 LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 한곳에서 관리하는 셀프호스트 웹 앱이다. PC 집중 편집, 모바일 확인·수정·복사, 같은 계정의 여러 기기·탭 자동 병합, 지정 사용자·공개 링크 공동 편집과 온라인 우선 PWA를 지원한다.
 
-현재 운영 서버의 정식 릴리스는 [`v1.1.7`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.1.7)이다. P1~P5와 main/tag CI, 네 signed exact digest 이미지, 운영 공개 smoke를 완료했다.
+현재 운영 서버의 정식 릴리스는 [`v1.1.7a`](https://github.com/parking-place/LyricsCloud/releases/tag/v1.1.7a)이며, 별도 `release/1.1.7a`에서 Phase 5·tag CI·exact digest 운영 배포를 완료했다. 미완료 1.1.8 Windows/main은 이번 릴리스에 넣지 않았다.
 
-[1.1.7 release notes](./docs/releases/1.1.7.md)와 [CHANGELOG.md](./CHANGELOG.md)에 사용자 변화·호환성·미실행 gate를 기록한다.
+[1.1.7a release notes](./docs/releases/1.1.7a.md)와 [CHANGELOG.md](./CHANGELOG.md)에 사용자 변화·호환성·미실행 gate를 기록한다.
 
 ## 주요 기능
 
@@ -36,18 +36,19 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 - 256비트 공개 링크, 선택 필드·최대 30일 만료·일회 링크 복사, fragment 제거·read-only live·즉시 회수
 - owner 위험 확인 뒤 공개 링크의 비로그인 guest 본문 공동 편집, 탭별 session/presence·지속 제한·중지와 rejected-only 복구
 - Google OIDC와 1회성 초대 코드 기반 Private Beta 가입
+- 로그인 계정의 독립 닉네임·안전한 사진 저장/제거와 제공자 기본값 복귀, 우측 상단/브랜드의 미저장 입력 보호 홈 이동
 
-AI 생성과 미디어 업로드는 1.1.7 범위가 아니다.
+AI 생성·음원 업로드는 1.1.7a 범위가 아니다. 계정 사진 파일만 서버 검증·비공개 저장을 지원한다.
 
 ## 현재 상태
 
 | 항목 | 상태 |
 |---|---|
 | 소스·runtime version | `1.1.8` |
-| 현재 작업 | [1.1.8 Phase 3 — Windows 읽기·복사 사용자 흐름](<./0.Plans/2.Patch-phase/1.1.8/3phase.md>) 완료, P4 준비 |
+| 현재 작업 | [1.1.8 Phase 4 — Windows 실패·권한·복구 회귀](<./0.Plans/2.Patch-phase/1.1.8/4phase.md>) review; 1.1.7a 재통합·unpackaged 저장소 보정 진행 |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
-| 정식 릴리스 | `v1.1.7`, main/tag `edb8b4a`, exact digest 운영 배포·공개 복귀/접근성/공유/복구·재시작·전역 beta CLI smoke 완료 |
-| 개발 인수 | 1.1.8 P3 후보 `b96200c`, 전체 CI·Windows WinUI x64 build/개발 artifact·네 signed dev image·동일 SHA 개발 native 곡/가사 read-only smoke 완료 |
+| 정식 릴리스 | `v1.1.7a`, tag/운영 `fc2463c`, Actions `35052520619`, exact signed digest 운영 배포·공개 인수 PASS |
+| 개발 인수 | 1.1.8 P3 완료; P4 자동/Windows CI 후보와 1.1.7a 기능 재통합은 진행 중이며 실제 Windows 재실행은 미실행 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.
@@ -65,6 +66,8 @@ AI 생성과 미디어 업로드는 1.1.7 범위가 아니다.
 1.1.7은 새 라임·프롬프트 생성에 명시적 내부 `returnTo`를 사용해 호출 화면으로 정확히 복귀하고, 곡 목록의 filter·sort·view query를 대시보드·가사·공유·Suno 작업 뒤에도 보존한다. 공유 dialog와 모바일 More는 trigger focus를 복원하며 접힌 rail·drag/context 기능에는 keyboard/버튼 대안이 있다. reduced transparency·contrast/forced-colors fallback은 표현만 바꾸고 CodeMirror/Yjs·API·DB·권한·저장 원문을 바꾸지 않는다.
 
 1.1.8 P3는 WinUI 3/.NET 읽기·복사 전용 Windows 앱에 곡/가사·라임·프롬프트 탐색, exact copy, loading/empty/no-access/error, adaptive/theme/keyboard/accessibility 계약과 owner 가사 목록 API를 연결한다. native session은 `read` scope만 가지며 기존 쓰기 route에는 사용할 수 없다. Windows runner build와 개발 artifact는 통과했지만 실제 Windows 실행·한국어 IME·Narrator·고대비·DPI/다중 monitor·DPAPI/process kill·clipboard 및 신뢰 서명 MSIX 설치/업데이트/제거는 P4/P5 gate라 아직 정식 릴리스 기능으로 표시하지 않는다.
+
+1.1.7a는 설정 계정에서 닉네임·로컬 프로필 사진을 각각 명시적으로 저장하고, 사용자 지정값을 Google 재로그인/기본 프로필 갱신과 분리한다. 사진은 owner cookie·RLS로만 제공하며 공유 페이지에 자동 공개하지 않는다. 데스크톱·모바일 우측 상단 mark/icon과 기존 브랜드는 `/workspace`로 이동하되 미저장 입력 이탈 guard를 따른다.
 
 ## 화면
 

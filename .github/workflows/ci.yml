@@ -47,7 +47,7 @@ jobs:
       APP_VERSION: 1.1.8
       BUILD_ID: ${{ github.sha }}
       APP_CHANNEL: dev
-      APP_PHASE: p5
+      APP_PHASE: p4
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -62,6 +62,9 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: P6 stabilization regression
         run: node --test scripts/tests/p6-*.mjs
+      - name: One-off 1.1.7a version boundary regression
+        if: ${{ env.APP_VERSION == '1.1.7a' }}
+        run: node --test scripts/tests/oneoff-117a-version.mjs
       - name: P6 whole-tree codebase inventory and syntax audit
         run: node scripts/audit-p6-codebase.mjs
       - name: Audit production dependencies
@@ -125,6 +128,8 @@ jobs:
         run: pnpm test:migration:1140
       - name: Verify 1.1.8 native read-session migration recovery
         run: pnpm test:migration:1150
+      - name: Verify 1.1.7a populated profile upgrade and recovery
+        run: pnpm test:migration:1151
       - name: Verify 0.7.0 fresh and 0.6.0 upgrade release paths
         run: pnpm test:migration:0700-release
       - name: Measure 0.7.0 navigation release baseline
@@ -132,7 +137,7 @@ jobs:
       - name: Static checks
         run: pnpm check
       - name: Verify 1.1.8 Windows read-only UI contract
-        run: pnpm test:windows-ui:118
+        run: pnpm test:windows-ui:118 && pnpm test:windows-recovery:118
       - name: Verify 0.9.0 UI audit baseline
         run: pnpm test:audit:0901 && pnpm test:release:0905
       - name: Shell and Docker cleanup contract
@@ -271,6 +276,29 @@ jobs:
           path: apps/windows/LyricsCloud.Windows/bin/x64/Release/**
           if-no-files-found: error
           retention-days: 7
+      - name: Publish x64 self-contained test folder
+        shell: pwsh
+        run: |
+          $publish = Join-Path $env:RUNNER_TEMP 'lyricscloud-windows-x64-self-contained'
+          dotnet publish LyricsCloud.Windows/LyricsCloud.Windows.csproj --configuration Release -p:Platform=x64 --runtime win-x64 --self-contained true -p:WindowsAppSDKSelfContained=true -p:PublishSingleFile=false -p:PublishTrimmed=false --output $publish
+          if ($LASTEXITCODE -ne 0) { throw 'Windows self-contained publish failed' }
+          foreach ($required in @('LyricsCloud.Windows.exe', 'coreclr.dll')) {
+            if (-not (Test-Path (Join-Path $publish $required))) { throw "Self-contained output missing $required" }
+          }
+          if (-not (Get-ChildItem -Path $publish -Recurse -File -Filter 'Microsoft.UI.Xaml.dll' | Select-Object -First 1)) {
+            throw 'Windows App SDK runtime is missing from self-contained output'
+          }
+          $runtimeConfig = Get-Content (Join-Path $publish 'LyricsCloud.Windows.runtimeconfig.json') -Raw | ConvertFrom-Json
+          if ($runtimeConfig.runtimeOptions.framework -or $runtimeConfig.runtimeOptions.frameworks) {
+            throw '.NET runtimeconfig still requires a separately installed framework'
+          }
+      - name: Preserve x64 self-contained test folder
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-x64-self-contained-${{ github.sha }}
+          path: ${{ runner.temp }}/lyricscloud-windows-x64-self-contained/**
+          if-no-files-found: error
+          retention-days: 14
 
   publish:
     name: Publish ${{ matrix.service }} image

@@ -41,21 +41,12 @@ public sealed class LoopbackSignIn
         var parts = line.Split(' ');
         if (parts.Length != 3 || parts[0] != "GET" || !Uri.TryCreate(expected, parts[1], out var actual)
             || actual.AbsolutePath != expected.AbsolutePath) throw new InvalidDataException("CALLBACK_INVALID");
-        var query = System.Web.HttpUtility.ParseQueryString(actual.Query);
-        var code = query["code"] ?? "";
-        var state = query["state"] ?? "";
-        if (!FixedEquals(expectedState, state) || code.Length != 43) throw new InvalidDataException("CALLBACK_STATE_INVALID");
+        var code = NativeLoopbackCallbackPolicy.Validate(expected, parts[1], expectedState);
         var body = Encoding.UTF8.GetBytes("LyricsCloud 로그인이 완료되었습니다. 이 창을 닫아도 됩니다.");
         var header = Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: text/plain; charset=utf-8\r\nCache-Control: no-store\r\nConnection: close\r\nContent-Length: {body.Length}\r\n\r\n");
         await stream.WriteAsync(header, cancellationToken);
         await stream.WriteAsync(body, cancellationToken);
         return code;
-    }
-
-    private static bool FixedEquals(string left, string right)
-    {
-        var a = Encoding.ASCII.GetBytes(left); var b = Encoding.ASCII.GetBytes(right);
-        return a.Length == b.Length && CryptographicOperations.FixedTimeEquals(a, b);
     }
 
     private static string Base64Url(byte[] value) => Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');

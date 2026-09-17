@@ -51,3 +51,9 @@ test('0701 verifier uses safe cleanup and closes its admin pool in finally', () 
   assert.match(source, /finally\s*\{\s*await admin\.end\(\);\s*\}/u);
   assert.ok(!/with\s*\(force\)/iu.test(source));
 });
+test('1110 verifier uses safe cleanup without terminating a closing pool', () => {
+  const source = readFileSync(new URL('../verify-1110-migration.mjs', import.meta.url), 'utf8');
+  assert.ok(source.includes('await dropMigrationTestDatabase(admin, databaseName)'));
+  assert.match(source, /finally\s*\{\s*await admin\.end\(\);\s*\}/u);
+  assert.ok(!/with\s*\(force\)/iu.test(source));
+});

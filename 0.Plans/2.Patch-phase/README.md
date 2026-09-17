@@ -4,6 +4,8 @@
 
 ## 읽는 순서
 
+추가 기획: [1.1.7.a — 닉네임·프로필 사진 변경과 로고 홈 이동](1.1.7.a/README.md)은 이미 발행된 `1.1.7`의 재출시 버전이 아닌 **계획 ID**다. 실행 STATUS/제품 버전 번호는 이 링크로 변경되지 않는다.
+
 1. [로드맵](ROADMAP.md) → [1.0.1 필수 범위](1.0.1/BRIEF.md) → [최신 요청 대응표](../../docs/planning/latest-requirements-mapping.md).
 2. [버전 규칙](VERSIONING.md) → [요구 추적](Requirements-Traceability.md) → [결정 권한](Decision-Ownership.md).
 3. 현재 버전 README·해당 Phase → 연결된 계약 → [품질 게이트](QUALITY-GATES.md)·[릴리스 정책](RELEASE-POLICY.md).

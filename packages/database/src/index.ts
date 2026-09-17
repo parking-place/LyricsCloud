@@ -1,6 +1,6 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "1150_native_read_sessions.sql";
+export const CURRENT_SCHEMA_VERSION = "1151_profile_customization.sql";
 
 export * from "./auth.js";
 export * from "./native-auth.js";

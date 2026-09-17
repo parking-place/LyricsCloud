@@ -23,7 +23,9 @@ public sealed record NativeSessionResponse(bool Authenticated, NativeUser User, 
 public sealed record NativeUser(string Id);
 public sealed record NativeListResult<T>(IReadOnlyList<T> Items, int TotalCount, string? NextCursor);
 public sealed record NativeSongResponse(NativeSong Song);
+public sealed record NativeLyricResponse(NativeLyric Lyric);
 public sealed record NativeLyricsResponse(IReadOnlyList<NativeLyric> Items);
+public sealed record NativeSharedLyricResponse(NativeSharedLyric Lyric);
 public sealed record NativePkce(string Verifier, string Challenge);
 public sealed record NativeSong(string Id, string Title, string Description, string WorkNotes, string Status,
     string? Color, bool IsFavorite, bool IsPinned, int? PinOrder, long RowVersion, DateTimeOffset CreatedAt,
@@ -91,6 +93,12 @@ public sealed class NativeApiClient
 
     public Task<NativeLyricsResponse> ListLyricsAsync(string songId, CancellationToken cancellationToken = default) =>
         GetReadContractAsync<NativeLyricsResponse>($"api/native/v1/songs/{EscapeId(songId)}/lyrics", cancellationToken);
+
+    public Task<NativeLyricResponse> GetLyricAsync(string lyricId, CancellationToken cancellationToken = default) =>
+        GetReadContractAsync<NativeLyricResponse>($"api/native/v1/lyrics/{EscapeId(lyricId)}", cancellationToken);
+
+    public Task<NativeSharedLyricResponse> GetSharedLyricAsync(string lyricId, CancellationToken cancellationToken = default) =>
+        GetReadContractAsync<NativeSharedLyricResponse>($"api/native/v1/shared/lyrics/{EscapeId(lyricId)}", cancellationToken);
 
     public Task<NativeListResult<NativeRhyme>> ListRhymesAsync(string? cursor = null, CancellationToken cancellationToken = default) =>
         GetReadContractAsync<NativeListResult<NativeRhyme>>(ListPath("api/native/v1/rhymes", cursor), cancellationToken);

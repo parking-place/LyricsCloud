@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Text.Json;
 using LyricsCloud.Windows.Core;
 
@@ -34,6 +36,9 @@ True(AccountCachePolicy.CanExpose(CachedResourceAccess.Owner, false), "owner off
 True(!AccountCachePolicy.CanExpose(CachedResourceAccess.Shared, false), "shared cache requires online permission");
 True(AccountCachePolicy.CanExpose(CachedResourceAccess.Shared, true), "shared cache after permission validation");
 True(AccountCachePolicy.MustPurge(403, false, false), "revoke purge");
+True(!AccountCachePolicy.CanExposeSharedEpoch(1, 2, true), "changed shared epoch rejects cache");
+True(!AccountCachePolicy.CanExposeSharedEpoch(1, 1, false), "offline shared epoch rejects cache");
+True(AccountCachePolicy.CanExposeSharedEpoch(1, 1, true), "fresh shared epoch permits cache");
 
 var pkce = NativePkceFactory.Create();
 True(pkce.Verifier.Length == 43 && pkce.Challenge.Length == 43 && pkce.Verifier != pkce.Challenge, "PKCE S256");
@@ -78,6 +83,55 @@ True(!NativeCredentialPolicy.IsUsable(credential with { ExpiresAt = DateTimeOffs
     DateTimeOffset.UtcNow), "credential expiry rejection");
 True(!NativeLibraryPresentation.SupportsWrites, "read-only presentation");
 
+var shared = JsonSerializer.Deserialize<NativeSharedLyricResponse>("""
+    {"lyric":{"id":"00000000-0000-4000-8000-000000000013","title":"합성 공유 가사","body":"[Extend]\r\n합성 원문","status":"draft","updatedAt":"2026-09-15T00:00:00Z","ownerDisplayName":"합성 소유자","access":{"mode":"read","grantId":"00000000-0000-4000-8000-000000000014","permissionEpoch":1,"writeEpoch":0}}}
+    """, jsonOptions);
+Equal(1L, shared?.Lyric.Access.PermissionEpoch, "shared response epoch");
+Equal("합성 원문", NativeLibraryPresentation.Copy(shared!.Lyric).Payload, "shared exact copy matches owner copy");
+Equal(NativeLibraryPresentation.Copy(new NativeLyric(shared.Lyric.Id, shared.Lyric.Id, shared.Lyric.Title,
+    shared.Lyric.Body, "", shared.Lyric.Status, false, false, null, 1, DateTimeOffset.UnixEpoch,
+    DateTimeOffset.UnixEpoch)).Payload, NativeLibraryPresentation.Copy(shared.Lyric).Payload,
+    "shared and owner lyric copy parity");
+using (var http = new HttpClient(new RecordingHandler()) { BaseAddress = new Uri("https://dev.example.test/") })
+{
+    var client = new NativeApiClient(http, new string('a', 43));
+    var received = await client.GetSharedLyricAsync(shared.Lyric.Id);
+    Equal(shared.Lyric.Id, received.Lyric.Id, "shared HTTP JSON read contract");
+    Equal($"/api/native/v1/shared/lyrics/{shared.Lyric.Id}", RecordingHandler.LastPath, "shared UUID-only GET path");
+    Throws<ArgumentException>(() => client.GetSharedLyricAsync("../../private"), "shared path traversal blocked");
+}
+
+var callbackOrigin = new Uri("http://127.0.0.1:49152/lyricscloud/oauth/callback-token");
+var callbackCode = new string('c', 43);
+var callbackState = new string('s', 43);
+Equal(callbackCode, NativeLoopbackCallbackPolicy.Validate(callbackOrigin,
+    $"/lyricscloud/oauth/callback-token?code={callbackCode}&state={callbackState}", callbackState),
+    "exact loopback callback");
+Throws<InvalidDataException>(() => NativeLoopbackCallbackPolicy.Validate(callbackOrigin,
+    $"http://example.test/lyricscloud/oauth/callback-token?code={callbackCode}&state={callbackState}", callbackState),
+    "absolute-form callback rejection");
+Throws<InvalidDataException>(() => NativeLoopbackCallbackPolicy.Validate(callbackOrigin,
+    $"/lyricscloud/oauth/other?code={callbackCode}&state={callbackState}", callbackState),
+    "wrong callback path rejection");
+Throws<InvalidDataException>(() => NativeLoopbackCallbackPolicy.Validate(callbackOrigin,
+    $"/lyricscloud/oauth/callback-token?code={callbackCode}&state={callbackState}&state={callbackState}", callbackState),
+    "duplicate callback state rejection");
+Throws<InvalidDataException>(() => NativeLoopbackCallbackPolicy.Validate(callbackOrigin,
+    $"/lyricscloud/oauth/callback-token?code={callbackCode}&state={new string('x', 43)}", callbackState),
+    "wrong callback state rejection");
+
+Equal(NativeRecoveryAction.ClearSession,
+    NativeRecoveryPolicy.For(new NativeApiException(System.Net.HttpStatusCode.Unauthorized, "UNAUTHORIZED")),
+    "401 clears session");
+Equal(NativeRecoveryAction.ClearResource,
+    NativeRecoveryPolicy.For(new NativeApiException(System.Net.HttpStatusCode.Forbidden, "FORBIDDEN")),
+    "403 clears resource");
+Equal(NativeRecoveryAction.ClearResource,
+    NativeRecoveryPolicy.For(new NativeApiException(System.Net.HttpStatusCode.NotFound, "NOT_FOUND")),
+    "404 clears resource");
+Equal(NativeRecoveryAction.PreserveOwnerData, NativeRecoveryPolicy.For(new HttpRequestException()),
+    "offline owner data can remain visible");
+
 Console.WriteLine($"Windows core contract: {assertions} assertions PASS");
 
 void Equal<T>(T expected, T actual, string name)
@@ -90,4 +144,29 @@ void True(bool condition, string name)
 {
     if (!condition) throw new InvalidOperationException($"{name}: failed");
     assertions += 1;
+}
+
+void Throws<T>(Action action, string name) where T : Exception
+{
+    try { action(); }
+    catch (T) { assertions += 1; return; }
+    throw new InvalidOperationException($"{name}: expected {typeof(T).Name}");
+}
+
+sealed class RecordingHandler : HttpMessageHandler
+{
+    public static string LastPath { get; private set; } = "";
+
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        LastPath = request.RequestUri?.AbsolutePath;
+        var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("""
+                {"lyric":{"id":"00000000-0000-4000-8000-000000000013","title":"합성 공유 가사","body":"합성 원문","status":"draft","updatedAt":"2026-09-15T00:00:00Z","ownerDisplayName":"합성 소유자","access":{"mode":"read","grantId":"00000000-0000-4000-8000-000000000014","permissionEpoch":1,"writeEpoch":0}}}
+                """)
+        };
+        response.Headers.Add("x-lyricscloud-native-contract", NativeApiClient.Contract);
+        return Task.FromResult(response);
+    }
 }

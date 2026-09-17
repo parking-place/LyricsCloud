@@ -8,10 +8,10 @@ export function validateReleasePhase(status, { requireRelease = false, phase6Pla
     return matches[0][1];
   }
   const version = field('current_version');
-  if (!stableVersion.test(version)) throw new Error('RELEASE_PHASE_VERSION_INVALID');
+  if (version !== '1.1.7a' && !stableVersion.test(version)) throw new Error('RELEASE_PHASE_VERSION_INVALID');
   const phasePath = field('current_phase');
-  const match = /^(?:\.\.\/2\.Patch-phase\/)?([0-9]+\.[0-9]+\.[0-9]+)\/([1-9][0-9]*)phase\.md$/u.exec(phasePath);
-  if (!match || match[1] !== version) throw new Error('RELEASE_PHASE_PATH_INVALID');
+  const match = /^(?:\.\.\/2\.Patch-phase\/)?([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7\.a)\/([1-9][0-9]*)phase\.md$/u.exec(phasePath);
+  if (!match || (version === '1.1.7a' ? match[1] !== '1.1.7.a' : match[1] !== version)) throw new Error('RELEASE_PHASE_PATH_INVALID');
   const phase = Number(match[2]);
   if (version === '1.0.0') {
     if (phase === 5) return phase;

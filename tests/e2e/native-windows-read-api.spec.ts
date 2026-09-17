@@ -134,4 +134,31 @@ test.describe("1.1.8 Windows read-only API", () => {
     await browserContext.close();
     await withE2eDatabase((pool) => pool.query("delete from app_users where id=$1", [owner]).then(() => undefined));
   });
+
+  test("isolates logout, expired sessions, and inactive account transitions", async ({ request }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "one API execution is sufficient");
+    const owner = randomUUID(); const inactive = randomUUID();
+    const first = randomBytes(32).toString("base64url"); const second = randomBytes(32).toString("base64url");
+    const expired = randomBytes(32).toString("base64url"); const inactiveToken = randomBytes(32).toString("base64url");
+    await withE2eDatabase(async (pool) => {
+      await pool.query("insert into app_users(id,status) values($1,'active'),($2,'blocked')", [owner, inactive]);
+      await pool.query(`insert into native_sessions(token_hash,user_id,scope,expires_at,absolute_expires_at) values
+        ($1,$5,'read',now()+interval '1 hour',now()+interval '2 hours'),
+        ($2,$5,'read',now()+interval '1 hour',now()+interval '2 hours'),
+        ($3,$5,'read',now()-interval '1 minute',now()+interval '2 hours'),
+        ($4,$6,'read',now()+interval '1 hour',now()+interval '2 hours')`,
+      [hashToken(first), hashToken(second), hashToken(expired), hashToken(inactiveToken), owner, inactive]);
+    });
+    const bearer = (token: string) => ({ Authorization: `Bearer ${token}` });
+    expect((await request.get("/api/native/v1/session", { headers: bearer(first) })).status()).toBe(200);
+    expect((await request.get("/api/native/v1/session", { headers: bearer(second) })).status()).toBe(200);
+    expect((await request.get("/api/native/v1/session", { headers: bearer(expired) })).status()).toBe(401);
+    expect((await request.get("/api/native/v1/session", { headers: bearer(inactiveToken) })).status()).toBe(401);
+
+    expect((await request.post("/api/native/v1/auth/logout", { headers: bearer(first) })).status()).toBe(200);
+    expect((await request.get("/api/native/v1/session", { headers: bearer(first) })).status()).toBe(401);
+    expect((await request.get("/api/native/v1/session", { headers: bearer(second) })).status()).toBe(200);
+
+    await withE2eDatabase((pool) => pool.query("delete from app_users where id=any($1::uuid[])", [[owner, inactive]]).then(() => undefined));
+  });
 });
