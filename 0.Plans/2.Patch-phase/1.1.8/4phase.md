@@ -1,6 +1,6 @@
 # 1.1.8 Phase 4 — 실패·권한·복구 회귀
 
-- 상태: **실제 Windows 인수 대기** (`review`, P3 merge main `b995ffe`, 공유 UI/cache 보정 기능 후보 `fe40556`의 두 CI·네 dev image·동일 SHA 개발 공개 인수 PASS)
+- 상태: **실제 Windows 인수 대기** (`review`, 통합 최종 자동 검증 후보 `a7d8e453`의 Actions `35173213999`·Windows artifact·네 dev image·동일 SHA 개발 공개 인수 PASS)
 - 단계 목적: Windows 네이티브 개발안·읽기와 복사의 실패·권한·복구 회귀을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -70,6 +70,8 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 - P4-01의 승인 없음 분기는 이번 실행 입력이 아니다: 사용자의 `1.1.8 Windows 권고안 승인`이 P1에서 먼저 기록됐다. P4-02~04의 자동 DB/API/fixture 증거는 확보했지만 네이티브 UI 실기기의 OAuth 취소/회수/cache/reconnect/copy를 실행하지 못했다. P4-05~07의 실제 Windows launch·process kill/DPAPI·clipboard·Microsoft 한국어 IME·다국어 font fallback·Narrator/high contrast·200% DPI/다중 monitor·권한/presence·서명 MSIX 설치/업데이트/제거는 **미실행**. 자동 Windows runner의 build와 웹 성공은 실제 OS PASS가 아니며 P4 체크박스/완료와 P5/정식 릴리스는 해당 증거 전까지 남긴다.
 
 ## 실행·증거 기록
+
+2026-09-17 통합 최종 자동 검증 SHA `a7d8e4538c58202f4a1e39371517906e891ae1bf`의 Actions [35173213999](https://github.com/parking-place/LyricsCloud/actions/runs/35173213999)은 전체 verify·Windows native contract/build·framework-dependent 및 self-contained artifact·네 signed dev image가 모두 PASS했다. Unit 402 PASS·5 조건부 skip, owner E2E 396 PASS·46 조건부 skip·0 flaky, release browser 10 PASS로 프로필 reset의 `avatar:null` 응답 대기와 P4 runtime metadata를 재검증했다. artifact는 `windows-x64-read-only-a7d8e4538c58202f4a1e39371517906e891ae1bf`와 `windows-x64-self-contained-a7d8e4538c58202f4a1e39371517906e891ae1bf`다. 동일 SHA 개발 서버의 공개 live/ready는 `1.1.8/dev/p4`, schema `1151_profile_customization.sql`, 정확한 build를 반환했고 `/auth` 200, 비인증 profile/avatar/native songs 401, native writes false, postgres/web/collaboration/worker healthy와 production asset·Docker cleanup을 확인했다. 실제 Windows launch/system-browser OAuth/DPAPI/cache/clipboard/IME/AT/DPI/다중 monitor와 신뢰 서명 MSIX 설치·업데이트·제거는 미실행이라 체크박스와 P4 review·P5/릴리스 보류를 유지한다. 릴리스 서버·main은 변경하지 않았다.
 
 2026-09-17 통합 SHA `f87d3be1ca080749d59adcc23812bf25ff2607fa`의 Actions [35170674196](https://github.com/parking-place/LyricsCloud/actions/runs/35170674196)은 전체 verify·Windows build/self-contained artifact·네 signed dev image가 모두 PASS했다. owner E2E는 395 PASS·46 조건부 skip·1 flaky로, 프로필 이름 reset PATCH 뒤 사진 reset PATCH 완료를 기다리지 않은 fixture가 첫 실행 avatar 200·retry 404를 본 중간 상태였다. 제품의 두 요청은 모두 200 완료됐고 동일 SHA 개발 서버에서 `1.1.8/dev/p4`·schema 1151·정확한 build·네 service health·native writes false·비인증 profile/avatar 401·Docker cleanup PASS다. fixture를 `avatar:null` PATCH 응답에 결합하고 merge로 P5가 된 CI metadata를 P4로 복원한 새 SHA를 재검증한다. 실제 Windows 물리 인수와 릴리스 서버 변경은 수행하지 않았다.
 

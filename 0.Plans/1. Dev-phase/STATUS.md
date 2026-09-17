@@ -7,12 +7,14 @@ state: "review"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-17"
-next_action: "1.1.7a 정식 기능·1151 schema와 1.1.8 Windows 보정을 통합한 후보의 CI/개발 인수에서 발견한 프로필 reset 대기 fixture와 P4 runtime 표기를 보정한다. 새 SHA 검증 뒤에도 실제 Windows 재실행·OAuth/DPAPI/clipboard/IME/AT/DPI 및 신뢰 서명 MSIX는 별도 미실행으로 남기며, 실제 기기 PASS 또는 명시적 범위 예외 전까지 P4 review·P5/릴리스 보류를 유지한다"
+next_action: "통합 최종 자동 검증 후보 a7d8e453의 전체 CI와 동일 SHA 개발 인수는 완료했다. 별도 의존성 없는 self-contained Windows artifact를 실제 Windows에서 재실행해 system-browser OAuth·계정별 DPAPI·권한 회수/reconnect·clipboard·한글 IME/폰트·Narrator/high contrast·DPI/다중 monitor를 확인하고, 신뢰 서명 MSIX 설치/업데이트/제거 증거 또는 명시적 범위 예외 전까지 P4 review·P5/릴리스 보류를 유지한다"
 ```
 
 ## 승인과 기준
 
 2026-09-15 09:11 KST 사용자가 ``1.1.8 Windows 권고안 승인``이라고 명시했다. 승인 범위는 WinUI 3/.NET native UI, 1.1.8 read/copy-only, WebView2 미포함, system browser+first-party loopback PKCE, 계정별 DPAPI cache다. 1.1.9 native editor/Yjs와 실패 시 WebView2 대안은 별도 gate로 남고, Windows 실제 OS/IME/AT/MSIX 서명 증거 없이 후속 Phase나 릴리스를 통과로 표시하지 않는다. 승인 검토 proposal source는 `e26fe58c49c1d67b5435bab6018148bb8a75eca0`이다.
+
+통합 최종 자동 검증 후보 `a7d8e4538c58202f4a1e39371517906e891ae1bf`의 Actions [35173213999](https://github.com/parking-place/LyricsCloud/actions/runs/35173213999)은 전체 verify·Windows build/framework-dependent 및 self-contained artifact·네 signed dev image **PASS**다. Unit **402 PASS / 5 조건부 skip**, owner E2E **396 PASS / 46 조건부 skip / 0 flaky**, release browser **10 PASS**로 reset fixture의 실제 `avatar:null` 응답 대기와 P4 runtime 표기를 재검증했다. 같은 SHA 개발 서버는 `1.1.8/dev/p4`, schema `1151_profile_customization.sql`, 정확한 build SHA, 네 service health·native writes false·`/auth` 200·비인증 profile/avatar/native songs 401·Docker cleanup PASS다. Windows artifact는 `windows-x64-read-only-a7d8e4538c58202f4a1e39371517906e891ae1bf`와 `windows-x64-self-contained-a7d8e4538c58202f4a1e39371517906e891ae1bf`로 발행됐다. 실제 Windows 물리 인수와 신뢰 서명 MSIX는 여전히 미실행이라 P4 review·P5/릴리스 보류를 유지하며 릴리스 서버·main은 변경하지 않았다.
 
 통합 후보 `f87d3be1ca080749d59adcc23812bf25ff2607fa`의 Actions [35170674196](https://github.com/parking-place/LyricsCloud/actions/runs/35170674196)은 전체 verify·Windows build/self-contained artifact·네 signed dev image **PASS**다. owner E2E는 **395 PASS / 46 조건부 skip / 1 flaky**였고 flaky는 프로필 이름 reset 응답 뒤 사진 reset 응답을 기다리지 않고 avatar를 조회한 fixture가 첫 실행 200, retry 404를 본 것이다. 제품 요청은 두 PATCH 모두 200으로 완료됐으므로 fixture를 avatar-null 응답에 결합하고 CI runtime을 실제 P4로 되돌려 새 SHA에서 재검증한다. 같은 `f87d3be` 개발 배포는 `1.1.8/dev/p4`, schema `1151_profile_customization.sql`, 정확한 build SHA, 네 service health·native writes false·비인증 profile/avatar 401·Docker cleanup PASS다. 실제 Windows 물리 인수는 여전히 미실행이고 릴리스 서버·main은 변경하지 않았다.
 
@@ -224,7 +226,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.8 P1 | complete | 기준 main `b288dcf`, 승인 검토 proposal `e26fe58`; WinUI 3/read-copy-only·system browser/loopback PKCE·DPAPI cache 승인, JS reference copy/Yjs/auth 34 PASS; Windows SDK/OS/IME/서명은 후속 gate |
 | 1.1.8 P2 | complete | 후보 `dbfca88`, Actions `34918857197`·`34918859682` 전체 verify·Windows WinUI x64 build·네 signed dev image, 동일 SHA 개발 `1.1.8/dev/p2`·schema 1150·native read-only/인증 차단 인수 완료; 실제 Windows launch/IME/AT/MSIX 서명은 후속 gate |
 | 1.1.8 P3 | complete | 후보 `b96200c`, Actions `34922705406`·`34922708443` 전체 verify·Windows WinUI x64 build/개발 artifact·네 signed dev image, 동일 SHA 개발 `1.1.8/dev/p3`·schema 1150·native 곡/가사 비로그인 401 인수 완료; 실제 Windows/IME/AT/서명은 P4/P5 gate |
-| 1.1.8 P4 | review | 통합 후보 `f87d3be`, Actions `35170674196` 전체 verify·Windows build/artifacts·네 dev image와 동일 SHA 개발 `1.1.8/dev/p4`·schema 1151·native read-only PASS. 프로필 reset fixture 1 flaky/P4 metadata 보정 재검증 및 실제 Windows OAuth/DPAPI·권한/reconnect·IME/AT/clipboard/DPI·MSIX gate 미실행, Phase 완료 아님 |
+| 1.1.8 P4 | review | 최종 자동 검증 후보 `a7d8e453`, Actions `35173213999` 전체 verify·Windows build/artifacts·네 dev image, Unit 402·E2E 396/0 flaky·browser 10 PASS와 동일 SHA 개발 `1.1.8/dev/p4`·schema 1151·native read-only PASS. 실제 Windows OAuth/DPAPI·권한/reconnect·IME/AT/clipboard/DPI/다중 monitor·신뢰 서명 MSIX gate 미실행, Phase 완료 아님 |
 | 1.1.7a P1 | complete | `v1.1.7` source `edb8b4a`, 후보 `38cced2`, Actions `35019632430` verify·네 signed dev image·동일 SHA 공개 P1 계약/버전 경계 인수 완료 |
 | 1.1.7a P2 | complete | 후보 `4c2a42a`, Actions `35026679109`, 네 signed dev image·동일 SHA 개발 1151 migration/합성 profile API 영속 인수 완료 |
 | 1.1.7a P3 | complete | 후보 `675dbafa`, Actions `35037281111`, Unit 393/E2E 387/release 10 PASS·네 signed dev image·동일 SHA 공개 PC/mobile 닉네임·사진 저장/재진입·홈 guard 인수 완료 |
@@ -235,7 +237,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | Windows unpackaged local storage·DPAPI cache/token·1.1.7a profile/schema 통합·회귀·상태/Future | 후보 `f87d3be`, Actions `35170674196`, 동일 SHA 개발 인수 PASS. 프로필 reset fixture 응답 대기/P4 metadata 보정 재검증 중; 실제 Windows 재실행은 미실행 | 2026-09-17 09:30 KST | in_progress |
+| Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | Windows unpackaged local storage·DPAPI cache/token·1.1.7a profile/schema 통합·회귀·상태/Future | 최종 자동 검증 후보 `a7d8e453`, Actions `35173213999`, Unit 402·E2E 396/0 flaky·browser 10와 동일 SHA 개발 인수 PASS; 실제 Windows 재실행·서명 gate 미실행 | 2026-09-17 09:30 KST | review |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | `.github/workflows/ci.yml`, `apps/windows/README.md`, Windows 설치 runbook·P4/STATUS 기록 | SHA `3fecc85` 수동 Actions `34987340477` Windows publish/upload·verify PASS. 사용자 PC 실행 실패 보고(artifact·오류 미확인), Windows 앱 보류. 실제 기기·서명 gate 미통과 | 2026-09-16 00:12 KST | review |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-01~07 | native auth/read 회귀, Windows contract/UI harness, 서버 restart·상태/Future | 공유 가사/보호 cache 기능 `fe40556` C# 48·두 CI verify/Windows build·네 dev image·동일 기능 SHA 개발 공개 인수 PASS. 실제 Windows OS/IME/AT/DPI/다중 monitor·신뢰 서명 증거 없이는 P4/P5 미통과 | 2026-09-15 12:32 KST | review |
 | Codex | 1.1.8/P3 | LC-NF-1.1.8-P3-01~06 | `apps/windows`, native read API, Windows platform/UI contract test, 상태/Future | 후보 `b96200c`; Actions `34922705406`·`34922708443`; Windows build/artifact·네 signed dev image·동일 SHA 개발 인수 완료. 실제 Windows UI/IME/AT/다중 모니터·정식 서명은 P4/P5 gate | 2026-09-15 11:27 KST | complete |
