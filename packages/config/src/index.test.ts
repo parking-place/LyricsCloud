@@ -26,6 +26,7 @@ describe("runtime configuration", () => {
     expect(() => readRuntimeConfig(base)).toThrow("Invalid configuration keys: APP_VERSION, BUILD_ID");
     expect(() => readRuntimeConfig({ ...base, APP_VERSION: "1.0.0", BUILD_ID: "a".repeat(40) })).toThrow("APP_VERSION");
     expect(readRuntimeConfig({ ...base, APP_VERSION: "1.1.8", BUILD_ID: "a".repeat(40) }).buildId).toBe("a".repeat(40));
+    expect(() => readRuntimeConfig({ ...base, APP_VERSION: "1.1.7b", BUILD_ID: "a".repeat(40) })).toThrow("APP_VERSION");
   });
 
   it("validates explicit release channels and development phase labels", () => {

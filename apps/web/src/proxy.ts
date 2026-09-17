@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createRequestId } from "@lyricscloud/observability";
-import { apiBodyExceedsLimit } from "./lib/request-security.js";
+import { apiBodyExceedsLimit, MAX_PROFILE_AVATAR_BODY_BYTES } from "./lib/request-security.js";
 
 const BODY_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
@@ -22,8 +22,9 @@ export async function proxy(request: NextRequest): Promise<Response> {
     "frame-ancestors 'none'",
     "object-src 'none'"
   ].join("; ");
+  const avatarUpload = request.nextUrl.pathname === "/api/profile/avatar" && request.method === "PATCH";
   if (request.nextUrl.pathname.startsWith("/api/") && BODY_METHODS.has(request.method)
-    && await apiBodyExceedsLimit(request)) {
+    && await apiBodyExceedsLimit(request, avatarUpload ? MAX_PROFILE_AVATAR_BODY_BYTES : undefined)) {
     return Response.json(
       { error: { code: "PAYLOAD_TOO_LARGE", requestId } },
       { status: 413, headers: { "Cache-Control": "no-store, max-age=0", Pragma: "no-cache",

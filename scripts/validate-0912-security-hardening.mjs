@@ -7,7 +7,7 @@ const read = (relative) => readFile(path.join(root, relative), "utf8");
 const routeRoot = path.join(root, "apps/web/src/app/api");
 const routeFiles = (await filesBelow(routeRoot)).filter((file) => file.endsWith("/route.ts")).sort();
 const routePaths = routeFiles.map((file) => `/api/${path.relative(routeRoot, path.dirname(file)).split(path.sep).join("/")}`);
-assertEqual(routePaths.length, 91, "API route files");
+assertEqual(routePaths.length, 92, "API route files");
 
 const ownership = await read("docs/security/0.9.1-api-ownership-matrix.md");
 for (const routePath of routePaths) {
@@ -40,7 +40,7 @@ for (const routeFile of routeFiles) {
     }
   }
 }
-assertEqual(mutationCount, 70, "mutation handlers");
+assertEqual(mutationCount, 71, "mutation handlers");
 assertEqual(nativeBrokerMutationCount, 3, "native broker mutation handlers");
 
 const migrationRoot = path.join(root, "packages/database/migrations");
@@ -50,7 +50,7 @@ for (const migrationFile of migrationFiles) {
   const source = await read(path.relative(root, migrationFile));
   for (const match of source.matchAll(/create table(?: if not exists)?\s+([a-z_][a-z0-9_]*)/gi)) tableNames.add(match[1]);
 }
-assertEqual(tableNames.size, 57, "database tables");
+assertEqual(tableNames.size, 58, "database tables");
 for (const tableName of [...tableNames].sort()) {
   assertCount(ownership, new RegExp("`" + tableName + "`", "g"), 1, `ownership table ${tableName}`);
 }
@@ -80,9 +80,12 @@ assertIncludes(requestSecurity, '"Retry-After"', "rate-limit retry header");
 assertIncludes(requestSecurity, 'request.headers.get("cf-connecting-ip")', "Cloudflare client address precedence");
 assertIncludes(requestSecurity, "this.#buckets.size <= 8_000", "rate-limit bucket bound");
 const proxy = await read("apps/web/src/proxy.ts");
-for (const marker of ["apiBodyExceedsLimit(request)", "PAYLOAD_TOO_LARGE", "'nonce-${nonce}'", "object-src 'none'", "frame-ancestors 'none'"]) {
+for (const marker of ["apiBodyExceedsLimit(request,", "PAYLOAD_TOO_LARGE", "'nonce-${nonce}'", "object-src 'none'", "frame-ancestors 'none'"]) {
   assertIncludes(proxy, marker, `proxy marker ${marker}`);
 }
+assertIncludes(proxy, 'request.nextUrl.pathname === "/api/profile/avatar" && request.method === "PATCH"',
+  "avatar-only body limit exception");
+assertIncludes(proxy, "MAX_PROFILE_AVATAR_BODY_BYTES", "bounded avatar multipart limit");
 const rateContracts = [
   ["apps/web/src/app/api/auth/login/route.ts", "auth-login:${requestClientKey(request)}", "40, 5 * 60_000"],
   ["apps/web/src/app/api/auth/callback/route.ts", "auth-callback:${requestClientKey(request)}", "40, 5 * 60_000"],

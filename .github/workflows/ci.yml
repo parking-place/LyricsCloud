@@ -62,6 +62,9 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: P6 stabilization regression
         run: node --test scripts/tests/p6-*.mjs
+      - name: One-off 1.1.7a version boundary regression
+        if: ${{ env.APP_VERSION == '1.1.7a' }}
+        run: node --test scripts/tests/oneoff-117a-version.mjs
       - name: P6 whole-tree codebase inventory and syntax audit
         run: node scripts/audit-p6-codebase.mjs
       - name: Audit production dependencies
@@ -125,6 +128,8 @@ jobs:
         run: pnpm test:migration:1140
       - name: Verify 1.1.8 native read-session migration recovery
         run: pnpm test:migration:1150
+      - name: Verify 1.1.7a populated profile upgrade and recovery
+        run: pnpm test:migration:1151
       - name: Verify 0.7.0 fresh and 0.6.0 upgrade release paths
         run: pnpm test:migration:0700-release
       - name: Measure 0.7.0 navigation release baseline

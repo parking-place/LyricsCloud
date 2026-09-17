@@ -1,4 +1,4 @@
-# LyricsCloud 1.1.7 정식 지원 정책
+# LyricsCloud 1.1.7a 정식·1.1.8 후보 지원 정책
 
 ## 지원 환경
 
@@ -62,6 +62,8 @@
 현재 정식 main/tag `f8d24c6`, main CI `34868654180`, tag CI `34871969616`, 네 exact digest 운영 배포를 완료했다. 공개 HTTPS에서 B-1 생성/연결·공유/복구·guest 격리와 서비스 재시작 지속성이 PASS했다. 기존 DB volume·secret·HMAC allowlist·beta code는 보존했으며 외부 backup은 `OPS-100-001` 승인 예외로 여전히 미구축이다.
 
 미해결 P0/P1은 0건이다. 저장 수렴 실패, 다른 사용자의 자료 노출, 인증 우회, 핵심 모바일 불능, 복구 불가능 증거가 생기면 즉시 P0/P1으로 재분류하고 배포를 중단한다.
+
+1.1.7a 후보는 로그인 계정의 닉네임·사진을 각각 명시적으로 저장하고, 우측 상단 mark/icon을 저장 이탈 guard를 거쳐 홈으로 연결한다. 사진은 본인 인증 cookie와 owner DB/RLS로만 제공하고 공유·공개 링크에는 넣지 않는다. 현재 이름은 owner 이름 공개 설정이 켜진 공유의 신규 조회에서만 보일 수 있으며 Google 이메일·인증 주체·공유 코드는 바뀌지 않는다. 다른 owner 사진을 읽거나 수정할 수 있거나, 파일 거부·ACK 유실 뒤 이전 사진이 사라지거나, Google 재로그인만으로 사용자 override가 지워지거나, 홈 클릭이 미전송 입력을 무음으로 버리면 배포를 중단한다. P4 격리 PostgreSQL·Chromium 전체·Linux 5-project 대리와 동일 SHA 개발 공개 두 계정/서비스 재시작 검증은 PASS했으나 실제 Windows Edge·iOS/Android 물리 기기·OS IME·screen reader는 이번 버전에서 새로 실행하지 않았다. `OPS-100-001` 외부 backup 미구축과 호스트 손실 시 복구 지점 없음은 계속 위험으로 안내한다.
 
 ## 문제 보고
 

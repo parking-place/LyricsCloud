@@ -71,6 +71,8 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 
 ## 실행·증거 기록
 
+2026-09-17 unpackaged 저장소 보정 SHA `f2a4424b95b0c56b3ac9d0b3e4811a6c4a652ff1`의 Actions [35167959741](https://github.com/parking-place/LyricsCloud/actions/runs/35167959741)은 전체 verify·Windows native contract/build·self-contained/framework-dependent artifact·네 개발 image 발행이 모두 PASS했다. 그러나 이 후보는 독립 예외 릴리스 `1.1.7a`의 닉네임/프로필 사진/홈 이동과 1151 schema를 아직 포함하지 않아 개발 서버 배포를 중단했다. P4 브랜치에서 `origin/release/1.1.7a`를 보존 통합하고 1150→1151 migration 순서와 1.1.8 runtime을 유지한 새 후보를 검증한다. 앞선 CI를 통합 후보의 PASS로 재사용하지 않으며 릴리스 서버는 변경하지 않는다.
+
 2026-09-17 사용자 재개 요청 뒤 실행 실패 경계를 다시 조사했다. self-contained artifact 자체에는 .NET·Windows App SDK 파일이 포함됐지만, unpackaged 앱의 `MainWindow` 생성자와 token/cache 구현이 package identity가 필요한 `Windows.Storage.ApplicationData.Current`를 시작 직후 사용했다. Microsoft의 unpackaged app data 지침에 따라 `%LOCALAPPDATA%/LyricsCloud/Windows` 직접 파일 저장과 원자 교체로 origin/token/cache 위치를 옮기고, token/cache의 `LOCAL=user` DPAPI 보호·origin/account/resource namespace는 유지한다. 정적 회귀는 package-identity API 재도입을 거부한다. 이 수정은 실제 사용자 PC의 오류 로그가 없는 상태에서 확인한 구조적 launch 실패 후보이며, Windows CI build와 물리 PC 재실행 전에는 원인 확정이나 P4 PASS로 기록하지 않는다.
 
 2026-09-16 03:15 KST 사용자 보고: Windows PC에서 앱이 실행되지 않아 Windows 앱은 일단 넘어가겠다고 했다. 실제 사용한 artifact·Windows 버전·오류 화면/로그는 아직 제공되지 않아 실패 원인이나 self-contained 배포 자체의 결함을 단정하지 않는다. 수동 Actions [34987340477](https://github.com/parking-place/LyricsCloud/actions/runs/34987340477)의 Windows job과 전체 `verify`는 최종 PASS였지만 `publish=false`의 네 개발 image job은 skip이며 사용자 PC 실패를 뒤집는 증거가 아니다. 사용자 요청에 따라 실기기 재시도·원인 수정은 보류한다. P4 `review`와 P5·main/Release·릴리스 서버 보류를 유지하며, [1.1.9](../1.1.9/README.md)는 1.1.8 P5, [1.1.10](../1.1.10/README.md)은 1.1.9 P5 인수가 선행조건이라 자동 건너뛰지 않는다. 비Windows 작업을 먼저 진행하려면 버전 범위/의존성 재계획을 별도로 결정해야 한다.

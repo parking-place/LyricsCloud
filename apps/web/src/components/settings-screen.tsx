@@ -5,11 +5,15 @@ import { useEffect, useRef, useState } from "react";
 import { clearAccountPrivateData, downloadRecoveryDrafts } from "../lib/account-cache.js";
 import { trapDialogTab } from "../lib/dialog-focus.js";
 import { WRITING_FONT_OPTIONS, writingDisplayStyle } from "../lib/font-assets.js";
+import type { ProfileView } from "../lib/profile-state.js";
+import { ProfileSettings } from "./profile-settings.js";
 import { ShortcutGuide } from "./shortcut-help.js";
 
 type ThemeWindow = Window & { __lcApplyTheme?: (theme: ThemePreference) => void };
 
-export function SettingsScreen({ initialSettings, ownerId }: { initialSettings: UserSettingsRecord; ownerId: string }) {
+export function SettingsScreen({ initialSettings, ownerId, initialProfile, googleEmail }: {
+  initialSettings: UserSettingsRecord; ownerId: string; initialProfile: ProfileView; googleEmail: string | null;
+}) {
   const [saved, setSaved] = useState(initialSettings);
   const [draft, setDraft] = useState(initialSettings);
   const [busy, setBusy] = useState(false);
@@ -135,8 +139,8 @@ export function SettingsScreen({ initialSettings, ownerId }: { initialSettings: 
     }
   }
 
-  return <section className="settings-page" aria-labelledby="settings-title">
-    <header className="settings-heading"><div><p className="eyebrow">Preferences · 1.0.0</p><h1 id="settings-title">설정</h1><p>창작 화면의 테마와 기본 표시 방식을 계정에 저장합니다.</p></div></header>
+  return <section className="settings-page" aria-labelledby="settings-title" data-pending-profile={dirty || busy ? "true" : undefined}>
+    <header className="settings-heading"><div><p className="eyebrow">Preferences · 1.1.7a</p><h1 id="settings-title">설정</h1><p>창작 화면의 표시 방식과 계정 프로필을 저장합니다.</p></div></header>
     <div className="settings-layout">
       <nav className="settings-sections" aria-label="설정 항목">
         <a className="active" href="#display">화면 및 작성</a><a href="#account">계정</a><a href="#keyboard">키보드</a>
@@ -150,7 +154,8 @@ export function SettingsScreen({ initialSettings, ownerId }: { initialSettings: 
           <div className="settings-actions"><button className="secondary-button" type="button" disabled={!dirty || busy} onClick={cancel}>취소</button><button className="primary-link" type="button" disabled={!dirty || busy} onClick={() => void save()}>{busy ? "저장 중" : "저장"}</button></div>
           {message ? <p className={message.startsWith("설정을 서버") || message.startsWith("저장된") ? "settings-message" : "settings-message warning"} role={conflicted || message.includes("못했습니다") ? "alert" : "status"}>{message}{conflicted ? <button type="button" onClick={() => void save(true)} disabled={busy}>최신 서버 버전에 다시 저장</button> : null}</p> : null}
         </section>
-        <section id="account" className="settings-card account-settings"><h2>계정과 자료</h2><p>탈퇴 전에 서버의 전체 자료를 내보내고, 이 기기의 미전송 초안도 따로 보관하세요.</p>
+        <section id="account" className="settings-card account-settings"><h2>계정과 자료</h2><p>프로필은 명시적으로 저장합니다. 탈퇴 전에는 서버의 전체 자료와 이 기기의 미전송 초안을 따로 보관하세요.</p>
+          <ProfileSettings key={ownerId} initialProfile={initialProfile} googleEmail={googleEmail} />
           <div id="account-export" className="account-export-entry"><div><strong>전체 내보내기</strong><p>한 시점의 곡·가사·라임 노트·프롬프트·템플릿·관계·설정을 UTF-8 TXT/Markdown과 schema-versioned JSON이 든 ZIP으로 받습니다. 이미 완전 삭제된 자료와 인프라 백업은 포함되지 않습니다.</p></div><div className="account-danger-actions"><a className="primary-link" href="/api/export" download>전체 ZIP 내려받기</a><button type="button" className="secondary-button" onClick={() => void downloadDrafts()}>미전송 초안 내려받기</button></div></div>
           <div className="account-danger-zone"><div><strong>회원 탈퇴</strong><p>요청 즉시 모든 기기의 세션과 자료 접근이 차단됩니다. 7일 안에는 Google 재인증 후 명시적으로 철회할 수 있고, 정확히 7일이 지나면 계정과 자료가 완전히 삭제됩니다.</p><p>인프라 백업에는 운영 보존 기간 동안 암호화된 사본이 남을 수 있으며 일반 사용자 화면에서는 복원할 수 없습니다.</p></div><div className="account-danger-actions"><a className="secondary-button" href="/api/auth/login?returnTo=%2Fsettings%3Fwithdrawal%3Dconfirm%23account">Google로 재인증</a><button type="button" className="danger-button" onClick={() => setWithdrawalOpen(true)}>회원 탈퇴 검토</button></div></div>
           {!withdrawalOpen && withdrawalMessage ? <p className="settings-message warning" role="alert">{withdrawalMessage}</p> : null}

@@ -29,7 +29,7 @@ export function Brand() {
   </div>;
 }
 
-function BrandMark({ className = "" }: { className?: string }) {
+export function BrandMark({ className = "" }: { className?: string }) {
   return <span className={`brand-mark${className ? ` ${className}` : ""}`} aria-hidden="true">
     <img className="brand-mark-light" src="/icons/lyricscloud-mark-light.svg" alt="" />
     <img className="brand-mark-dark" src="/icons/lyricscloud-mark-dark.svg" alt="" />

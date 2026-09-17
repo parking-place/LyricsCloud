@@ -12,6 +12,13 @@ export const userProfiles = pgTable("user_profiles", {
   ownerId: uuid("owner_id").primaryKey(),
   displayName: text("display_name").notNull(),
   avatarUrl: text("avatar_url"),
+  providerDisplayName: text("provider_display_name").notNull().default(""),
+  providerAvatarUrl: text("provider_avatar_url"),
+  displayNameOverride: text("display_name_override"),
+  displayNameSource: text("display_name_source").notNull().default("legacy_unclassified"),
+  avatarSource: text("avatar_source").notNull().default("legacy_unclassified"),
+  avatarPhotoId: uuid("avatar_photo_id"),
+  rowVersion: bigint("row_version", { mode: "number" }).notNull().default(1),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
 });
