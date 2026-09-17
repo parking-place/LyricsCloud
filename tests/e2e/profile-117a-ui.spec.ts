@@ -74,7 +74,11 @@ test.describe("1.1.7a profile UI and home mark", () => {
       } finally { await photoOtherTab.close(); }
       await page.getByRole("button", { name: "기본 사진으로 되돌리기" }).click();
       await page.getByRole("button", { name: "Google 이름으로 되돌리기" }).click();
+      const avatarReset = page.waitForResponse((response) => response.request().method() === "PATCH"
+        && new URL(response.url()).pathname === "/api/profile"
+        && response.request().postData()?.includes('"avatar":null') === true);
       await page.getByRole("button", { name: "프로필 저장" }).click();
+      expect((await avatarReset).status()).toBe(200);
       await expect(page.locator("#profile-display-name")).toHaveValue("Google 기본 이름");
       expect((await page.request.get("/api/profile/avatar")).status()).toBe(404);
       await page.reload();
