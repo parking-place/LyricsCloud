@@ -38,7 +38,7 @@ public sealed partial class MainWindow : Window
         Activated += MainWindow_Activated;
         ResourceListView.ItemsSource = _resources;
         LyricListView.ItemsSource = _lyrics;
-        if (global::Windows.Storage.ApplicationData.Current.LocalSettings.Values["serverOrigin"] is string origin)
+        if (AppLocalStorage.ReadServerOrigin() is string origin)
             ServerOriginTextBox.Text = origin;
         SetAuthenticated(false);
         SetState(NativeLibraryState.Disconnected);
@@ -72,8 +72,7 @@ public sealed partial class MainWindow : Window
                 || capabilities.Authentication.SessionScope != "read")
                 throw new InvalidDataException("NATIVE_CAPABILITY_UNSUPPORTED");
 
-            global::Windows.Storage.ApplicationData.Current.LocalSettings.Values["serverOrigin"] =
-                NativeCredentialPolicy.NormalizeOrigin(origin);
+            AppLocalStorage.WriteServerOrigin(NativeCredentialPolicy.NormalizeOrigin(origin));
             SignInButton.IsEnabled = true;
             var credential = await _tokenVault.ReadAsync(origin);
             if (credential is null)

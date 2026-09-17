@@ -1,10 +1,13 @@
 import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
-const [recovery, loopback, windowCode, contractTests, apiE2e, guide] = await Promise.all([
+const [recovery, loopback, windowCode, localStorage, tokenVault, accountCache, contractTests, apiE2e, guide] = await Promise.all([
   read("apps/windows/LyricsCloud.Windows.Core/NativeRecovery.cs"),
   read("apps/windows/LyricsCloud.Windows/Authentication/LoopbackSignIn.cs"),
   read("apps/windows/LyricsCloud.Windows/MainWindow.xaml.cs"),
+  read("apps/windows/LyricsCloud.Windows/Security/AppLocalStorage.cs"),
+  read("apps/windows/LyricsCloud.Windows/Security/DpapiTokenVault.cs"),
+  read("apps/windows/LyricsCloud.Windows/Security/ProtectedAccountCache.cs"),
   read("tests/native/windows/LyricsCloud.Windows.ContractTests/Program.cs"),
   read("tests/e2e/native-windows-read-api.spec.ts"),
   read("docs/runbooks/1.1.8-windows-installation.md")
@@ -17,6 +20,15 @@ for (const marker of [
 ]) includes(recovery, marker, `recovery policy ${marker}`);
 rejects(loopback, /System\.Web\.HttpUtility/, "callback parser is not authority-agnostic");
 includes(loopback, "NativeLoopbackCallbackPolicy.Validate", "exact callback policy is consumed");
+
+for (const marker of [
+  "Environment.SpecialFolder.LocalApplicationData", "AccountCachePolicy.Namespace(origin, userId)",
+  "WriteBytesAtomicAsync", "File.Move(temporary, path, true)"
+]) includes(localStorage, marker, `unpackaged local storage ${marker}`);
+rejects(windowCode + tokenVault + accountCache, /ApplicationData\.Current/,
+  "unpackaged client does not require package-identity ApplicationData");
+includes(tokenVault, "DataProtectionProvider", "token remains protected with user DPAPI");
+includes(accountCache, "DataProtectionProvider", "resource cache remains protected with user DPAPI");
 
 const logout = between(windowCode, "private async void LogoutButton_Click", "private async void RefreshButton_Click");
 ordered(logout, "InvalidateAuthenticatedWork();", "await api.LogoutAsync();", "logout invalidates visible work before network wait");

@@ -6,8 +6,8 @@ current_phase: "../2.Patch-phase/1.1.8/4phase.md"
 state: "review"
 owner: "Codex"
 started_at: "2026-09-15"
-updated_at: "2026-09-16"
-next_action: "사용자가 2026-09-16 Windows PC에서 앱 실행 실패를 보고하고 Windows 앱 일시 보류를 요청했다. 사용한 artifact와 오류 형태는 미확인; 수동 CI 34987340477의 Windows job·verify PASS는 실제 기기 PASS가 아니다. 1.1.8 P4 review·P5/릴리스 보류를 유지한다. 1.1.9는 1.1.8 P5, 1.1.10은 1.1.9 P5를 요구하므로 순차 진행/버전 건너뛰기 전에 범위 재계획 결정을 받는다"
+updated_at: "2026-09-17"
+next_action: "사용자의 1.1.8 재개 요청에 따라 unpackaged self-contained 앱의 package-identity 저장소 의존을 제거한 P4-06 보정 후보를 검증한다. 자동/Windows CI와 개발 인수 뒤에도 실제 Windows 재실행·OAuth/DPAPI/clipboard/IME/AT/DPI 및 신뢰 서명 MSIX는 별도 미실행으로 남기며, 실제 기기 PASS 또는 명시적 범위 예외 전까지 P4 review·P5/릴리스 보류를 유지한다"
 ```
 
 ## 승인과 기준
@@ -180,6 +180,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | Windows unpackaged local storage·DPAPI cache/token·정적 회귀·설치 runbook·상태/Future | 사용자 2026-09-17 재개 요청. `ApplicationData.Current` package identity 의존 제거 후보; 실제 Windows 재실행은 아직 미실행 | 2026-09-17 09:30 KST | in_progress |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | `.github/workflows/ci.yml`, `apps/windows/README.md`, Windows 설치 runbook·P4/STATUS 기록 | SHA `3fecc85` 수동 Actions `34987340477` Windows publish/upload·verify PASS. 사용자 PC 실행 실패 보고(artifact·오류 미확인), Windows 앱 보류. 실제 기기·서명 gate 미통과 | 2026-09-16 00:12 KST | review |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-01~07 | native auth/read 회귀, Windows contract/UI harness, 서버 restart·상태/Future | 공유 가사/보호 cache 기능 `fe40556` C# 48·두 CI verify/Windows build·네 dev image·동일 기능 SHA 개발 공개 인수 PASS. 실제 Windows OS/IME/AT/DPI/다중 monitor·신뢰 서명 증거 없이는 P4/P5 미통과 | 2026-09-15 12:32 KST | review |
 | Codex | 1.1.8/P3 | LC-NF-1.1.8-P3-01~06 | `apps/windows`, native read API, Windows platform/UI contract test, 상태/Future | 후보 `b96200c`; Actions `34922705406`·`34922708443`; Windows build/artifact·네 signed dev image·동일 SHA 개발 인수 완료. 실제 Windows UI/IME/AT/다중 모니터·정식 서명은 P4/P5 gate | 2026-09-15 11:27 KST | complete |

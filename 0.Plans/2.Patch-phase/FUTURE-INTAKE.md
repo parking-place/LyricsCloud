@@ -327,6 +327,8 @@
 
 | 2026-09-16 1.1.8 P4 Windows 실행 실패·일시 보류 기록 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `e5e3d66ea9f1b9dd6c6ad9b15b02bed6abb139a1` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 사용자 PC 실행 실패를 실기기 FAIL/원인 미확인으로 기록하고 Windows 앱만 일시 보류. CI PASS를 실제 OS PASS로 승격하지 않고 P4 review·P5/release 및 순차 1.1.9 이후 의존성 재계획 전 보류. 다른 Future 범위 선소비 없음 | 1.1.8 P4 self-contained Windows CI artifact 인계 push 전 행 |
 
+| 2026-09-17 1.1.8 P4 unpackaged 저장소 보정 push 전 | `0.Plans/2.Patch-phase/Future_Feature.md` | 현행 검수 입력 | `b3bd6a7a9626f0289ef31cbd2413fc72e89f8e89` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 후보 ID·체크·본문 변경 없음 | 재배정 없음; 사용자 재개 요청 뒤 self-contained unpackaged 앱의 package-identity 저장소 의존을 `%LOCALAPPDATA%` 직접 파일과 기존 user DPAPI 보호로 교체한다. 실제 Windows 재실행·OAuth/clipboard/IME/AT/DPI·서명 MSIX는 미실행이므로 P4 review·P5/release·1.1.9 이후와 다른 Future 범위 선소비 없음 | 1.1.8 P4 Windows 실행 실패·일시 보류 기록 push 전 행 |
+
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
 자동 hook·새 검수 스크립트·별도 스케줄을 만들지 않는다. Agent.md의 필수 단계와 이 절차 한 곳을 사용한다.

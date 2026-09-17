@@ -8,6 +8,8 @@
 
 기존 CI `windows-x64-read-only` artifact는 서명 identity가 없는 framework-dependent 개발 빌드다. P4는 별도의 `windows-x64-self-contained` 시험 폴더를 만든다. 이 폴더는 .NET 및 Windows App SDK runtime을 함께 담아 별도 runtime 설치를 요구하지 않도록 설계하지만, 실제 Windows PC 실행 결과 전에는 이 속성도 실기기 PASS로 기록하지 않는다. 폴더의 모든 파일을 함께 압축 해제해야 하며 단일 EXE나 서명된 installer가 아니다. [설치·서명 인계](../../docs/runbooks/1.1.8-windows-installation.md)에 따라 P5에서 실제 Windows 설치·업데이트·제거 검증과 packaged MSIX 서명/provenance를 인수하며, 정식 서명이 없으면 Windows installer를 release artifact로 표시하지 않는다.
 
+unpackaged 실행에는 package identity가 없으므로 `Windows.Storage.ApplicationData.Current`를 사용하지 않는다. origin 설정과 DPAPI로 보호한 token/cache 파일은 현재 Windows 사용자 `%LOCALAPPDATA%/LyricsCloud/Windows` 아래에 보관하고 origin·account·resource namespace를 분리한다.
+
 ```powershell
 dotnet run --project tests/native/windows/LyricsCloud.Windows.ContractTests/LyricsCloud.Windows.ContractTests.csproj --configuration Release
 dotnet build apps/windows/LyricsCloud.Windows/LyricsCloud.Windows.csproj --configuration Release -p:Platform=x64

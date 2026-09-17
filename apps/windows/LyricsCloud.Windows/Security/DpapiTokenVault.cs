@@ -3,13 +3,11 @@ using System.Runtime.InteropServices;
 using LyricsCloud.Windows.Core;
 using Windows.Security.Cryptography;
 using Windows.Security.Cryptography.DataProtection;
-using Windows.Storage;
 
 namespace LyricsCloud.Windows.Security;
 
 public sealed class DpapiTokenVault
 {
-    private const string TokenFile = "native-session.bin";
     private readonly DataProtectionProvider _protector = new("LOCAL=user");
 
     public async Task StoreAsync(Uri origin, NativeTokenResponse token)
@@ -18,16 +16,16 @@ public sealed class DpapiTokenVault
             token.AccessToken, token.ExpiresAt);
         var input = CryptographicBuffer.CreateFromByteArray(JsonSerializer.SerializeToUtf8Bytes(envelope));
         var protectedValue = await _protector.ProtectAsync(input);
-        var file = await ApplicationData.Current.LocalFolder.CreateFileAsync(TokenFile, CreationCollisionOption.ReplaceExisting);
-        await FileIO.WriteBufferAsync(file, protectedValue);
+        CryptographicBuffer.CopyToByteArray(protectedValue, out var protectedBytes);
+        await AppLocalStorage.WriteBytesAtomicAsync(AppLocalStorage.TokenPath, protectedBytes);
     }
 
     public async Task<NativeStoredCredential?> ReadAsync(Uri origin)
     {
         try
         {
-            var file = await ApplicationData.Current.LocalFolder.GetFileAsync(TokenFile);
-            var protectedValue = await FileIO.ReadBufferAsync(file);
+            var protectedBytes = await File.ReadAllBytesAsync(AppLocalStorage.TokenPath);
+            var protectedValue = CryptographicBuffer.CreateFromByteArray(protectedBytes);
             var clear = await new DataProtectionProvider().UnprotectAsync(protectedValue);
             CryptographicBuffer.CopyToByteArray(clear, out var bytes);
             var credential = JsonSerializer.Deserialize<NativeStoredCredential>(bytes);
@@ -36,14 +34,18 @@ public sealed class DpapiTokenVault
             return null;
         }
         catch (FileNotFoundException) { return null; }
+        catch (DirectoryNotFoundException) { return null; }
         catch (UnauthorizedAccessException) { await ClearAsync(); return null; }
+        catch (IOException) { await ClearAsync(); return null; }
         catch (COMException) { await ClearAsync(); return null; }
         catch (JsonException) { await ClearAsync(); return null; }
     }
 
     public async Task ClearAsync()
     {
-        try { await (await ApplicationData.Current.LocalFolder.GetFileAsync(TokenFile)).DeleteAsync(); }
-        catch (FileNotFoundException) { }
+        try { File.Delete(AppLocalStorage.TokenPath); }
+        catch (UnauthorizedAccessException) { }
+        catch (IOException) { }
+        await Task.CompletedTask;
     }
 }
