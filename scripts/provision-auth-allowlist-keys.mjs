@@ -2,38 +2,48 @@
 import { randomBytes } from "node:crypto";
 import { chmod, mkdir, open, readFile, rename, rm, stat } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const args = parse(process.argv.slice(2));
-const keyringPath = resolve(args.keyring ?? ".private/keys/auth_allowlist_hmac_keyring");
-const backupKeyPath = resolve(args.backupKey ?? ".private/keys/auth_allowlist_migration_backup_key");
-const kid = args.kid ?? "";
-if (!/^[A-Za-z0-9._-]{1,64}$/u.test(kid)) throw new Error("ALLOWLIST_KID_INVALID");
-if (!args.rotate && args.oldNotAfter) throw new Error("ALLOWLIST_ARGUMENTS_INVALID");
-await mkdir(dirname(keyringPath), { recursive: true, mode: 0o700 });
-await mkdir(dirname(backupKeyPath), { recursive: true, mode: 0o700 });
+async function main() {
+  const args = parse(process.argv.slice(2));
+  const keyringPath = resolve(args.keyring ?? ".private/keys/auth_allowlist_hmac_keyring");
+  const backupKeyPath = resolve(args.backupKey ?? ".private/keys/auth_allowlist_migration_backup_key");
+  const kid = args.kid ?? "";
+  if (!/^[A-Za-z0-9._-]{1,64}$/u.test(kid)) throw new Error("ALLOWLIST_KID_INVALID");
+  if (!args.rotate && args.oldNotAfter) throw new Error("ALLOWLIST_ARGUMENTS_INVALID");
+  await mkdir(dirname(keyringPath), { recursive: true, mode: 0o700 });
+  await mkdir(dirname(backupKeyPath), { recursive: true, mode: 0o700 });
 
-const keyringSource = await readOptionalSecureFile(keyringPath);
-let keyring = keyringSource === null ? null : parseKeyring(keyringSource);
-if (!keyring) {
-  if (args.rotate) throw new Error("ALLOWLIST_ROTATION_SOURCE_MISSING");
-  keyring = { formatVersion: 1, activeKid: kid, keys: [{ kid, key: randomBytes(32).toString("base64url") }] };
-  await atomic(keyringPath, `${JSON.stringify(keyring)}\n`);
-} else if (args.rotate) {
-  if (!args.oldNotAfter || !Number.isFinite(Date.parse(args.oldNotAfter))) throw new Error("ALLOWLIST_ROTATION_DEADLINE_INVALID");
-  if (Date.parse(args.oldNotAfter) <= Date.now()) throw new Error("ALLOWLIST_ROTATION_DEADLINE_INVALID");
-  if (keyring.keys.some((entry) => entry.kid === kid)) throw new Error("ALLOWLIST_KID_DUPLICATE");
-  if (keyring.keys.length >= 8) throw new Error("ALLOWLIST_KEYRING_LIMIT");
-  keyring = { ...keyring, activeKid: kid, keys: keyring.keys.map((entry) => entry.kid === keyring.activeKid
-    ? { ...entry, notAfter: args.oldNotAfter } : entry).concat({ kid, key: randomBytes(32).toString("base64url") }) };
-  await atomic(keyringPath, `${JSON.stringify(keyring)}\n`);
-} else if (kid !== keyring.activeKid) {
-  throw new Error("ALLOWLIST_ROTATION_REQUIRED");
+  const keyringSource = await readOptionalSecureFile(keyringPath);
+  let keyring = keyringSource === null ? null : parseKeyring(keyringSource);
+  if (!keyring) {
+    if (args.rotate) throw new Error("ALLOWLIST_ROTATION_SOURCE_MISSING");
+    keyring = { formatVersion: 1, activeKid: kid, keys: [{ kid, key: randomBytes(32).toString("base64url") }] };
+    await atomic(keyringPath, `${JSON.stringify(keyring)}\n`);
+  } else if (args.rotate) {
+    const oldNotAfter = normalizeRotationDeadline(args.oldNotAfter);
+    if (keyring.keys.some((entry) => entry.kid === kid)) throw new Error("ALLOWLIST_KID_DUPLICATE");
+    if (keyring.keys.length >= 8) throw new Error("ALLOWLIST_KEYRING_LIMIT");
+    keyring = { ...keyring, activeKid: kid, keys: keyring.keys.map((entry) => entry.kid === keyring.activeKid
+      ? { ...entry, notAfter: oldNotAfter } : entry).concat({ kid, key: randomBytes(32).toString("base64url") }) };
+    await atomic(keyringPath, `${JSON.stringify(keyring)}\n`);
+  } else if (kid !== keyring.activeKid) {
+    throw new Error("ALLOWLIST_ROTATION_REQUIRED");
+  }
+
+  if (await readOptionalSecureFile(backupKeyPath) === null) {
+    await atomic(backupKeyPath, `${randomBytes(32).toString("base64url")}\n`);
+  }
+  process.stdout.write(`keyring=${keyringPath} active_kid=${keyring.activeKid} backup_key_ready=true\n`);
 }
 
-if (await readOptionalSecureFile(backupKeyPath) === null) {
-  await atomic(backupKeyPath, `${randomBytes(32).toString("base64url")}\n`);
+export function normalizeRotationDeadline(value) {
+  const timestamp = typeof value === "string" ? Date.parse(value) : NaN;
+  if (!Number.isFinite(timestamp) || timestamp <= Date.now()) throw new Error("ALLOWLIST_ROTATION_DEADLINE_INVALID");
+  return new Date(timestamp).toISOString();
 }
-process.stdout.write(`keyring=${keyringPath} active_kid=${keyring.activeKid} backup_key_ready=true\n`);
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();
 
 async function readOptionalSecureFile(path) {
   let info;

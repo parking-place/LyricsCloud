@@ -49,13 +49,16 @@ test.describe("1.0.8 song manual order UI", () => {
       const cards = page.locator(".song-card");
       await expect(cards.first()).not.toHaveAttribute("draggable", "true");
       const handle = page.locator(".song-card", { hasText: "조작 B" }).getByRole("button", { name: "조작 B 드래그 또는 방향키로 순서 이동" });
+      const orderNotice = page.getByRole("region", { name: "내 곡", exact: true }).getByRole("status");
       await handle.press("Home");
+      await expect(orderNotice).toHaveText("조작 B 순서를 사용자 정렬로 저장했습니다.");
+      await expect(handle).toBeEnabled();
       await expect.poll(() => titles(page)).toEqual(["조작 B", "조작 A", "조작 C"]);
       if (info.project.name === "desktop") {
         await page.locator(".song-card", { hasText: "조작 C" }).locator(".song-drag-handle")
           .dragTo(page.locator(".song-card", { hasText: "조작 B" }));
         await expect.poll(() => titles(page)).toEqual(["조작 C", "조작 B", "조작 A"]);
-        await expect(page.getByRole("status")).toContainText("사용자 정렬로 저장했습니다");
+        await expect(orderNotice).toHaveText("조작 C 순서를 사용자 정렬로 저장했습니다.");
       }
     } finally { await removeAccount(userId); }
   });

@@ -129,6 +129,30 @@ it("stores a raw sentence and its mode in one transaction without mixing a concu
   baseline.destroy(); modeSide.destroy(); staleTagSide.destroy();
 });
 
+it.each([
+  { original: "노래를 만든다. 🎵", edited: "밝은 노래를 만든다. 🎵", suffix: " 기타 반주." },
+  { original: "리듬 🎵", edited: "리듬 🎶", suffix: " 기타 반주." }
+])("merges simultaneous edits to $original without duplicating unchanged text and keeps local undo local", ({ original, edited, suffix }) => {
+  const baseline = createPromptDocument("동시 문장", [], "sentence", original);
+  const seed = encodePromptSnapshot(baseline);
+  const left = createPromptDocument(); const right = createPromptDocument();
+  applyPromptUpdate(left, seed); applyPromptUpdate(right, seed);
+  const local = Symbol("local-input");
+  const undo = new Y.UndoManager(left.getText("prompt-sentence"), { trackedOrigins: new Set([local]) });
+  try {
+    left.transact(() => replacePromptSentence(left, edited), local);
+    replacePromptSentence(right, original + suffix);
+    applyPromptUpdate(left, encodePromptSnapshot(right));
+    applyPromptUpdate(right, encodePromptSnapshot(left));
+    expect(projectPrompt(left).sentenceText).toBe(edited + suffix);
+    expect(projectPrompt(right)).toEqual(projectPrompt(left));
+    undo.undo();
+    expect(projectPrompt(left).sentenceText).toBe(original + suffix);
+    applyPromptUpdate(right, encodePromptSnapshot(left));
+    expect(projectPrompt(right)).toEqual(projectPrompt(left));
+  } finally { undo.destroy(); baseline.destroy(); left.destroy(); right.destroy(); }
+});
+
 it("replaces both prompt representations atomically for conversion and undo", () => {
   const document = createPromptDocument("변환", [{ occurrenceId: "old", displayValue: "old tag" }], "sentence", "원문, 유지");
   const updates: Uint8Array[] = [];

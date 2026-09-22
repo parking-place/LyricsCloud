@@ -68,7 +68,11 @@ test.describe("same-owner server synchronization", () => {
     try {
       const id = await lyric(page);
       const second = await other.newPage();
+      const socketOpened = page.waitForEvent("websocket", {
+        predicate: (socket) => new URL(socket.url()).pathname.startsWith("/collaboration/sync/")
+      });
       await Promise.all([page.goto(`/lyrics/${id}`), second.goto(`/lyrics/${id}`)]);
+      const localSocket = await socketOpened;
       const editor = page.locator(".cm-content");
       await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
       await expect(second.getByText("방금 저장됨", { exact: true })).toBeVisible();
@@ -85,6 +89,38 @@ test.describe("same-owner server synchronization", () => {
       await expect(editor).toContainText("원격 입력");
       await expect(second.locator(".cm-content")).toContainText("완성 한글 🎵");
       await expect.poll(() => body(page, id)).toBe("원격 입력\n[Verse]\n서버 기준\n완성 한글 🎵");
+
+      // Replace BC while the other replica inserts between B and C.
+      const remoteEditor = second.locator(".cm-content");
+      await editor.fill("ABCD");
+      await expect(remoteEditor).toHaveText("ABCD");
+      await expect.poll(() => body(page, id)).toBe("ABCD");
+      await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
+      await expect(second.getByText("방금 저장됨", { exact: true })).toBeVisible();
+      await editor.press("Control+Home");
+      await editor.press("ArrowRight");
+      await editor.press("Shift+ArrowRight");
+      await editor.press("Shift+ArrowRight");
+      expect(await page.evaluate(() => window.getSelection()?.toString())).toBe("BC");
+      await editor.dispatchEvent("compositionstart", { data: "" });
+      await page.keyboard.insertText("한");
+      await expect(editor).toHaveText("A한D");
+      expect(await body(page, id)).toBe("ABCD");
+
+      const remoteUpdate = localSocket.waitForEvent("framereceived", {
+        predicate: ({ payload }) => JSON.parse(String(payload)).type === "update"
+      });
+      await remoteEditor.press("Control+Home");
+      await remoteEditor.press("ArrowRight");
+      await remoteEditor.press("ArrowRight");
+      await second.keyboard.insertText("원격");
+      await remoteUpdate;
+      await expect.poll(() => body(page, id)).toBe("AB원격CD");
+      await expect(editor).toHaveText("A한D");
+      await editor.dispatchEvent("compositionend", { data: "한" });
+      await expect(editor).toHaveText("A한원격D");
+      await expect(remoteEditor).toHaveText("A한원격D");
+      await expect.poll(() => body(page, id)).toBe("A한원격D");
     } finally { await other.close(); await removeAccount(userId); }
   });
 

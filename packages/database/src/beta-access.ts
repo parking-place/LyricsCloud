@@ -53,6 +53,13 @@ export async function issueBetaCodes(
   try {
     await client.query("begin");
     await lockEnvironment(client, input.environment);
+    // Tombstones have no recoverable plaintext, so a new index key cannot
+    // check their codes. Until historical key lookup exists, fail closed.
+    const incompatibleIndex = await client.query(
+      "select digest_kid from beta_codes where environment=$1 and digest_kid<>$2 limit 1",
+      [input.environment, input.keys.indexKid]
+    );
+    if (incompatibleIndex.rowCount) throw new Error("BETA_INDEX_KEY_CHANGE_UNSUPPORTED");
     const epoch = await currentEpoch(client, input.environment, now);
     await clearExpiredEnvelopes(client, input.environment, now);
     const active = await client.query<{ count: number }>(

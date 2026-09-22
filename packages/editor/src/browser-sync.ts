@@ -1,5 +1,6 @@
 import { Dexie } from "dexie";
 import * as Y from "yjs";
+import { ChangeSet } from "@codemirror/state";
 import { parsePublicErrorCode, type CheckpointReason, type CrdtTextSelectionReference, type LyricRevision, type PromptMode, type RestoreRevisionInput, type RevisionHistory } from "@lyricscloud/domain";
 import type { EditorDocumentTransaction, EditorTextChange } from "./codemirror.js";
 import { createLyricDocument, encodeTextRelativePosition, lyricBody, projectPrompt, resolveTextRelativePosition } from "./crdt.js";
@@ -107,6 +108,42 @@ const AWARENESS_IDLE_MS = 15_000;
 type LocalCommandOrigin = { readonly local: typeof localOrigin; readonly requestId?: string; readonly authoredText?: string };
 function isLocalOrigin(value: unknown): value is typeof localOrigin | LocalCommandOrigin {
   return value === localOrigin || Boolean(value && typeof value === "object" && (value as LocalCommandOrigin).local === localOrigin);
+}
+
+function textChanges(changes: ChangeSet): EditorTextChange[] {
+  const result: EditorTextChange[] = [];
+  changes.iterChanges((from, to, _from, _to, insert) => result.push({ from, to, insert: insert.toString() }));
+  return result;
+}
+
+function applyComposedTextChanges(document: Y.Doc, text: Y.Text, changes: readonly EditorTextChange[],
+  remoteUpdates: readonly Uint8Array[], origin: typeof localOrigin | LocalCommandOrigin): EditorTextChange[] {
+  const local = ChangeSet.of(changes, text.length);
+  let remote = ChangeSet.empty(text.length);
+  const collectRemote = (event: Y.YTextEvent) => {
+    let offset = 0;
+    const edits: EditorTextChange[] = [];
+    for (const delta of event.delta) {
+      if (delta.retain) offset += delta.retain;
+      if (delta.delete) { edits.push({ from: offset, to: offset + delta.delete, insert: "" }); offset += delta.delete; }
+      if (typeof delta.insert === "string") edits.push({ from: offset, to: offset, insert: delta.insert });
+    }
+    remote = remote.compose(ChangeSet.of(edits, remote.newLength));
+  };
+  text.observe(collectRemote);
+  try { for (const update of remoteUpdates) Y.applyUpdate(document, update, remoteOrigin); }
+  finally { text.unobserve(collectRemote); }
+  // Mapping splits a local deletion around concurrent insertions instead of
+  // deleting everything between two widened relative endpoints.
+  document.transact(() => {
+    for (const change of textChanges(local.map(remote)).reverse()) {
+      if (change.to > change.from) text.delete(change.from, change.to - change.from);
+      if (change.insert) text.insert(change.from, change.insert);
+    }
+  }, origin);
+  // The editor already contains the IME commit. Apply only the remote changes
+  // to that view so its selection and local undo history can be mapped too.
+  return textChanges(remote.map(local, true));
 }
 
 export async function createBrowserLyricSync(options: BrowserEditableSyncOptions): Promise<BrowserLyricSync> {
@@ -408,35 +445,14 @@ export async function createBrowserLyricSync(options: BrowserEditableSyncOptions
     applyLocalTransaction(transaction) {
       if (!initialized || halted || transaction.origin !== "user" || transaction.composing || !transaction.changes.length) return;
       const queuedDuringComposition = composing ? remoteQueue.splice(0) : [];
-      const relativeChanges = queuedDuringComposition.length ? transaction.changes.map((change) => ({
-        from: Y.createRelativePositionFromTypeIndex(text, change.from, 0),
-        to: change.to === change.from
-          ? Y.createRelativePositionFromTypeIndex(text, change.from, 0)
-          : Y.createRelativePositionFromTypeIndex(text, change.to, -1),
-        insert: change.insert
-      })) : null;
       if (queuedDuringComposition.length) reconcilingComposition = true;
       try {
-        // Apply updates that arrived during IME preedit against the shared base
-        // before committing the local composition. Otherwise a remote append
-        // anchored to text replaced by the IME can be ordered before the new
-        // first line depending on Yjs client IDs.
-        for (const update of queuedDuringComposition) Y.applyUpdate(document, update, remoteOrigin);
-        const changes = relativeChanges?.map((change) => {
-          const from = Y.createAbsolutePositionFromRelativePosition(change.from, document)?.index;
-          const to = Y.createAbsolutePositionFromRelativePosition(change.to, document)?.index;
-          return from === undefined || to === undefined ? null : { from, to, insert: change.insert };
-        }).filter((change): change is EditorTextChange => change !== null) ?? transaction.changes;
-        document.transact(() => {
-          for (const change of [...changes].sort((left, right) => right.from - left.from)) {
-            if (change.to > change.from) text.delete(change.from, change.to - change.from);
-            if (change.insert) text.insert(change.from, change.insert);
-          }
-        }, transaction.requestId ? { local: localOrigin, requestId: transaction.requestId } : localOrigin);
+        const changes = applyComposedTextChanges(document, text, transaction.changes, queuedDuringComposition,
+          transaction.requestId ? { local: localOrigin, requestId: transaction.requestId } : localOrigin);
+        if (queuedDuringComposition.length) options.onRemoteBody(text.toString(), changes);
       } finally {
         reconcilingComposition = false;
       }
-      if (queuedDuringComposition.length) options.onRemoteBody(text.toString());
     },
     captureSelection(selection) {
       if (!initialized || !documentKey || halted || destroyed) return null;
@@ -827,29 +843,13 @@ export async function createBrowserSharedLyricSync(options: {
       if (!initialized || access.mode !== "write" || destroyed || transaction.origin !== "user"
         || transaction.composing || !transaction.changes.length) return;
       const queuedDuringComposition = composing ? remoteQueue.splice(0) : [];
-      const relativeChanges = queuedDuringComposition.length ? transaction.changes.map((change) => ({
-        from: Y.createRelativePositionFromTypeIndex(text, change.from, 0),
-        to: change.to === change.from ? Y.createRelativePositionFromTypeIndex(text, change.from, 0)
-          : Y.createRelativePositionFromTypeIndex(text, change.to, -1),
-        insert: change.insert
-      })) : null;
       if (queuedDuringComposition.length) reconcilingComposition = true;
       try {
-        for (const update of queuedDuringComposition) Y.applyUpdate(document, update, remoteOrigin);
-        const changes = relativeChanges?.map((change) => {
-          const from = Y.createAbsolutePositionFromRelativePosition(change.from, document)?.index;
-          const to = Y.createAbsolutePositionFromRelativePosition(change.to, document)?.index;
-          return from === undefined || to === undefined ? null : { from, to, insert: change.insert };
-        }).filter((change): change is EditorTextChange => change !== null) ?? transaction.changes;
-        document.transact(() => {
-          for (const change of [...changes].sort((left, right) => right.from - left.from)) {
-            if (change.to > change.from) text.delete(change.from, change.to - change.from);
-            if (change.insert) text.insert(change.from, change.insert);
-          }
-        }, { local: localOrigin, requestId: transaction.requestId,
+        const changes = applyComposedTextChanges(document, text, transaction.changes, queuedDuringComposition,
+          { local: localOrigin, requestId: transaction.requestId,
           authoredText: transaction.changes.map((change) => change.insert).join("") });
+        if (queuedDuringComposition.length) options.onBody(text.toString(), changes);
       } finally { reconcilingComposition = false; }
-      if (queuedDuringComposition.length) options.onBody(text.toString());
     },
     setComposing(value) {
       composing = value;
@@ -1062,7 +1062,10 @@ export async function createBrowserPublicSharedLyricSync(options: {
       if (!next) throw new Error("PUBLIC_SYNC_ACCESS_INVALID");
       const rejectedWrite = access.mode === "write" && next.mode === "read";
       await transitionAccess(next);
-      if (rejectedWrite) socket?.close(1012, "SYNC_REAUTHORIZE"); else await report();
+      if (rejectedWrite) {
+        await resetToServerSnapshot(Y.encodeStateAsUpdate(acceptedDocument));
+        socket?.close(1012, "SYNC_REAUTHORIZE");
+      } else await report();
     } else if (message.type === "rejected" && typeof message.updateId === "string") {
       clearTimeout(ackTimer); inFlight = undefined;
       if (message.code === "SYNC_RATE_LIMITED") {
@@ -1073,6 +1076,7 @@ export async function createBrowserPublicSharedLyricSync(options: {
       await rejectGuest(message.code === "SYNC_WRITE_EPOCH_STALE" ? "epoch-stale" : "write-revoked");
       const next = parsePublicSharedAccess(message);
       if (next) await transitionAccess(next);
+      await resetToServerSnapshot(Y.encodeStateAsUpdate(acceptedDocument));
       await report();
     } else if (message.type === "presence") publishParticipants(parseSharingParticipants(message.participants, document, text));
     else if (message.type === "awareness" && typeof message.participantId === "string") {
@@ -1128,28 +1132,13 @@ export async function createBrowserPublicSharedLyricSync(options: {
       if (!initialized || access.mode !== "write" || rateLimited || destroyed || transaction.origin !== "user"
         || transaction.composing || !transaction.changes.length) return;
       const queuedDuringComposition = composing ? remoteQueue.splice(0) : [];
-      const relativeChanges = queuedDuringComposition.length ? transaction.changes.map((change) => ({
-        from: Y.createRelativePositionFromTypeIndex(text, change.from, 0),
-        to: change.to === change.from ? Y.createRelativePositionFromTypeIndex(text, change.from, 0)
-          : Y.createRelativePositionFromTypeIndex(text, change.to, -1), insert: change.insert
-      })) : null;
       if (queuedDuringComposition.length) reconcilingComposition = true;
       try {
-        for (const update of queuedDuringComposition) Y.applyUpdate(document, update, remoteOrigin);
-        const changes = relativeChanges?.map((change) => {
-          const from = Y.createAbsolutePositionFromRelativePosition(change.from, document)?.index;
-          const to = Y.createAbsolutePositionFromRelativePosition(change.to, document)?.index;
-          return from === undefined || to === undefined ? null : { from, to, insert: change.insert };
-        }).filter((change): change is EditorTextChange => change !== null) ?? transaction.changes;
-        document.transact(() => {
-          for (const change of [...changes].sort((left, right) => right.from - left.from)) {
-            if (change.to > change.from) text.delete(change.from, change.to - change.from);
-            if (change.insert) text.insert(change.from, change.insert);
-          }
-        }, { local: localOrigin, requestId: transaction.requestId,
+        const changes = applyComposedTextChanges(document, text, transaction.changes, queuedDuringComposition,
+          { local: localOrigin, requestId: transaction.requestId,
           authoredText: transaction.changes.map((change) => change.insert).join("") });
+        if (queuedDuringComposition.length) options.onBody(text.toString(), changes);
       } finally { reconcilingComposition = false; }
-      if (queuedDuringComposition.length) options.onBody(text.toString());
     },
     setComposing(value) { composing = value; if (!value) for (const update of remoteQueue.splice(0)) applyRemote(update); },
     updateSelection(selection) { if (access.mode === "write" && !rateLimited) updateAwareness(selection); },

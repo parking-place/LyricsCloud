@@ -13,29 +13,59 @@ const STATUS_FILTERS = [
   ["draft", LYRIC_STATUS_LABELS.draft], ["final", LYRIC_STATUS_LABELS.final]
 ] as const;
 
+interface SavedChange { desired: boolean; confirmed: boolean; confirmedPinOrder: number | null; running: boolean }
+
 export function FavoritesScreen({ initialItems, songs, query }: { initialItems: readonly SavedResourceItem[] | null; songs: readonly { id: string; title: string }[]; query: SavedResourceQuery }) {
   const [items, setItems] = useState(initialItems);
   const [notice, setNotice] = useState(""); const [error, setError] = useState("");
-  const queues = useRef(new Map<string, Promise<void>>()); const dragId = useRef<string | null>(null);
+  const queues = useRef(new Map<string, SavedChange>()); const dragId = useRef<string | null>(null);
   const orderQueue = useRef(Promise.resolve());
-  const pinned = items?.filter((item) => item.isPinned) ?? [];
-  const favorites = items?.filter((item) => item.isFavorite && !item.isPinned) ?? [];
+  // Keep rows while a removal is pending; the active scope only filters rendering.
+  const visibleItems = items?.filter((item) => keepForScope(item, query.scope)) ?? [];
+  const pinned = visibleItems.filter((item) => item.isPinned);
+  const favorites = visibleItems.filter((item) => item.isFavorite && !item.isPinned);
 
   function toggle(item: SavedResourceItem, field: "isFavorite" | "isPinned") {
     if (!items) return;
-    const next = !item[field]; setError("");
-    setItems((current) => current?.map((value) => value.id === item.id ? { ...value, [field]: next, ...(field === "isPinned" ? { pinOrder: next ? pinned.length : null } : {}) } : value)
-      .filter((value) => keepForScope(value, query.scope)) ?? null);
-    const previous = queues.current.get(item.id) ?? Promise.resolve();
-    const task = previous.then(async () => {
-      const endpoint = field === "isFavorite" ? "favorite" : "pin";
-      const response = await fetch(`/api/saved/${item.id}/${endpoint}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: next }) });
-      if (!response.ok) throw new Error("SAVE_FAILED");
-      const result = await response.json() as { resource: SavedResourceMutation };
-      setItems((current) => current?.map((value) => value.id === item.id ? { ...value, ...result.resource } : value) ?? null);
-      setNotice(`${item.title} ${field === "isFavorite" ? "즐겨찾기" : "핀"}을 ${next ? "설정" : "해제"}했습니다.`);
-    }).catch(() => { setError("변경을 저장하지 못했습니다. 최신 상태를 다시 불러와 주세요."); });
-    queues.current.set(item.id, task);
+    const key = `${item.id}:${field}`;
+    let entry = queues.current.get(key);
+    if (!entry) {
+      entry = { desired: item[field], confirmed: item[field], confirmedPinOrder: item.pinOrder, running: false };
+      queues.current.set(key, entry);
+    }
+    if (!entry.running) entry.confirmedPinOrder = item.pinOrder;
+    entry.desired = !entry.desired;
+    const apply = (value: boolean, pinOrder = value ? pinned.length : null) => setItems((current) => current?.map((row) => row.id === item.id
+      ? { ...row, [field]: value, ...(field === "isPinned" ? { pinOrder } : {}) } : row) ?? null);
+    apply(entry.desired); setError("");
+    if (entry.running) return;
+    entry.running = true;
+    const pending = entry;
+    const endpoint = field === "isFavorite" ? "favorite" : "pin";
+    void (async () => {
+      try {
+        while (pending.desired !== pending.confirmed) {
+          const sent = pending.desired;
+          try {
+            const response = await fetch(`/api/saved/${item.id}/${endpoint}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ value: sent }) });
+            if (!response.ok) throw new Error("SAVE_FAILED");
+            const result = await response.json() as { resource: SavedResourceMutation };
+            pending.confirmed = sent;
+            if (field === "isPinned") pending.confirmedPinOrder = result.resource.pinOrder;
+            if (pending.desired === sent) {
+              apply(sent, pending.confirmedPinOrder);
+              setNotice(`${item.title} ${field === "isFavorite" ? "즐겨찾기" : "핀"}을 ${sent ? "설정" : "해제"}했습니다.`);
+            }
+          } catch {
+            if (pending.desired === sent) {
+              pending.desired = pending.confirmed;
+              apply(pending.confirmed, pending.confirmedPinOrder);
+              setError(`${item.title}의 변경을 저장하지 못해 해당 항목을 복원했습니다. 다시 시도해 주세요.`);
+            }
+          }
+        }
+      } finally { pending.running = false; }
+    })();
   }
 
   function move(id: string, delta: number) {
@@ -79,7 +109,7 @@ export function FavoritesScreen({ initialItems, songs, query }: { initialItems: 
       <label>작업 상태<select value={query.status} onChange={(event) => location.assign(queryString({ status: event.target.value }))}>{STATUS_FILTERS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></div>
     <p className="sr-only" role="status" aria-live="polite">{notice}</p>{error ? <p className="saved-error" role="alert">{error} <a href={queryString({})}>다시 불러오기</a></p> : null}
     {items === null ? <StatePanel className="recent-empty" kind="error" title="즐겨찾기를 불러오지 못했습니다." detail="온라인 연결과 로그인 상태를 확인해 주세요. 저장된 자료는 변경되지 않았습니다." action={<a className="primary-link" href={queryString({})}>다시 시도</a>} />
-      : items.length === 0 ? <StatePanel className="recent-empty" kind="empty" title="표시할 자료가 없습니다." detail="자주 쓰는 자료의 즐겨찾기 또는 핀 버튼을 눌러 이곳에 모아 보세요." action={<a className="primary-link" href="/songs">자료 둘러보기</a>} />
+      : visibleItems.length === 0 ? <StatePanel className="recent-empty" kind="empty" title="표시할 자료가 없습니다." detail="자주 쓰는 자료의 즐겨찾기 또는 핀 버튼을 눌러 이곳에 모아 보세요." action={<a className="primary-link" href="/songs">자료 둘러보기</a>} />
         : <><section className="pinned-section" aria-labelledby="pinned-title"><header><h2 id="pinned-title">◆ 지금 집중 중</h2><span>핀 {pinned.length}개 · 순서 변경</span></header>
           {pinned.length ? <div className="pinned-grid">{pinned.sort(pinSort).map((item, index) => <SavedCard key={item.id} item={item} pinned index={index} count={pinned.length} onToggle={toggle} onMove={move} onDrag={(id) => { dragId.current = id; }} onDrop={drop} />)}</div> : <p className="saved-inline-empty">현재 고정한 자료가 없습니다.</p>}</section>
           <section className="favorite-section" aria-labelledby="favorite-title"><header><h2 id="favorite-title">★ 즐겨찾기</h2><span>최근 사용순</span></header>

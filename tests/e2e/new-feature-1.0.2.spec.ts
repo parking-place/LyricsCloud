@@ -47,7 +47,8 @@ test("1.0.2 save failure keeps current lyric and offers exact-copy recovery", as
         writeText: (text: string) => { (window as typeof window & { __copiedText?: string }).__copiedText = text; return Promise.resolve(); }
       } });
     });
-    const lyricId = await createLyric(page);
+    const memo = "복사본에도 남아야 하는 작업 메모\n두 번째 줄";
+    const lyricId = await createLyric(page, memo);
     let failOnce = true;
     await page.route(`**/api/lyrics/${lyricId}`, async (route) => {
       if (route.request().method() === "PATCH" && failOnce) {
@@ -58,14 +59,16 @@ test("1.0.2 save failure keeps current lyric and offers exact-copy recovery", as
     });
     await page.goto(`/lyrics/${lyricId}`);
     await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible();
-    const text = "저장 실패여도 화면과 복사본에 남는 한글 👩‍🎤";
+    const text = "[Extend]\n저장 실패여도 화면과 복사본에 남는 한글 👩‍🎤";
     await page.locator(".cm-content").fill(text);
     await page.getByRole("textbox", { name: "가사 제목" }).fill("서버 저장 실패 상태");
     await expect(page.getByText("저장하지 못했습니다")).toBeVisible();
     await expect(page.locator(".lyric-editor-page")).toHaveAttribute("data-pending-input", "true");
     await page.getByRole("button", { name: "현재 입력 복사" }).first().click();
-    await expect.poll(() => page.evaluate(() => (window as typeof window & { __copiedText?: string }).__copiedText)).toBe(text);
-    await expect(page.locator(".cm-content")).toContainText(text);
+    await expect.poll(async () => JSON.parse(await page.evaluate(() =>
+      (window as typeof window & { __copiedText?: string }).__copiedText) ?? "null"))
+      .toEqual({ title: "서버 저장 실패 상태", body: text, memo });
+    await expect(page.locator(".cm-content .cm-line")).toHaveText(text.split("\n"));
     expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
     await page.screenshot({ path: `docs/runbooks/evidence/1.0.2-p3-save-recovery-${testInfo.project.name}.png`, fullPage: true });
     await page.getByRole("button", { name: "다시 시도" }).click();
@@ -89,13 +92,13 @@ async function createAccount(context: BrowserContext) {
   return { userId };
 }
 
-async function createLyric(page: Page) {
+async function createLyric(page: Page, memo: string) {
   const songResponse = await page.request.post("/api/songs", { headers: mutationHeaders,
     data: { requestId: randomUUID(), title: "1.0.2 복구 합성 곡" } });
   expect(songResponse.status()).toBe(201);
   const songId = (await songResponse.json()).song.id as string;
   const lyricResponse = await page.request.post(`/api/songs/${songId}/lyrics`, { headers: mutationHeaders,
-    data: { requestId: randomUUID(), title: "1.0.2 복구 합성 가사", body: "기준 본문" } });
+    data: { requestId: randomUUID(), title: "1.0.2 복구 합성 가사", body: "기준 본문", memo } });
   expect(lyricResponse.status()).toBe(201);
   return (await lyricResponse.json()).lyric.id as string;
 }

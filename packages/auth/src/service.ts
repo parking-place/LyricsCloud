@@ -136,7 +136,7 @@ export class AuthService {
   async completeLogin(callbackUrl: URL, transaction: string | null): Promise<{ sessionToken: string; userId: string; returnTo: string }> {
     const payload = transaction ? openJson<TransactionPayload>(transaction, this.#config.sessionSecret) : null;
     const state = callbackUrl.searchParams.get("state");
-    const now = this.#clock.now();
+    let now = this.#clock.now();
     const flow = payload?.flow === "signup" ? "signup" : "login";
     if (!isTransaction(payload) || payload.expiresAt <= now.getTime() || !state || !constantTimeEqual(payload.state, state)) {
       throw new AuthError("AUTH_STATE_INVALID", flow);
@@ -163,6 +163,11 @@ export class AuthService {
       await this.#cancelBetaIntent(payload, now);
       if (error instanceof OidcCodeRejectedError) throw new AuthError("AUTH_CALLBACK_REPLAYED", flow);
       throw new AuthError("AUTH_PROVIDER_UNAVAILABLE", flow);
+    }
+    now = this.#clock.now();
+    if (payload.expiresAt <= now.getTime()) {
+      await this.#cancelBetaIntent(payload, now);
+      throw new AuthError("AUTH_STATE_INVALID", flow);
     }
     const email = normalizeEmail(identity.email);
     if (!identity.emailVerified) {
@@ -192,7 +197,8 @@ export class AuthService {
               principalDigest: betaSignupPrincipalDigest(identity.issuer, identity.subject,
                 this.#beta.config.environment, this.#beta.config.indexKey),
               oauthStateHash: sha256Hex(payload.state),
-              now
+              now,
+              currentTime: () => this.#clock.now()
             });
             userId = result.userId;
           } catch (error) {
@@ -210,6 +216,7 @@ export class AuthService {
       if (!this.#config.allowedEmails.has(email)) throw new AuthError("AUTH_NOT_ALLOWED");
       userId = await this.#store.upsertIdentity(verifiedIdentity, now);
     }
+    now = this.#clock.now();
     const sessionToken = randomToken();
     await this.#store.createSession(
       tokenHash(sessionToken), userId,

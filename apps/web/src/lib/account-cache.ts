@@ -1,3 +1,5 @@
+import { hasOwnerMetadataDrafts, readOwnerMetadataDrafts } from "./metadata-draft.js";
+
 export function accountCachePrefix(userId: string): string {
   return `lc:${userId}:`;
 }
@@ -26,6 +28,8 @@ export async function guardWorkspaceNavigation(userId: string, composing: boolea
   if (!await saveOpenEditors().catch(() => false)) return false;
   const { hasOwnerPendingDrafts } = await import("@lyricscloud/editor");
   if (await hasOwnerPendingDrafts(userId).catch(() => true)) return false;
+  try { if (hasOwnerMetadataDrafts(userId, window.localStorage)) return false; }
+  catch { return false; }
   return !document.querySelector('[data-pending-input="true"]');
 }
 
@@ -33,7 +37,15 @@ export async function downloadRecoveryDrafts(userId: string): Promise<void> {
   const { readOwnerPendingDrafts } = await import("@lyricscloud/editor");
   const drafts = new Map<string, RecoveryDraft>((await readOwnerPendingDrafts(userId)).map((draft) => [draft.resourceId, draft]));
   for (const read of saveBeforeLogout.values()) { const draft = read(); drafts.set(draft.resourceId, draft); }
-  const content = [...drafts.values()].map(({ body, title, memo }) => ({ title, body, memo }));
+  // Include closed tabs' metadata revisions as separate recovery copies. Do not
+  // replace a newer open editor's title/memo with an older stored revision.
+  const content = [
+    ...[...drafts.values()].map(({ body, title, memo }) => ({ title, body, memo })),
+    ...readOwnerMetadataDrafts(userId, window.localStorage).map((draft) => ({
+      resourceId: draft.resourceId, kind: draft.kind, title: draft.title,
+      body: drafts.get(draft.resourceId)?.body ?? "", memo: draft.memo
+    }))
+  ];
   const url = URL.createObjectURL(new Blob([JSON.stringify({ drafts: content }, null, 2)], { type: "application/json;charset=utf-8" }));
   const link = document.createElement("a");
   link.href = url; link.download = "lyricscloud-unsent-drafts.json";
@@ -110,7 +122,7 @@ export function coordinateAccountLogout(userId: string, pauseView: (paused: bool
           completed = await navigator.locks.request(name, { mode: "exclusive", signal: abort.signal }, async () => {
             clearTimeout(timer);
             const { hasOwnerPendingDrafts } = await import("@lyricscloud/editor");
-            if (!force && await hasOwnerPendingDrafts(userId)) return false;
+            if (!force && (await hasOwnerPendingDrafts(userId) || hasOwnerMetadataDrafts(userId, window.localStorage))) return false;
             await action();
             channel.postMessage({ action: "complete" });
             return true;
@@ -129,6 +141,7 @@ export function coordinateAccountLogout(userId: string, pauseView: (paused: bool
 }
 
 export async function clearOtherAccountCaches(userId: string): Promise<void> {
+  clearMatchingKeys(window.sessionStorage, "lyricscloud:suno-link-draft:");
   const current = accountCachePrefix(userId);
   for (const storage of [window.localStorage, window.sessionStorage]) {
     const keys = Array.from({ length: storage.length }, (_, index) => storage.key(index));
@@ -142,6 +155,7 @@ export async function clearAccountCache(userId: string): Promise<void> {
   const prefix = accountCachePrefix(userId);
   clearMatchingKeys(window.localStorage, prefix);
   clearMatchingKeys(window.sessionStorage, prefix);
+  clearMatchingKeys(window.sessionStorage, "lyricscloud:suno-link-draft:");
   const { clearOwnerLocalDrafts } = await import("@lyricscloud/editor");
   await clearOwnerLocalDrafts(userId);
 }

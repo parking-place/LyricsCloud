@@ -55,13 +55,24 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
   const [notice, setNotice] = useState("");
   const [retryKey, setRetryKey] = useState(0);
   const requestSequence = useRef(0);
+  const loadingMoreSequence = useRef<number | null>(null);
   const metadataQueue = useRef(new Map<string, MetadataQueueEntry<unknown>>());
   const copyFeedback = useCopyFeedback();
   const order = useLibraryCardOrder({
-    items: notes, setItems: setNotes, orderVersion, setOrderVersion,
+    items: notes, setItems: setNotes, orderVersion, setOrderVersion, isManual: sort === "manual", generation: requestSequence,
     endpoint: "/api/rhymes/order/moves", noun: "라임 노트",
     activateManual: () => setSort("manual"), reload: () => setRetryKey((value) => value + 1), setNotice
   });
+
+  function updateQuery(patch: Partial<RhymeListQuery>) {
+    const current = { search, tag, song, sort };
+    if (!Object.entries(patch).some(([key, value]) => current[key as keyof RhymeListQuery] !== value)) return;
+    const next = { ...current, ...patch };
+    ++requestSequence.current;
+    order.invalidate(); setNotice("");
+    setLoading(true); setLoadingMore(false); setNextCursor(null); setError("");
+    setSearch(next.search); setTag(next.tag); setSong(next.song); setSort(next.sort);
+  }
 
   useEffect(() => {
     const timer = window.setTimeout(() => setAppliedSearch(search.trim()), 300);
@@ -69,11 +80,13 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
   }, [search]);
 
   useEffect(() => {
+    if (search.trim() !== appliedSearch) return;
     const params = makeParams(appliedSearch, tag, song, sort);
     window.history.replaceState(null, "", `/rhymes${params.size ? `?${params}` : ""}`);
     const sequence = ++requestSequence.current;
+    order.invalidate();
     const controller = new AbortController();
-    setLoading(true); setError("");
+    setLoading(true); setLoadingMore(false); setNextCursor(null); setError("");
     const api = makeParams(appliedSearch, tag, song, sort); api.set("limit", "12");
     void fetch(`/api/rhymes?${api}`, { cache: "no-store", signal: controller.signal })
       .then(async (response) => {
@@ -93,8 +106,8 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
         setError(caught instanceof Error ? caught.message : "라임 노트를 불러오지 못했습니다.");
       })
       .finally(() => { if (sequence === requestSequence.current) setLoading(false); });
-    return () => controller.abort();
-  }, [appliedSearch, tag, song, sort, retryKey]);
+    return () => { controller.abort(); ++requestSequence.current; };
+  }, [search, appliedSearch, tag, song, sort, retryKey]);
 
   useEffect(() => {
     if (!notice || order.retryMove) return;
@@ -103,17 +116,20 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
   }, [notice, order.retryMove]);
 
   async function loadMore() {
-    if (!nextCursor || loadingMore) return;
+    if (loading || !nextCursor || loadingMoreSequence.current === requestSequence.current) return;
+    const sequence = requestSequence.current;
+    loadingMoreSequence.current = sequence;
     setLoadingMore(true); setError("");
     const params = makeParams(appliedSearch, tag, song, sort); params.set("limit", "12"); params.set("cursor", nextCursor);
     try {
       const response = await fetch(`/api/rhymes?${params}`, { cache: "no-store" });
       if (!response.ok) throw new Error("다음 라임 노트를 불러오지 못했습니다.");
       const result = await response.json() as RhymeListResponse;
+      if (sequence !== requestSequence.current) return;
       setNotes((current) => [...current, ...result.items]); setNextCursor(result.nextCursor); setFilters(result.filters);
       setOrderVersion(result.orderVersion);
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "다음 라임 노트를 불러오지 못했습니다."); }
-    finally { setLoadingMore(false); }
+    } catch (caught) { if (sequence === requestSequence.current) setError(caught instanceof Error ? caught.message : "다음 라임 노트를 불러오지 못했습니다."); }
+    finally { if (sequence === requestSequence.current) { loadingMoreSequence.current = null; setLoadingMore(false); } }
   }
 
   function toggle(note: RhymeNote, field: "isFavorite" | "isPinned") {
@@ -178,16 +194,16 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
     await copyFeedback.copyText(note.body, `${note.title} 라임 노트`, `${note.title}의 본문 전체를 복사했습니다.`);
   }
 
-  function clearFilters() { setSearch(""); setAppliedSearch(""); setTag(""); setSong(""); }
+  function clearFilters() { updateQuery({ search: "", tag: "", song: "" }); setAppliedSearch(""); }
   const filtered = Boolean(appliedSearch || tag || song);
   return <section className="rhymes-page" aria-labelledby="rhymes-title">
     <header className="rhymes-heading"><div><p className="eyebrow">Rhyme library</p><h1 id="rhymes-title" tabIndex={-1} data-login-focus>라임 노트</h1><p>떠오른 단어와 표현을 모으고, 곡으로 이어가세요.</p></div><a className="primary-link new-rhyme-link" href="/rhymes/new">＋ 새 라임 노트</a></header>
     <div className="rhyme-toolbar">
-      <label className="search-field"><span className="sr-only">라임 노트 검색</span><span aria-hidden="true">⌕</span><input value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} placeholder="제목 또는 본문 검색" type="search" /></label>
-      <label className="select-field"><span>연결 곡</span><select aria-label="연결 곡 필터" value={song} onChange={(event) => setSong(event.target.value)}><option value="">모든 곡</option>{filters.songs.map((item) => <option value={item.id} key={item.id}>{item.title}</option>)}</select></label>
-      <label className="select-field"><span>정렬</span><select aria-label="라임 노트 정렬" value={sort} onChange={(event) => setSort(event.target.value as RhymeSort)}>{SORTS.map((value) => <option value={value} key={value}>{SORT_LABELS[value]}</option>)}</select></label>
+      <label className="search-field"><span className="sr-only">라임 노트 검색</span><span aria-hidden="true">⌕</span><input value={search} maxLength={200} onChange={(event) => updateQuery({ search: event.target.value })} placeholder="제목 또는 본문 검색" type="search" /></label>
+      <label className="select-field"><span>연결 곡</span><select aria-label="연결 곡 필터" value={song} onChange={(event) => updateQuery({ song: event.target.value })}><option value="">모든 곡</option>{filters.songs.map((item) => <option value={item.id} key={item.id}>{item.title}</option>)}</select></label>
+      <label className="select-field"><span>정렬</span><select aria-label="라임 노트 정렬" value={sort} onChange={(event) => updateQuery({ sort: event.target.value as RhymeSort })}>{SORTS.map((value) => <option value={value} key={value}>{SORT_LABELS[value]}</option>)}</select></label>
     </div>
-    <div className="rhyme-tag-scroll" aria-label="태그 빠른 필터"><button className={!tag ? "active" : ""} aria-pressed={!tag} onClick={() => setTag("")}>전체</button>{filters.tags.map((item) => <button key={item.id} className={tag === item.id ? "active" : ""} aria-pressed={tag === item.id} onClick={() => setTag(item.id)}>#{item.label}</button>)}</div>
+    <div className="rhyme-tag-scroll" aria-label="태그 빠른 필터"><button className={!tag ? "active" : ""} aria-pressed={!tag} onClick={() => updateQuery({ tag: "" })}>전체</button>{filters.tags.map((item) => <button key={item.id} className={tag === item.id ? "active" : ""} aria-pressed={tag === item.id} onClick={() => updateQuery({ tag: item.id })}>#{item.label}</button>)}</div>
     <LibraryViewModeSelector label="라임 노트 목록" state={libraryView} />
     <div className="list-summary" aria-live="polite"><strong>{loading ? "라임 노트를 불러오는 중" : `총 ${totalCount}개`}</strong><span>{filtered ? "현재 검색 조건" : "내 개인 작업 공간"}</span></div>
     {notice ? <div className="song-order-notice" role="status"><span>{notice}</span>{order.retryMove ? <button type="button" disabled={Boolean(order.movingId)} onClick={() => void order.submitMove(order.retryMove!)}>같은 이동 다시 시도</button> : null}</div> : null}

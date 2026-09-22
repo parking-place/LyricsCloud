@@ -1,9 +1,10 @@
 "use client";
 
 import type { MouseEvent, ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { clearAccountCache, clearOtherAccountCaches, coordinateAccountLogout, downloadRecoveryDrafts, guardWorkspaceNavigation } from "../lib/account-cache.js";
-import { trapDialogTab } from "../lib/dialog-focus.js";
+import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 import { commandForKeyboardEvent, isEditableShortcutTarget, requestShortcutNavigation } from "../lib/shortcut-runtime.js";
 import { PROFILE_UPDATED_EVENT, profileChannelName, type ProfileView } from "../lib/profile-state.js";
 import { Brand, BrandMark } from "./auth-screen.js";
@@ -58,6 +59,7 @@ export function WorkspaceShell({
   currentSongId?: string;
   children: ReactNode;
 }) {
+  const router = useRouter();
   const [contextGroup, contextTitle] = WORKSPACE_CONTEXT[active];
   const [shownProfile, setShownProfile] = useState<ShellProfile>(profile);
   const visibleProfile = shownProfile.userId === profile.userId ? shownProfile : profile;
@@ -74,8 +76,6 @@ export function WorkspaceShell({
   const mainShell = useRef<HTMLDivElement>(null);
   const pausedFocus = useRef<HTMLElement | null>(null);
   const guard = useRef<ReturnType<typeof coordinateAccountLogout> | null>(null);
-  const mobileMoreButton = useRef<HTMLButtonElement>(null);
-  const mobileMoreDialog = useRef<HTMLElement>(null);
   const homePending = useRef(false);
   const homeComposing = useRef(false);
   const closeShortcutHelp = useCallback(() => setShortcutHelpOpen(false), []);
@@ -97,50 +97,50 @@ export function WorkspaceShell({
       const latest = (event as CustomEvent<ProfileView>).detail;
       if (latest?.userId === profile.userId) setShownProfile(latest);
     };
-    void refreshProfile();
+    // The page already resolved this profile. Revalidate on external changes,
+    // including a restored document, rather than fetching it again on hydration.
+    const pageShown = (event: PageTransitionEvent) => { if (event.persisted) void refreshProfile(); };
     window.addEventListener("focus", refreshProfile);
     window.addEventListener("online", refreshProfile);
-    window.addEventListener("pageshow", refreshProfile);
+    window.addEventListener("pageshow", pageShown);
     window.addEventListener(PROFILE_UPDATED_EVENT, updated);
     channel?.addEventListener("message", refreshProfile);
     return () => { mounted = false; window.removeEventListener("focus", refreshProfile);
-      window.removeEventListener("online", refreshProfile); window.removeEventListener("pageshow", refreshProfile);
+      window.removeEventListener("online", refreshProfile); window.removeEventListener("pageshow", pageShown);
       window.removeEventListener(PROFILE_UPDATED_EVENT, updated); channel?.removeEventListener("message", refreshProfile); channel?.close(); };
   }, [profile.userId]);
 
-  function navigateHome(event: MouseEvent<HTMLAnchorElement>) {
+  function navigateWorkspace(event: MouseEvent<HTMLElement>) {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = (event.target as Element).closest<HTMLAnchorElement>("a[href]");
+    if (!link || (link.target && link.target !== "_self") || link.hasAttribute("download")) return;
+    const destination = new URL(link.href);
+    if (destination.origin !== window.location.origin) return;
     event.preventDefault();
-    if (window.location.pathname.replace(/\/$/, "") === "/workspace") {
-      setHomeMessage("이미 창작 홈입니다. 현재 화면을 새로고침하지 않았습니다."); return;
+    navigateToWorkspace(destination.href);
+  }
+
+  function navigateToWorkspace(href: string) {
+    const destination = new URL(href, window.location.href);
+    const home = destination.pathname === "/workspace";
+    if (destination.href === window.location.href) {
+      if (home) setHomeMessage("이미 창작 홈입니다. 현재 화면을 새로고침하지 않았습니다.");
+      closeMobileMore();
+      return;
     }
     if (homePending.current) return;
     homePending.current = true; setHomeMessage("");
     void guardWorkspaceNavigation(profile.userId, homeComposing.current).then((safe) => {
-      if (!safe) {
-        setHomeMessage("아직 저장되지 않은 입력이나 사진 선택, 오프라인 작업이 있어 홈으로 이동하지 않았습니다. 현재 화면에서 저장 또는 취소한 뒤 다시 시도하세요.");
+      if (!safe || homeComposing.current || document.querySelector('[data-pending-input="true"], [data-pending-profile="true"]')) {
+        setHomeMessage(`아직 저장되지 않은 입력이나 사진 선택, 오프라인 작업이 있어 ${home ? "홈으로" : "다른 화면으로"} 이동하지 않았습니다. 현재 화면에서 저장 또는 취소한 뒤 다시 시도하세요.`);
         return;
       }
-      window.location.assign("/workspace");
+      closeMobileMore();
+      router.push(`${destination.pathname}${destination.search}${destination.hash}`);
     }).catch(() => {
-      setHomeMessage("저장 상태를 확인하지 못해 홈으로 이동하지 않았습니다. 연결을 확인한 뒤 다시 시도하세요.");
+      setHomeMessage(`저장 상태를 확인하지 못해 ${home ? "홈으로" : "다른 화면으로"} 이동하지 않았습니다. 연결을 확인한 뒤 다시 시도하세요.`);
     }).finally(() => { homePending.current = false; });
   }
-
-  useEffect(() => {
-    if (!mobileMoreOpen) return;
-    const frame = requestAnimationFrame(() => mobileMoreDialog.current?.querySelector<HTMLAnchorElement>("a")?.focus());
-    function keyboard(event: KeyboardEvent) {
-      if (event.key === "Escape") { event.preventDefault(); closeMobileMore(); }
-      else trapDialogTab(event, "[data-mobile-more-dialog]");
-    }
-    document.addEventListener("keydown", keyboard);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.removeEventListener("keydown", keyboard);
-      requestAnimationFrame(() => mobileMoreButton.current?.focus());
-    };
-  }, [closeMobileMore, mobileMoreOpen]);
 
   useEffect(() => {
     let composing = false;
@@ -152,10 +152,10 @@ export function WorkspaceShell({
       if (!command) return;
       event.preventDefault();
       if (command === "shortcut_help") setShortcutHelpOpen(true);
-      else if (command === "search") requestShortcutNavigation({ commandId: command, href: "/search" });
+      else if (command === "search") requestShortcutNavigation({ commandId: command, href: "/search" }, navigateToWorkspace);
       else if (command === "new_lyric") {
         const returnTo = `${window.location.pathname}${window.location.search}`;
-        requestShortcutNavigation({ commandId: command, href: `/lyrics/new?returnTo=${encodeURIComponent(returnTo)}` });
+        requestShortcutNavigation({ commandId: command, href: `/lyrics/new?returnTo=${encodeURIComponent(returnTo)}` }, navigateToWorkspace);
       }
     }
     document.addEventListener("compositionstart", compositionStart, true);
@@ -166,7 +166,7 @@ export function WorkspaceShell({
       document.removeEventListener("compositionend", compositionEnd, true);
       window.removeEventListener("keydown", keyboard);
     };
-  }, []);
+  }, [profile.userId, router]);
 
   useEffect(() => {
     let active = true;
@@ -270,10 +270,10 @@ export function WorkspaceShell({
   return <CurrentProfile.Provider value={visibleProfile}><main className={`workspace-shell${collapsed ? " is-collapsed" : ""}${sessionExpired || logoutError || homeMessage ? " has-account-error" : ""}`}>
     {loginCompleted ? <p className="sr-only" role="status">로그인이 완료되었습니다. 개인 작업 공간으로 이동했습니다.</p> : null}
     <aside className="side-nav">
-      <a className="brand-home-link" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateHome}><Brand /></a>
+      <a className="brand-home-link" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateWorkspace}><Brand /></a>
       <button className="rail-toggle" type="button" onClick={() => setCollapsed((value) => !value)} aria-expanded={!collapsed} aria-label={collapsed ? "좌측 메뉴 펼치기" : "좌측 메뉴 접기"}>☰</button>
       <p className="nav-label">Workspace</p>
-      <nav className="nav-list" aria-label="데스크톱 주 메뉴">
+      <nav className="nav-list" aria-label="데스크톱 주 메뉴" onClick={navigateWorkspace}>
         <a className={`nav-item${active === "home" ? " active" : ""}`} href="/workspace" title="창작 홈" aria-label="창작 홈" aria-current={active === "home" ? "page" : undefined}><span aria-hidden="true">✦</span><span className="nav-text">창작 홈</span></a>
         <a className={`nav-item${active === "songs" ? " active" : ""}`} href="/songs" title="곡" aria-label="곡" aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><span className="nav-text">곡</span></a>
         <a className={`nav-item${active === "rhymes" ? " active" : ""}`} href="/rhymes" title="라임 노트" aria-label="라임 노트" aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><span className="nav-text">라임 노트</span></a>
@@ -291,9 +291,9 @@ export function WorkspaceShell({
     </aside>
     <div className="main-shell" ref={mainShell}>
       <header className="topbar">
-        <nav className="workspace-tabs" aria-label="창작 영역"><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트</a><a href="/prompts" className={`workspace-tab${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}>프롬프트</a><a href="/templates" className={`workspace-tab${active === "templates" ? " active" : ""}`} aria-current={active === "templates" ? "page" : undefined}>▦ 템플릿</a><a href="/favorites" className={`workspace-tab${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}>★ 즐겨찾기</a><a href="/recent" className={`workspace-tab${active === "recent" ? " active" : ""}`} aria-current={active === "recent" ? "page" : undefined}>↺ 최근</a><a href="/search" className={`workspace-tab${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}>⌕ 검색</a></nav>
+        <nav className="workspace-tabs" aria-label="창작 영역" onClick={navigateWorkspace}><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트</a><a href="/prompts" className={`workspace-tab${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}>프롬프트</a><a href="/templates" className={`workspace-tab${active === "templates" ? " active" : ""}`} aria-current={active === "templates" ? "page" : undefined}>▦ 템플릿</a><a href="/favorites" className={`workspace-tab${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}>★ 즐겨찾기</a><a href="/recent" className={`workspace-tab${active === "recent" ? " active" : ""}`} aria-current={active === "recent" ? "page" : undefined}>↺ 최근</a><a href="/search" className={`workspace-tab${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}>⌕ 검색</a></nav>
         <div className="b1-topbar-context" role="group" aria-label="현재 작업 영역"><span>{contextGroup}</span><strong>{contextTitle}</strong></div>
-        <span className="topbar-spacer" /><button className="top-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`top-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button><a className="top-home-mark" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateHome}><BrandMark /></a>
+        <span className="topbar-spacer" /><button className="top-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`top-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정" onClick={navigateWorkspace}>⚙</a><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button><a className="top-home-mark" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateWorkspace}><BrandMark /></a>
       </header>
       <PwaManager ownerId={profile.userId} />
       {sessionExpired || logoutError || homeMessage ? <div className="account-messages">
@@ -305,22 +305,23 @@ export function WorkspaceShell({
       </div> : null}
       {children}
     </div>
-    <header className="mobile-header"><a className="brand-home-link" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateHome}><Brand /></a><span className="mobile-account"><button className="mobile-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`mobile-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정">⚙</a><Avatar key={`${visibleProfile.userId}-${visibleProfile.rowVersion ?? 0}`} profile={visibleProfile} /><strong className="mobile-profile-name" title={visibleProfile.displayName}>{visibleProfile.displayName}</strong><button className="mobile-logout" type="button" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button></span><a className="mobile-home-icon" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateHome}><BrandMark /></a></header>
-    <nav className="mobile-bottom-nav" aria-label="모바일 주 메뉴">
+    <header className="mobile-header"><a className="brand-home-link" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateWorkspace}><Brand /></a><span className="mobile-account"><button className="mobile-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`mobile-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정" onClick={navigateWorkspace}>⚙</a><Avatar key={`${visibleProfile.userId}-${visibleProfile.rowVersion ?? 0}`} profile={visibleProfile} /><strong className="mobile-profile-name" title={visibleProfile.displayName}>{visibleProfile.displayName}</strong><button className="mobile-logout" type="button" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button></span><a className="mobile-home-icon" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateWorkspace}><BrandMark /></a></header>
+    <nav className="mobile-bottom-nav" aria-label="모바일 주 메뉴" onClick={navigateWorkspace}>
       <a href="/songs" className={`mobile-nav-item${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><strong>곡</strong></a>
       <a href="/rhymes" className={`mobile-nav-item${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><strong>라임</strong></a>
       <a href="/prompts" className={`mobile-nav-item${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><strong>프롬프트</strong></a>
       <span className="mobile-nav-spacer" aria-hidden="true" />
       <a href="/search" className={`mobile-nav-item${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}><span aria-hidden="true">⌕</span><strong>검색</strong></a>
       <a href="/favorites" aria-label="즐겨찾기" className={`mobile-nav-item mobile-favorites-direct${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><strong aria-hidden="true">저장</strong></a>
-      <button ref={mobileMoreButton} type="button" className={`mobile-nav-item mobile-more-button${["favorites", "recent", "templates", "trash", "settings"].includes(active) ? " active" : ""}`}
+      <button type="button" className={`mobile-nav-item mobile-more-button${["favorites", "recent", "templates", "trash", "settings"].includes(active) ? " active" : ""}`}
         aria-haspopup="dialog" aria-expanded={mobileMoreOpen} onClick={() => setMobileMoreOpen(true)}><span aria-hidden="true">•••</span><strong>더보기</strong></button>
     </nav>
     {mobileMoreOpen ? <div className="mobile-more-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) closeMobileMore(); }}>
-      <section ref={mobileMoreDialog} className="mobile-more-sheet" role="dialog" aria-modal="true" aria-labelledby="mobile-more-title" data-mobile-more-dialog>
+      <section className="mobile-more-sheet" role="dialog" aria-modal="true" aria-labelledby="mobile-more-title" data-mobile-more-dialog>
+        <DialogFocusBoundary selector="[data-mobile-more-dialog]" onClose={closeMobileMore} initialFocus="a" />
         <div className="sheet-handle" aria-hidden="true" />
         <header><div><p className="eyebrow">Workspace</p><h2 id="mobile-more-title">더보기</h2></div><button type="button" onClick={closeMobileMore}>닫기</button></header>
-        <nav aria-label="모바일 추가 메뉴">
+        <nav aria-label="모바일 추가 메뉴" onClick={navigateWorkspace}>
           <a className="b1-more-item" href="/favorites" aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><span><strong>즐겨찾기</strong><small>고정한 곡과 자료 모아보기</small></span></a>
           <a href="/recent" aria-current={active === "recent" ? "page" : undefined}><span aria-hidden="true">↺</span><span><strong>최근 작업</strong><small>마지막 작업 위치로 돌아가기</small></span></a>
           <a href="/templates" aria-current={active === "templates" ? "page" : undefined}><span aria-hidden="true">▦</span><span><strong>템플릿</strong><small>가사 구조와 프롬프트 재사용</small></span></a>
@@ -340,7 +341,7 @@ export function AppShell({ profile, loginCompleted }: { profile: ShellProfile; l
       <p className="eyebrow">Private beta workspace</p>
       <HomeGreeting fallback={profile} />
       <p>안전한 개인 작업 공간이 준비됐습니다.</p>
-      <div className="empty-state"><span aria-hidden="true">✦</span><h2>첫 곡을 정리해볼까요?</h2><p>곡 목록에서 아이디어부터 완성까지 작업 상태를 관리할 수 있어요.</p><a className="primary-link" href="/songs">곡 목록 열기</a></div>
+      <div className="empty-state"><span aria-hidden="true">✦</span><h2>곡을 정리해볼까요?</h2><p>곡 목록에서 아이디어부터 완성까지 작업 상태를 관리할 수 있어요.</p><a className="primary-link" href="/songs">곡 목록 열기</a></div>
     </section>
   </WorkspaceShell>;
 }

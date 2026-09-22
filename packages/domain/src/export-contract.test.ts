@@ -23,4 +23,29 @@ describe("export contract", () => {
     expect(() => validateExportDocument({ ...base, records: [{ section: "lyrics", data: { resource_id: "missing", song_id: "missing" } }] })).toThrow("EXPORT_REFERENCE_INVALID");
     expect(() => validateExportDocument({ ...base, schemaVersion: "future", records: [] })).toThrow("EXPORT_SCHEMA_INVALID");
   });
+
+  it("accepts historical v1 and current Suno/photo records while rejecting dangling references", () => {
+    const base = { schemaVersion: "lyricscloud.export.v1", exportedAt: "2026-09-22T00:00:00.000Z" };
+    const records = [
+      { section: "resources", data: { id: "song", type: "song" } },
+      { section: "songs", data: { resource_id: "song" } },
+      { section: "songSunoWorkspaces", data: { song_resource_id: "song", model_label: "custom-v6" } },
+      { section: "songSunoLinks", data: { id: "link", song_resource_id: "song", url: "https://suno.com/s/fixture" } },
+      { section: "profile", data: { avatar_photo_id: "photo" } },
+      { section: "profileAvatarPhotos", data: { id: "photo", webp_base64: "Zml4dHVyZQ==" } }
+    ];
+    expect(validateExportDocument({ ...base, records }).records).toEqual(records);
+    expect(() => validateExportDocument({ ...base, records: [
+      ...records.slice(0, 2), { section: "profile", data: { display_name: "Legacy profile" } }
+    ] })).not.toThrow();
+    for (const section of ["resources", "songs", "songSunoWorkspaces", "profileAvatarPhotos"]) {
+      expect(() => validateExportDocument({ ...base, records: records.filter((row) => row.section !== section) })).toThrow("EXPORT_REFERENCE_INVALID");
+    }
+    for (const songId of [null, "missing", undefined]) {
+      expect(() => validateExportDocument({ ...base, records: records.map((row) => row.section === "songSunoLinks"
+        ? { ...row, data: { ...row.data, song_resource_id: songId } } : row) })).toThrow("EXPORT_REFERENCE_INVALID:song_resource_id");
+    }
+    expect(() => validateExportDocument({ ...base, records: records.map((row) => row.section === "resources"
+      ? { ...row, data: { id: "song", type: "lyrics" } } : row) })).toThrow("EXPORT_REFERENCE_INVALID:song_resource_id");
+  });
 });

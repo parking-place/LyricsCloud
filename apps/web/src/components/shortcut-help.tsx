@@ -17,7 +17,7 @@ export function ShortcutGuide() {
   return <div className="shortcut-guide">
     <label className="shortcut-search">단축키 검색<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="명령 또는 키 검색" /></label>
     {commands.length ? <div className="shortcut-table-wrap"><table><thead><tr><th>명령</th><th>키</th><th>사용 위치</th></tr></thead><tbody>
-      {commands.map((command) => <tr key={command.id} data-command-id={command.id}><td><strong>{command.label}</strong><small>{command.description}</small></td><td><kbd>{formatShortcut(command.id, platform)}</kbd></td><td>{command.context === "global" ? "로그인 화면" : "가사 편집기"}</td></tr>)}
+      {commands.map((command) => <tr key={command.id} data-command-id={command.id}><td><strong>{command.label}</strong><small>{command.description}</small></td><td><kbd>{formatShortcut(command.id, platform)}</kbd></td><td>{command.context === "global" ? "로그인 후 모든 화면" : "가사 편집기"}</td></tr>)}
     </tbody></table></div> : <p className="shortcut-empty" role="status">일치하는 단축키가 없습니다. 다른 명령이나 키를 검색해 주세요.</p>}
     <p className="shortcut-policy">입력 필드·열린 대화상자·한글 조합 중에는 실행하지 않으며 브라우저의 저장·찾기·탭 이동 키를 유지합니다.</p>
   </div>;
