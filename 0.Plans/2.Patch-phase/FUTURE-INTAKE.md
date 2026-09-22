@@ -364,3 +364,12 @@
 | `0.Plans/2.Patch-phase/Future_Feature.md` | `fd4d901a4c57626d193c88938c7889f035d69192` / blob `8f42d20b638e245eb775415ccfdabef56a96f694` → 기준 `fc2463cdb47d9fd7d0042779f602c6ddb7d734cf`와 작업 트리의 동일 blob | tracked·untracked·hidden 전역 탐색 4문서. 후보 129개 ID·체크·본문 변경 없음, 새 후보 파일 없음 | 재채택/구현 없음. 사용자 지시로 1.1.8~1.1.14의 후속 진행은 보류하고 [1.2.0 코발트 Chroma Dock 계획](../3.Redesign-phase/1.2.0/README.md)을 다음으로 지정 |
 
 나머지 세 파일은 이 절차와 `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`다. 이력·매핑 원본은 변경하지 않았으며 별도 선택 후보로 중복 배정하지 않았다. 보류는 기존 완료·승인·작업 ID를 삭제하지 않는다. 사용자 지시로 선정한 합성 코발트 목업만 계획 폴더에 복사했으며 비공개 원본과 다른 비공개 자료는 게시 대상에 포함하지 않는다. 이번 push는 문서·목업 브랜치 게시이고 제품 Phase 인수·main 병합·배포가 아니다.
+
+## 2026-09-22 — 1.2.1~1.2.8 리뷰 계획·웹 안정화 비교 게시 전 검수
+
+| 출처 | 이전 인수 기준 → 현행 | 발견·변경 판정 | 배정·보존 |
+|---|---|---|---|
+| `0.Plans/2.Patch-phase/Future_Feature.md` | `ddc818422a146a1641ba59d47b048772e9e35b42` / blob `8f42d20b638e245eb775415ccfdabef56a96f694` → 작업 트리 동일 blob | tracked·untracked·hidden 탐색 4문서. 129개 FF ID·체크·본문 변경 없음 | 기존 후보 재선정 없음. 사용자 요청의 0922 리뷰 70 ID와 웹 수정 18 WC 후보를 [1.2.1~1.2.8](../3.Redesign-phase/ROADMAP.md)에 연결 |
+| 원격 `phase/1.1.8-p4-web-stabilization` | head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`; Future 후보 blob도 위 값과 동일 | 새 후보/체크 변경 없음. 원격 인수 문서의 웹 안정화 기록은 해당 source의 별도 이력 | [비교·선택 인수](../3.Redesign-phase/BRANCH-COMPARISON-118-P4.md)만 작성. native 계획 재개·원격 STATUS 이식·제품 코드 병합 없음 |
+
+발견된 나머지 세 문서는 이 절차와 `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`다. 절차·역사 매핑이며 별도 후보로 중복 처리하지 않는다. 비공개 원본 리뷰 8개와 재현/목업은 유지하고, 게시하는 것은 사용자 요청 범위의 비식별 요약·버전/Phase·수용/되돌림·브랜치 비교 계획이다. ignored 파일을 강제 추가하지 않는다. 1.2.0 다음 순서와 1.1.8~1.1.14 보류·기진행 증거를 유지한다. 이번 push는 문서 계획의 원격 게시이며 제품 Phase 완료·main 병합·배포가 아니다.

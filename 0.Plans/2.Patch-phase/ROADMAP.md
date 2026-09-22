@@ -1,5 +1,7 @@
 # LyricsCloud 제품 로드맵
 
+> 2026-09-22 후속 추가: **1.2.0 → [1.2.1~1.2.8](../3.Redesign-phase/ROADMAP.md)**. [0922 추적](../3.Redesign-phase/REVIEW-TRACEABILITY.md)과 [1.1.8 P4 웹 안정화 비교](../3.Redesign-phase/BRANCH-COMPARISON-118-P4.md)를 반영한 계획이며 제품 미착수·native 보류는 유지한다.
+
 **major 1 고정·patch 우선·기본 5 Phase, 의존성/업무량에 따라 추가 허용.** 1.0.1은 10 Phase이며 CLI는 P2다. 미발행 계획 배정이며 구현 완료·일정·운영 승인이 아니다.
 
 ## 진행과 결정 gate

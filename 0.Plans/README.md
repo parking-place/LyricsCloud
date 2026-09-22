@@ -8,3 +8,5 @@
 - 기준 문서: [Sketch](Sketch.md), [Implementation-Stack](Implementation-Stack.md), [기존 목업](Mock-up/README.md).
 
 결정·운영 근거는 [docs](../docs/README.md)에 둔다. 새 계획의 체크와 제품 구현 완료는 각 문서의 기준에 따라 따로 기록한다.
+
+1.2.0 이후는 [1.2.1~1.2.8 버전별 계획](3.Redesign-phase/ROADMAP.md)으로 이어진다. [0922 리뷰 추적](3.Redesign-phase/REVIEW-TRACEABILITY.md)과 [새 1.1.8 P4 웹 안정화 비교·인수 후보](3.Redesign-phase/BRANCH-COMPARISON-118-P4.md)를 포함한다. 제품 구현은 미착수이며 다음 착수1.2.0과 native 보류는 유지한다.

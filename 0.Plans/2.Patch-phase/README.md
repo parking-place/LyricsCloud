@@ -1,5 +1,7 @@
 # LyricsCloud 후속 패치 계획
 
+> 2026-09-22 후속 추가: **1.2.0 → [1.2.1~1.2.8](../3.Redesign-phase/ROADMAP.md)**. [0922 추적](../3.Redesign-phase/REVIEW-TRACEABILITY.md)과 [1.1.8 P4 웹 안정화 비교](../3.Redesign-phase/BRANCH-COMPARISON-118-P4.md)를 반영한 계획이며 제품 미착수·native 보류는 유지한다.
+
 문서 상태: **1.1.8~1.1.14 후속 진행 보류**, 2026-09-22. 다음 제품 계획은 [3.Redesign-phase의 1.2.0 — 코발트 블루 Chroma Dock](../3.Redesign-phase/1.2.0/README.md)이다. 기준은 `v1.1.7a`이며 보류된 플랫폼 작업을 선행조건으로 요구하지 않는다. [전환 결정](../3.Redesign-phase/PLAN-CHANGE.md)과 [계획 상태](STATUS.md)를 먼저 읽는다. 실제 실행 버전·Phase·완료 증거는 [실행 STATUS](<../1. Dev-phase/STATUS.md>) 한 곳을 따른다.
 
 ## 읽는 순서

@@ -4,16 +4,16 @@
 
 ## 목표와 선행조건
 
-`v1.1.7a`의 실제 기능을 빠짐없이 새 화면에 대응시키고 안전한 점진 전환을 설계한다. [전환 결정](../PLAN-CHANGE.md), [실행 STATUS](<../../1. Dev-phase/STATUS.md>), [버전 규칙](../../2.Patch-phase/VERSIONING.md), 현재 checkout·미커밋 변경·담당자를 확인한다. 기준 SHA는 `fc2463cdb47d9fd7d0042779f602c6ddb7d734cf`다. 미완료 Windows 코드가 있는 다른 개발선을 무조건 병합하지 않는다.
+`v1.1.7a`의 실제 기능을 빠짐없이 새 화면에 대응시키고 안전한 점진 전환을 설계한다. [전환 결정](../PLAN-CHANGE.md), [실행 STATUS](<../../1. Dev-phase/STATUS.md>), [버전 규칙](../../2.Patch-phase/VERSIONING.md), 현재 checkout·미커밋 변경·담당자를 확인한다. 기준 SHA는 `fc2463cdb47d9fd7d0042779f602c6ddb7d734cf`다. 미완료 Windows 코드가 있는 다른 개발선을 무조건 병합하지 않는다. [웹 안정화 비교](../BRANCH-COMPARISON-118-P4.md)의 고정 원격 SHA와 [0922 선행 차단 목록](../QUALITY-GATES.md)을 먼저 인수한다.
 
 ## 작업
 
-- [ ] `LC-RD-120-P1-01` 기준 source SHA·기존 route/화면/저장/권한 계약을 인수하고 실행 STATUS에 실제 착수와 책임 경로를 기록한다. 1.1.8 선행 진행과 보류 범위는 별도 이력으로 남긴다.
+- [ ] `LC-RD-120-P1-01` 기준 source SHA·기존 route/화면/저장/권한 계약을 인수하고 실행 STATUS에 실제 착수와 책임 경로를 기록한다. 1.1.8 선행 진행과 보류 범위는 별도 이력으로 남긴다. 원격 C1~C3/WC 후보별 최소 코드·타입·소비 UI·회귀 의존표와 22개 원인 비교를 인수하고 release blocker의 선해결/잔여를 기록한다.
 - [ ] `LC-RD-120-P1-02` 목업의 207개 기능 설명 ID를 실제 제품 컴포넌트·route·상태·새 화면과 1:1 대조한다. 라임·프롬프트·자료 4탭·메모·공유·기록·복구·프로필 누락을 차단하고 제품/시연 차이를 적는다.
 - [ ] `LC-RD-120-P1-03` [색상·효과 명세](DESIGN-SPEC.md)를 공통 토큰과 semantic 상태·typography·spacing·focus·density에 대응시킨다. 실제 blur/gradient 대비와 저성능/동작·투명도 감소 fallback의 측정 기준을 정한다.
-- [ ] `LC-RD-120-P1-04` 기존 CodeMirror/Yjs·draft/outbox·IME·selection/undo를 유지하는 셸/자료 패널 경계를 정한다. 기존 route/return·저장 이탈 보호와 테마 설정 이행·이전 UI 복귀 전략을 문서화한다.
+- [ ] `LC-RD-120-P1-04` 기존 CodeMirror/Yjs·draft/outbox·IME·selection/undo를 유지하는 셸/자료 패널 경계를 정한다. 기존 route/return·저장 이탈 보호와 테마 설정 이행·이전 UI 복귀 전략을 문서화한다. WC-02/03/11/12의 입력·focus·구 build 탭/PWA 자산 수명을 전환 gate에 포함하고, 필요한 최소 수정의 현재 버전 편입은 PLAN-CHANGE에 경계/담당/호환을 기록한다.
 - [ ] `LC-RD-120-P1-05` [수용표](ACCEPTANCE.md)의 실제 재현 fixture·브라우저·실기기·접근성·성능 예산과 시험 담당을 정한다. 목업 GSAP/Draggable의 제품 채택 필요성·번들/CSP/lifecycle·권리와 기존 라이브러리 대안을 검토한다.
-- [ ] `LC-RD-120-P1-06` **P1 완료 CI 이전에** 버전/Phase/발행 도구가 `3.Redesign-phase/1.2.0`의 경로와 실제 P1 metadata를 최소 범위로 지원하도록 구현·검증한다. 기존 1.1.7a 예외·다자리 버전/Phase·잘못된 경로/버전 거부 회귀를 유지하고 관련 `VERSION`/runtime/STATUS의 실제 전환을 함께 확인한다. 계약 산출물·잔여 쟁점·rollback·후속 파일 소유자를 P2/P3에 인계한다.
+- [ ] `LC-RD-120-P1-06` **P1 완료 CI 이전에** 버전/Phase/발행 도구가 `3.Redesign-phase/1.2.0`의 경로와 실제 P1 metadata를 최소 범위로 지원하도록 구현·검증한다. 기존 1.1.7a 예외·다자리 버전/Phase·1.2.2의 6 Phase·잘못된 경로/버전 거부 회귀를 유지하고 관련 `VERSION`/runtime/STATUS의 실제 전환을 함께 확인한다. 계약 산출물·잔여 쟁점·rollback·후속 파일 소유자를 P2/P3에 인계한다.
 
 ## 책임 경로와 산출물
 

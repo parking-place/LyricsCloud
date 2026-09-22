@@ -1,0 +1,1041 @@
+{
+  "baseline_version": "1.1.7a",
+  "baseline_sha": "fc2463cdb47d9fd7d0042779f602c6ddb7d734cf",
+  "prepared_at": "2026-09-22",
+  "implementation_state": "not_started",
+  "versions": [
+    {
+      "version": "1.2.1",
+      "phases": 5,
+      "tasks": 25
+    },
+    {
+      "version": "1.2.2",
+      "phases": 6,
+      "tasks": 30
+    },
+    {
+      "version": "1.2.3",
+      "phases": 5,
+      "tasks": 25
+    },
+    {
+      "version": "1.2.4",
+      "phases": 5,
+      "tasks": 25
+    },
+    {
+      "version": "1.2.5",
+      "phases": 5,
+      "tasks": 25
+    },
+    {
+      "version": "1.2.6",
+      "phases": 5,
+      "tasks": 25
+    },
+    {
+      "version": "1.2.7",
+      "phases": 5,
+      "tasks": 25
+    },
+    {
+      "version": "1.2.8",
+      "phases": 5,
+      "tasks": 25
+    }
+  ],
+  "findings": [
+    {
+      "id": "BE-01",
+      "meaning": "실패 OIDC discovery Promise 고착",
+      "evidence": "F",
+      "priority": "P1",
+      "version": 3,
+      "phase": 2,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "BE-02",
+      "meaning": "SSR DB 연장과 cookie 수명 분리",
+      "evidence": "F+S",
+      "priority": "P2",
+      "version": 3,
+      "phase": 2,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "BE-03",
+      "meaning": "시각 기반 expiry의 동일 요청 충돌",
+      "evidence": "F+S",
+      "priority": "P2",
+      "version": 3,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "BE-04",
+      "meaning": "생성/완전삭제 제목 길이 단위 차이",
+      "evidence": "F",
+      "priority": "P2",
+      "version": 3,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "ES-01",
+      "meaning": "태그 동시 이동 raw 중복·서버 거부",
+      "evidence": "F",
+      "priority": "P1",
+      "version": 2,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "ES-02",
+      "meaning": "문장 전체 치환의 동시 병합",
+      "evidence": "F",
+      "priority": "P2",
+      "version": 2,
+      "phase": 2,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "ES-03",
+      "meaning": "IME 확정이 queued remote를 덮음",
+      "evidence": "F; 제목 S",
+      "priority": "P1",
+      "version": 2,
+      "phase": 2,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "ES-04",
+      "meaning": "checkpoint 이후 stale 변환",
+      "evidence": "F",
+      "priority": "P2",
+      "version": 2,
+      "phase": 4,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "ES-05",
+      "meaning": "volatile 입력의 PWA/이탈 보호 누락",
+      "evidence": "S",
+      "priority": "P1",
+      "version": 1,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "ES-06",
+      "meaning": "공유 persist 실패 뒤 거짓 live",
+      "evidence": "selected F; guest S",
+      "priority": "P1",
+      "version": 1,
+      "phase": 2,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "ES-07",
+      "meaning": "selected bootstrap 전 입력 유실",
+      "evidence": "F",
+      "priority": "P1",
+      "version": 1,
+      "phase": 2,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "UI-01",
+      "meaning": "프로필/설정 일반 탐색 이탈 보호",
+      "evidence": "R 닉네임→rail; 나머지 S",
+      "priority": "P2",
+      "version": 1,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "UI-02",
+      "meaning": "템플릿 형식/대상 전환 즉시 초기화",
+      "evidence": "S",
+      "priority": "P1",
+      "version": 2,
+      "phase": 4,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "UI-03",
+      "meaning": "오래된 다음 페이지가 새 query에 합류",
+      "evidence": "S",
+      "priority": "P2",
+      "version": 5,
+      "phase": 2,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "UI-04",
+      "meaning": "내 템플릿 복제 뒤 목록 미반영",
+      "evidence": "S",
+      "priority": "P2",
+      "version": 5,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "UI-05",
+      "meaning": "템플릿 fetch rejection 복구 안내 누락",
+      "evidence": "S",
+      "priority": "P2",
+      "version": 5,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "UI-06",
+      "meaning": "검색 시각/방향키 순서 불일치",
+      "evidence": "S",
+      "priority": "P2",
+      "version": 5,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "UI-07",
+      "meaning": "빠른 추가 오류가 modal 밖에 위치",
+      "evidence": "S; 실제 AT 미실행",
+      "priority": "P2",
+      "version": 1,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "UI-08",
+      "meaning": "하단 nav/FAB 겹침에 따른 오클릭",
+      "evidence": "R 390×844 끝 scroll; S",
+      "priority": "P2",
+      "version": 0,
+      "phase": 2,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "OPS-01",
+      "meaning": "KILL 뒤 백업 잠금 영구 잔존",
+      "evidence": "실제 shell+psql 대역",
+      "priority": "P1",
+      "version": 4,
+      "phase": 2,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "OPS-02",
+      "meaning": "IP 전달 헤더 신뢰 불일치",
+      "evidence": "F+설정; 배포 미확인",
+      "priority": "P1 조건부",
+      "version": 4,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "OPS-03",
+      "meaning": "프록시와 multipart 상한 불일치",
+      "evidence": "S",
+      "priority": "P2",
+      "version": 4,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "M-01",
+      "meaning": "boundaries와 lint 의미·규칙 보강",
+      "evidence": "S 기반 개선 제안",
+      "priority": "P2",
+      "version": 8,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "M-02",
+      "meaning": "transport/보관/도메인 책임 분리",
+      "evidence": "S 기반 개선 제안",
+      "priority": "P2",
+      "version": 8,
+      "phase": 2,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "M-03",
+      "meaning": "스타일/토큰 책임 분리",
+      "evidence": "S 기반 개선 제안",
+      "priority": "P2",
+      "version": 0,
+      "phase": 2,
+      "followup": "M-08: 1.2.1/2에서 실패 회귀 먼저; M-03: 1.2.8 잔여만",
+      "state": "planned"
+    },
+    {
+      "id": "M-04",
+      "meaning": "purge 성공/지연·drain 관측",
+      "evidence": "S 기반 개선 제안",
+      "priority": "P2",
+      "version": 4,
+      "phase": 4,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "M-05",
+      "meaning": "health pool 비용·연결 예산",
+      "evidence": "S 기반 개선 제안",
+      "priority": "P2",
+      "version": 4,
+      "phase": 4,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "M-06",
+      "meaning": "빠른 검사/최종 CI·증거 재사용",
+      "evidence": "S 기반 개선 제안",
+      "priority": "P2",
+      "version": 8,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "M-07",
+      "meaning": "action SHA pin·업데이트 정책",
+      "evidence": "S 기반 개선 제안",
+      "priority": "P3",
+      "version": 8,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "M-08",
+      "meaning": "UI/CRDT/raw/store 실패 경계 회귀",
+      "evidence": "S 기반 개선 제안",
+      "priority": "P2",
+      "version": 8,
+      "phase": 4,
+      "followup": "M-08: 1.2.1/2에서 실패 회귀 먼저; M-03: 1.2.8 잔여만",
+      "state": "planned"
+    },
+    {
+      "id": "M-09",
+      "meaning": "generation/cursor/abort 공통 계약",
+      "evidence": "S 기반 개선 제안",
+      "priority": "P2",
+      "version": 5,
+      "phase": 2,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "M-10",
+      "meaning": "버전 metadata 단일 생성/검증",
+      "evidence": "S 기반 개선 제안",
+      "priority": "P3",
+      "version": 8,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "UX-01",
+      "meaning": "초대 가입/기존 로그인",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 7,
+      "phase": 3,
+      "followup": "BE-01/02; 1.2.3",
+      "state": "planned"
+    },
+    {
+      "id": "UX-02",
+      "meaning": "첫/재방문 홈",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 6,
+      "phase": 2,
+      "followup": "D-01; 1.2.0 P2",
+      "state": "planned"
+    },
+    {
+      "id": "UX-03",
+      "meaning": "빠른 캡처",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 1,
+      "phase": 3,
+      "followup": "UI-07; 1.2.6 P2",
+      "state": "planned"
+    },
+    {
+      "id": "UX-04",
+      "meaning": "새 곡→첫 가사",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 6,
+      "phase": 2,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "UX-05",
+      "meaning": "작성 위치 복귀",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 6,
+      "phase": 2,
+      "followup": "1.2.5 P3",
+      "state": "planned"
+    },
+    {
+      "id": "UX-06",
+      "meaning": "독립 가사 버전/수정 기록",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 6,
+      "phase": 2,
+      "followup": "1.2.7 P3",
+      "state": "planned"
+    },
+    {
+      "id": "UX-07",
+      "meaning": "저장/동기화 신뢰",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 1,
+      "phase": 2,
+      "followup": "ES-06; 1.2.7 안내",
+      "state": "planned"
+    },
+    {
+      "id": "UX-08",
+      "meaning": "한글/동시 입력",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 2,
+      "phase": 2,
+      "followup": "ES-02/03",
+      "state": "planned"
+    },
+    {
+      "id": "UX-09",
+      "meaning": "Suno/원문/선택 복사",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 6,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "UX-10",
+      "meaning": "prompt 태그 순서",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 2,
+      "phase": 3,
+      "followup": "ES-01; 1.2.6 표현",
+      "state": "planned"
+    },
+    {
+      "id": "UX-11",
+      "meaning": "템플릿 초안/복제",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 2,
+      "phase": 4,
+      "followup": "UI-02; 1.2.5 UI-04/05",
+      "state": "planned"
+    },
+    {
+      "id": "UX-12",
+      "meaning": "검색/복귀",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 5,
+      "phase": 3,
+      "followup": "UI-03/06",
+      "state": "planned"
+    },
+    {
+      "id": "UX-13",
+      "meaning": "자료 연결/해제",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 6,
+      "phase": 3,
+      "followup": "원본 삭제와 분리",
+      "state": "planned"
+    },
+    {
+      "id": "UX-14",
+      "meaning": "라임 삽입",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 6,
+      "phase": 3,
+      "followup": "caret/selection/undo",
+      "state": "planned"
+    },
+    {
+      "id": "UX-15",
+      "meaning": "모바일 탐색/복귀",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 0,
+      "phase": 2,
+      "followup": "UI-08; 1.2.6 잔여",
+      "state": "planned"
+    },
+    {
+      "id": "UX-16",
+      "meaning": "지정 공유 역할",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 7,
+      "phase": 2,
+      "followup": "권한 정책 유지",
+      "state": "planned"
+    },
+    {
+      "id": "UX-17",
+      "meaning": "공개 링크 발급/복사/회전",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 7,
+      "phase": 2,
+      "followup": "BE-03; 1.2.3",
+      "state": "planned"
+    },
+    {
+      "id": "UX-18",
+      "meaning": "공유 writer 첫 입력",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 1,
+      "phase": 2,
+      "followup": "ES-07 selected 한정",
+      "state": "planned"
+    },
+    {
+      "id": "UX-19",
+      "meaning": "guest 수명/복구",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 7,
+      "phase": 2,
+      "followup": "ES-06 guest 별도 주입",
+      "state": "planned"
+    },
+    {
+      "id": "UX-20",
+      "meaning": "offline/logout/PWA",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 1,
+      "phase": 3,
+      "followup": "ES-05; 1.2.7 안내",
+      "state": "planned"
+    },
+    {
+      "id": "UX-21",
+      "meaning": "프로필/설정 저장·이탈",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 1,
+      "phase": 3,
+      "followup": "UI-01; 1.2.7 표현",
+      "state": "planned"
+    },
+    {
+      "id": "UX-22",
+      "meaning": "기록/휴지통/초안 복구",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 7,
+      "phase": 3,
+      "followup": "BE-04; revision 복원 경쟁은 독립 UX 수용 (ES-04 대상 차이 정정)",
+      "state": "planned"
+    },
+    {
+      "id": "UX-23",
+      "meaning": "export/탈퇴/철회",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 7,
+      "phase": 3,
+      "followup": "서버와 미전송 초안 구별",
+      "state": "planned"
+    },
+    {
+      "id": "UX-24",
+      "meaning": "pin/favorite/manual order",
+      "evidence": "H + 연결된 원인 증거 참조",
+      "priority": "원문 UX 우선순위 참조",
+      "version": 6,
+      "phase": 2,
+      "followup": "1.2.5 회귀",
+      "state": "planned"
+    },
+    {
+      "id": "D-01",
+      "meaning": "빈/재방문 홈",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 0,
+      "phase": 2,
+      "followup": "1.2.6 P2",
+      "state": "planned"
+    },
+    {
+      "id": "D-02",
+      "meaning": "모바일 header·계정 배치",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 0,
+      "phase": 2,
+      "followup": "1.2.6 P3",
+      "state": "planned"
+    },
+    {
+      "id": "D-03",
+      "meaning": "프로필 saved/preview",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 0,
+      "phase": 3,
+      "followup": "1.2.7 P3",
+      "state": "planned"
+    },
+    {
+      "id": "D-04",
+      "meaning": "표시 설정 명시 저장",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 0,
+      "phase": 3,
+      "followup": "1.2.7 P3",
+      "state": "planned"
+    },
+    {
+      "id": "D-05",
+      "meaning": "목록 정보 위계",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 0,
+      "phase": 2,
+      "followup": "1.2.5/6",
+      "state": "planned"
+    },
+    {
+      "id": "D-06",
+      "meaning": "깊은 검색 복귀 anchor",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 5,
+      "phase": 3,
+      "followup": "40번째 결과→back",
+      "state": "planned"
+    },
+    {
+      "id": "D-07",
+      "meaning": "템플릿 선택/초안/preview",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 0,
+      "phase": 3,
+      "followup": "1.2.5/6",
+      "state": "planned"
+    },
+    {
+      "id": "D-08",
+      "meaning": "연결 관리 tabs·선택 상태",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 0,
+      "phase": 3,
+      "followup": "1.2.6 P3",
+      "state": "planned"
+    },
+    {
+      "id": "D-09",
+      "meaning": "빠른 추가 label/예시",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 0,
+      "phase": 3,
+      "followup": "1.2.1/6",
+      "state": "planned"
+    },
+    {
+      "id": "D-10",
+      "meaning": "휴지통 성공과 refresh 실패 분리",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 7,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "D-11",
+      "meaning": "로그인/초대 가입 목적",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 7,
+      "phase": 3,
+      "followup": "",
+      "state": "planned"
+    },
+    {
+      "id": "D-12",
+      "meaning": "skip link·landmark·focus",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 0,
+      "phase": 2,
+      "followup": "1.2.6 실제 AT",
+      "state": "planned"
+    },
+    {
+      "id": "D-13",
+      "meaning": "보조 글자/한국어 문구",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 0,
+      "phase": 1,
+      "followup": "1.2.6/7 과제 검증",
+      "state": "planned"
+    },
+    {
+      "id": "D-14",
+      "meaning": "semantic token·스타일 책임",
+      "evidence": "S+H; 실제 사용성 미측정",
+      "priority": "설계 제안",
+      "version": 0,
+      "phase": 2,
+      "followup": "1.2.8 잔여",
+      "state": "planned"
+    }
+  ],
+  "comparison": {
+    "remote_branch": "phase/1.1.8-p4-web-stabilization",
+    "remote_head": "c230c024aeb0297b1c130e3f3e8b507a43a7e871",
+    "functional_sha": "0375825fe004fc74869250eefa14add267c4b3ae",
+    "local_head_before_planning": "ddc818422a146a1641ba59d47b048772e9e35b42",
+    "integrated": false,
+    "findings": [
+      {
+        "id": "BE-01",
+        "status": "미변경",
+        "path": "packages/auth/src/oidc.ts",
+        "line": 74
+      },
+      {
+        "id": "BE-02",
+        "status": "미변경",
+        "path": "apps/web/src/lib/page-auth.ts",
+        "line": 9
+      },
+      {
+        "id": "BE-03",
+        "status": "미변경",
+        "path": "packages/database/src/public-lyric-sharing.ts",
+        "line": 91
+      },
+      {
+        "id": "BE-04",
+        "status": "미변경",
+        "path": "packages/domain/src/lifecycle-contract.ts",
+        "line": 61
+      },
+      {
+        "id": "ES-01",
+        "status": "미변경",
+        "path": "packages/editor/src/crdt.ts",
+        "line": 138
+      },
+      {
+        "id": "ES-02",
+        "status": "해결 후보",
+        "path": "packages/editor/src/crdt.ts",
+        "line": 96
+      },
+      {
+        "id": "ES-03",
+        "status": "부분 대응",
+        "path": "apps/web/src/components/prompt-editor.tsx",
+        "line": 163
+      },
+      {
+        "id": "ES-04",
+        "status": "해결 후보",
+        "path": "apps/web/src/components/prompt-editor.tsx",
+        "line": 217
+      },
+      {
+        "id": "ES-05",
+        "status": "부분 대응",
+        "path": "apps/web/src/components/rhyme-editor.tsx",
+        "line": 335
+      },
+      {
+        "id": "ES-06",
+        "status": "미변경",
+        "path": "packages/editor/src/browser-sync.ts",
+        "line": 604
+      },
+      {
+        "id": "ES-07",
+        "status": "미변경",
+        "path": "apps/web/src/components/shared-lyric-viewer.tsx",
+        "line": 62
+      },
+      {
+        "id": "UI-01",
+        "status": "부분 대응",
+        "path": "apps/web/src/components/app-shell.tsx",
+        "line": 113
+      },
+      {
+        "id": "UI-02",
+        "status": "부분 대응",
+        "path": "apps/web/src/components/template-screen.tsx",
+        "line": 43
+      },
+      {
+        "id": "UI-03",
+        "status": "부분 대응",
+        "path": "apps/web/src/components/search-screen.tsx",
+        "line": 42
+      },
+      {
+        "id": "UI-04",
+        "status": "미변경",
+        "path": "apps/web/src/components/template-screen.tsx",
+        "line": 83
+      },
+      {
+        "id": "UI-05",
+        "status": "미변경",
+        "path": "apps/web/src/components/template-screen.tsx",
+        "line": 83
+      },
+      {
+        "id": "UI-06",
+        "status": "해결 후보",
+        "path": "apps/web/src/components/search-screen.tsx",
+        "line": 170
+      },
+      {
+        "id": "UI-07",
+        "status": "미변경",
+        "path": "apps/web/src/components/quick-add.tsx",
+        "line": 88
+      },
+      {
+        "id": "UI-08",
+        "status": "미변경",
+        "path": "apps/web/src/app/styles.css",
+        "line": 1535
+      },
+      {
+        "id": "OPS-01",
+        "status": "미변경",
+        "path": "infra/backup/backup.sh",
+        "line": 29
+      },
+      {
+        "id": "OPS-02",
+        "status": "미변경",
+        "path": "apps/web/src/lib/request-security.ts",
+        "line": 18
+      },
+      {
+        "id": "OPS-03",
+        "status": "미변경",
+        "path": "infra/proxy/Caddyfile.example",
+        "line": 7
+      }
+    ],
+    "candidates": [
+      {
+        "id": "WC-01",
+        "title": "metadata 초안·늦은 ACK·계정별 복구",
+        "version": "1.2.1",
+        "phase": 2,
+        "task": "LC-RD-121-P2-01",
+        "acceptance": "owner/kind/document/revision별 보관, offline 닫기→재진입·명시 복원·quota·계정 전환·다른 탭 revision/새 입력을 늦은 ACK가 지우지 않는지 확인한다."
+      },
+      {
+        "id": "WC-02",
+        "title": "자동 저장 timer·가사/공유 IME ChangeSet",
+        "version": "1.2.2",
+        "phase": 2,
+        "task": "LC-RD-122-P2-05",
+        "acceptance": "조합 중 timer/flush/retry/dispose가 preedit를 확정 저장하지 않고 remote 내부 삽입·local undo가 보존되는지 확인한다. prompt 제목 잔존 문제와 별도 경로로 인수한다."
+      },
+      {
+        "id": "WC-03",
+        "title": "guarded client navigation·shortcut",
+        "version": "1.2.1",
+        "phase": 3,
+        "task": "LC-RD-121-P3-03",
+        "acceptance": "동일 URL no-op·modified click·editor veto를 유지하며 await 뒤 pending 상태를 재확인한다. profile/PWA·back/reload와 page-local 링크까지 누락 경계를 마무리한다."
+      },
+      {
+        "id": "WC-04",
+        "title": "전역·가사 표시 설정 저장 응답 경쟁",
+        "version": "1.2.1",
+        "phase": 3,
+        "task": "LC-RD-121-P3-02",
+        "acceptance": "제출 snapshot만 ACK하고 대기 중 새 draft/default/theme preview를 유지한다. reset conflict retry는 DELETE 의미와 최신 rowVersion을 보존한다."
+      },
+      {
+        "id": "WC-05",
+        "title": "Suno 수동 workspace 초안·생성 재시도",
+        "version": "1.2.1",
+        "phase": 3,
+        "task": "LC-RD-121-P3-01",
+        "acceptance": "owner namespace·legacy key 정리·동기 in-flight lock·응답 뒤 계속 입력 보존·ACK된 생성의 edit 전환을 한 묶음으로 검사한다. 자동 metadata 수집은 포함하지 않는다."
+      },
+      {
+        "id": "WC-06",
+        "title": "prompt 부분 치환·IME 순서·변환 재검사",
+        "version": "1.2.2",
+        "phase": 2,
+        "task": "LC-RD-122-P2-01",
+        "acceptance": "ES-02/04 후보를 재사용하되 ES-03 제목, 치환 구간 내부 remote, 복수 update·실제 OS IME·변환 권한/undo 잔여를 인수한다.",
+        "additional_tasks": [
+          "LC-RD-122-P4-01"
+        ],
+        "phase_scope": "P2: ES-02/03; P4: ES-04"
+      },
+      {
+        "id": "WC-07",
+        "title": "목록 응답 세대·검색 표시/키보드 순서",
+        "version": "1.2.5",
+        "phase": 2,
+        "task": "LC-RD-125-P2-01",
+        "acceptance": "4화면 후보와 회귀를 선별한다. song-link-manager까지 확대하고 items/count/cursor/filterOptions/orderVersion/loading/error가 최신 query 소유인지 확인한다."
+      },
+      {
+        "id": "WC-08",
+        "title": "목록 metadata·favorite·최근 검색·수동 순서 경쟁",
+        "version": "1.2.5",
+        "phase": 3,
+        "task": "LC-RD-125-P3-05",
+        "acceptance": "서로 다른 필드/항목의 성공을 실패 rollback이 덮지 않고 빠른 반전·동시 삭제/clear·오래된 move 실패를 처리한다. 비manual view anchor와 duplicate의 lock 순서/replay를 실제 DB로 검사한다."
+      },
+      {
+        "id": "WC-09",
+        "title": "템플릿 형식별 원문 draft",
+        "version": "1.2.2",
+        "phase": 4,
+        "task": "LC-RD-122-P4-03",
+        "acceptance": "형식 왕복 원문과 locked fieldset을 인수하되 type/target/selection 전환 보호·UI-04/05는 별도로 구현한다."
+      },
+      {
+        "id": "WC-10",
+        "title": "곡 부분 저장·가사 복제 응답 유실",
+        "version": "1.2.6",
+        "phase": 2,
+        "task": "LC-RD-126-P2-02",
+        "acceptance": "곡 다단계 저장의 성공 필드/미완료를 구별하고 새 입력을 보존한다. 가사 duplicate는 checkpoint 전 lock·동일 requestId replay·대기 중 metadata 변경 시 중단을 확인한다."
+      },
+      {
+        "id": "WC-11",
+        "title": "중첩 modal·도구막대·preview·복사",
+        "version": "1.2.6",
+        "phase": 3,
+        "task": "LC-RD-126-P3-05",
+        "acceptance": "Escape가 최상단만 닫고 touch focus가 복귀하며 도구가 잘리지 않는지 코발트에서 확인한다. Extend 공백 marker·원문/선택 copy와 preview 설정 회귀를 유지한다. UI-07/08 해결로 간주하지 않는다."
+      },
+      {
+        "id": "WC-12",
+        "title": "Service Worker 다중 build·명시 업데이트",
+        "version": "1.2.8",
+        "phase": 4,
+        "task": "LC-RD-128-P4-01",
+        "acceptance": "1.2.0 P1/P4에서 먼저 보존 gate로 인수한다. 구 탭 lazy chunk·unknown client/worker restart·탭별 승인·offline activation·private/no-store/Set-Cookie 배제·중복 fetch를 검사한다. 1.2.1 guard가 reload를 소비한다."
+      },
+      {
+        "id": "WC-13",
+        "title": "OAuth/DB 잠금 뒤 만료·beta index key 방어",
+        "version": "1.2.3",
+        "phase": 2,
+        "task": "LC-RD-123-P2-05",
+        "acceptance": "provider 왕복과 intent/code/identity lock 뒤 live clock을 확인해 만료 시 session/grant/code 소비가 남지 않는지 시험한다. 다른 kid와 동일 kid bytes 변경의 운영 제약·tombstone을 유지하고 BE-01/02와 구별한다."
+      },
+      {
+        "id": "WC-14",
+        "title": "협업 projection 재시도 공정성",
+        "version": "1.2.4",
+        "phase": 4,
+        "task": "LC-RD-124-P4-05",
+        "acceptance": "지속 실패 20개 뒤 정상 문서가 굶지 않는 keyset/wrap·trash 제외·timer 재진입 방지·Y.Doc cleanup·timestamp/오류 marker 보존을 검사한다. worker purge M-04 완료와 구별한다."
+      },
+      {
+        "id": "WC-15",
+        "title": "guest 회수 뒤 서버 상태·authoredText 분리",
+        "version": "1.2.7",
+        "phase": 2,
+        "task": "LC-RD-127-P2-05",
+        "acceptance": "회수/epoch-stale 시 서버 수용 body/cache로 복귀하고 작성 원문만 복구함에 둔다. 재연결·재허용 뒤 거절 입력 자동 재생이 없으며 ES-06 실패 보관과 충돌하지 않는지 실제 WS/DB로 인수한다."
+      },
+      {
+        "id": "WC-16",
+        "title": "export v1 검증·휴지통 결과·삭제 영향",
+        "version": "1.2.7",
+        "phase": 3,
+        "task": "LC-RD-127-P3-04",
+        "acceptance": "과거 v1 사진 필드 부재·새 Suno/photo 참조·owner 격리와 실제 export→validator를 검사한다. mutation 성공/refresh 실패를 분리하고 deletion batch 복원 수와 전체 cascade 자식 수를 구별한다. BE-04는 별도다."
+      },
+      {
+        "id": "WC-17",
+        "title": "환경 값·allowlist 날짜 도구",
+        "version": "1.2.4",
+        "phase": 1,
+        "task": "LC-RD-124-P1-05",
+        "acceptance": "제공된 optional env의 안전 정수/공백·backup 값과 offset deadline의 ISO UTC 정규화를 인수한다. import-safe main guard/test를 함께 가져오며 실제 secret/keyring을 복사하거나 회전하지 않는다."
+      },
+      {
+        "id": "WC-18",
+        "title": "엄격한 release tag gate·build 설정",
+        "version": "1.2.8",
+        "phase": 3,
+        "task": "LC-RD-128-P3-03",
+        "acceptance": "annotated release gate와 fileURLToPath 의도를 검토하되 windows-native needs/assertion·1.1.8 build ID와 분리한다. native 재개 없이 같은 정책 의미를 유지하고 1.2.0 P1 metadata/6 Phase 지원을 재사용한다."
+      }
+    ]
+  }
+}

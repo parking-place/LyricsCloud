@@ -33,3 +33,7 @@
 ADR-0002 인증·ADR-0004/0005 동일 owner 동기화·PROD-0003 송폼·기존 OPS 승인/서명/복구 계약을 유지한다. 새 정책이 특정 의미를 대체할 때 해당 구간과 migration/API/화면/테스트를 연결하고 과거 승인 원문을 덮어쓰지 않는다.
 
 로컬 Codex가 같은 namespace를 사용했다면 파일을 덮어쓰지 않고 실제 미사용 ID를 담당자와 확정한다. ID 번호 자체가 제품 버전 자동 증가를 뜻하지 않는다. [규정 통합](GOVERNANCE-INTEGRATION.md)과 [소스 범위](SOURCES.md)를 따른다.
+
+## 2026-09-22 후속 리뷰 배정
+
+`OPS-RD-12X-001`은 사용자 요청에 따른 1.2.1~1.2.8 계획 배정이다. `PLAN-RD-12X-COMPARE`는 새 1.1.8 P4 웹 안정화 원격 비교·선택 인수 계획이며 제품 코드 적용 승인을 뜻하지 않는다. [결정·영향](../3.Redesign-phase/PLAN-CHANGE.md)과 [원인/후보 추적](../3.Redesign-phase/REVIEW-TRACEABILITY.md)을 따른다. 기존 결정과 완료 기록은 보존한다.

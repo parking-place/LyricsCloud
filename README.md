@@ -15,7 +15,7 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 
 [1.1.7a release notes](./docs/releases/1.1.7a.md)와 [CHANGELOG.md](./CHANGELOG.md)에 사용자 변화·호환성·미실행 gate를 기록한다.
 
-> **다음 제품 계획 (2026-09-22):** [1.2.0 · 코발트 블루 Chroma Dock 리디자인](0.Plans/3.Redesign-phase/1.2.0/README.md). [선정 목업](0.Plans/3.Redesign-phase/1.2.0/mockup/index.html)을 기준으로 하며, 1.1.8~1.1.14 후속 계획은 보류합니다. 현재 제품 버전 변경이나 구현/배포 완료를 뜻하지 않습니다.
+> **다음 제품 계획 (2026-09-22):** [1.2.0 · 코발트 블루 Chroma Dock 리디자인](0.Plans/3.Redesign-phase/1.2.0/README.md). [선정 목업](0.Plans/3.Redesign-phase/1.2.0/mockup/index.html)을 기준으로 하며, 1.1.8~1.1.14 후속 계획은 보류합니다. 후속 [1.2.1~1.2.8 계획](0.Plans/3.Redesign-phase/ROADMAP.md)은 0922 리뷰와 [1.1.8 P4 웹 안정화 비교](0.Plans/3.Redesign-phase/BRANCH-COMPARISON-118-P4.md)를 반영합니다. 현재 제품 버전 변경이나 구현/배포 완료를 뜻하지 않습니다.
 
 ## 주요 기능
 

@@ -1,5 +1,7 @@
 # 후속 기능 계획 상태
 
+> 2026-09-22 후속 추가: **1.2.0 → [1.2.1~1.2.8](../3.Redesign-phase/ROADMAP.md)**. [0922 추적](../3.Redesign-phase/REVIEW-TRACEABILITY.md)과 [1.1.8 P4 웹 안정화 비교](../3.Redesign-phase/BRANCH-COMPARISON-118-P4.md)를 반영한 계획이며 제품 미착수·native 보류는 유지한다.
+
 ```yaml
 plan_state: "on_hold_from_1.1.8"
 plan_owner: "Codex"
