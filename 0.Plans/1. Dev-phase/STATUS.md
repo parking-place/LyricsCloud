@@ -12,6 +12,8 @@ next_action: "사용자가 승인한 기존 웹 결함·성능 보정을 P4 추�
 
 ## 승인과 기준
 
+2026-09-22 웹 안정화 첫 후보 `cd87eb283ecaf5977a8bc9552f26bfa52f273f26` / PR #152의 Actions `35694180993`은 Windows build·production image·보안 검사 뒤 owner E2E **368 PASS / 35 FAIL / 49 조건부 skip**으로 종료했고 image 발행·PC 전환은 하지 않았다. PWA 안내의 중복 status 역할, 과거 복구 복사 기대값, 이동 ACK 전 드래그를 시작한 fixture와 모바일 기준 화면을 보정했다. PWA 단위 6 PASS, 영향 PC/mobile 10개 고유 사례 PASS, check·production build PASS이며 새 후보의 필수 CI·PC 갱신·동일 SHA 원격 개발 인수를 기다린다. 상세 실패/재검증은 [웹 안정화 기록](../../docs/runbooks/1.1.8-web-stabilization.md)에 남긴다. P4 review·P5/릴리스 보류는 유지한다.
+
 2026-09-22 사용자가 다른 공동작업자의 개발이 진행 중이지 않음을 알리고 기존 문제 수정·추가 결함 조사·계획에 따른 진행과 여러 모델의 서브 에이전트 분담을 요청했다. 핵심 제품 코드는 Astra가 맡는다. 현재 `1.1.8 P4` 후보를 기준으로 웹 저장/목록/검색/탐색/PWA의 기존 동작을 보정하고 PC Docker의 `1.0.0` 런타임을 데이터 보존 후 갱신하는 범위다. 이 추가 회귀는 새 기능이나 native 편집 범위 확장이 아니며, 기존 Windows 물리 검증·서명 gate와 `main`/정식 릴리스 조건을 충족한 것으로 간주하지 않는다. 개발 사이트는 계정 허용 제한이 있어 동일 배포 SHA의 PC 격리 환경과 기존 OIDC 합성 공급자로 먼저 UI를 확인한다. 원격 개발 관리 접속 정보 확보와 실제 개발 인수는 별도 미완료 항목으로 남긴다.
 
 같은 날 외부 backup 저장소·age 수신자 키가 미설정임을 알리고 경로를 요청하자 사용자가 “없을거같으면 그냥 업데이트 해줘”라고 지시했다. PC Docker 갱신은 외부 backup/RPO 미충족을 기록한 채 진행하되 기존 DB volume·환경·허용 계정을 보존한다. 로컬 `pg_dump` 복구 사본을 별도 DB에 복원해 `0802_lifecycle.sql → 1151_profile_customization.sql` migration과 반복 실행을 통과했고 계정 수가 일치했다. 이 사본은 외부 암호화 backup 또는 24시간 RPO 인수가 아니다. 공개 개발/릴리스 서버에 대한 새로운 예외를 만들지 않는다.

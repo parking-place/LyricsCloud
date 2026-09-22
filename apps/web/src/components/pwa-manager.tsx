@@ -152,13 +152,13 @@ export function PwaManager({ ownerId }: { ownerId: string }) {
 
   const standalone = typeof window !== "undefined" && window.matchMedia("(display-mode: standalone)").matches;
   const canInstall = installPrompt && !standalone;
-  const statusMessage = message || (!supported ? "앱 설치와 오프라인 지원을 사용할 수 없어 일반 웹 모드로 사용 중입니다." : "");
+  const statusMessage = message || (!supported ? "일반 웹 모드" : "");
   if (online && !canInstall && !waiting && !statusMessage) return null;
   return <aside className={`pwa-status${online ? " is-online" : " is-offline"}`} aria-label="앱 연결 및 설치 상태">
     <p aria-live="polite"><span aria-hidden="true" />{online ? "온라인" : "오프라인 · 초안은 이 기기에 보관됩니다"}</p>
     {canInstall ? <button type="button" onClick={() => void install()}>앱 설치</button> : null}
     {waiting ? <><span>{pendingDrafts ? "업데이트 준비됨 · 미전송 초안 보존 중" : "안전한 업데이트가 준비되었습니다"}</span><button type="button" onClick={() => void applyUpdate()} disabled={pendingDrafts}>업데이트 적용</button></> : null}
-    {statusMessage ? <span className="pwa-message" role="status">{statusMessage}</span> : null}
+    {statusMessage ? <span className="pwa-message" aria-live="polite" aria-atomic="true">{statusMessage}</span> : null}
   </aside>;
 }
 

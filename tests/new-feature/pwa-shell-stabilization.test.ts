@@ -128,6 +128,27 @@ describe("workspace menu navigation", () => {
 });
 
 describe("PWA status visibility and safety", () => {
+  it("announces PWA notices without adding a competing feature status role", async () => {
+    const fixture = componentFixture("pwa-manager.tsx", "PwaManager");
+    const shell = componentFixture("app-shell.tsx", "WorkspaceShell").render({
+      profile: { userId: "test-owner", displayName: "Test", avatarUrl: null }, loginCompleted: true, children: null
+    });
+    fixture.serviceWorker.register.mockRejectedValue(new Error("registration failed"));
+    fixture.render(); fixture.runEffects();
+    await vi.waitFor(() => expect(text(fixture.render())).toContain("일반 웹 모드"));
+
+    const statusMessages = () => elements([shell, fixture.render()]).filter((node) => node.props.role === "status").map(text);
+    expect(statusMessages()).toEqual(["로그인이 완료되었습니다. 개인 작업 공간으로 이동했습니다."]);
+    const notice = () => elements(fixture.render()).find((node) => node.props.className === "pwa-message");
+    expect(text(notice())).toBe("일반 웹 모드");
+    expect(notice().props).toMatchObject({ "aria-live": "polite", "aria-atomic": "true" });
+
+    fixture.window.dispatchEvent(new Event("appinstalled"));
+    expect(text(notice())).toBe("이 기기에 앱을 설치했습니다.");
+    expect(notice().props).toMatchObject({ "aria-live": "polite", "aria-atomic": "true" });
+    expect(statusMessages()).toHaveLength(1);
+  });
+
   it("omits the idle online row and still shows offline and registration failure notices", async () => {
     const fixture = componentFixture("pwa-manager.tsx", "PwaManager");
     expect(fixture.render()).toBeNull();
