@@ -51,6 +51,7 @@ interface SongMoveBody {
 }
 
 interface PendingSongMove {
+  readonly generation: number;
   readonly body: SongMoveBody;
   readonly title: string;
   readonly snapshot: Song[];
@@ -115,6 +116,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     if (!Object.entries(patch).some(([key, value]) => current[key as keyof SongListQuery] !== value)) return;
     const next = { ...current, ...patch };
     ++requestSequence.current;
+    setRetryMove(null); setDraggedId(null); setNotice("");
     setLoading(true); setLoadingMore(false); setNextCursor(null); setError("");
     setSearch(next.search); setStatus(next.status); setWork(next.work); setSort(next.sort);
   }
@@ -134,6 +136,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     window.history.replaceState(null, "", `/songs${params.size ? `?${params}` : ""}`);
 
     const sequence = ++requestSequence.current;
+    setRetryMove(null); setDraggedId(null);
     const controller = new AbortController();
     setLoading(true);
     setLoadingMore(false); setNextCursor(null);
@@ -241,7 +244,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
   }
 
   async function submitMove(pending: PendingSongMove) {
-    if (moveInFlight.current) return;
+    if (moveInFlight.current || pending.generation !== requestSequence.current) return;
     moveInFlight.current = true;
     setMovingId(pending.body.itemId);
     setRetryMove(null);
@@ -253,6 +256,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pending.body)
       });
+      if (pending.generation !== requestSequence.current) return;
       if (response.status === 409) {
         setSongs(pending.snapshot);
         setSort("manual");
@@ -262,10 +266,12 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
       }
       if (!response.ok) throw new Error("SAVE_FAILED");
       const result = await response.json() as { orderVersion: number };
+      if (pending.generation !== requestSequence.current) return;
       setOrderVersion(result.orderVersion);
       setSort("manual");
       setNotice(`${pending.title} 순서를 사용자 정렬로 저장했습니다.`);
     } catch {
+      if (pending.generation !== requestSequence.current) return;
       setSongs(pending.snapshot);
       setRetryMove(pending);
       setNotice("곡 순서를 저장하지 못했습니다. 원래 순서로 복원했습니다.");
@@ -287,6 +293,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     const optimistic = songs.map((item) => item.isPinned === song.isPinned ? nextGroup[groupIndex++]! : item);
     const newIndex = nextGroup.findIndex(({ id }) => id === itemId);
     void submitMove({
+      generation: requestSequence.current,
       title: song.title,
       snapshot: songs,
       optimistic,
@@ -294,7 +301,8 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
         requestId: crypto.randomUUID(),
         itemId,
         beforeId: nextGroup[newIndex + 1]?.id ?? null,
-        afterId: nextGroup[newIndex - 1]?.id ?? null,
+        // Nonmanual display can reverse the persisted ranks of these neighbours.
+        afterId: sort === "manual" || !nextGroup[newIndex + 1] ? nextGroup[newIndex - 1]?.id ?? null : null,
         expectedVersion: orderVersion
       }
     });

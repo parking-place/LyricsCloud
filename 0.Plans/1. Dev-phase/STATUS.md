@@ -7,10 +7,16 @@ state: "review"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-22"
-next_action: "사용자가 승인한 기존 웹 결함·성능 보정을 P4 추가 회귀로 수행한다. Astra가 제품 코드를 작성하고 임시 계정의 실제 내장 브라우저와 필요한 회귀로 검증한 뒤 PC Docker 갱신·CI·개발 인수를 진행한다. Windows 실제 실행·OAuth·DPAPI·clipboard·IME/AT/DPI·신뢰 서명 MSIX 증거 전까지 P4 review·P5/릴리스 보류는 유지한다."
+next_action: "과거 UI/UX·저장/동기화·데이터·인증 결함 통합 후보의 필수 CI와 같은 SHA PC Docker 갱신을 진행한다. 집중 PC/mobile 19 PASS와 실제 내장 브라우저의 탐색·Suno 초안·320px 가로 넘침 보정은 확인했다. 원격 개발 관리 접속과 Windows 실제 실행·OAuth·DPAPI·clipboard·IME/AT/DPI·신뢰 서명 MSIX 증거 전까지 P4 review·P5/릴리스 보류는 유지한다."
 ```
 
 ## 승인과 기준
+
+2026-09-22 과거 결함 수정 통합은 요청 범위의 Astra 6개 분담으로 구현했다. 집중 실제 PostgreSQL·단위 결과와 통합 check·production build·합성 secret 누출 검사가 PASS이고, 신규 PC/mobile 브라우저 **17 PASS / 5 조건부 skip** 및 실제 CodeMirror 내부 원격 삽입 조합 회귀 **2 PASS**다. 모바일 시험의 숨겨진 PC 메뉴 존재 확인 선택자 1건은 보정 뒤 통과했다. 실제 내장 브라우저에서 홈→곡 document 요청 **1→0**, 요청 이벤트 **25→8**, Suno 초안 새로고침 보존, 320px/client305에서 가로 넘침 없음과 console error **0건**을 확인했다. 전체 CI·PC 전환·동일 SHA 원격 개발 인수 전에는 P4 완료가 아니다. 상세 항목과 정책/물리 미실행 경계는 [웹 안정화 기록](../../docs/runbooks/1.1.8-web-stabilization.md)에 남긴다.
+
+2026-09-22 사용자가 UI/UX를 포함한 과거·새 결함을 Astra 서브 에이전트로 병렬 조사·수정하도록 명시했다. 과거 보고서 전체를 현재 후보 `ee3647d`와 대조해 저장·CRDT·삭제/내보내기·정렬·인증/설치·PWA의 잔존 결함을 확인했다. 해당 후보의 CI 성공 여부와 별개로 PC 자동 전환은 보류하고 `LC-NF-1.1.8-P4-08` 추가 회귀에서 원래 발생 조건별 수정·검증을 수행한다. 기존 기능·보안 정책과 Windows P4/P5·릴리스 gate는 유지한다.
+
+같은 날 사용자가 공동개발자의 UI/UX 리디자인 목업이 비공개 `.private`에서 작업 중이며 아직 공유·코드 적용되지 않았다고 알렸다. 현재 UI 수정은 기존 화면의 동작·입력 보존·접근성·잘림을 보정하는 범위다. 해당 비공개 목업과 타인 작업은 변경하거나 공개하지 않고, 추후 공유된 디자인을 검증된 동작 계약에 연결한다.
 
 2026-09-22 웹 안정화 두 번째 후보 `a15271003e686995579ce3ddff26c4ac29c5dcbf`의 Actions [35697819946](https://github.com/parking-place/LyricsCloud/actions/runs/35697819946)은 owner E2E **402 PASS / 1 FAIL / 49 조건부 skip**이었다. 유일한 실패는 일반 웹 모드 안내 행이 없는 이전 모바일 즐겨찾기 기준과의 7% 차이다. 같은 변경이 적용되는 모바일 탐색 기준 5장을 공식 Linux 환경에서 생성·시각 확인하고 기존 6% 비교 허용치를 유지한 집중 회귀 1건을 PASS했다. 제품 코드 변경 없이 새 후보를 검증하며 image 발행·PC 전환·원격 개발 인수 전까지 완료로 표시하지 않는다.
 
@@ -245,6 +251,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex/Astra 6개 담당 | 1.1.8/P4 과거 결함 회귀 | LC-NF-1.1.8-P4-08 | Hegel: editor CRDT/autosave·prompt editor; Euler: lyric/rhyme metadata·복제/복사·account cache; Maxwell: Suno/template/목록정렬/곡·favorites/CSS; Kuhn: lifecycle/export/rhyme lock/projection; Bacon: beta/auth/config/provision/CI gate; Mendel: shell/PWA/page auth | 사용자 2026-09-22 UI/UX 포함 전체 잔존 결함 수정 승인; 기준 `ee3647d`, 파일당 한 작성자·격리 검증·PC 전환 보류 | 2026-09-22 17:00 KST | in_progress |
 | Codex/Astra 및 분석 서브 에이전트 | 1.1.8/P4 추가 회귀 | LC-NF-1.1.8-P4-08~09 | web 설정·목록·검색·탐색·PWA, 관련 회귀, PC 환경·상태 기록 | 사용자 2026-09-22 승인; 후보 `a7d8e453`, 합성 계정·격리 DB | 2026-09-22 | in_progress |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | Windows unpackaged local storage·DPAPI cache/token·1.1.7a profile/schema 통합·회귀·상태/Future | 최종 자동 검증 후보 `a7d8e453`, Actions `35173213999`, Unit 402·E2E 396/0 flaky·browser 10와 동일 SHA 개발 인수 PASS; 실제 Windows 재실행·서명 gate 미실행 | 2026-09-17 09:30 KST | review |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | `.github/workflows/ci.yml`, `apps/windows/README.md`, Windows 설치 runbook·P4/STATUS 기록 | SHA `3fecc85` 수동 Actions `34987340477` Windows publish/upload·verify PASS. 사용자 PC 실행 실패 보고(artifact·오류 미확인), Windows 앱 보류. 실제 기기·서명 gate 미통과 | 2026-09-16 00:12 KST | review |

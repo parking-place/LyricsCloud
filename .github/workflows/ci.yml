@@ -50,6 +50,16 @@ jobs:
       APP_PHASE: p4
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Only the strict release gate needs the annotated tag and full history.
+          fetch-depth: ${{ github.event_name == 'workflow_dispatch' && inputs.release == true && '0' || '1' }}
+      - name: Verify authorized annotated release tag
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.release == true }}
+        run: |
+          current_version="$(tr -d '\r\n' < VERSION)"
+          test "$GITHUB_REF_TYPE" = "tag"
+          test "$GITHUB_REF_NAME" = "v${current_version}"
+          node scripts/validate-1005-final-release.mjs --require-release
       - uses: pnpm/action-setup@v6
         with:
           version: 11.25.0

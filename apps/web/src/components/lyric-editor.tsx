@@ -25,6 +25,7 @@ import {
   LYRIC_STATUSES,
   LYRIC_LIMITS,
   LYRIC_STATUS_LABELS,
+  parseUpdateLyricInput,
   RHYME_INSERTION_CONTRACT_VERSION,
   type CrdtTextSelectionReference,
   type EditorResourcePanelItem,
@@ -38,6 +39,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createLyricMetadataSaver } from "../lib/lyric-metadata.js";
 import { registerLogoutSave } from "../lib/account-cache.js";
+import { createMetadataDraftStore, type MetadataDraft } from "../lib/metadata-draft.js";
 import { writingFontFamily } from "../lib/font-assets.js";
 import { promptCopyView } from "../lib/prompt-copy.js";
 import { lyricCopyView } from "../lib/lyric-copy.js";
@@ -51,6 +53,7 @@ import { LyricDisplaySettings } from "./lyric-display-settings.js";
 import { LyricShareManager } from "./lyric-share-manager.js";
 
 interface LyricEditorDraft {
+  readonly localRevision?: string;
   readonly title: string;
   readonly memo: string;
   readonly status: LyricStatus;
@@ -78,6 +81,10 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const titleRef = useRef(initialLyric.title);
   const bodyRef = useRef(initialLyric.body);
   const memoRef = useRef(initialLyric.memo);
+  const metadataStoreRef = useRef<ReturnType<typeof createMetadataDraftStore> | null>(null);
+  const metadataRevisionRef = useRef<string | undefined>(undefined);
+  const commandLockRef = useRef(false);
+  const duplicateRequestRef = useRef<string | null>(null);
   const statusRef = useRef(initialLyric.status);
   const favoriteRef = useRef(initialLyric.isFavorite);
   const pinnedRef = useRef(initialLyric.isPinned);
@@ -105,6 +112,8 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   };
   const [title, setTitle] = useState(initialLyric.title);
   const [memo, setMemo] = useState(initialLyric.memo);
+  const [metadataRecovery, setMetadataRecovery] = useState<MetadataDraft[]>([]);
+  const [metadataError, setMetadataError] = useState("");
   const [status, setStatus] = useState(initialLyric.status);
   const [isFavorite, setIsFavorite] = useState(initialLyric.isFavorite);
   const [isPinned, setIsPinned] = useState(initialLyric.isPinned);
@@ -200,6 +209,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     return {
       title: titleRef.current, memo: memoRef.current, status: statusRef.current,
       isFavorite: favoriteRef.current, isPinned: pinnedRef.current, pinOrder: pinOrderRef.current,
+      localRevision: metadataRevisionRef.current,
       ...overrides
     };
   }
@@ -213,6 +223,13 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     const parent = mountRef.current;
     if (!parent) return;
     let active = true;
+    let metadataStore: ReturnType<typeof createMetadataDraftStore> | null = null;
+    try {
+      metadataStore = createMetadataDraftStore(ownerId, "lyric", initialLyric.id);
+      metadataStoreRef.current = metadataStore;
+      setMetadataRecovery(metadataStore.read());
+    } catch { setMetadataError("보관된 제목·메모를 불러오지 못했습니다. 저장소 접근을 확인해 주세요."); }
+    const saveMetadata = createLyricMetadataSaver(initialLyric.id, initialLyric);
     let initialNavigationPending = Boolean(navigationInputRef.current.find || navigationInputRef.current.position);
     let positionCaptureEnabled = !initialNavigationPending;
     const controller = new SerializedSaveController<LyricEditorDraft>({
@@ -221,7 +238,15 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         isFavorite: initialLyric.isFavorite, isPinned: initialLyric.isPinned, pinOrder: initialLyric.pinOrder
       },
       initialRowVersion: initialLyric.rowVersion,
-      save: createLyricMetadataSaver(initialLyric.id, initialLyric),
+      async save(value, rowVersion) {
+        parseUpdateLyricInput({ rowVersion, title: value.title, memo: value.memo });
+        const result = await saveMetadata(value);
+        try {
+          if (value.localRevision) (metadataStore ??= createMetadataDraftStore(ownerId, "lyric", initialLyric.id)).acknowledge(value.localRevision);
+        }
+        catch { if (active) setMetadataError("서버 저장은 완료했지만 이 기기의 복구 초안을 정리하지 못했습니다."); }
+        return result;
+      },
       onStateChange(state) { if (active) setSaveState(state); }
     });
     controllerRef.current = controller;
@@ -298,14 +323,8 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       onPresenceChange(participants) { if (active) setSharingParticipants(participants); }
     }).then((sync) => { if (active) localSyncRef.current = sync; else void sync.destroy(); })
       .catch(() => { if (active) setLocalSyncState("error"); });
-    const finishInput = () => {
-      editor.finishComposition();
-      if (titleComposingRef.current) { titleComposingRef.current = false; controller.compositionEnd(); }
-      if (memoComposingRef.current) { memoComposingRef.current = false; controller.compositionEnd(); }
-      if (active) setComposingInput(false);
-    };
     const flush = () => {
-      finishInput();
+      editor.finishComposition();
       void controller.flush();
       void positionSaver.flush().catch(() => undefined);
       localSyncRef.current?.leave();
@@ -329,7 +348,6 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       cancelAnimationFrame(focusFrame);
       window.removeEventListener("pagehide", flush);
       unregisterLogout();
-      finishInput();
       editor.destroy();
       localSyncRef.current?.leave();
       void localSyncRef.current?.destroy();
@@ -381,15 +399,51 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     });
   }, [rhymeSelection]);
 
+  function persistMetadata() {
+    try {
+      const store = metadataStoreRef.current ??= createMetadataDraftStore(ownerId, "lyric", initialLyric.id);
+      metadataRevisionRef.current = store.write({ title: titleRef.current, memo: memoRef.current });
+      setMetadataError("");
+    } catch {
+      metadataRevisionRef.current = undefined;
+      setMetadataError("제목·메모를 이 기기에 보관하지 못했습니다. 현재 입력을 복사하고 창을 닫지 마세요.");
+    }
+  }
+
+  function restoreMetadata(saved: MetadataDraft) {
+    if (controllerRef.current?.state.status !== "saved" || titleComposingRef.current || memoComposingRef.current) return;
+    try {
+      const store = metadataStoreRef.current;
+      if (!store) return;
+      const revision = store.restore(saved);
+      if (revision) {
+        metadataRevisionRef.current = revision;
+        titleRef.current = saved.title; setTitle(saved.title);
+        if (saved.memo !== undefined) { memoRef.current = saved.memo; setMemo(saved.memo); }
+        controllerRef.current.change(draft());
+      }
+      setMetadataRecovery(store.read());
+    } catch { setMetadataError("보관된 제목·메모를 복원하지 못했습니다. 복구본을 복사해 보관해 주세요."); }
+  }
+
+  function discardMetadata(saved: MetadataDraft) {
+    try {
+      metadataStoreRef.current?.acknowledge(saved.revision);
+      setMetadataRecovery(metadataStoreRef.current?.read() ?? []);
+    } catch { setMetadataError("보관된 제목·메모를 정리하지 못했습니다."); }
+  }
+
   function changeTitle(value: string) {
     titleRef.current = value;
     setTitle(value);
+    persistMetadata();
     controllerRef.current?.change(draft({ title: value }), { composing: titleComposingRef.current });
   }
 
   function changeMemo(value: string) {
     memoRef.current = value;
     setMemo(value);
+    persistMetadata();
     controllerRef.current?.change(draft({ memo: value }), { composing: memoComposingRef.current });
   }
 
@@ -416,11 +470,12 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
 
   async function flushBeforeCommand(reason?: "leave" | "duplicate"): Promise<boolean> {
     editorRef.current?.finishComposition();
-    if (titleComposingRef.current) { titleComposingRef.current = false; controllerRef.current?.compositionEnd(); }
-    if (memoComposingRef.current) { memoComposingRef.current = false; controllerRef.current?.compositionEnd(); }
-    setComposingInput(false);
+    if (titleComposingRef.current || memoComposingRef.current || editorRef.current?.composing) {
+      setCommandNotice("글자 조합을 마친 뒤 다시 시도해 주세요.");
+      return false;
+    }
     await controllerRef.current?.flush();
-    if (controllerRef.current?.state.status === "error" || !await localSyncRef.current?.flush()) {
+    if (controllerRef.current?.state.status !== "saved" || !await localSyncRef.current?.flush()) {
       setCommandNotice("현재 변경 내용을 먼저 저장해야 합니다. 저장을 다시 시도해 주세요.");
       return false;
     }
@@ -429,6 +484,10 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       return false;
     }
     await positionSaverRef.current?.flush().catch(() => undefined);
+    if (controllerRef.current?.state.status !== "saved" || titleComposingRef.current || memoComposingRef.current || editorRef.current?.composing) {
+      setCommandNotice("새로 입력한 내용을 먼저 저장해야 합니다. 입력을 마친 뒤 다시 시도해 주세요.");
+      return false;
+    }
     return true;
   }
 
@@ -662,28 +721,37 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   }
 
   async function duplicateCurrent() {
-    if (commandBusy || !await flushBeforeCommand("duplicate")) return;
+    if (commandLockRef.current || commandBusy) return;
+    commandLockRef.current = true;
     setCommandBusy(true);
     setCommandNotice("");
+    let navigating = false;
     try {
+      if (!await flushBeforeCommand("duplicate")) return;
+      duplicateRequestRef.current ??= crypto.randomUUID();
       const response = await fetch(`/api/lyrics/${initialLyric.id}/duplicate`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestId: crypto.randomUUID() })
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestId: duplicateRequestRef.current })
       });
       if (!response.ok) throw new Error();
       const result = await response.json() as { lyric: LyricRecord };
       router.push(`/lyrics/${result.lyric.id}${lyricReturnSuffix}`);
       router.refresh();
+      navigating = true;
     } catch {
-      setCommandBusy(false);
       setCommandNotice("가사를 복제하지 못했습니다. 현재 내용은 그대로 보존됩니다.");
+    } finally {
+      if (!navigating) { commandLockRef.current = false; setCommandBusy(false); }
     }
   }
 
   async function deleteCurrent() {
-    if (commandBusy || !await flushBeforeCommand()) return;
+    if (commandLockRef.current || commandBusy) return;
+    commandLockRef.current = true;
     setCommandBusy(true);
     setCommandNotice("");
+    let navigating = false;
     try {
+      if (!await flushBeforeCommand()) return;
       const response = await fetch(`/api/lyrics/${initialLyric.id}`, { method: "DELETE" });
       const result = await response.json() as { deleted?: boolean };
       if (!response.ok || !result.deleted) throw new Error();
@@ -693,10 +761,12 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt) || right.id.localeCompare(left.id))[0];
       router.replace(next ? `/lyrics/${next.id}${lyricReturnSuffix}` : dashboardHref);
       router.refresh();
+      navigating = true;
     } catch {
-      setCommandBusy(false);
       setDeleteOpen(false);
       setCommandNotice("가사를 삭제하지 못했습니다. 현재 화면을 유지합니다.");
+    } finally {
+      if (!navigating) { commandLockRef.current = false; setCommandBusy(false); }
     }
   }
 
@@ -816,6 +886,9 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     return () => window.removeEventListener("keydown", onKeyDown);
   });
 
+  const titleLength = [...title.trim()].length;
+  const titleError = !title.trim() ? "제목을 입력해야 저장할 수 있습니다."
+    : titleLength > LYRIC_LIMITS.title ? `제목은 ${LYRIC_LIMITS.title}자 이하로 입력해 주세요.` : "";
   const writingVariables = {
     "--lyric-font-family": writingFontFamily(displaySettings.effective.font),
     "--lyric-font-size": `${displaySettings.effective.fontSize}px`,
@@ -824,7 +897,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   } as CSSProperties;
 
   return <section className={`lyric-editor-page${focusMode ? " is-focus-mode" : ""}`} aria-labelledby="lyric-editor-heading" style={writingVariables}
-    data-pending-input={composingInput || hasVolatilePendingInput(saveState.status, localSyncState) || undefined}>
+    data-pending-input={composingInput || Boolean(metadataError) || metadataRecovery.length > 0 || hasVolatilePendingInput(saveState.status, localSyncState) || undefined}>
     <h1 className="sr-only" id="lyric-editor-heading">가사 편집: {title || "제목 없음"}</h1>
     <header className="lyric-editor-header">
       <div className="lyric-editor-context">
@@ -857,6 +930,16 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       </div>
     </header>
     {commandNotice ? <p className="editor-command-notice" role="status">{commandNotice}</p> : null}
+    {metadataError ? <p className="editor-command-notice" role="alert">{metadataError} <button type="button" onClick={copyRecovery}>현재 입력 복사</button></p> : null}
+    {metadataRecovery.map((saved) => <details key={saved.revision} className="editor-command-notice" open>
+      <summary>서버에 저장되지 않은 제목·메모가 이 기기에 있습니다. 확인 후 복원해 주세요.</summary>
+      <label>보관된 제목<textarea readOnly value={saved.title} /></label>
+      {saved.memo !== undefined ? <label>보관된 작업 메모<textarea readOnly value={saved.memo} /></label> : null}
+      <button type="button" disabled={saveState.status !== "saved" || composingInput} onClick={() => restoreMetadata(saved)}>이 초안 복원</button>
+      <button type="button" onClick={() => { void copyFeedback.copyText(JSON.stringify({ title: saved.title, memo: saved.memo }, null, 2), "제목·메모 복구본", "보관된 제목·메모를 복사했습니다."); }}>이 초안 복사</button>
+      <button type="button" onClick={() => discardMetadata(saved)}>이 초안 버리기</button>
+      {saveState.status !== "saved" ? <p>현재 입력을 먼저 저장하거나 복사해 보관해 주세요.</p> : null}
+    </details>)}
     {legacyConflict ? <details className="editor-command-notice" open>
       <summary>이전 로컬 초안이 서버와 다릅니다. 두 내용을 보존하고 동기화를 멈췄습니다.</summary>
       <label>이전 로컬 초안<textarea readOnly value={legacyConflict.localBody} /></label>
@@ -865,10 +948,13 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     </details> : null}
     <div className="lyric-editor-title">
       <label id="lyric-title-label" htmlFor="lyric-title">가사 제목</label>
-      <input id="lyric-title" value={title} aria-invalid={!title.trim()} onChange={(event) => changeTitle(event.target.value)}
-        onCompositionStart={() => { titleComposingRef.current = true; setComposingInput(true); }}
-        onCompositionEnd={() => { titleComposingRef.current = false; setComposingInput(Boolean(editorRef.current?.composing || memoComposingRef.current)); controllerRef.current?.compositionEnd(); }} />
-      {!title.trim() ? <span role="alert">제목을 입력해야 저장할 수 있습니다.</span> : null}
+      <input id="lyric-title" value={title} aria-invalid={Boolean(titleError)} aria-describedby="lyric-title-feedback" onChange={(event) => changeTitle(event.target.value)}
+        onCompositionStart={() => { titleComposingRef.current = true; controllerRef.current?.compositionStart(); setComposingInput(true); }}
+        onCompositionEnd={() => { titleComposingRef.current = false; setComposingInput(Boolean(editorRef.current?.composing || memoComposingRef.current)); if (!memoComposingRef.current) controllerRef.current?.compositionEnd(); }} />
+      <span id="lyric-title-feedback" className={titleError ? "over" : ""}>
+        {titleLength.toLocaleString()} / {LYRIC_LIMITS.title}
+        {titleError ? <span role="alert"> {titleError}</span> : null}
+      </span>
     </div>
     <div className="lyric-editor-workspace">
       <aside className="songform-outline" aria-label="송폼 목차">
@@ -891,7 +977,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
           <div className="lyric-display-summary"><span>{displaySettings.override ? "가사별 설정" : "계정 기본값"} · {displaySettings.effective.fontSize}px · 줄 {displaySettings.effective.lineHeight.toFixed(1)}</span><button type="button" onClick={() => { setMobileResourcesOpen(false); setDisplaySettingsOpen(true); }}>표시 설정 열기</button></div>
           <LyricMetadataControls memo={memo} status={status} isFavorite={isFavorite} isPinned={isPinned}
             onMemo={changeMemo} onStatus={changeStatus} onFavorite={() => toggleMetadata("favorite")} onPinned={() => toggleMetadata("pinned")}
-            onMemoCompositionStart={() => { memoComposingRef.current = true; setComposingInput(true); }} onMemoCompositionEnd={() => { memoComposingRef.current = false; setComposingInput(Boolean(editorRef.current?.composing || titleComposingRef.current)); controllerRef.current?.compositionEnd(); }} /></>} />
+            onMemoCompositionStart={() => { memoComposingRef.current = true; controllerRef.current?.compositionStart(); setComposingInput(true); }} onMemoCompositionEnd={() => { memoComposingRef.current = false; setComposingInput(Boolean(editorRef.current?.composing || titleComposingRef.current)); if (!titleComposingRef.current) controllerRef.current?.compositionEnd(); }} /></>} />
     </div>
     <div className="mobile-editor-dock" role="group" aria-label="가사 편집 도구">
       <button type="button" aria-haspopup="menu" aria-expanded={Boolean(songFormInsertMenu)} onClick={() => requestSongFormInsertMenu({

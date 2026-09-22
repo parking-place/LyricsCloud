@@ -10,13 +10,22 @@ import { createRhymeMetadataSaver } from "../../apps/web/src/lib/rhyme-metadata.
 import { lyricCopyView } from "../../apps/web/src/lib/lyric-copy.js";
 import { promptCopyView } from "../../apps/web/src/lib/prompt-copy.js";
 import { hasVolatilePendingInput } from "../../apps/web/src/lib/update-safety.js";
+import { createMetadataDraftStore } from "../../apps/web/src/lib/metadata-draft.js";
 
 // Run the real editor handlers, JSX, save controller and metadata saver. Only
 // React/CodeMirror/browser-sync/clipboard boundaries are isolated; no DB or server.
-function editorFixture(kind: "lyric" | "rhyme" | "prompt") {
+function memoryStorage(): Storage {
+  const items = new Map<string, string>();
+  return { get length() { return items.size; }, key: (index) => [...items.keys()][index] ?? null,
+    getItem: (key) => items.get(key) ?? null, setItem: (key, value) => { items.set(key, value); },
+    removeItem: (key) => { items.delete(key); }, clear: () => items.clear() };
+}
+
+function editorFixture(kind: "lyric" | "rhyme" | "prompt", storage = memoryStorage()) {
   vi.useFakeTimers();
-  const failedRead = vi.fn(async (_url: string) => ({ ok: false, status: 503, json: async () => ({}) }));
+  const failedRead = vi.fn(async (_url: string, _options?: any): Promise<any> => ({ ok: false, status: 503, json: async () => ({}) }));
   vi.stubGlobal("fetch", failedRead);
+  vi.stubGlobal("localStorage", storage);
   const slots: any[] = [];
   let cursor = 0;
   let effects: Array<() => void> = [];
@@ -46,23 +55,25 @@ function editorFixture(kind: "lyric" | "rhyme" | "prompt") {
   const initial = { id: "fixture-document", title: "저장된 제목", body, memo: "저장된 메모", status: "draft",
     isFavorite: false, isPinned: false, pinOrder: null, color: null, tags: [], rowVersion: 1,
     mode: "sentence", tokens: [], tagText: "", sentenceText: "원래 문장", plainText: "원래 문장", linkedSongIds: [] };
-  const sync = { setComposing() {}, setTitle() {}, setSentenceText() {}, leave() {}, flush: async () => false,
-    checkpoint: async () => false, destroy: async () => undefined, retry() {} };
+  const sync = { setComposing() {}, setTitle() {}, setSentenceText() {}, leave() {}, flush: vi.fn(async () => false),
+    checkpoint: vi.fn(async () => false), destroy: async () => undefined, retry() {} };
   const editor = { value: body, focus() {}, setEditable() {}, finishComposition() {}, destroy() {},
     selection: { from: 0, to: 0, head: 0, anchor: 0 }, songForm: { sections: [] }, scrollTop: 0 };
   const copy = vi.fn(async (_text: string, _target: string) => "copied");
   const feedback = { copyText: copy, manual: null as null | { text: string; target: string } };
+  const router = { push: vi.fn(), replace: vi.fn(), refresh: vi.fn() };
   const dependencies: Record<string, any> = {
     react, "react/jsx-runtime": { jsx, jsxs: jsx, Fragment: "fragment" },
-    "next/navigation": { useRouter: () => ({ push() {}, replace() {} }) },
+    "next/navigation": { useRouter: () => router },
     "@lyricscloud/domain": domain,
     "@lyricscloud/editor": { SerializedSaveController, parseSongForm, DEFAULT_SONG_FORM_MARKERS: [],
-      BufferedPositionSaver: class { change() {} flush() { return Promise.resolve(); } dispose() {} },
+      BufferedPositionSaver: class { change() {} flush() { return Promise.resolve(); } destroy() {} dispose() {} },
       createCodeMirrorTextEditor: (options: any) => { editorOptions = options; return editor; },
       ...Object.fromEntries(["createBrowserLyricSync", "createBrowserRhymeSync", "createBrowserPromptSync"].map((name) => [name, async (options: any) => {
         syncOptions = options; options.onStateChange("ready"); options.onEditableChange(true); return sync;
       }])) },
     "../lib/account-cache.js": { registerLogoutSave: () => () => {} },
+    "../lib/metadata-draft.js": { createMetadataDraftStore: (owner: string, kind: "lyric" | "rhyme", id: string) => createMetadataDraftStore(owner, kind, id, storage) },
     "../lib/lyric-metadata.js": { createLyricMetadataSaver },
     "../lib/rhyme-metadata.js": { createRhymeMetadataSaver },
     "../lib/lyric-copy.js": { lyricCopyView }, "../lib/prompt-copy.js": { promptCopyView },
@@ -77,16 +88,17 @@ function editorFixture(kind: "lyric" | "rhyme" | "prompt") {
     module, exports: module.exports, require: (name: string) => dependencies[name] ?? {},
     window, document: Object.assign(new EventTarget(), { querySelector: () => null }),
     requestAnimationFrame: () => 1, cancelAnimationFrame() {}, fetch: failedRead,
-    URLSearchParams, AbortController, setTimeout, clearTimeout
+    URLSearchParams, AbortController, setTimeout, clearTimeout, crypto, localStorage: storage
   });
   const display = { font: "system", fontSize: 18, lineHeight: 1.8, letterSpacing: 0, focusModeDefault: false };
   const props = { ownerId: "fixture-owner", initialLyric: initial, initialRhyme: initial, initialPrompt: initial,
     songTitle: "합성 곡", songLyrics: [initial], dashboardHref: "/songs/fixture", returnTo: "/songs", initialFind: "", initialPosition: null,
     initialDisplaySettings: { account: display, effective: display, override: null }, displaySettings: display };
   return {
-    copy, feedback, failedRead, body, editor,
+    copy, feedback, failedRead, body, editor, storage, sync, router, initial, window,
     get editorOptions() { return editorOptions; },
     syncState(state: string) { syncOptions.onStateChange(state); },
+    unmount() { for (const slot of slots) slot?.cleanup?.(); },
     render() {
       cursor = 0; effects = [];
       const tree = module.exports[`${kind[0]!.toUpperCase()}${kind.slice(1)}Editor`]!(props);
@@ -184,5 +196,174 @@ describe("volatile editor recovery", () => {
     const fallback = nodes(fixture.render()).find((node) => node.props?.state === fixture.feedback);
     expect(fallback.props.onManualComplete).toBeUndefined();
     fixture.syncState("offline"); expect(pending(fixture.render())).toBe(false);
+  });
+});
+
+describe("historical editor defects", () => {
+  it.each([["lyric", "title"], ["lyric", "memo"], ["rhyme", "title"]] as const)(
+    "%s %s: keeps metadata preedit local through commands, pagehide and disposal until actual compositionend",
+    async (kind, field) => {
+      const fixture = editorFixture(kind);
+      let server = { ...fixture.initial };
+      const metadataUrl = `/api/${kind === "lyric" ? "lyrics" : "rhymes"}/fixture-document`;
+      fixture.failedRead.mockImplementation(async (url, options) => {
+        if (url === metadataUrl && options?.method === "PATCH") server = { ...server, ...JSON.parse(options.body), rowVersion: server.rowVersion + 1 };
+        return { ok: true, json: async () => ({ [kind]: server, items: [] }) };
+      });
+      fixture.sync.flush.mockResolvedValue(true); fixture.sync.checkpoint.mockResolvedValue(true);
+      const tree = fixture.render(); await Promise.resolve();
+      const input = field === "memo"
+        ? nodes(tree).find((node) => node.type?.name === "LyricMetadataControls").props
+        : titleInput(tree).props;
+      const change = (value: string) => field === "memo" ? input.onMemo(value) : input.onChange({ target: { value } });
+      const start = () => field === "memo" ? input.onMemoCompositionStart() : input.onCompositionStart();
+      const end = () => field === "memo" ? input.onMemoCompositionEnd() : input.onCompositionEnd();
+      const requests = () => fixture.failedRead.mock.calls.filter(([url]) => url === metadataUrl);
+      change("조합 직전 입력");
+      start();
+      await vi.advanceTimersByTimeAsync(1_000); // compositionstart cancels the preceding debounce
+      expect(requests()).toHaveLength(0);
+      change("ㅎ");
+      await vi.advanceTimersByTimeAsync(6_000);
+      await button(fixture.render(), kind === "lyric" ? "복제" : "← 라임 노트").props.onClick();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(requests()).toHaveLength(0);
+      expect(fixture.sync.checkpoint).not.toHaveBeenCalled();
+      expect(fixture.router.push).not.toHaveBeenCalled();
+      fixture.window.dispatchEvent(new Event("blur"));
+      fixture.window.dispatchEvent(new Event("pagehide"));
+      await vi.advanceTimersByTimeAsync(0);
+      expect(requests()).toHaveLength(0);
+      expect(pending(fixture.render())).toBe(true);
+      change("한글 확정 입력"); end();
+      await vi.advanceTimersByTimeAsync(900);
+      expect(server[field]).toBe("한글 확정 입력");
+      expect(fixture.storage.length).toBe(0);
+      const acknowledgedRequests = requests().length;
+      start(); change("ㅁ"); fixture.unmount();
+      await vi.advanceTimersByTimeAsync(6_000);
+      expect(requests()).toHaveLength(acknowledgedRequests);
+      const saved = JSON.parse(fixture.storage.getItem(fixture.storage.key(0)!)!);
+      expect(saved[field]).toBe("ㅁ");
+    }
+  );
+
+  for (const kind of ["lyric", "rhyme"] as const) {
+    it(`${kind}: persists metadata synchronously and offers explicit restoration after reopening`, async () => {
+      const first = editorFixture(kind);
+      let tree = first.render();
+      titleInput(tree).props.onChange({ target: { value: "종료 전 제목" } });
+      if (kind === "lyric") nodes(tree).find((node) => node.type?.name === "LyricMetadataControls").props.onMemo("  미전송 메모\n[Extend : 3:00]  ");
+      expect(first.storage.length).toBeGreaterThan(0);
+      await vi.advanceTimersByTimeAsync(900); // failed save must retain the journal
+      const reopened = editorFixture(kind, first.storage);
+      reopened.render(); await Promise.resolve(); tree = reopened.render();
+      expect(titleInput(tree).props.value).toBe("저장된 제목");
+      expect(text(tree)).toContain("저장되지 않은");
+      button(tree, "이 초안 복원").props.onClick();
+      tree = reopened.render();
+      expect(titleInput(tree).props.value).toBe("종료 전 제목");
+      if (kind === "lyric") expect(nodes(tree).find((node) => node.type?.name === "LyricMetadataControls").props.memo).toBe("  미전송 메모\n[Extend : 3:00]  ");
+      expect(pending(tree)).toBe(true);
+    });
+
+    it(`${kind}: refuses a stale restore action after fresher input and keeps it available for copying`, () => {
+      const first = editorFixture(kind);
+      titleInput(first.render()).props.onChange({ target: { value: "old unsent title" } });
+      const reopened = editorFixture(kind, first.storage);
+      reopened.render();
+      const tree = reopened.render();
+      const restore = button(tree, "이 초안 복원");
+      titleInput(tree).props.onChange({ target: { value: "newer local title" } });
+      restore.props.onClick();
+      expect(titleInput(reopened.render()).props.value).toBe("newer local title");
+      expect(button(reopened.render(), "이 초안 복원").props.disabled).toBe(true);
+      button(reopened.render(), "이 초안 복사").props.onClick();
+      expect(JSON.parse(reopened.copy.mock.calls.at(-1)![0]).title).toBe("old unsent title");
+    });
+
+    it(`${kind}: an older metadata ACK does not erase later input, and the final ACK clears its revision`, async () => {
+      const fixture = editorFixture(kind);
+      const reply = Promise.withResolvers<void>();
+      let server = { ...fixture.initial };
+      let writes = 0;
+      fixture.failedRead.mockImplementation(async (_url, options) => {
+        if (options?.method === "PATCH") {
+          const submitted = JSON.parse(options.body);
+          if (++writes === 1) await reply.promise;
+          server = { ...server, ...submitted, rowVersion: server.rowVersion + 1 };
+        }
+        return { ok: true, json: async () => ({ [kind]: server, items: [] }) };
+      });
+      titleInput(fixture.render()).props.onChange({ target: { value: "submitted title" } });
+      await vi.advanceTimersByTimeAsync(900);
+      expect(writes).toBe(1);
+      titleInput(fixture.render()).props.onChange({ target: { value: "newer title" } });
+      reply.resolve(); await vi.advanceTimersByTimeAsync(0);
+      const stored = Array.from({ length: fixture.storage.length }, (_, i) => JSON.parse(fixture.storage.getItem(fixture.storage.key(i)!)!));
+      expect(stored).toMatchObject([{ title: "newer title" }]);
+      expect(titleInput(fixture.render()).props.value).toBe("newer title");
+      await vi.advanceTimersByTimeAsync(900);
+      expect(server.title).toBe("newer title");
+      expect(fixture.storage.length).toBe(0);
+      expect(pending(fixture.render())).toBe(false);
+    });
+  }
+
+  it("takes the duplicate lock before awaiting checkpoint and keeps the request ID after a lost reply", async () => {
+    const fixture = editorFixture("lyric");
+    fixture.sync.flush.mockResolvedValue(true);
+    const checkpoint = Promise.withResolvers<boolean>();
+    fixture.sync.checkpoint.mockReturnValue(checkpoint.promise);
+    fixture.render(); await Promise.resolve();
+    const tree = fixture.render();
+    const first = button(tree, "복제").props.onClick();
+    const second = button(tree, "복제").props.onClick();
+    try {
+      await vi.advanceTimersByTimeAsync(0);
+      expect(fixture.sync.checkpoint).toHaveBeenCalledTimes(1);
+      expect(button(fixture.render(), "복제").props.disabled).toBe(true);
+    } finally { checkpoint.resolve(true); await Promise.all([first, second]); }
+    const requests = () => fixture.failedRead.mock.calls.filter(([url]) => url.endsWith("/duplicate"));
+    expect(requests()).toHaveLength(1);
+    fixture.failedRead.mockImplementation(async () => ({ ok: true, json: async () => ({ lyric: { id: "copy" } }) }));
+    await button(fixture.render(), "복제").props.onClick();
+    expect(requests()).toHaveLength(2);
+    expect(JSON.parse(requests()[0]![1].body).requestId).toBe(JSON.parse(requests()[1]![1].body).requestId);
+    expect(fixture.router.push).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps an over-limit title intact and reports the Unicode code-point limit before saving", async () => {
+    const fixture = editorFixture("lyric");
+    let tree = fixture.render();
+    const title = "🎵".repeat(201);
+    titleInput(tree).props.onChange({ target: { value: title } });
+    tree = fixture.render();
+    expect(titleInput(tree).props.value).toBe(title);
+    expect(titleInput(tree).props["aria-invalid"]).toBe(true);
+    expect(text(tree)).toContain("제목은 200자 이하로 입력해 주세요.");
+    await vi.advanceTimersByTimeAsync(900);
+    expect(fixture.failedRead.mock.calls.filter(([url]) => url.includes("/api/lyrics/"))).toHaveLength(0);
+    titleInput(fixture.render()).props.onChange({ target: { value: "🎵".repeat(200) } });
+    expect(titleInput(fixture.render()).props["aria-invalid"]).toBe(false);
+    await vi.advanceTimersByTimeAsync(900);
+    expect(fixture.failedRead.mock.calls.filter(([url]) => url.includes("/api/lyrics/"))).toHaveLength(1);
+  });
+
+  it("cancels duplication if fresh metadata arrives during the awaited checkpoint", async () => {
+    const fixture = editorFixture("lyric");
+    const checkpoint = Promise.withResolvers<boolean>();
+    fixture.sync.flush.mockResolvedValue(true);
+    fixture.sync.checkpoint.mockReturnValue(checkpoint.promise);
+    fixture.render(); await Promise.resolve();
+    const operation = button(fixture.render(), "복제").props.onClick();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fixture.sync.checkpoint).toHaveBeenCalledTimes(1);
+    titleInput(fixture.render()).props.onChange({ target: { value: "checkpoint 중 새 제목" } });
+    checkpoint.resolve(true); await operation;
+    expect(fixture.failedRead.mock.calls.filter(([url]) => url.endsWith("/duplicate"))).toHaveLength(0);
+    expect(fixture.router.push).not.toHaveBeenCalled();
+    expect(button(fixture.render(), "복제").props.disabled).toBe(false);
+    expect(titleInput(fixture.render()).props.value).toBe("checkpoint 중 새 제목");
   });
 });

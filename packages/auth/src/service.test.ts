@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { calculatePKCECodeChallenge } from "openid-client";
-import { hmacAllowlistDigest, readAuthConfig, type AuthConfig, type BetaSignupConfig } from "@lyricscloud/config";
+import { hmacAllowlistDigest, parseHmacAllowlistKeyring, readAuthConfig, type AuthConfig, type BetaSignupConfig } from "@lyricscloud/config";
 import { betaSignupEmailDigest, type AuthIdentityInput, type AuthStore, type BetaSignupIntentInput,
   type BetaSignupStore, type BetaAdmissionInput, type BetaRedemptionInput } from "@lyricscloud/database";
 import { cookieNames, sessionCookie, transactionCookie } from "./cookies.js";
@@ -124,6 +124,58 @@ async function login(store = new MemoryStore(), oidc = new FakeOidc(), authConfi
 }
 
 describe("OIDC login boundary", () => {
+  it("loads a provisioned offset rotation deadline through the strict runtime keyring parser", async () => {
+    const provisioning = await import(new URL("../../../scripts/provision-auth-allowlist-keys.mjs", import.meta.url).href);
+    const notAfter = provisioning.normalizeRotationDeadline("2099-01-02T09:30:00+09:00");
+    const keyring = { formatVersion: 1, activeKid: "new", keys: [
+      { kid: "old", key: Buffer.alloc(32, 3).toString("base64url"), notAfter },
+      { kid: "new", key: Buffer.alloc(32, 4).toString("base64url") }
+    ] };
+    expect(parseHmacAllowlistKeyring(JSON.stringify(keyring)).keys[0]?.notAfter).toBe("2099-01-02T00:30:00.000Z");
+  });
+
+  it.each(["login", "signup"] as const)("rejects %s when OIDC returns after the transaction deadline", async (flow) => {
+    let current = now;
+    const store = new MemoryStore();
+    const beta = new MemoryBetaStore();
+    const oidc = new FakeOidc();
+    oidc.exchange = async () => {
+      current = new Date(now.getTime() + 600_000);
+      return oidc.identity;
+    };
+    const service = new AuthService(config, store, oidc, { now: () => current }, { config: betaConfig, store: beta });
+    const started = flow === "login" ? await service.beginLogin(null)
+      : await service.beginBetaSignup({ code: "ABC123", email: oidc.identity.email, returnTo: null });
+    await expect(service.completeLogin(
+      new URL(`http://localhost:8080/api/auth/callback?code=synthetic&state=${oidc.state}`), started.transaction
+    )).rejects.toMatchObject({ code: "AUTH_STATE_INVALID", flow });
+    expect(store.sessions.size).toBe(0);
+    expect(beta.admitted.size).toBe(0);
+    if (flow === "signup") expect([...beta.intents.values()][0]?.cancelled).toBe(true);
+  });
+
+  it("passes the live injected clock to redemption after the provider round trip", async () => {
+    let current = now;
+    const store = new MemoryStore();
+    const beta = new MemoryBetaStore();
+    const oidc = new FakeOidc();
+    oidc.identity = { ...oidc.identity, email: "new@example.test" };
+    oidc.exchange = async () => {
+      current = new Date(now.getTime() + 60_000);
+      return oidc.identity;
+    };
+    beta.redeemBetaSignup = async (input) => {
+      expect(input.now).toEqual(current);
+      current = new Date(now.getTime() + 120_000);
+      expect(input.currentTime?.()).toEqual(current);
+      return { userId: "00000000-0000-4000-8000-000000000002", outcome: "redeemed" };
+    };
+    const service = new AuthService(config, store, oidc, { now: () => current }, { config: betaConfig, store: beta });
+    const started = await service.beginBetaSignup({ code: "ABC123", email: oidc.identity.email, returnTo: null });
+    await service.completeLogin(new URL(`http://localhost:8080/api/auth/callback?code=synthetic&state=${oidc.state}`), started.transaction);
+    expect(store.sessions.size).toBe(1);
+  });
+
   it("issues one opaque session and reuses the issuer+subject user", async () => {
     const flow = await login();
     const first = await flow.service.completeLogin(flow.callback, flow.started.transaction);

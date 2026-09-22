@@ -16,7 +16,7 @@
 ```bash
 git clone https://github.com/parking-place/LyricsCloud.git
 cd LyricsCloud
-APPROVED_REF=v1.1.6
+APPROVED_REF=v1.1.7
 git checkout --detach "$APPROVED_REF"
 cp .env.example .env
 cp .test_users.example .test_users
@@ -43,6 +43,18 @@ git check-ignore -v .env .test_users .private/runtime/auth_allowed_emails .priva
 ```
 
 환경별 keyring은 공유하지 않는다. HMAC은 익명화가 아니며 rollback backup은 기존 계정 로그인과 복원을 검증한 뒤 정한 보존 기한까지 별도 보호한다. 자세한 회전·복원 절차는 [P3 운영 인수](./runbooks/1.0.1-phase3-hmac-allowlist.md)를 따른다.
+
+베타 코드 index secret도 `compose.yaml`의 필수 web mount다. **새 환경에서만** 관리자용 index·AEAD key를 생성하고 index key만 web용 파일로 복사한다. 기존 환경 업그레이드에서는 원래 key와 kid를 그대로 복원·보존한다.
+
+```bash
+node scripts/provision-beta-code-keys.mjs .private/keys/beta
+sudo install -o 65532 -g 65532 -m 0400 .private/keys/beta/beta_code_index_key .private/runtime/web_beta_code_index_key
+git check-ignore -v .private/keys/beta/beta_code_index_key .private/keys/beta/beta_code_aead_key .private/runtime/web_beta_code_index_key
+```
+
+`.env`의 `BETA_CODE_INDEX_KID`를 환경 전용의 고정 ID(예: `release-2026-09`)로 지정한다. 관리자 CLI도 같은 index key와 kid를 사용하고 `BETA_ENVIRONMENT=release`로 지정한다. 관리자 `BETA_CODE_INDEX_KEY_FILE`·`BETA_CODE_AEAD_KEY_FILE`은 위 관리자 파일의 절대 경로로 설정한다. web에는 AEAD key를 복사하거나 mount하지 않는다. 두 관리자 key는 DB와 함께 보호된 복구 대상으로 보관한다.
+
+index key/kid의 수명은 allowlist HMAC 회전과 별개다. 기존 발급 이력이 있으면 다른 index kid 발급은 `BETA_INDEX_KEY_CHANGE_UNSUPPORTED`로 중단한다. 동일 kid의 key bytes 교체도 지원하지 않으며, 기존 key 유실 시 새 key로 덮어쓰지 말고 복구 절차를 진행한다. 사용·폐기된 코드의 digest tombstone을 지우거나 ID를 재사용해서 이 제한을 우회하지 않는다. 역사 key 조회가 구현되기 전까지 index key 회전은 지원하지 않는다.
 
 정식 환경 이름·형식의 기준은 봉인된 [1.1.7 environment schema](../config/environment-schema.1.1.7.json)다. `APP_VERSION=1.1.7`, `APP_CHANNEL=release`, `APP_PHASE` 없음, `BUILD_ID=edb8b4aca833fbf48a3111177db9060dceac42ba`, `LC_UI_VARIANT=b1`으로 검증한다. Google 설정은 아래 OAuth 절차를 먼저 마친다. 릴리스 적용 전에는 해당 tag에 포함된 schema로 web·collaboration·worker·migrate·admin 설정을 각각 검사한다.
 

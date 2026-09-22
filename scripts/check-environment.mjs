@@ -9,12 +9,16 @@ export function validateEnvironment(service, source) {
   const required = schema["x-required-by-service"][service];
   if (!required) throw new Error(`Unknown service: ${service}`);
   const invalid = [];
-  for (const name of required) {
+  const applicable = new Set([...required, ...Object.entries(schema.properties)
+    .filter(([name, rule]) => rule["x-services"]?.includes(service) && source[name] !== undefined)
+    .map(([name]) => name)]);
+  for (const name of applicable) {
     const rule = schema.properties[name];
     const raw = source[name];
     if (raw === undefined || raw === "") { invalid.push(name); continue; }
     const value = rule.type === "integer" ? Number(raw) : raw;
-    if (rule.type === "integer" && !Number.isInteger(value)) invalid.push(name);
+    if (rule.type === "integer" && (!Number.isSafeInteger(value) || (typeof raw !== "string" && typeof raw !== "number")
+      || (typeof raw === "string" && !raw.trim()))) invalid.push(name);
     if (rule.type === "string" && typeof value !== "string") invalid.push(name);
     if (rule.const !== undefined && value !== rule.const) invalid.push(name);
     if (Array.isArray(rule.enum) && !rule.enum.includes(value)) invalid.push(name);

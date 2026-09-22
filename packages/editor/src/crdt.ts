@@ -96,8 +96,21 @@ export function setPromptMode(document: Y.Doc, mode: PromptMode, sentenceText?: 
 export function replacePromptSentence(document: Y.Doc, value: string): void {
   const raw = validatePromptSentenceText(value);
   const sentence = promptSentence(document);
-  sentence.delete(0, sentence.length);
-  if (raw) sentence.insert(0, raw);
+  const previous = sentence.toString();
+  let from = 0;
+  while (from < previous.length && from < raw.length && previous[from] === raw[from]) from++;
+  let end = previous.length; let nextEnd = raw.length;
+  while (end > from && nextEnd > from && previous[end - 1] === raw[nextEnd - 1]) { end--; nextEnd--; }
+  // Y.Text positions use UTF-16. Keep a changed surrogate pair in one edit.
+  if (from > 0 && /[\uD800-\uDBFF]/u.test(previous[from - 1]!)) from--;
+  if (end < previous.length && /[\uDC00-\uDFFF]/u.test(previous[end]!)) { end++; nextEnd++; }
+  document.transact(() => {
+    const inserted = raw.slice(from, nextEnd);
+    // Anchor the replacement before the original characters, so a concurrent
+    // append anchored after them stays after the replacement as well.
+    if (inserted) sentence.insert(from, inserted);
+    if (end > from) sentence.delete(from + inserted.length, end - from);
+  });
 }
 
 export function replacePromptTokens(document: Y.Doc, items: readonly PromptSequenceItem[]): void {

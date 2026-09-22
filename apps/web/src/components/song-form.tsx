@@ -47,8 +47,11 @@ export function SongForm({ song, returnTo }: { song?: ExistingSong; returnTo: st
   const [state, setState] = useState<"idle" | "saving" | "saved">("idle");
   const submitting = useRef(false);
   const requestId = useRef<string>(crypto.randomUUID());
+  const confirmed = useRef(initial);
+  const currentValues = useRef(values);
+  const savedSongId = useRef(song?.id);
   const router = useRouter();
-  const dirty = JSON.stringify(values) !== JSON.stringify(initial);
+  const dirty = JSON.stringify(values) !== JSON.stringify(confirmed.current);
 
   useEffect(() => {
     const beforeUnload = (event: BeforeUnloadEvent) => {
@@ -71,7 +74,8 @@ export function SongForm({ song, returnTo }: { song?: ExistingSong; returnTo: st
   }, [dirty, state]);
 
   function update<Key extends keyof SongFormValues>(key: Key, value: SongFormValues[Key]) {
-    setValues((current) => ({ ...current, [key]: value }));
+    currentValues.current = { ...currentValues.current, [key]: value };
+    setValues(currentValues.current);
     if (key === "title" || key === "description" || key === "workNotes") {
       setErrors((current) => ({ ...current, [key]: undefined }));
     }
@@ -87,7 +91,14 @@ export function SongForm({ song, returnTo }: { song?: ExistingSong; returnTo: st
     submitting.current = true;
     setState("saving");
     try {
-      const songId = song ? await updateSong(song.id, values) : await createSong(values, requestId.current);
+      const songId = savedSongId.current ? await updateSong(savedSongId.current, values, confirmed) : await createSong(values, requestId.current);
+      savedSongId.current = songId;
+      confirmed.current = values;
+      if (JSON.stringify(currentValues.current) !== JSON.stringify(values)) {
+        setFormError("제출한 내용은 저장했습니다. 저장 중 추가한 입력은 아직 저장하지 않았습니다. 확인한 뒤 변경 저장을 눌러 주세요.");
+        setState("idle");
+        return;
+      }
       setState("saved");
       router.replace(`/songs/${songId}?returnTo=${encodeURIComponent(returnTo)}`);
       router.refresh();
@@ -102,7 +113,10 @@ export function SongForm({ song, returnTo }: { song?: ExistingSong; returnTo: st
         }
         setErrors(mapped);
       }
-      setFormError(failure.status === 401 ? "로그인 시간이 만료되었습니다. 입력을 복사한 뒤 다시 로그인해 주세요." : "저장하지 못했습니다. 입력은 그대로 유지됩니다. 다시 시도해 주세요.");
+      const progress = failure.pendingFields ? `저장 완료: ${failure.savedFields?.join(", ") || "없음"}. 미완료: ${failure.pendingFields.join(", ")}. ` : "";
+      setFormError(progress + (failure.status === 401 ? "로그인 시간이 만료되었습니다. 입력을 복사한 뒤 다시 로그인해 주세요."
+        : progress ? "입력은 유지됩니다. 다시 저장하면 미완료 항목과 이후 변경한 항목만 저장합니다."
+        : "저장하지 못했습니다. 입력은 그대로 유지됩니다. 다시 시도해 주세요."));
       setState("idle");
     } finally {
       submitting.current = false;
@@ -111,7 +125,7 @@ export function SongForm({ song, returnTo }: { song?: ExistingSong; returnTo: st
 
   return <section className="song-form-page" aria-labelledby="song-form-title" data-pending-input={dirty && state !== "saved" ? "true" : undefined}>
     <header className="form-heading"><div><a className="back-inline" href={returnTo}>← 곡 목록</a><h1 id="song-form-title">{song ? "곡 정보 수정" : "새 곡 만들기"}</h1><p>{song ? "현재 곡의 기본 정보와 작업 상태를 정리합니다." : "제목 하나로 시작해도 괜찮아요. 나머지는 언제든 채울 수 있습니다."}</p></div></header>
-    {formError ? <div className="form-error-banner" role="alert"><strong>저장 오류</strong><span>{formError}</span></div> : null}
+    {formError ? <div className="form-error-banner" role="alert"><strong>저장 미완료</strong><span>{formError}</span></div> : null}
     <form className="song-form" onSubmit={submit} noValidate>
       <div className="form-main">
         <FormField label="곡 제목" required error={errors.title} count={values.title.length} maximum={200}>
@@ -143,6 +157,8 @@ function FormField({ label, required, error, count, maximum, children }: { label
 interface SongFormFailure {
   readonly status?: number;
   readonly issues?: readonly { field: string; code: string }[];
+  readonly savedFields?: readonly string[];
+  readonly pendingFields?: readonly string[];
 }
 
 async function createSong(values: SongFormValues, requestId: string): Promise<string> {
@@ -156,25 +172,32 @@ async function createSong(values: SongFormValues, requestId: string): Promise<st
   return result.song.id as string;
 }
 
-async function updateSong(songId: string, values: SongFormValues): Promise<string> {
-  const main = await fetch(`/api/songs/${songId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title: values.title, description: values.description, workNotes: values.workNotes, status: values.status })
-  });
-  const mainResult = await main.json();
-  if (!main.ok) throw { status: main.status, issues: mainResult.error?.issues } satisfies SongFormFailure;
-  for (const [path, body] of [
-    ["color", { value: values.color }],
-    ["pin", { value: values.isPinned, pinOrder: values.isPinned ? 0 : null }],
-    ["favorite", { value: values.isFavorite }]
-  ] as const) {
-    const response = await fetch(`/api/songs/${songId}/${path}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-    if (!response.ok) throw { status: response.status } satisfies SongFormFailure;
+async function updateSong(songId: string, values: SongFormValues, confirmed: { current: SongFormValues }): Promise<string> {
+  const main = { title: values.title, description: values.description, workNotes: values.workNotes, status: values.status };
+  const steps: { label: string; path: string; fields: Partial<SongFormValues>; body: unknown }[] = [
+    { label: "기본 정보", path: "", fields: main, body: main },
+    { label: "표시 색상", path: "/color", fields: { color: values.color }, body: { value: values.color } },
+    { label: "고정", path: "/pin", fields: { isPinned: values.isPinned }, body: { value: values.isPinned, pinOrder: values.isPinned ? 0 : null } },
+    { label: "즐겨찾기", path: "/favorite", fields: { isFavorite: values.isFavorite }, body: { value: values.isFavorite } }
+  ];
+  const saved = (step: typeof steps[number]) => Object.entries(step.fields).every(([key, value]) => confirmed.current[key as keyof SongFormValues] === value);
+  for (const step of steps) {
+    if (saved(step)) continue;
+    try {
+      const response = await fetch(`/api/songs/${songId}${step.path}`, {
+        method: step.path ? "PUT" : "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(step.body)
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw { status: response.status, issues: result.error?.issues } satisfies SongFormFailure;
+      }
+      confirmed.current = { ...confirmed.current, ...step.fields };
+    } catch (caught) {
+      throw { ...(caught as SongFormFailure), savedFields: steps.filter(saved).map(({ label }) => label),
+        pendingFields: steps.filter((candidate) => !saved(candidate)).map(({ label }) => label) } satisfies SongFormFailure;
+    }
   }
   return songId;
 }

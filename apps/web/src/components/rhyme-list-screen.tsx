@@ -59,7 +59,7 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
   const metadataQueue = useRef(new Map<string, MetadataQueueEntry<unknown>>());
   const copyFeedback = useCopyFeedback();
   const order = useLibraryCardOrder({
-    items: notes, setItems: setNotes, orderVersion, setOrderVersion,
+    items: notes, setItems: setNotes, orderVersion, setOrderVersion, isManual: sort === "manual", generation: requestSequence,
     endpoint: "/api/rhymes/order/moves", noun: "라임 노트",
     activateManual: () => setSort("manual"), reload: () => setRetryKey((value) => value + 1), setNotice
   });
@@ -69,6 +69,7 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
     if (!Object.entries(patch).some(([key, value]) => current[key as keyof RhymeListQuery] !== value)) return;
     const next = { ...current, ...patch };
     ++requestSequence.current;
+    order.invalidate(); setNotice("");
     setLoading(true); setLoadingMore(false); setNextCursor(null); setError("");
     setSearch(next.search); setTag(next.tag); setSong(next.song); setSort(next.sort);
   }
@@ -83,6 +84,7 @@ export function RhymeListScreen({ initialQuery }: { initialQuery: RhymeListQuery
     const params = makeParams(appliedSearch, tag, song, sort);
     window.history.replaceState(null, "", `/rhymes${params.size ? `?${params}` : ""}`);
     const sequence = ++requestSequence.current;
+    order.invalidate();
     const controller = new AbortController();
     setLoading(true); setLoadingMore(false); setNextCursor(null); setError("");
     const api = makeParams(appliedSearch, tag, song, sort); api.set("limit", "12");

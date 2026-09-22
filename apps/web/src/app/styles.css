@@ -74,8 +74,8 @@ html[data-theme="light"] .auth-error span { color: #7d352f; }
 html[data-theme="light"] .auth-error small { color: #7e554f; }
 
 * { box-sizing: border-box; }
-html { min-width: 320px; background: var(--canvas); color: var(--ink); font-family: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif; }
-body { margin: 0; min-width: 320px; min-height: 100svh; background: var(--canvas); }
+html { min-width: 0; background: var(--canvas); color: var(--ink); font-family: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif; }
+body { margin: 0; min-width: 0; min-height: 100svh; background: var(--canvas); }
 a { color: inherit; }
 button, a { font: inherit; }
 button { color: inherit; }
@@ -897,7 +897,8 @@ p.editor-command-notice:not(:has(a, button, input, select, textarea, [tabindex])
 .other-lyrics-list button small { color: var(--subtle); font-size: .56rem; }
 .editor-resource-shell { min-width: 0; min-height: 0; display: none; }
 .editor-resource-shell.is-desktop-open { display: block; }
-.editor-resource-panel { width: var(--resource-panel-width, 296px); height: 100%; min-height: 0; display: grid; grid-template-rows: auto auto auto auto minmax(0, 1fr) auto; gap: .65rem; padding: .85rem; border: 1px solid var(--line); border-radius: .85rem; background: var(--panel); overflow: hidden; }
+.editor-resource-panel { width: var(--resource-panel-width, 296px); height: 100%; min-height: 0; display: flex; flex-direction: column; gap: .65rem; padding: .85rem; border: 1px solid var(--line); border-radius: .85rem; background: var(--panel); overflow-y: auto; overscroll-behavior: contain; }
+.editor-resource-panel > :not(.editor-resource-results) { flex: none; }
 .editor-resource-panel > .sheet-handle { display: none; }
 .editor-resource-heading { display: flex; align-items: start; gap: .6rem; padding-bottom: .65rem; border-bottom: 1px solid var(--line); }
 .editor-resource-heading h2 { margin: .25rem 0 0; font-size: .92rem; }
@@ -932,7 +933,7 @@ p.editor-command-notice:not(:has(a, button, input, select, textarea, [tabindex])
 .editor-resource-search:focus-within { border-color: var(--acid); }
 .editor-resource-search input { min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: .68rem; }
 .editor-resource-search button { width: 1.75rem; height: 1.75rem; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; }
-.editor-resource-results { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.editor-resource-results { flex: 1 1 auto; min-height: 8rem; overflow-y: auto; overscroll-behavior: contain; }
 .editor-resource-results ul { display: grid; gap: .45rem; margin: 0; padding: 0; list-style: none; }
 .editor-resource-results li { min-width: 0; padding: .65rem; border: 1px solid var(--line); border-radius: .58rem; background: var(--surface); }
 .editor-resource-results li.is-current { border-color: rgb(200 255 61 / 30%); background: rgb(200 255 61 / 6%); }
@@ -1419,7 +1420,6 @@ p.editor-command-notice:not(:has(a, button, input, select, textarea, [tabindex])
 .prompt-sentence-card header > span { color: var(--subtle); font-size: .65rem; }
 .prompt-sentence-card header > span.over { color: var(--danger); }
 .prompt-sentence-card textarea { width: 100%; min-height: 17rem; resize: vertical; padding: .85rem; border: 1px solid var(--line); border-radius: .62rem; outline: 0; background: var(--surface); color: var(--ink); font-family: var(--lyric-font-family, ui-monospace, monospace); font-size: var(--lyric-font-size, .82rem); line-height: var(--lyric-line-height, 1.7); letter-spacing: var(--lyric-letter-spacing, 0); white-space: pre-wrap; }
-.prompt-sentence-display, .prompt-copy-preview { font-family: var(--lyric-font-family, inherit); font-size: var(--lyric-font-size, inherit); line-height: var(--lyric-line-height, inherit); letter-spacing: var(--lyric-letter-spacing, inherit); }
 .prompt-sentence-card textarea:focus { border-color: var(--acid); }
 .prompt-sentence-display { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .35rem; padding: .7rem; border: 1px dashed var(--line); border-radius: .6rem; background: var(--canvas); color: var(--muted); font-size: .72rem; line-height: 1.6; }
 .prompt-sentence-display .sentence-span { padding: .18rem .35rem; border-radius: .32rem; background: var(--surface-raised); white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -1465,7 +1465,8 @@ p.editor-command-notice:not(:has(a, button, input, select, textarea, [tabindex])
 .prompt-editor-info > section { padding: .9rem; border-width: 0 0 1px; border-radius: 0; background: transparent; }
 .prompt-editor-info > section:last-child { border-bottom: 0; }
 .prompt-editor-info > h2, .prompt-editor-info > p { padding-inline: .9rem; }
-.prompt-copy-preview { white-space: pre-wrap; font-family: ui-monospace, monospace; }
+.prompt-copy-preview { white-space: pre-wrap; }
+.prompt-sentence-display, .prompt-editor-info .prompt-copy-preview { font-family: var(--lyric-font-family, inherit); font-size: var(--lyric-font-size, inherit); line-height: var(--lyric-line-height, inherit); letter-spacing: var(--lyric-letter-spacing, inherit); }
 .prompt-copy-button { border-color: rgb(200 255 61 / 45%) !important; color: var(--acid) !important; }
 .prompt-template-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .75rem; }
 .prompt-template-actions button { min-height: 2.75rem; padding: .45rem .55rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--surface); color: var(--ink); font-size: .65rem; cursor: pointer; }

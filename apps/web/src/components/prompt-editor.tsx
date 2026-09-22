@@ -181,8 +181,8 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
     const value = snapshotRef.current.sentenceText;
     sentenceComposing.current = false;
     setComposingInput(composing.current);
-    sync?.setComposing(composing.current);
     sync?.setSentenceText(value);
+    sync?.setComposing(composing.current);
   }
 
   function requestMode(target: PromptMode) {
@@ -216,6 +216,9 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
       }
       if (!await sync.checkpoint("large_paste")) throw new Error();
       const current = snapshotRef.current;
+      if (current.mode !== pending.sourceMode || current.plainText !== pending.sourceText) {
+        setConversion(null); setNotice("미리보기 뒤 다른 변경이 반영되어 변환을 취소했습니다. 최신 내용을 다시 확인해 주세요."); return;
+      }
       setConversionUndo({ mode: current.mode, tokens: current.items.map(({ displayValue }) => displayValue), sentenceText: current.sentenceText });
       sync.replaceContent(pending.target,
         pending.target === "tags" ? pending.tokens : current.items.map(({ displayValue }) => displayValue),

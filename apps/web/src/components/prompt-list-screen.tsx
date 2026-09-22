@@ -66,7 +66,7 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   const duplicateRequests = useRef(new Map<string, string>());
   const copyFeedback = useCopyFeedback();
   const order = useLibraryCardOrder({
-    items, setItems, orderVersion, setOrderVersion,
+    items, setItems, orderVersion, setOrderVersion, isManual: sort === "manual", generation: requestSequence,
     endpoint: "/api/prompts/order/moves", noun: "프롬프트",
     activateManual: () => setSort("manual"), reload: () => setRetryKey((value) => value + 1), setNotice
   });
@@ -76,6 +76,7 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
     if (!Object.entries(patch).some(([key, value]) => current[key as keyof PromptListQuery] !== value)) return;
     const next = { ...current, ...patch };
     ++requestSequence.current;
+    order.invalidate(); setNotice("");
     setLoading(true); setLoadingMore(false); setNextCursor(null); setError("");
     setSearch(next.search); setSong(next.song); setFavorite(next.favorite); setRecent(next.recent); setSort(next.sort);
   }
@@ -90,6 +91,7 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
     const params = makeParams(appliedSearch, song, favorite, recent, sort);
     window.history.replaceState(null, "", `/prompts${params.size ? `?${params}` : ""}`);
     const sequence = ++requestSequence.current;
+    order.invalidate();
     const controller = new AbortController();
     setLoading(true); setLoadingMore(false); setNextCursor(null); setError("");
     const api = makeParams(appliedSearch, song, favorite, recent, sort); api.set("limit", "12");

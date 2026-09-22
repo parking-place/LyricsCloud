@@ -19,7 +19,6 @@ export function PwaManager({ ownerId }: { ownerId: string }) {
   const [pendingDrafts, setPendingDrafts] = useState(false);
   const [message, setMessage] = useState("");
   const composing = useRef(false);
-  const activated = useRef(false);
 
   function memoryPending() {
     return composing.current || Boolean(document.querySelector('[data-pending-input="true"]'));
@@ -72,10 +71,16 @@ export function PwaManager({ ownerId }: { ownerId: string }) {
 
     let active = true;
     let poll: ReturnType<typeof setInterval> | undefined;
+    const buildId = document.querySelector<HTMLMetaElement>('meta[name="lyricscloud-build-id"]')?.content || "local";
+    const reportBuild = () => navigator.serviceWorker.controller?.postMessage({ type: "CLIENT_BUILD", buildId });
+    const workerMessage = (event: MessageEvent) => {
+      if (event.data?.type === "REPORT_CLIENT_BUILD") reportBuild();
+    };
     const controllerChanged = async () => {
+      // Report the document's build even when this tab did not approve a reload.
+      reportBuild();
       if (sessionStorage.getItem(UPDATE_APPROVED) !== "1") return;
       sessionStorage.removeItem(UPDATE_APPROVED);
-      activated.current = true;
       // Input may have changed while the worker was activating.
       if (await updateBlocked()) {
         if (active) { setPendingDrafts(true); setMessage("현재 입력을 보존하기 위해 새로고침을 보류했습니다. 저장 후 업데이트를 다시 적용해 주세요."); }
@@ -85,11 +90,13 @@ export function PwaManager({ ownerId }: { ownerId: string }) {
       location.reload();
     };
     navigator.serviceWorker.addEventListener("controllerchange", controllerChanged);
+    navigator.serviceWorker.addEventListener("message", workerMessage);
+    window.addEventListener("pageshow", reportBuild);
     void migrateOwnerLocalDrafts(ownerId).catch(() => setMessage("로컬 초안 저장소를 준비하지 못했습니다."));
-    const buildId = document.querySelector<HTMLMetaElement>('meta[name="lyricscloud-build-id"]')?.content || "local";
     void navigator.serviceWorker.register(serviceWorkerScriptUrl(buildId), { scope: "/", updateViaCache: "none" }).then((registration) => {
       if (!active) return;
       setWaiting(registration.waiting);
+      reportBuild();
       sendStaticAssets(registration.active ?? registration.installing);
       registration.addEventListener("updatefound", () => {
         const worker = registration.installing;
@@ -107,6 +114,8 @@ export function PwaManager({ ownerId }: { ownerId: string }) {
       active = false;
       clearInterval(poll);
       navigator.serviceWorker.removeEventListener("controllerchange", controllerChanged);
+      navigator.serviceWorker.removeEventListener("message", workerMessage);
+      window.removeEventListener("pageshow", reportBuild);
       window.removeEventListener("online", onlineChanged);
       window.removeEventListener("offline", onlineChanged);
       window.removeEventListener("beforeinstallprompt", beforeInstall);
@@ -144,7 +153,9 @@ export function PwaManager({ ownerId }: { ownerId: string }) {
       setMessage("현재 입력과 미전송 초안을 저장한 뒤 업데이트할 수 있습니다.");
       return;
     }
-    if (activated.current) { location.reload(); return; }
+    // Another tab may already have activated this worker. This tab still needs
+    // its own clean-input check and explicit approval before reloading.
+    if (waiting.state === "activated") { location.reload(); return; }
     sessionStorage.setItem(UPDATE_APPROVED, "1");
     setMessage("업데이트를 적용하고 있습니다…");
     waiting.postMessage({ type: "SKIP_WAITING" });

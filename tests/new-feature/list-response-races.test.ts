@@ -34,7 +34,7 @@ function screenFixture(kind: "song" | "rhyme" | "prompt" | "search", initialSear
     }
   };
   const router = { replace() {} };
-  const order = { retryMove: null, movingId: null, draggedId: null };
+  const order = { retryMove: null, movingId: null, draggedId: null, invalidate() {} };
   const dependencies: Record<string, any> = {
     react, "react/jsx-runtime": { jsx, jsxs: jsx, Fragment: "fragment" },
     "next/navigation": { useRouter: () => router },

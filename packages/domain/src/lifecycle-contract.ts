@@ -20,6 +20,8 @@ export interface TrashItem extends TrashReference {
   readonly deletedAt: string;
   readonly purgeAt: string;
   readonly affectedLyrics: number;
+  /** All child lyrics, including older deletion batches removed by the song cascade. */
+  readonly permanentlyDeletedLyrics: number;
   readonly preservedLinks: number;
 }
 

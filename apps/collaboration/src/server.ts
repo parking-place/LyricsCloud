@@ -20,25 +20,38 @@ const contexts = new WeakMap<WebSocket, ConnectionContext>();
 const pendingPresenceBroadcasts = new Set<string>();
 const alive = new WeakMap<WebSocket, boolean>();
 const publicHandshakeWindows = new Map<string, { startedAt: number; count: number }>();
+let retryingProjections = false;
 const projectionRetry = setInterval(async () => {
-  const result = await documents.retryPendingProjections().catch(() => ({ attempted: 0, recovered: 0 }));
-  if (result.attempted) telemetry.record({ signal: "metric", event: "sync_projection_retry",
-    metric: "sync_projection_retry_count", value: result.attempted, unit: "count",
-    outcome: result.recovered ? "recovered" : "success", resourceType: "lyric" });
-  for (const peers of sockets.values()) for (const peer of peers) {
-    const context = contexts.get(peer);
-    // A reconnect can load the pending snapshot while the repair transaction
-    // commits before this socket is visible to the recovery broadcast. Keep
-    // reconciling connections that have observed a pending projection so that
-    // the ready transition cannot be lost at that boundary.
-    if (!context || context.accessMode === "public-read" || context.accessMode === "public-write"
-      || (!result.recovered && !context.projectionPending) || !await authorized(peer)) continue;
-    const loaded = await documents.loadDocument(context.ownerId, context.documentKey).catch(() => null);
-    if (loaded && peer.readyState === WebSocket.OPEN) {
-      context.projectionPending = loaded.projectionPending;
-      peer.send(JSON.stringify({ type: "projection", projection: loaded.projectionPending ? "pending" : "current" }));
+  if (retryingProjections) return;
+  retryingProjections = true;
+  try {
+    const result = await documents.retryPendingProjections().catch(() => {
+      telemetry.record({ signal: "log", event: "sync_projection_retry", outcome: "unavailable",
+        errorCode: "SYNC_PROJECTION_RETRY_FAILED", resourceType: "lyric" });
+      return { attempted: 0, recovered: 0, failed: 0 };
+    });
+    if (result.attempted) telemetry.record({ signal: "metric", event: "sync_projection_retry",
+      metric: "sync_projection_retry_count", value: result.attempted, unit: "count",
+      outcome: result.failed ? "failure" : result.recovered ? "recovered" : "success", resourceType: "lyric" });
+    if (result.failed) telemetry.record({ signal: "log", event: "sync_projection_retry", outcome: "failure",
+      errorCode: "SYNC_PROJECTION_FAILED", value: result.failed, unit: "count", resourceType: "lyric" });
+    for (const peers of sockets.values()) for (const peer of peers) {
+      const context = contexts.get(peer);
+      // A reconnect can load the pending snapshot while the repair transaction
+      // commits before this socket is visible to the recovery broadcast. Keep
+      // reconciling connections that have observed a pending projection so that
+      // the ready transition cannot be lost at that boundary.
+      if (!context || context.accessMode === "public-read" || context.accessMode === "public-write"
+        || (!result.recovered && !context.projectionPending) || !await authorized(peer)) continue;
+      const loaded = await documents.loadDocument(context.ownerId, context.documentKey).catch(() => null);
+      if (loaded && peer.readyState === WebSocket.OPEN) {
+        context.projectionPending = loaded.projectionPending;
+        peer.send(JSON.stringify({ type: "projection", projection: loaded.projectionPending ? "pending" : "current" }));
+      }
     }
-  }
+  } catch { telemetry.record({ signal: "log", event: "sync_projection_retry", outcome: "failure",
+    errorCode: "SYNC_PROJECTION_RETRY_FAILED", resourceType: "lyric" }); }
+  finally { retryingProjections = false; }
 }, 5_000);
 projectionRetry.unref();
 const reauthenticate = setInterval(() => {

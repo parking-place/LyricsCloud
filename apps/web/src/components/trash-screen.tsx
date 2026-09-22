@@ -119,7 +119,7 @@ export function TrashScreen({ initialItems, songs }: { initialItems: readonly Tr
       <section className="trash-dialog" role="dialog" aria-modal="true" aria-labelledby="trash-dialog-title" data-trash-dialog>
         <header><div><p className="eyebrow">{action === "restore" ? "Restore" : "Permanent delete"}</p><h2 id="trash-dialog-title">{action === "restore" ? `${targets.length}개 자료 복원` : `${targets.length}개 자료 완전 삭제`}</h2></div><button type="button" onClick={closeAction} disabled={busy}>닫기</button></header>
         <ul className="trash-impact-list">{targets.map((item) => <li key={keyOf(item)}><strong>{item.title}</strong><span>{TYPE_LABELS[item.type]} · {item.originalLocation}</span></li>)}</ul>
-        <p className="trash-impact-summary">{impactText(targets)}</p>
+        <p className="trash-impact-summary">{impactText(targets, action)}</p>
         {action === "restore" && orphanLyrics.length ? <fieldset className="trash-restore-options"><legend>삭제된 부모 곡에 있던 가사의 복원 위치</legend>
           <label><input type="radio" name="restore-strategy" checked={strategy === "restore_parent"} onChange={() => setStrategy("restore_parent")} /><span><strong>부모 곡과 함께 복원</strong><small>같은 삭제 작업으로 숨겨진 소속 가사도 함께 복원합니다.</small></span></label>
           <label><input type="radio" name="restore-strategy" checked={strategy === "move_to_song"} onChange={() => setStrategy("move_to_song")} /><span><strong>활성 곡으로 이동</strong><small>선택한 가사만 아래 곡으로 옮겨 복원합니다.</small></span></label>
@@ -140,7 +140,19 @@ function TrashCard({ item, checked, onToggle, onRestore, onDelete }: { item: Tra
   return <article className="trash-card"><header><label><input aria-label={`${item.title} 선택`} type="checkbox" checked={checked} onChange={onToggle} /><span>{TYPE_LABELS[item.type]}</span></label><strong>{remainingTrashDays(item.purgeAt)}일 남음</strong></header><h2>{item.title}</h2><dl><div><dt>원래 위치</dt><dd>{item.originalLocation}</dd></div><div><dt>삭제</dt><dd>{formatDate(item.deletedAt)}</dd></div><div><dt>자동 삭제</dt><dd>{formatDate(item.purgeAt)}</dd></div></dl><p>{impactText([item])}</p><footer><button type="button" className="secondary-button" onClick={onRestore}>복원</button><button type="button" className="danger-button" onClick={onDelete}>완전 삭제</button></footer></article>;
 }
 
-function impactText(items: readonly TrashItem[]): string {
+export function impactText(items: readonly TrashItem[], action?: Action): string {
+  if (action === "permanent") {
+    // Per-item counts avoid counting the same song/note link twice in a bulk
+    // total, and distinguish every child from the restore-only deletion batch.
+    const impacts = items.map((item) => {
+      const parts: string[] = [];
+      if (item.type === "song") parts.push(`소속 가사 전체 ${item.permanentlyDeletedLyrics}개 영구 삭제`);
+      if (item.preservedLinks) parts.push(`연결 ${item.preservedLinks}개 제거`);
+      return `${item.title}: ${parts.join(" · ") || "자료 영구 삭제"}`;
+    });
+    return `${impacts.join(". ")}. 곡에 소속된 가사는 이전 삭제 묶음까지 포함합니다. 선택하지 않은 독립 라임 노트·프롬프트 원본은 유지됩니다.`;
+  }
+  if (!action) return `선택 자료 ${items.length}개. 곡 복원은 같은 삭제 묶음의 가사만, 곡 완전 삭제는 이전에 삭제한 소속 가사까지 포함합니다. 연결은 복원 시 보존되고 완전 삭제 시 제거됩니다.`;
   const lyrics = items.reduce((sum, item) => sum + item.affectedLyrics, 0);
   const links = items.reduce((sum, item) => sum + item.preservedLinks, 0);
   const parts = [`선택 자료 ${items.length}개`];

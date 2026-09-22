@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as Y from "yjs";
+import { EditorState, Transaction } from "@codemirror/state";
+import { history, undo } from "@codemirror/commands";
 import { createBrowserPublicSharedLyricSync, type BrowserPublicSharedLyricSync } from "./browser-sync.js";
 import { createLyricDocument, lyricBody } from "./crdt.js";
 import type { LocalDocument, QueuedUpdate, RejectedWriterDraft } from "./sync-storage.js";
@@ -80,6 +82,52 @@ beforeEach(() => {
 afterEach(async () => { await active?.destroy(); active = undefined; vi.unstubAllGlobals(); });
 
 describe("public guest live write revocation", () => {
+  it.each([
+    { base: "ABCD", change: { from: 1, to: 3, insert: "한" }, at: 2, remote: "원격", merged: "A한원격D" },
+    { base: "기준", change: { from: 0, to: 2, insert: "확정" }, at: 2, remote: "\n원격", merged: "확정\n원격" }
+  ])("preserves concurrent text and local undo when IME replaces $base", async ({ base, change, at, remote, merged }) => {
+    const server = createLyricDocument(base);
+    let editor = EditorState.create({ doc: base, extensions: history() });
+    let body = ""; let state = ""; let presenceEvents = 0;
+    try {
+      active = await createBrowserPublicSharedLyricSync({ token: "synthetic-link", linkId, guestSession: guest,
+        onBody(value, changes) {
+          body = value;
+          if (changes) editor = editor.update({ changes, annotations: Transaction.addToHistory.of(false) }).state;
+        }, onStateChange(value) { state = value; },
+        onAccessChange() {}, onPresenceChange() { presenceEvents++; }, onRejectedDrafts() {} });
+      const socket = Socket.instances.at(-1)!; socket.open();
+      socket.receive({ type: "snapshot", payload: encode(server), access: "public-write",
+        permissionEpoch: 1, writeEpoch: 1, guestSessionId: guest.id });
+      await vi.waitFor(() => expect(state).toBe("live"));
+      active.setComposing(true);
+      lyricBody(server).insert(at, remote);
+      socket.receive({ type: "update", payload: encode(server) });
+      // Presence is handled on the same socket queue, after the remote edit.
+      const previousPresence = presenceEvents;
+      socket.receive({ type: "presence", participants: [] });
+      await vi.waitFor(() => expect(presenceEvents).toBeGreaterThan(previousPresence));
+      expect(body).toBe(base);
+      editor = editor.update({ changes: change }).state;
+      active.applyLocalTransaction({ origin: "user", composing: false,
+        changes: [change] });
+      active.setComposing(false);
+      expect(body).toBe(merged);
+      expect(editor.doc.toString()).toBe(merged);
+      expect(undo({ state: editor, dispatch: (transaction) => { editor = transaction.state; } })).toBe(true);
+      // CodeMirror restores the replaced characters at the current insertion
+      // boundary; the concurrent insertion must survive that local undo.
+      expect(editor.doc.toString()).toContain(remote);
+      expect(editor.doc.toString().replace(remote, "")).toBe(base);
+      await vi.waitFor(() => expect(socket.sent.filter((message) => message.type === "update")).toHaveLength(1));
+      const update = socket.sent.find((message) => message.type === "update")!;
+      Y.applyUpdate(server, Buffer.from(update.payload, "base64"));
+      expect(lyricBody(server).toString()).toBe(body);
+      const storage = memory.stores.values().next().value!;
+      expect((await storage.updates.where("updateId").equals(update.updateId).first()).authoredText).toBe(change.insert);
+    } finally { server.destroy(); }
+  });
+
   it.each(["permission", "write-revoked", "epoch-stale"] as const)(
     "%s removes unaccepted Yjs edits from body/cache while keeping only actor-authored recovery", async (event) => {
       const ownerBody = "소유자 원문";

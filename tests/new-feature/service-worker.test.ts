@@ -7,9 +7,11 @@ const origin = "https://lyrics.example";
 const asset = `${origin}/_next/static/chunks/app-1234abcd.js`;
 const immutable = () => new Response("asset", { headers: { "cache-control": "public, max-age=31536000, immutable" } });
 
-function worker(build = "build-a", stores = new Map<string, Map<string, Response>>(), fetchAsset = vi.fn(async () => immutable())) {
+function worker(build = "build-a", stores = new Map<string, Map<string, Response>>(), fetchAsset = vi.fn(async () => immutable()), clients: { id: string; postMessage: ReturnType<typeof vi.fn> }[] = []) {
   const listeners = new Map<string, (event: unknown) => void>();
   const caches = {
+    keys: async () => [...stores.keys()],
+    delete: async (name: string) => stores.delete(name),
     async open(name: string) {
       if (!stores.has(name)) stores.set(name, new Map());
       const entries = stores.get(name)!;
@@ -20,11 +22,21 @@ function worker(build = "build-a", stores = new Map<string, Map<string, Response
     }
   };
   vm.runInNewContext(source, {
-    self: { location: { origin, href: `${origin}/sw.js?build=${build}` }, addEventListener: (type: string, listener: (event: unknown) => void) => listeners.set(type, listener) },
+    self: { location: { origin, href: `${origin}/sw.js?build=${build}` }, clients: { matchAll: async () => clients, claim: async () => undefined }, addEventListener: (type: string, listener: (event: unknown) => void) => listeners.set(type, listener) },
     caches, URL, Request, fetch: fetchAsset
   });
   return {
     fetchAsset, stores,
+    activate() {
+      let pending: Promise<unknown> = Promise.resolve();
+      listeners.get("activate")!({ waitUntil: (work: Promise<unknown>) => { pending = work; } });
+      return pending;
+    },
+    report(clientId: string, clientBuild: string) {
+      let pending: Promise<unknown> = Promise.resolve();
+      listeners.get("message")!({ source: { id: clientId }, data: { type: "CLIENT_BUILD", buildId: clientBuild }, waitUntil: (work: Promise<unknown>) => { pending = work; } });
+      return pending;
+    },
     precache(urls: string[]) {
       let pending: Promise<unknown> = Promise.resolve();
       listeners.get("message")!({ data: { type: "PRECACHE_STATIC", urls }, waitUntil: (work: Promise<unknown>) => { pending = work; } });
@@ -39,6 +51,39 @@ function worker(build = "build-a", stores = new Map<string, Map<string, Response
 }
 
 describe("static asset precache", () => {
+  it("PWA-01 retains an old tab's lazy chunk through a second worker build and offline activation", async () => {
+    const clients = [{ id: "dirty-old-tab", postMessage: vi.fn() }, { id: "approved-tab", postMessage: vi.fn() }];
+    const first = worker("build-a", undefined, undefined, clients);
+    await first.precache([asset]);
+    const network = vi.fn(async () => { throw new Error("old build unavailable offline or after deployment"); });
+    const second = worker("build-b", first.stores, network, clients);
+    await second.activate();
+    await second.report("approved-tab", "build-b");
+    expect(await (await second.request(asset))!.text()).toBe("asset");
+    await second.report("dirty-old-tab", "build-a");
+    expect(await (await second.request(asset))!.text()).toBe("asset");
+    expect(network).not.toHaveBeenCalled();
+    expect(first.stores.has("lyricscloud-shell-build-a")).toBe(true);
+    // Closing the old document permits collection on the next live build report.
+    clients.shift();
+    await second.report("approved-tab", "build-b");
+    expect(first.stores.has("lyricscloud-shell-build-a")).toBe(false);
+  });
+
+  it("keeps unknown clients safe after worker restart and only collects its own caches", async () => {
+    const stores = new Map([["lyricscloud-shell-build-a", new Map([[asset, immutable()]])], ["unrelated-cache", new Map<string, Response>()]]);
+    const clients = [{ id: "unknown-old-tab", postMessage: vi.fn() }];
+    const restarted = worker("build-b", stores, undefined, clients);
+    await restarted.activate();
+    expect(stores.has("lyricscloud-shell-build-a")).toBe(true);
+    await restarted.report("not-a-live-client", "build-b");
+    expect(stores.has("lyricscloud-shell-build-a")).toBe(true);
+    await restarted.report("unknown-old-tab", "build-b");
+    expect(stores.has("lyricscloud-shell-build-a")).toBe(false);
+    expect(stores.has("unrelated-cache")).toBe(true);
+    expect(restarted.request(`${origin}/lyrics/private`)).toBeUndefined();
+    expect(restarted.request(`${origin}/api/auth/session`)).toBeUndefined();
+  });
   it("reuses immutable cache entries across repeated messages and worker restarts", async () => {
     const first = worker();
     await first.precache([asset, asset]);
