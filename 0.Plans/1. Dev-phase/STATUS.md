@@ -7,10 +7,12 @@ state: "review"
 owner: "Codex"
 started_at: "2026-09-15"
 updated_at: "2026-09-22"
-next_action: "과거 UI/UX·저장/동기화·데이터·인증 결함 통합 후보의 필수 CI와 같은 SHA PC Docker 갱신을 진행한다. 집중 PC/mobile 19 PASS와 실제 내장 브라우저의 탐색·Suno 초안·320px 가로 넘침 보정은 확인했다. 원격 개발 관리 접속과 Windows 실제 실행·OAuth·DPAPI·clipboard·IME/AT/DPI·신뢰 서명 MSIX 증거 전까지 P4 review·P5/릴리스 보류는 유지한다."
+next_action: "웹 결함 통합 소스 0375825의 필수 CI·네 signed dev image·같은 SHA PC Docker 갱신과 데이터 보존 인수를 완료했다. 원격 개발 관리 접속을 확보해 같은 소스를 배포·공개 검증하고, Windows 실제 실행·OAuth·DPAPI·clipboard·IME/AT/DPI·신뢰 서명 MSIX 증거 전까지 P4 review·P5/릴리스 보류를 유지한다."
 ```
 
 ## 승인과 기준
+
+2026-09-22 웹 결함 통합 소스 `0375825fe004fc74869250eefa14add267c4b3ae`의 Actions [35706572465](https://github.com/parking-place/LyricsCloud/actions/runs/35706572465)은 전체 verify·Windows native contract/build·네 signed dev image **PASS**다. Unit/integration **506 PASS / 8 조건부 skip**, 별도 beta 가입 DB **8 PASS**, owner E2E **420 PASS / 54 조건부 skip / 0 FAIL / 0 flaky**, release browser matrix **10 PASS**다. PC `lyricscloud-local`을 같은 소스로 갱신해 `1.1.8/dev/p4`, schema `1151_profile_customization.sql`, 네 서비스 healthy와 기존 DB volume·원본 환경/허용 계정 보존을 확인했다. 합성 생성·저장·설정/프로필 영속·WebSocket ACK/재접속·DB 투영·정적 asset 및 합성 자료 제거 PASS, 실제 내장 브라우저 로그인 화면·콘솔 오류 0건과 Google OAuth 시작 302를 확인했다. 프로젝트 객체·사용자가 추가 승인한 미사용 공유 build cache **2.814 GB** 및 이번 작업의 임시 Node 실행 3개·tmpfs DB 2개를 정리한 뒤 PC health를 재확인했다. 기능/배포 근거는 소스 SHA에 고정하며 후속 문서-only commit을 새 배포로 표시하지 않는다. `P4-09` PC 갱신은 완료했지만 최신 소스의 원격 개발 인수·실제 Google 로그인 완료·Windows 물리/서명 증거는 남아 있으므로 P4 review·P5/릴리스 보류를 유지한다.
 
 2026-09-22 과거 결함 수정 통합은 요청 범위의 Astra 6개 분담으로 구현했다. 집중 실제 PostgreSQL·단위 결과와 통합 check·production build·합성 secret 누출 검사가 PASS이고, 신규 PC/mobile 브라우저 **17 PASS / 5 조건부 skip** 및 실제 CodeMirror 내부 원격 삽입 조합 회귀 **2 PASS**다. 모바일 시험의 숨겨진 PC 메뉴 존재 확인 선택자 1건은 보정 뒤 통과했다. 실제 내장 브라우저에서 홈→곡 document 요청 **1→0**, 요청 이벤트 **25→8**, Suno 초안 새로고침 보존, 320px/client305에서 가로 넘침 없음과 console error **0건**을 확인했다. 전체 CI·PC 전환·동일 SHA 원격 개발 인수 전에는 P4 완료가 아니다. 상세 항목과 정책/물리 미실행 경계는 [웹 안정화 기록](../../docs/runbooks/1.1.8-web-stabilization.md)에 남긴다.
 
@@ -251,8 +253,8 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex/Astra 6개 담당 | 1.1.8/P4 과거 결함 회귀 | LC-NF-1.1.8-P4-08 | Hegel: editor CRDT/autosave·prompt editor; Euler: lyric/rhyme metadata·복제/복사·account cache; Maxwell: Suno/template/목록정렬/곡·favorites/CSS; Kuhn: lifecycle/export/rhyme lock/projection; Bacon: beta/auth/config/provision/CI gate; Mendel: shell/PWA/page auth | 사용자 2026-09-22 UI/UX 포함 전체 잔존 결함 수정 승인; 기준 `ee3647d`, 파일당 한 작성자·격리 검증·PC 전환 보류 | 2026-09-22 17:00 KST | in_progress |
-| Codex/Astra 및 분석 서브 에이전트 | 1.1.8/P4 추가 회귀 | LC-NF-1.1.8-P4-08~09 | web 설정·목록·검색·탐색·PWA, 관련 회귀, PC 환경·상태 기록 | 사용자 2026-09-22 승인; 후보 `a7d8e453`, 합성 계정·격리 DB | 2026-09-22 | in_progress |
+| Codex/Astra 6개 담당 | 1.1.8/P4 과거 결함 회귀 | LC-NF-1.1.8-P4-08 | Hegel: editor CRDT/autosave·prompt editor; Euler: lyric/rhyme metadata·복제/복사·account cache; Maxwell: Suno/template/목록정렬/곡·favorites/CSS; Kuhn: lifecycle/export/rhyme lock/projection; Bacon: beta/auth/config/provision/CI gate; Mendel: shell/PWA/page auth | 소스 `0375825` 구현·집중 회귀·전체 CI/네 signed dev image·PC 인수 PASS; 원격 개발 같은 SHA 인수 대기 | 2026-09-22 17:00 KST | review |
+| Codex/Astra 및 분석 서브 에이전트 | 1.1.8/P4 추가 회귀 | LC-NF-1.1.8-P4-08~09 | web 설정·목록·검색·탐색·PWA, 관련 회귀, PC 환경·상태 기록 | 소스 `0375825` PC 갱신·기존 데이터/설정 보존·저장/동기화 PASS로 P4-09 완료; P4-08 원격 개발 인수 대기 | 2026-09-22 | review |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | Windows unpackaged local storage·DPAPI cache/token·1.1.7a profile/schema 통합·회귀·상태/Future | 최종 자동 검증 후보 `a7d8e453`, Actions `35173213999`, Unit 402·E2E 396/0 flaky·browser 10와 동일 SHA 개발 인수 PASS; 실제 Windows 재실행·서명 gate 미실행 | 2026-09-17 09:30 KST | review |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | `.github/workflows/ci.yml`, `apps/windows/README.md`, Windows 설치 runbook·P4/STATUS 기록 | SHA `3fecc85` 수동 Actions `34987340477` Windows publish/upload·verify PASS. 사용자 PC 실행 실패 보고(artifact·오류 미확인), Windows 앱 보류. 실제 기기·서명 gate 미통과 | 2026-09-16 00:12 KST | review |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-01~07 | native auth/read 회귀, Windows contract/UI harness, 서버 restart·상태/Future | 공유 가사/보호 cache 기능 `fe40556` C# 48·두 CI verify/Windows build·네 dev image·동일 기능 SHA 개발 공개 인수 PASS. 실제 Windows OS/IME/AT/DPI/다중 monitor·신뢰 서명 증거 없이는 P4/P5 미통과 | 2026-09-15 12:32 KST | review |

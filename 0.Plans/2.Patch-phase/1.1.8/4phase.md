@@ -1,6 +1,6 @@
 # 1.1.8 Phase 4 — 실패·권한·복구 회귀
 
-- 상태: **실제 Windows 인수 대기** (`review`, 통합 최종 자동 검증 후보 `a7d8e453`의 Actions `35173213999`·Windows artifact·네 dev image·동일 SHA 개발 공개 인수 PASS)
+- 상태: **실제 Windows·최신 웹 소스 원격 개발 인수 대기** (`review`, 웹 소스 `0375825`의 Actions `35706572465`·Windows build·네 signed dev image·같은 SHA PC 갱신 PASS; 원격 개발 인수는 기존 `a7d8e453`)
 - 단계 목적: Windows 네이티브 개발안·읽기와 복사의 실패·권한·복구 회귀을 완료하고 다음 단계에 검증 가능한 입력을 전달한다.
 - 문서 작성과 구현/배포 완료는 별개다.
 
@@ -53,7 +53,7 @@ Windows 앱의 기술·인증·IME/CRDT 개발안을 먼저 승인받고, 승인
 ### 2026-09-22 승인된 기존 웹 추가 회귀
 
 - [ ] `LC-NF-1.1.8-P4-08` 설정 응답 경쟁·목록/검색/메타데이터 경쟁·편집 복구·공개 guest 회수·탐색/PWA·노트북 도구 배치의 기존 결함을 최소 수정하고 격리 DB·내장 브라우저·집중 회귀로 확인한다. 최종 CI와 동일 SHA 개발 인수는 별도로 기록한다.
-- [ ] `LC-NF-1.1.8-P4-09` PC `lyricscloud-local`의 `1.0.0` 런타임을 검증한 웹 후보로 갱신한다. 사용자 승인에 따라 외부 backup은 미구축으로 기록하고 로컬 사본·격리 복원/upgrade·기존 DB volume/환경/허용 계정 보존·컨테이너 health와 기능 확인을 남긴다.
+- [x] `LC-NF-1.1.8-P4-09` PC `lyricscloud-local`의 `1.0.0` 런타임을 검증한 웹 후보로 갱신한다. 사용자 승인에 따라 외부 backup은 미구축으로 기록하고 로컬 사본·격리 복원/upgrade·기존 DB volume/환경/허용 계정 보존·컨테이너 health와 기능 확인을 남긴다. 소스 `0375825`의 전체 CI와 2026-09-22 PC `1.1.8/dev/p4`·1151 schema·합성 저장/동기화·실제 로그인 화면 인수 PASS.
 
 2026-09-22 후속 승인으로 `P4-08`은 과거 로컬 분석의 UI/UX·편집/CRDT·인증/설치·삭제/내보내기·정렬·PWA 잔존 결함과 수정 경로에서 확인한 추가 결함도 포함한다. 각 항목의 실제 재현과 수정 후 결과를 기록하며 미확정 정책·물리 인수를 코드 수정 완료와 구분한다.
 
@@ -79,6 +79,8 @@ P1은 위 기대 결과와 실제 구현 가능 경계를 승인하는 단계다
 - P4-01의 승인 없음 분기는 이번 실행 입력이 아니다: 사용자의 `1.1.8 Windows 권고안 승인`이 P1에서 먼저 기록됐다. P4-02~04의 자동 DB/API/fixture 증거는 확보했지만 네이티브 UI 실기기의 OAuth 취소/회수/cache/reconnect/copy를 실행하지 못했다. P4-05~07의 실제 Windows launch·process kill/DPAPI·clipboard·Microsoft 한국어 IME·다국어 font fallback·Narrator/high contrast·200% DPI/다중 monitor·권한/presence·서명 MSIX 설치/업데이트/제거는 **미실행**. 자동 Windows runner의 build와 웹 성공은 실제 OS PASS가 아니며 P4 체크박스/완료와 P5/정식 릴리스는 해당 증거 전까지 남긴다.
 
 ## 실행·증거 기록
+
+2026-09-22 웹 결함 통합 소스 `0375825fe004fc74869250eefa14add267c4b3ae`의 Actions [35706572465](https://github.com/parking-place/LyricsCloud/actions/runs/35706572465)은 전체 verify·Windows native contract/build·네 signed dev image PASS다. Unit/integration 506 PASS·8 조건부 skip, 별도 beta 가입 DB 8 PASS, owner E2E 420 PASS·54 조건부 skip·0 FAIL/0 flaky, release browser matrix 10 PASS다. 같은 SHA PC 갱신에서 원본 환경·허용 계정·DB volume을 보존하고 합성 생성/저장·프로필/설정 영속·WebSocket ACK/재접속·DB 투영·정적 asset·합성 자료 제거를 확인했다. 실제 내장 브라우저의 새 로그인 화면·콘솔 오류 0건과 Google OAuth 시작 302까지 PASS다. 프로젝트 Docker 객체와 사용자 추가 승인 후 미사용 shared build cache 2.814 GB·임시 Node 실행 3개/tmpfs DB 2개를 정리했으며 실제 PC 네 서비스는 healthy다. P4-09는 완료하고 P4-08의 최신 원격 개발 같은 SHA 인수, 실제 Google 로그인 완료·Windows 물리/서명 인수는 미완료로 유지한다. 문서-only 후속 commit은 소스 SHA의 검증/배포 기록을 보존하며 재배포로 기록하지 않는다.
 
 2026-09-17 통합 최종 자동 검증 SHA `a7d8e4538c58202f4a1e39371517906e891ae1bf`의 Actions [35173213999](https://github.com/parking-place/LyricsCloud/actions/runs/35173213999)은 전체 verify·Windows native contract/build·framework-dependent 및 self-contained artifact·네 signed dev image가 모두 PASS했다. Unit 402 PASS·5 조건부 skip, owner E2E 396 PASS·46 조건부 skip·0 flaky, release browser 10 PASS로 프로필 reset의 `avatar:null` 응답 대기와 P4 runtime metadata를 재검증했다. artifact는 `windows-x64-read-only-a7d8e4538c58202f4a1e39371517906e891ae1bf`와 `windows-x64-self-contained-a7d8e4538c58202f4a1e39371517906e891ae1bf`다. 동일 SHA 개발 서버의 공개 live/ready는 `1.1.8/dev/p4`, schema `1151_profile_customization.sql`, 정확한 build를 반환했고 `/auth` 200, 비인증 profile/avatar/native songs 401, native writes false, postgres/web/collaboration/worker healthy와 production asset·Docker cleanup을 확인했다. 실제 Windows launch/system-browser OAuth/DPAPI/cache/clipboard/IME/AT/DPI/다중 monitor와 신뢰 서명 MSIX 설치·업데이트·제거는 미실행이라 체크박스와 P4 review·P5/릴리스 보류를 유지한다. 릴리스 서버·main은 변경하지 않았다.
 
