@@ -153,6 +153,95 @@ test.describe("1.1.3 public-link guest writing", () => {
       await removeAccounts([owner.userId, selected.userId]);
     }
   });
+
+  test("removes an online guest's held edit on live write revoke and never replays it after regrant", async ({ browser }, info) => {
+    test.setTimeout(60_000);
+    const mobile = info.project.name.includes("mobile");
+    const contextOptions = { baseURL: origin, viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 1000 }, isMobile: mobile, hasTouch: mobile };
+    const ownerContext = await browser.newContext(contextOptions);
+    const guestContext = await browser.newContext(contextOptions);
+    const owner = await account(ownerContext, "온라인 권한 회수 소유자");
+    const ownerPage = await ownerContext.newPage();
+    const guestPage = await guestContext.newPage();
+    let holdUpdates = true; let heldUpdate = false; let liveRevocation = false; let forwardedUpdates = 0;
+    await guestPage.routeWebSocket("**/collaboration/public", (socket) => {
+      const server = socket.connectToServer();
+      socket.onMessage((message) => {
+        if (JSON.parse(String(message)).type === "update") {
+          // Keep the connection/auth/awareness live; only this local update is held.
+          if (holdUpdates) { heldUpdate = true; return; }
+          forwardedUpdates++;
+        }
+        server.send(message);
+      });
+      server.onMessage((message) => {
+        const envelope = JSON.parse(String(message));
+        if (envelope.type === "permission" && envelope.access === "public-read") liveRevocation = true;
+        socket.send(message);
+      });
+    });
+    try {
+      const songResponse = await ownerContext.request.post("/api/songs", { headers, data: { requestId: randomUUID(), title: "온라인 게스트 회귀 곡" } });
+      expect(songResponse.ok()).toBe(true);
+      const songId = (await songResponse.json()).song.id as string;
+      const original = "온라인 회수의 소유자 원문";
+      const rejected = " 서버에 보내지 못한 게스트 입력";
+      const lyricResponse = await ownerContext.request.post(`/api/songs/${songId}/lyrics`, { headers, data: {
+        requestId: randomUUID(), title: "온라인 게스트 회귀 가사", body: original
+      } });
+      expect(lyricResponse.ok()).toBe(true);
+      const lyricId = (await lyricResponse.json()).lyric.id as string;
+      await ownerPage.goto(`/lyrics/${lyricId}`);
+      await expect(ownerPage.getByLabel("가사 본문")).toBeVisible({ timeout: 15_000 });
+      const dialog = await openSharingDialog(ownerPage);
+      await dialog.getByRole("button", { name: "공개 링크 만들기" }).click();
+      const issuedResponse = ownerPage.waitForResponse((response) => response.url().endsWith(`/api/lyrics/${lyricId}/public-link`)
+        && response.request().method() === "POST");
+      await dialog.getByRole("button", { name: "확인하고 공개" }).click();
+      const issued = await (await issuedResponse).json() as { url: string };
+      const accessButtons = dialog.locator(".sharing-public-access button");
+      await accessButtons.nth(1).click();
+      await dialog.locator(".sharing-public-write-risk").getByRole("button", { name: "위험을 이해하고 쓰기 허용" }).click();
+      await expect(dialog.locator(".sharing-notice")).toContainText("비로그인 게스트 쓰기를 허용");
+      await guestPage.goto(issued.url);
+      const editor = guestPage.getByLabel("공유된 가사 본문");
+      await expect(guestPage.getByRole("status")).toContainText("실시간으로 연결됨", { timeout: 15_000 });
+      await expect(editor).toHaveAttribute("contenteditable", "true");
+      await editor.click(); await guestPage.keyboard.press("Control+End"); await guestPage.keyboard.insertText(rejected);
+      await expect.poll(() => heldUpdate).toBe(true);
+      await expect(editor).toContainText(rejected.trim());
+
+      await accessButtons.nth(0).click();
+      await expect(dialog.locator(".sharing-notice")).toContainText("게스트 쓰기를 중지");
+      await expect.poll(() => liveRevocation, { timeout: 15_000 }).toBe(true);
+      expect(await guestPage.evaluate(() => navigator.onLine)).toBe(true);
+      await expect(editor).toHaveAttribute("contenteditable", "false");
+      await expect(editor).not.toContainText(rejected.trim());
+      await expect(editor).toContainText(original);
+      const recovery = guestPage.locator(".shared-writer-recovery");
+      await expect(recovery).toContainText(rejected.trim());
+      await expect(recovery).not.toContainText(original);
+      const projection = await ownerContext.request.get(`/api/lyrics/${lyricId}`);
+      expect((await projection.json()).lyric.body).toBe(original);
+
+      await accessButtons.nth(1).click();
+      await dialog.locator(".sharing-public-write-risk").getByRole("button", { name: "위험을 이해하고 쓰기 허용" }).click();
+      await expect(dialog.locator(".sharing-notice")).toContainText("비로그인 게스트 쓰기를 허용");
+      holdUpdates = false;
+      await guestPage.reload();
+      await expect(guestPage.getByRole("status")).toContainText("실시간으로 연결됨", { timeout: 15_000 });
+      await expect(editor).toHaveAttribute("contenteditable", "true");
+      await expect(editor).toContainText(original);
+      await expect(editor).not.toContainText(rejected.trim());
+      await expect(recovery).toContainText(rejected.trim());
+      await expect(recovery).not.toContainText(original);
+      expect(forwardedUpdates).toBe(0);
+      expect((await (await ownerContext.request.get(`/api/lyrics/${lyricId}`)).json()).lyric.body).toBe(original);
+    } finally {
+      await Promise.all([ownerContext.close(), guestContext.close()]);
+      await removeAccounts([owner.userId]);
+    }
+  });
 });
 
 function visibleShareButton(page: Page) { return page.locator("button:visible", { hasText: /^공유$/ }).first(); }

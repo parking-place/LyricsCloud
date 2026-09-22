@@ -1062,7 +1062,10 @@ export async function createBrowserPublicSharedLyricSync(options: {
       if (!next) throw new Error("PUBLIC_SYNC_ACCESS_INVALID");
       const rejectedWrite = access.mode === "write" && next.mode === "read";
       await transitionAccess(next);
-      if (rejectedWrite) socket?.close(1012, "SYNC_REAUTHORIZE"); else await report();
+      if (rejectedWrite) {
+        await resetToServerSnapshot(Y.encodeStateAsUpdate(acceptedDocument));
+        socket?.close(1012, "SYNC_REAUTHORIZE");
+      } else await report();
     } else if (message.type === "rejected" && typeof message.updateId === "string") {
       clearTimeout(ackTimer); inFlight = undefined;
       if (message.code === "SYNC_RATE_LIMITED") {
@@ -1073,6 +1076,7 @@ export async function createBrowserPublicSharedLyricSync(options: {
       await rejectGuest(message.code === "SYNC_WRITE_EPOCH_STALE" ? "epoch-stale" : "write-revoked");
       const next = parsePublicSharedAccess(message);
       if (next) await transitionAccess(next);
+      await resetToServerSnapshot(Y.encodeStateAsUpdate(acceptedDocument));
       await report();
     } else if (message.type === "presence") publishParticipants(parseSharingParticipants(message.participants, document, text));
     else if (message.type === "awareness" && typeof message.participantId === "string") {

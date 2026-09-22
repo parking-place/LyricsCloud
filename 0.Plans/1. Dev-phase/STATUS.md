@@ -6,11 +6,15 @@ current_phase: "../2.Patch-phase/1.1.8/4phase.md"
 state: "review"
 owner: "Codex"
 started_at: "2026-09-15"
-updated_at: "2026-09-17"
-next_action: "통합 최종 자동 검증 후보 a7d8e453의 전체 CI와 동일 SHA 개발 인수는 완료했다. 별도 의존성 없는 self-contained Windows artifact를 실제 Windows에서 재실행해 system-browser OAuth·계정별 DPAPI·권한 회수/reconnect·clipboard·한글 IME/폰트·Narrator/high contrast·DPI/다중 monitor를 확인하고, 신뢰 서명 MSIX 설치/업데이트/제거 증거 또는 명시적 범위 예외 전까지 P4 review·P5/릴리스 보류를 유지한다"
+updated_at: "2026-09-22"
+next_action: "사용자가 승인한 기존 웹 결함·성능 보정을 P4 추가 회귀로 수행한다. Astra가 제품 코드를 작성하고 임시 계정의 실제 내장 브라우저와 필요한 회귀로 검증한 뒤 PC Docker 갱신·CI·개발 인수를 진행한다. Windows 실제 실행·OAuth·DPAPI·clipboard·IME/AT/DPI·신뢰 서명 MSIX 증거 전까지 P4 review·P5/릴리스 보류는 유지한다."
 ```
 
 ## 승인과 기준
+
+2026-09-22 사용자가 다른 공동작업자의 개발이 진행 중이지 않음을 알리고 기존 문제 수정·추가 결함 조사·계획에 따른 진행과 여러 모델의 서브 에이전트 분담을 요청했다. 핵심 제품 코드는 Astra가 맡는다. 현재 `1.1.8 P4` 후보를 기준으로 웹 저장/목록/검색/탐색/PWA의 기존 동작을 보정하고 PC Docker의 `1.0.0` 런타임을 데이터 보존 후 갱신하는 범위다. 이 추가 회귀는 새 기능이나 native 편집 범위 확장이 아니며, 기존 Windows 물리 검증·서명 gate와 `main`/정식 릴리스 조건을 충족한 것으로 간주하지 않는다. 개발 사이트는 계정 허용 제한이 있어 동일 배포 SHA의 PC 격리 환경과 기존 OIDC 합성 공급자로 먼저 UI를 확인한다. 원격 개발 관리 접속 정보 확보와 실제 개발 인수는 별도 미완료 항목으로 남긴다.
+
+같은 날 외부 backup 저장소·age 수신자 키가 미설정임을 알리고 경로를 요청하자 사용자가 “없을거같으면 그냥 업데이트 해줘”라고 지시했다. PC Docker 갱신은 외부 backup/RPO 미충족을 기록한 채 진행하되 기존 DB volume·환경·허용 계정을 보존한다. 로컬 `pg_dump` 복구 사본을 별도 DB에 복원해 `0802_lifecycle.sql → 1151_profile_customization.sql` migration과 반복 실행을 통과했고 계정 수가 일치했다. 이 사본은 외부 암호화 backup 또는 24시간 RPO 인수가 아니다. 공개 개발/릴리스 서버에 대한 새로운 예외를 만들지 않는다.
 
 2026-09-15 09:11 KST 사용자가 ``1.1.8 Windows 권고안 승인``이라고 명시했다. 승인 범위는 WinUI 3/.NET native UI, 1.1.8 read/copy-only, WebView2 미포함, system browser+first-party loopback PKCE, 계정별 DPAPI cache다. 1.1.9 native editor/Yjs와 실패 시 WebView2 대안은 별도 gate로 남고, Windows 실제 OS/IME/AT/MSIX 서명 증거 없이 후속 Phase나 릴리스를 통과로 표시하지 않는다. 승인 검토 proposal source는 `e26fe58c49c1d67b5435bab6018148bb8a75eca0`이다.
 
@@ -237,6 +241,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex/Astra 및 분석 서브 에이전트 | 1.1.8/P4 추가 회귀 | LC-NF-1.1.8-P4-08~09 | web 설정·목록·검색·탐색·PWA, 관련 회귀, PC 환경·상태 기록 | 사용자 2026-09-22 승인; 후보 `a7d8e453`, 합성 계정·격리 DB | 2026-09-22 | in_progress |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | Windows unpackaged local storage·DPAPI cache/token·1.1.7a profile/schema 통합·회귀·상태/Future | 최종 자동 검증 후보 `a7d8e453`, Actions `35173213999`, Unit 402·E2E 396/0 flaky·browser 10와 동일 SHA 개발 인수 PASS; 실제 Windows 재실행·서명 gate 미실행 | 2026-09-17 09:30 KST | review |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-06 | `.github/workflows/ci.yml`, `apps/windows/README.md`, Windows 설치 runbook·P4/STATUS 기록 | SHA `3fecc85` 수동 Actions `34987340477` Windows publish/upload·verify PASS. 사용자 PC 실행 실패 보고(artifact·오류 미확인), Windows 앱 보류. 실제 기기·서명 gate 미통과 | 2026-09-16 00:12 KST | review |
 | Codex | 1.1.8/P4 | LC-NF-1.1.8-P4-01~07 | native auth/read 회귀, Windows contract/UI harness, 서버 restart·상태/Future | 공유 가사/보호 cache 기능 `fe40556` C# 48·두 CI verify/Windows build·네 dev image·동일 기능 SHA 개발 공개 인수 PASS. 실제 Windows OS/IME/AT/DPI/다중 monitor·신뢰 서명 증거 없이는 P4/P5 미통과 | 2026-09-15 12:32 KST | review |

@@ -1,10 +1,11 @@
 import type { NextConfig } from "next";
+import { fileURLToPath } from "node:url";
 
 const config: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["yjs"],
   generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-1.1.8",
-  outputFileTracingRoot: new URL("../../", import.meta.url).pathname,
+  outputFileTracingRoot: fileURLToPath(new URL("../../", import.meta.url)),
   transpilePackages: ["@lyricscloud/auth", "@lyricscloud/config", "@lyricscloud/database", "@lyricscloud/domain", "@lyricscloud/ui"],
   async rewrites() {
     return [{ source: "/collaboration/:path*", destination: `${process.env.COLLABORATION_INTERNAL_URL ?? "http://127.0.0.1:3001"}/:path*` }];

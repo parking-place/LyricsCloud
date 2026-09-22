@@ -11,6 +11,7 @@ import { registerLogoutSave } from "../lib/account-cache.js";
 import { DialogFocusBoundary, trapDialogTab } from "../lib/dialog-focus.js";
 import { createRhymeMetadataSaver } from "../lib/rhyme-metadata.js";
 import { writingDisplayVariables } from "../lib/font-assets.js";
+import { hasVolatilePendingInput } from "../lib/update-safety.js";
 import { RhymeHistory } from "./rhyme-history.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 
@@ -52,6 +53,7 @@ export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo =
   const [songRetryKey, setSongRetryKey] = useState(0);
   const [saveState, setSaveState] = useState<SaveState>({ status: "saved", sequence: 0, lastSavedAt: null, error: null });
   const [syncState, setSyncState] = useState<LocalSyncState>("loading");
+  const [composingInput, setComposingInput] = useState(false);
   const [legacyConflict, setLegacyConflict] = useState<{ localBody: string; serverBody: string } | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -83,6 +85,10 @@ export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo =
       pinOrder: pinOrderRef.current, color: colorRef.current, ...overrides };
   }
 
+  function readRecoveryDraft() {
+    return { resourceId: initialRhyme.id, title: titleRef.current, body: editorRef.current?.value ?? bodyRef.current };
+  }
+
   useEffect(() => {
     const parent = mountRef.current;
     if (!parent) return;
@@ -100,8 +106,8 @@ export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo =
     const editor = createCodeMirrorTextEditor({
       parent, initialValue: initialRhyme.body, ariaLabel: "라임 노트 본문", readOnly: true,
       onChange(value) { bodyRef.current = value; },
-      onCompositionStart() { syncRef.current?.setComposing(true); },
-      onCompositionEnd() { syncRef.current?.setComposing(false); },
+      onCompositionStart() { if (active) setComposingInput(true); syncRef.current?.setComposing(true); },
+      onCompositionEnd() { if (active) setComposingInput(titleComposingRef.current); syncRef.current?.setComposing(false); },
       async beforeLargePaste() {
         const saved = await syncRef.current?.checkpoint("large_paste") ?? false;
         if (active) setNotice(saved ? "" : "붙여넣기 전 수정 기록을 저장하지 못했습니다. 연결을 확인해 주세요.");
@@ -125,6 +131,7 @@ export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo =
     const finishInput = () => {
       editor.finishComposition();
       if (titleComposingRef.current) { titleComposingRef.current = false; controller.compositionEnd(); }
+      if (active) setComposingInput(false);
     };
     const leave = () => { finishInput(); void controller.flush(); syncRef.current?.leave(); };
     const unregisterLogout = registerLogoutSave(async () => {
@@ -132,7 +139,7 @@ export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo =
       await controller.flush();
       if (controller.state.status !== "saved") return false;
       return await syncRef.current?.checkpoint("leave") ?? false;
-    }, () => ({ resourceId: initialRhyme.id, title: titleRef.current, body: bodyRef.current }));
+    }, readRecoveryDraft);
     window.addEventListener("pagehide", leave);
     const frame = requestAnimationFrame(() => editor.focus());
     return () => {
@@ -181,6 +188,7 @@ export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo =
   async function flushBeforeCommand(checkpoint?: boolean): Promise<boolean> {
     editorRef.current?.finishComposition();
     if (titleComposingRef.current) { titleComposingRef.current = false; controllerRef.current?.compositionEnd(); }
+    setComposingInput(false);
     await controllerRef.current?.flush();
     if (controllerRef.current?.state.status !== "saved" || !await syncRef.current?.flush()) {
       setNotice("현재 변경 내용을 먼저 저장해야 합니다. 저장과 동기화를 다시 시도해 주세요."); return false;
@@ -244,6 +252,11 @@ export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo =
     void copyFeedback.copyText(editorRef.current?.value ?? bodyRef.current, "라임 노트", "라임 노트 전체를 복사했습니다");
   }
 
+  function copyRecovery() {
+    const { title, body } = readRecoveryDraft();
+    void copyFeedback.copyText(JSON.stringify({ title, body }, null, 2), "라임 노트 복구본", "제목·원문을 포함한 복구본을 복사했습니다.");
+  }
+
   function copySelection() {
     const editor = editorRef.current;
     if (!editor || editor.selection.from === editor.selection.to) {
@@ -267,7 +280,8 @@ export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo =
   const titleLength = [...title.trim()].length;
   const titleError = !title.trim() ? "제목을 입력해야 저장할 수 있습니다." : titleLength > RHYME_LIMITS.title ? `제목은 ${RHYME_LIMITS.title}자 이하로 입력해 주세요.` : "";
 
-  return <section className="rhyme-editor-page" aria-labelledby="rhyme-editor-heading" style={writingDisplayVariables(displaySettings)}>
+  return <section className="rhyme-editor-page" aria-labelledby="rhyme-editor-heading" style={writingDisplayVariables(displaySettings)}
+    data-pending-input={composingInput || hasVolatilePendingInput(saveState.status, syncState) || undefined}>
     <h1 className="sr-only" id="rhyme-editor-heading">라임 노트 편집: {title || "제목 없음"}</h1>
     <header className="rhyme-editor-header">
       <div><button type="button" className="back-button" onClick={() => void goBack()}>← 라임 노트</button><p className="eyebrow">Rhyme editor</p></div>
@@ -278,8 +292,8 @@ export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo =
         <button type="button" className="danger-text" disabled={busy} onClick={() => setDeleteOpen(true)}>삭제</button>
       </div>
       <div className="editor-save-strip" data-save-state={saveState.status} data-sync-state={syncState}>
-        <SaveIndicator state={saveState} syncState={syncState} onRetry={() => void controllerRef.current?.retry()} onCopy={copyBody} />
-        <LocalDraftIndicator state={syncState} onRetry={() => syncRef.current?.retry()} onCopy={copyBody} />
+        <SaveIndicator state={saveState} syncState={syncState} onRetry={() => void controllerRef.current?.retry()} onCopy={copyRecovery} />
+        <LocalDraftIndicator state={syncState} onRetry={() => syncRef.current?.retry()} onCopy={copyRecovery} />
       </div>
     </header>
     {notice ? <p className="editor-command-notice" role="status">{notice}</p> : null}
@@ -288,8 +302,8 @@ export function RhymeEditor({ ownerId, initialRhyme, displaySettings, returnTo =
     </details> : null}
     <div className="rhyme-editor-title"><label id="rhyme-title-label" htmlFor="rhyme-title">노트 제목</label>
       <input id="rhyme-title" value={title} aria-invalid={Boolean(titleError)} onChange={(event) => changeTitle(event.target.value)}
-        onCompositionStart={() => { titleComposingRef.current = true; }}
-        onCompositionEnd={() => { titleComposingRef.current = false; controllerRef.current?.compositionEnd(); }} />
+        onCompositionStart={() => { titleComposingRef.current = true; setComposingInput(true); }}
+        onCompositionEnd={() => { titleComposingRef.current = false; setComposingInput(Boolean(editorRef.current?.composing)); controllerRef.current?.compositionEnd(); }} />
       <span className={titleLength > RHYME_LIMITS.title ? "over" : ""}>{titleLength.toLocaleString()} / {RHYME_LIMITS.title}</span>
       {titleError ? <small role="alert">{titleError}</small> : null}
     </div>

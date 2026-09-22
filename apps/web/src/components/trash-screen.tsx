@@ -21,6 +21,7 @@ export function TrashScreen({ initialItems, songs }: { initialItems: readonly Tr
   const [confirmation, setConfirmation] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [refreshFailed, setRefreshFailed] = useState(false);
   const priorFocus = useRef<HTMLElement | null>(null);
   const busyRef = useRef(false);
   const visible = useMemo(() => filter === "all" ? items : items.filter((item) => item.type === filter), [filter, items]);
@@ -60,7 +61,7 @@ export function TrashScreen({ initialItems, songs }: { initialItems: readonly Tr
     if (target) setSelected(new Set([keyOf(target)]));
     if (!target && !targets.length) return;
     priorFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setAction(next); setConfirmation(""); setMessage("");
+    setAction(next); setConfirmation(""); setMessage(""); setRefreshFailed(false);
   }
   function closeAction() { setAction(null); setConfirmation(""); }
 
@@ -68,7 +69,7 @@ export function TrashScreen({ initialItems, songs }: { initialItems: readonly Tr
     if (!action || !targets.length || busy) return;
     if (action === "permanent" && confirmation !== confirmationExpected) return;
     if (action === "restore" && orphanLyrics.length && strategy === "move_to_song" && !destinationSongId) return;
-    setBusy(true); setMessage("");
+    setBusy(true); setMessage(""); setRefreshFailed(false);
     const references: TrashReference[] = targets.map(({ kind, id }) => ({ kind, id }));
     try {
       const body = action === "restore"
@@ -78,11 +79,19 @@ export function TrashScreen({ initialItems, songs }: { initialItems: readonly Tr
         method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
       });
       if (!response.ok) throw new Error(String(response.status));
-      const refreshed = await fetch(`/api/trash?type=all`, { cache: "no-store" });
-      if (!refreshed.ok) throw new Error("REFRESH_FAILED");
-      setItems(((await refreshed.json()) as { items: TrashItem[] }).items);
-      setSelected(new Set()); setAction(null);
-      setMessage(action === "restore" ? "선택한 자료를 원래 위치로 복원했습니다." : "선택한 자료를 완전히 삭제했습니다. 이 작업은 되돌릴 수 없습니다.");
+      const processed = new Set(references.map(keyOf));
+      setItems((current) => current.filter((item) => !processed.has(keyOf(item))));
+      setSelected(new Set()); closeAction();
+      const successMessage = action === "restore" ? "선택한 자료를 원래 위치로 복원했습니다." : "선택한 자료를 완전히 삭제했습니다. 이 작업은 되돌릴 수 없습니다.";
+      setMessage(successMessage);
+      try {
+        const refreshed = await fetch(`/api/trash?type=all`, { cache: "no-store" });
+        if (!refreshed.ok) throw new Error("REFRESH_FAILED");
+        setItems(((await refreshed.json()) as { items: TrashItem[] }).items);
+      } catch {
+        setRefreshFailed(true);
+        setMessage(`${successMessage} 목록을 새로 불러오지 못했습니다. 최신 목록을 다시 확인해 주세요.`);
+      }
     } catch (error) {
       const status = error instanceof Error ? error.message : "";
       setMessage(status === "409" ? "휴지통 상태가 바뀌었거나 복원 위치를 사용할 수 없습니다. 목록을 새로 확인해 주세요." : "요청을 완료하지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요.");
@@ -98,7 +107,7 @@ export function TrashScreen({ initialItems, songs }: { initialItems: readonly Tr
       <button type="button" className="secondary-button" onClick={selectVisible} disabled={!visible.length}>{visible.length > 0 && visible.every((item) => selected.has(keyOf(item))) ? "전체 해제" : "보이는 자료 전체 선택"}</button>
       <span>{selected.size ? `${selected.size}개 선택` : `총 ${visible.length}개`}</span>
     </div>
-    {message ? <p className={`trash-message${message.includes("못했습니다") || message.includes("바뀌었") ? " warning" : ""}`} role={message.includes("못했습니다") || message.includes("바뀌었") ? "alert" : "status"}>{message}</p> : null}
+    {message ? <p className={`trash-message${message.includes("못했습니다") || message.includes("바뀌었") ? " warning" : ""}`} role={message.includes("못했습니다") || message.includes("바뀌었") ? "alert" : "status"}>{message}{refreshFailed ? <button type="button" className="secondary-button" onClick={() => window.location.reload()}>목록 새로고침</button> : null}</p> : null}
     {visible.length ? <>
       <div className="trash-table-wrap"><table className="trash-table"><thead><tr><th scope="col">선택</th><th scope="col">자료</th><th scope="col">원래 위치</th><th scope="col">삭제일</th><th scope="col">자동 삭제</th><th scope="col">작업</th></tr></thead><tbody>
         {visible.map((item) => <TrashRow key={keyOf(item)} item={item} checked={selected.has(keyOf(item))} onToggle={() => toggle(item)} onRestore={() => openAction("restore", item)} onDelete={() => openAction("permanent", item)} />)}

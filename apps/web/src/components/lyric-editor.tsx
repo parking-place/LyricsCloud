@@ -110,6 +110,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   const [isPinned, setIsPinned] = useState(initialLyric.isPinned);
   const [saveState, setSaveState] = useState<SaveState>({ status: "saved", sequence: 0, lastSavedAt: null, error: null });
   const [localSyncState, setLocalSyncState] = useState<LocalSyncState>("loading");
+  const [composingInput, setComposingInput] = useState(false);
   const [legacyConflict, setLegacyConflict] = useState<{ localBody: string; serverBody: string } | null>(null);
   const [songForm, setSongForm] = useState<SongFormNavigationState>({ sections: parseSongForm(initialLyric.body), activeSectionId: null });
   const [wholeCopyView, setWholeCopyView] = useState(() => lyricCopyView(initialLyric.body));
@@ -203,6 +204,11 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     };
   }
 
+  function readRecoveryDraft() {
+    return { resourceId: initialLyric.id, title: titleRef.current,
+      body: editorRef.current?.value ?? bodyRef.current, memo: memoRef.current };
+  }
+
   useEffect(() => {
     const parent = mountRef.current;
     if (!parent) return;
@@ -252,8 +258,8 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         bodyRef.current = value;
         if (active) setWholeCopyView(lyricCopyView(value));
       },
-      onCompositionStart() { localSyncRef.current?.setComposing(true); },
-      onCompositionEnd() { localSyncRef.current?.setComposing(false); },
+      onCompositionStart() { if (active) setComposingInput(true); localSyncRef.current?.setComposing(true); },
+      onCompositionEnd() { if (active) setComposingInput(titleComposingRef.current || memoComposingRef.current); localSyncRef.current?.setComposing(false); },
       onSelectionChange(selection) { localSyncRef.current?.updateSelection(selection); },
       async beforeLargePaste() {
         const saved = await localSyncRef.current?.checkpoint("large_paste") ?? false;
@@ -296,6 +302,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       editor.finishComposition();
       if (titleComposingRef.current) { titleComposingRef.current = false; controller.compositionEnd(); }
       if (memoComposingRef.current) { memoComposingRef.current = false; controller.compositionEnd(); }
+      if (active) setComposingInput(false);
     };
     const flush = () => {
       finishInput();
@@ -308,7 +315,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
       await controller.flush();
       if (controller.state.status !== "saved") return false;
       return await localSyncRef.current?.checkpoint("leave") ?? false;
-    }, () => ({ resourceId: initialLyric.id, title: titleRef.current, body: bodyRef.current, memo: memoRef.current }));
+    }, readRecoveryDraft);
     window.addEventListener("pagehide", flush);
     const focusFrame = requestAnimationFrame(() => {
       applyInitialNavigation(editor);
@@ -411,6 +418,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     editorRef.current?.finishComposition();
     if (titleComposingRef.current) { titleComposingRef.current = false; controllerRef.current?.compositionEnd(); }
     if (memoComposingRef.current) { memoComposingRef.current = false; controllerRef.current?.compositionEnd(); }
+    setComposingInput(false);
     await controllerRef.current?.flush();
     if (controllerRef.current?.state.status === "error" || !await localSyncRef.current?.flush()) {
       setCommandNotice("현재 변경 내용을 먼저 저장해야 합니다. 저장을 다시 시도해 주세요.");
@@ -717,6 +725,11 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     void copyFeedback.copyText(view.payload, "가사 전체", view.feedback("Suno용 가사를 복사했습니다. Extend 작업 메모는 제외됩니다."), view.warningMessage);
   }
 
+  function copyRecovery() {
+    const { title, body, memo } = readRecoveryDraft();
+    void copyFeedback.copyText(JSON.stringify({ title, body, memo }, null, 2), "가사 복구본", "제목·원문·작업 메모를 포함한 복구본을 복사했습니다.");
+  }
+
   function copyRawLyric() {
     const raw = editorRef.current?.value ?? bodyRef.current;
     setSongFormInsertMenu(null);
@@ -811,7 +824,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
   } as CSSProperties;
 
   return <section className={`lyric-editor-page${focusMode ? " is-focus-mode" : ""}`} aria-labelledby="lyric-editor-heading" style={writingVariables}
-    data-pending-input={hasVolatilePendingInput(saveState.status, localSyncState) || undefined}>
+    data-pending-input={composingInput || hasVolatilePendingInput(saveState.status, localSyncState) || undefined}>
     <h1 className="sr-only" id="lyric-editor-heading">가사 편집: {title || "제목 없음"}</h1>
     <header className="lyric-editor-header">
       <div className="lyric-editor-context">
@@ -839,8 +852,8 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
         <button type="button" disabled={commandBusy} className="danger-text" onClick={() => setDeleteOpen(true)}>삭제</button>
       </div>
       <div className="editor-save-strip" data-save-state={saveState.status} data-sync-state={localSyncState}>
-        <SaveIndicator state={saveState} syncState={localSyncState} onRetry={() => { void controllerRef.current?.retry(); }} onCopy={copyWhole} />
-        <LocalDraftIndicator state={localSyncState} onRetry={() => localSyncRef.current?.retry()} onCopy={copyWhole} />
+        <SaveIndicator state={saveState} syncState={localSyncState} onRetry={() => { void controllerRef.current?.retry(); }} onCopy={copyRecovery} />
+        <LocalDraftIndicator state={localSyncState} onRetry={() => localSyncRef.current?.retry()} onCopy={copyRecovery} />
       </div>
     </header>
     {commandNotice ? <p className="editor-command-notice" role="status">{commandNotice}</p> : null}
@@ -853,8 +866,8 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
     <div className="lyric-editor-title">
       <label id="lyric-title-label" htmlFor="lyric-title">가사 제목</label>
       <input id="lyric-title" value={title} aria-invalid={!title.trim()} onChange={(event) => changeTitle(event.target.value)}
-        onCompositionStart={() => { titleComposingRef.current = true; }}
-        onCompositionEnd={() => { titleComposingRef.current = false; controllerRef.current?.compositionEnd(); }} />
+        onCompositionStart={() => { titleComposingRef.current = true; setComposingInput(true); }}
+        onCompositionEnd={() => { titleComposingRef.current = false; setComposingInput(Boolean(editorRef.current?.composing || memoComposingRef.current)); controllerRef.current?.compositionEnd(); }} />
       {!title.trim() ? <span role="alert">제목을 입력해야 저장할 수 있습니다.</span> : null}
     </div>
     <div className="lyric-editor-workspace">
@@ -878,7 +891,7 @@ export function LyricEditor({ ownerId, initialLyric, songTitle, songLyrics, dash
           <div className="lyric-display-summary"><span>{displaySettings.override ? "가사별 설정" : "계정 기본값"} · {displaySettings.effective.fontSize}px · 줄 {displaySettings.effective.lineHeight.toFixed(1)}</span><button type="button" onClick={() => { setMobileResourcesOpen(false); setDisplaySettingsOpen(true); }}>표시 설정 열기</button></div>
           <LyricMetadataControls memo={memo} status={status} isFavorite={isFavorite} isPinned={isPinned}
             onMemo={changeMemo} onStatus={changeStatus} onFavorite={() => toggleMetadata("favorite")} onPinned={() => toggleMetadata("pinned")}
-            onMemoCompositionStart={() => { memoComposingRef.current = true; }} onMemoCompositionEnd={() => { memoComposingRef.current = false; controllerRef.current?.compositionEnd(); }} /></>} />
+            onMemoCompositionStart={() => { memoComposingRef.current = true; setComposingInput(true); }} onMemoCompositionEnd={() => { memoComposingRef.current = false; setComposingInput(Boolean(editorRef.current?.composing || titleComposingRef.current)); controllerRef.current?.compositionEnd(); }} /></>} />
     </div>
     <div className="mobile-editor-dock" role="group" aria-label="가사 편집 도구">
       <button type="button" aria-haspopup="menu" aria-expanded={Boolean(songFormInsertMenu)} onClick={() => requestSongFormInsertMenu({

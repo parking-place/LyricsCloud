@@ -4,6 +4,7 @@ const BUILD_ID = new URL(self.location.href).searchParams.get("build") || "unkno
 const CACHE_NAME = `${CACHE_PREFIX}${BUILD_ID.replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 128)}`;
 const STATIC_PATH = "/_next/static/";
 const CONTENT_ADDRESSED_FONT = /^\/fonts\/[A-Za-z0-9_-]+\.[0-9a-f]{8,64}\.(?:otf|woff2)$/i;
+const staticAssetLoads = new Map();
 
 function contentAddressed(pathname) {
   return pathname.slice(STATIC_PATH.length).split("/").some((segment) => {
@@ -25,12 +26,21 @@ function cacheableAssetUrl(value) {
 
 async function cacheAsset(cache, value) {
   if (!cacheableAssetUrl(value)) return;
-  const request = new Request(value, { credentials: "same-origin", cache: "reload" });
-  const response = await fetch(request);
-  const policy = response.headers.get("cache-control") || "";
-  if (response.ok && /(?:^|,)\s*public\b/i.test(policy) && /\bimmutable\b/i.test(policy) && !response.headers.has("set-cookie")) {
-    await cache.put(request, response);
-  }
+  const url = new URL(value, self.location.origin);
+  url.hash = "";
+  if (staticAssetLoads.has(url.href)) return staticAssetLoads.get(url.href);
+  const load = (async () => {
+    const request = new Request(url.href, { credentials: "same-origin" });
+    if (await cache.match(request)) return;
+    const response = await fetch(request);
+    const policy = response.headers.get("cache-control") || "";
+    if (response.ok && /(?:^|,)\s*public\b/i.test(policy) && /\bimmutable\b/i.test(policy) && !response.headers.has("set-cookie")) {
+      await cache.put(request, response);
+    }
+  })();
+  staticAssetLoads.set(url.href, load);
+  try { await load; }
+  finally { staticAssetLoads.delete(url.href); }
 }
 
 self.addEventListener("install", () => {
