@@ -1,0 +1,841 @@
+{
+  "design": "E · Chroma Dock / Cobalt Blue (04)",
+  "planVersion": "1.2.0",
+  "runtime": {
+    "node": "v24.20.0",
+    "browser": "151.0.7922.34",
+    "engine": "Chromium",
+    "transport": "file://"
+  },
+  "layouts": [
+    {
+      "width": 320,
+      "theme": "light",
+      "page": "home",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "page": "songs",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "page": "rhymes",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "page": "prompts",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "page": "song",
+      "id": "s1",
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "page": "lyric",
+      "id": "l1",
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "page": "rhyme",
+      "id": "r1",
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "page": "prompt",
+      "id": "p1",
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "page": "prompt",
+      "id": "p2",
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "page": "templates",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "page": "settings",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "page": "trash",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "page": "home",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "page": "songs",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "page": "rhymes",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "page": "prompts",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "page": "song",
+      "id": "s1",
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "page": "lyric",
+      "id": "l1",
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "page": "rhyme",
+      "id": "r1",
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "page": "prompt",
+      "id": "p1",
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "page": "prompt",
+      "id": "p2",
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "page": "templates",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "page": "settings",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "page": "trash",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "page": "home",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "page": "songs",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "page": "rhymes",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "page": "prompts",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "page": "song",
+      "id": "s1",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "page": "lyric",
+      "id": "l1",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "page": "rhyme",
+      "id": "r1",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "page": "prompt",
+      "id": "p1",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "page": "prompt",
+      "id": "p2",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "page": "templates",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "page": "settings",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "page": "trash",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "page": "home",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "page": "songs",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "page": "rhymes",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "page": "prompts",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "page": "song",
+      "id": "s1",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "page": "lyric",
+      "id": "l1",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "page": "rhyme",
+      "id": "r1",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "page": "prompt",
+      "id": "p1",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "page": "prompt",
+      "id": "p2",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "page": "templates",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "page": "settings",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "page": "trash",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "page": "home",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "page": "songs",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "page": "rhymes",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "page": "prompts",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "page": "song",
+      "id": "s1",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "page": "lyric",
+      "id": "l1",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "page": "rhyme",
+      "id": "r1",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "page": "prompt",
+      "id": "p1",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "page": "prompt",
+      "id": "p2",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "page": "templates",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "page": "settings",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "page": "trash",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "page": "home",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "page": "songs",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "page": "rhymes",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "page": "prompts",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "page": "song",
+      "id": "s1",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "page": "lyric",
+      "id": "l1",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "page": "rhyme",
+      "id": "r1",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "page": "prompt",
+      "id": "p1",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "page": "prompt",
+      "id": "p2",
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "page": "templates",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "page": "settings",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "page": "trash",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "page": "home",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "page": "songs",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "page": "rhymes",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "page": "prompts",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "page": "song",
+      "id": "s1",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "page": "lyric",
+      "id": "l1",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "page": "rhyme",
+      "id": "r1",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "page": "prompt",
+      "id": "p1",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "page": "prompt",
+      "id": "p2",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "page": "templates",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "page": "settings",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "light",
+      "page": "trash",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "page": "home",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "page": "songs",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "page": "rhymes",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "page": "prompts",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "page": "song",
+      "id": "s1",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "page": "lyric",
+      "id": "l1",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "page": "rhyme",
+      "id": "r1",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "page": "prompt",
+      "id": "p1",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "page": "prompt",
+      "id": "p2",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "page": "templates",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "page": "settings",
+      "id": null,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "page": "trash",
+      "id": null,
+      "overflow": false
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "previews/cobalt-light-home.png",
+      "mode": "light",
+      "view": "home",
+      "width": 1440,
+      "height": 1050,
+      "route": "home",
+      "headerLink": "../README.md"
+    },
+    {
+      "file": "previews/cobalt-light-editor.png",
+      "mode": "light",
+      "view": "editor",
+      "width": 1440,
+      "height": 1050,
+      "route": "lyric/l1",
+      "headerLink": "../README.md"
+    },
+    {
+      "file": "previews/cobalt-light-mobile.png",
+      "mode": "light",
+      "view": "mobile",
+      "width": 390,
+      "height": 844,
+      "route": "home",
+      "headerLink": "../README.md"
+    },
+    {
+      "file": "previews/cobalt-dark-home.png",
+      "mode": "dark",
+      "view": "home",
+      "width": 1440,
+      "height": 1050,
+      "route": "home",
+      "headerLink": "../README.md"
+    },
+    {
+      "file": "previews/cobalt-dark-editor.png",
+      "mode": "dark",
+      "view": "editor",
+      "width": 1440,
+      "height": 1050,
+      "route": "lyric/l1",
+      "headerLink": "../README.md"
+    },
+    {
+      "file": "previews/cobalt-dark-mobile.png",
+      "mode": "dark",
+      "view": "mobile",
+      "width": 390,
+      "height": 844,
+      "route": "home",
+      "headerLink": "../README.md"
+    }
+  ],
+  "date": "2026-09-22T09:51:11.659Z",
+  "source": "v1.1.7a / fc2463cdb47d9fd7d0042779f602c6ddb7d734cf",
+  "checks": [
+    {
+      "name": "selected source hashes and narrow E app adapter",
+      "status": "pass"
+    },
+    {
+      "name": "one selected Cobalt palette, light default, original 207 feature references",
+      "status": "pass"
+    },
+    {
+      "name": "URL dark mode and invalid theme fallback with selected palette fixed",
+      "status": "pass"
+    },
+    {
+      "name": "theme button preserves draft text, caret and editor node identity",
+      "status": "pass"
+    },
+    {
+      "name": "settings theme preview retains an unsaved profile draft",
+      "status": "pass"
+    },
+    {
+      "name": "desktop navigation: all ten destinations",
+      "status": "pass"
+    },
+    {
+      "name": "all viewport and theme layouts have no document overflow",
+      "status": "pass"
+    },
+    {
+      "name": "lyric four independent resource tabs",
+      "status": "pass"
+    },
+    {
+      "name": "Suno copy removes only Extend while original persists",
+      "status": "pass"
+    },
+    {
+      "name": "rhyme selection insertion changes explicit lyric only",
+      "status": "pass"
+    },
+    {
+      "name": "independent rhyme tag and song linking",
+      "status": "pass"
+    },
+    {
+      "name": "tag prompt order, duplicate removal and raw copying",
+      "status": "pass"
+    },
+    {
+      "name": "sentence template appends and cross format rejected",
+      "status": "pass"
+    },
+    {
+      "name": "profile dirty guard and independent display save",
+      "status": "pass"
+    },
+    {
+      "name": "share six roles and public field scope persisted",
+      "status": "pass"
+    },
+    {
+      "name": "mobile primary navigation and utility sheet",
+      "status": "pass"
+    },
+    {
+      "name": "modal focus closes to opener and keyboard remains usable",
+      "status": "pass"
+    },
+    {
+      "name": "photo validation and preview",
+      "status": "pass"
+    },
+    {
+      "name": "motion preference can change at runtime",
+      "status": "pass"
+    },
+    {
+      "name": "empty recovery never downloads owner lyrics",
+      "status": "pass"
+    },
+    {
+      "name": "no JavaScript runtime errors",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "no external HTTP requests",
+      "status": "pass",
+      "requests": []
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "passed": true,
+  "limitations": [
+    "Synthetic localStorage only; no API, OAuth, CRDT, server persistence or image processing.",
+    "Detailed asynchronous failure, IME lifecycle, cross-tab sync, pagination and real PWA contracts are represented in demonstration/coverage rather than implemented."
+  ]
+}

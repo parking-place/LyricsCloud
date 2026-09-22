@@ -356,3 +356,11 @@
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
 자동 hook·새 검수 스크립트·별도 스케줄을 만들지 않는다. Agent.md의 필수 단계와 이 절차 한 곳을 사용한다.
+
+## 2026-09-22 — 1.2.0 리디자인 계획 게시 전 검수
+
+| 출처 | 이전 인수 기준 → 현행 | 발견·변경 판정 | 배정·보존 |
+|---|---|---|---|
+| `0.Plans/2.Patch-phase/Future_Feature.md` | `fd4d901a4c57626d193c88938c7889f035d69192` / blob `8f42d20b638e245eb775415ccfdabef56a96f694` → 기준 `fc2463cdb47d9fd7d0042779f602c6ddb7d734cf`와 작업 트리의 동일 blob | tracked·untracked·hidden 전역 탐색 4문서. 후보 129개 ID·체크·본문 변경 없음, 새 후보 파일 없음 | 재채택/구현 없음. 사용자 지시로 1.1.8~1.1.14의 후속 진행은 보류하고 [1.2.0 코발트 Chroma Dock 계획](../3.Redesign-phase/1.2.0/README.md)을 다음으로 지정 |
+
+나머지 세 파일은 이 절차와 `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`다. 이력·매핑 원본은 변경하지 않았으며 별도 선택 후보로 중복 배정하지 않았다. 보류는 기존 완료·승인·작업 ID를 삭제하지 않는다. 사용자 지시로 선정한 합성 코발트 목업만 계획 폴더에 복사했으며 비공개 원본과 다른 비공개 자료는 게시 대상에 포함하지 않는다. 이번 push는 문서·목업 브랜치 게시이고 제품 Phase 인수·main 병합·배포가 아니다.

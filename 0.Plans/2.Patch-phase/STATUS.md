@@ -1,25 +1,29 @@
 # 후속 기능 계획 상태
 
 ```yaml
-plan_state: "active"
+plan_state: "on_hold_from_1.1.8"
 plan_owner: "Codex"
 prepared_at: "2026-09-09"
-reference_sha: "7448f47b0dbbc51ab3bcda13876b63ef72c102d2"
+updated_at: "2026-09-22"
 planning_root: "0.Plans/2.Patch-phase"
 execution_authorized_by_this_file: false
 runtime_status_source: "0.Plans/1. Dev-phase/STATUS.md"
-next_planned_version: "1.0.1"
-next_planned_phase: "1.0.1/3phase.md"
-prerequisite: "P2 0900 schema·관리 CLI·동일 SHA 개발 인수 완료"
-execution_authorized_by_user_request: true
-release_server_authorized_after_all_phases: true
+next_planned_version: "1.2.0"
+next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
+next_planning_root: "0.Plans/3.Redesign-phase"
+deferred_versions: "1.1.8 through 1.1.14"
+prerequisite: "v1.1.7a 기준 및 기존 기능/데이터/작업 경계 인수; 보류 플랫폼 버전 완료를 요구하지 않음"
+execution_authorized_by_user_request: false
+release_server_authorized_after_all_phases: false
 ```
 
 ## 단일 상태 원본
 
-현재 실행 상태는 `0.Plans/1. Dev-phase/STATUS.md`의 1.0.1 P3다. P2 후보의 원격 push와 같은 SHA 개발 서버 `0900` migration·관리 CLI canary·공개 smoke를 완료했다. 이 문서는 계획 상태만 관리하며 실행 상태 원본은 계속 기존 STATUS 한 곳이다.
+현재 실행 상태 원본은 [개발 STATUS](<../1. Dev-phase/STATUS.md>)이며 1.1.7a의 기존 완료 기록을 유지한다. 다음 계획은 [1.2.0 리디자인](../3.Redesign-phase/1.2.0/README.md)이다. 이 파일은 제품 구현 착수/배포를 승인하지 않는다.
 
-## 담당 경계
+[보류 결정](../3.Redesign-phase/PLAN-CHANGE.md)에 따라 1.1.8의 남은 작업과 1.1.9~1.1.14를 진행하지 않는다. 원래 계획·작업 ID·체크 상태·별도 개발선의 선행 인수는 보존한다. 기존 승인 기록은 당시 작업 범위에 남으며, 2026-09-22의 계획 배정 요청을 새로운 실행/운영 승인으로 확대하지 않는다.
+
+## 이전 문서 패키지 담당 이력 (2026-09-09)
 
 | 담당 | 범위 | 인계 |
 |---|---|---|

@@ -1,0 +1,64 @@
+{
+  "design": "E · Chroma Dock / Cobalt Blue (palette 04)",
+  "sourceBaseline": {
+    "version": "v1.1.7a",
+    "gitSha": "fc2463cdb47d9fd7d0042779f602c6ddb7d734cf"
+  },
+  "planVersion": "1.2.0",
+  "authorization": "Selected synthetic mockup publication only; original sources preserved.",
+  "sourceReference": "2026-09-22 original E and its color collection; identifiers below are provenance, not runtime paths.",
+  "sourceSha256": {
+    "chroma-dock/index.html": "b5cbb5cbea18c31c92db9b448ad8a7243d0b7a7d1c58697ae687269ff0877f5a",
+    "chroma-dock/app.js": "416c4e8f1745b400ca5e4df50dc1a45d30b7b5e11329ec0364a27b0aec318b80",
+    "chroma-dock/styles.css": "60bc3503da220b502c00dfb9dc8ec08ae0ac5b33725aaece1145e74b75fa0ce5",
+    "chroma-dock/feature-data.js": "92047d3691f6b72073db2d27e3fbdabd381245a835d8f6a4522a9ff925e0ef11",
+    "chroma-dock/verify.mjs": "30d6042b691bdc27938cb1bf369ccd506364a26ca8f9aa8231422983dc20dd7c",
+    "chroma-colors/palettes.js": "16fe0e316aafea4b62103ca3b77762a1b2a8b6a9e875396c38760bcaa2c12877",
+    "chroma-colors/color-core.js": "0cb83ce97f6ff42b8b0fac3d9cb2f8a46be88c4281927c4957b25602b4bd2a9e",
+    "chroma-colors/color-layer.css": "3379d1e7767ddb2d6a3985a197d3b3ba3bdb10fdec327d64d8b25aac01b1c5a3",
+    "vendor/gsap.min.js": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+    "vendor/Draggable.min.js": "eb28ff7ac2d320ba24a5c065563fcd8f61f2df9d7574b175b9b30942e5867e8c"
+  },
+  "adapterChanges": [
+    "Original E HTML shell: local paths, Cobalt title, 1.2.0 plan link and footer.",
+    "Original E app: isolated storage key and initial theme supplied by boot.js only.",
+    "One unchanged palette record (04) extracted; color core and color layer preserved byte-for-byte.",
+    "New boot/theme observer: Cobalt light default, URL dark mode, in-place theme updates.",
+    "Validation adapted from original E to relative paths and optional PLAYWRIGHT_MODULE; Cobalt assertions and fresh six screenshots."
+  ],
+  "storageKey": "lyricscloud-redesign-120-cobalt-v1",
+  "byteIdenticalFiles": {
+    "base/styles.css": "chroma-dock/styles.css",
+    "base/feature-data.js": "chroma-dock/feature-data.js",
+    "color-core.js": "chroma-colors/color-core.js",
+    "color-layer.css": "chroma-colors/color-layer.css",
+    "vendor/gsap.min.js": "vendor/gsap.min.js",
+    "vendor/Draggable.min.js": "vendor/Draggable.min.js"
+  },
+  "publishedFilesSha256": {
+    "README.md": "b015c68ecdbe50dda66535c67b10b9f9a39e402a5363c45671e3a373a6e94a2a",
+    "base/app.js": "a5a67cab4d2f1f352de2ecad8e09838620a57ce38c71be8287a2b89833f0fac5",
+    "base/feature-data.js": "92047d3691f6b72073db2d27e3fbdabd381245a835d8f6a4522a9ff925e0ef11",
+    "base/styles.css": "60bc3503da220b502c00dfb9dc8ec08ae0ac5b33725aaece1145e74b75fa0ce5",
+    "boot.js": "844e687bcb6903f2374bf13d3337c912e9f126c9c8b4df8d444f787f0e18d6e2",
+    "color-core.js": "0cb83ce97f6ff42b8b0fac3d9cb2f8a46be88c4281927c4957b25602b4bd2a9e",
+    "color-layer.css": "3379d1e7767ddb2d6a3985a197d3b3ba3bdb10fdec327d64d8b25aac01b1c5a3",
+    "index.html": "598249d139098c27d45ac8b7f2954685c394100c5554c0a87ae135c7212bb6c1",
+    "palette.js": "b4d09e5b92489c8809c2a7d9fd14ecc55e9f84b8253a5094506d8841d1395ed1",
+    "previews/cobalt-dark-editor.png": "9e5f008c8d45fefde4b277e3f04835dd649656edee55b8edd719cf05cc5e4875",
+    "previews/cobalt-dark-home.png": "819b9589b7583c111c8fe550f41d2a9582546e107a8b90d0692c27cce6baffba",
+    "previews/cobalt-dark-mobile.png": "2061db48f4c727bf32acad0706f1278ab1410ce5c88f670d735f0683e185d088",
+    "previews/cobalt-light-editor.png": "7c6bdb1427351a3d20760d7a161a32b9a55e1828b2256533fb53b96fbc6e2163",
+    "previews/cobalt-light-home.png": "bd536066cbff8a193d7f0a9e122afd0a9a72fd146bd4e3408798ec90d81b22ab",
+    "previews/cobalt-light-mobile.png": "708ef884a5d64c53691c1d6b502da2ac2a3742d3577aa264f62899ba249d4d4f",
+    "theme-sync.js": "9eb0f03894d86007b872d83fc54509e9e4f249d9740d29f9cd8d4de9293b6f76",
+    "tokens.css": "efd82fa79dfa4b9d2ef05fd6f9633ee55187eb9e97e5298e2a68efbe5c514ab4",
+    "vendor/Draggable.min.js": "eb28ff7ac2d320ba24a5c065563fcd8f61f2df9d7574b175b9b30942e5867e8c",
+    "vendor/NOTICE.md": "8934c2c5d65d79167437b3be5c611ae567fbae93b6f137d89848dc80208af3d1",
+    "vendor/SOURCE.json": "e5d987194983660a6fa5770db1479109857d753b822aa518dbabd6a63823c06a",
+    "vendor/gsap.min.js": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+    "vendor/package.json": "85cc13e31f7a3cd124b587a40f545f265f47d0dfb9a556bb122d70fc0fca3459",
+    "verification.json": "63c7ed4bf081e04468d4348fc6b825f158fa1cb91ff559d2cd9215f4581df79e",
+    "verify.mjs": "b77c20dc082942e55b27f1134379708a245d8b068a7f64a074eac4c67de7f9e9"
+  }
+}

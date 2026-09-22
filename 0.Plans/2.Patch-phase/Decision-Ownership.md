@@ -4,6 +4,8 @@
 
 | ID | 결정 대상 | 최초 결정/주요 소비 | 상태 | 문서 |
 |---|---|---|---|---|
+| `PROD-RD-120-001` | 코발트 Chroma Dock 선정 | 2026-09-22 사용자 선택; 1.2.0 P1~P4 소비 | Accepted for 1.2.0 design direction; 구현 미착수 | [결정](../3.Redesign-phase/PLAN-CHANGE.md) |
+| `OPS-RD-120-001` | 1.2.0 계획 번호·패치 보류 | 2026-09-22 사용자 지정; 1.2.0 P1/P5 소비 | Accepted for planning order only; 배포 승인 아님 | [결정](../3.Redesign-phase/PLAN-CHANGE.md) |
 | `ADR-NF-001` | 베타 접근·해시 allowlist·원자 grant | 1.0.1 P1 | Accepted | [결정](../../docs/adr/ADR-NF-001-beta-access.md) |
 | `ADR-NF-002` | 외부 metadata 취득·보안 경계 | 1.0.11 P1 | Deferred / no-go; 공식 계약 확보 시 재개 | [결정](../../docs/adr/ADR-NF-002-external-metadata.md) |
 | `ADR-NF-003` | owner/actor·공유 protocol | 1.1.0 P1; 링크 읽기 1.1.1; 쓰기 확장 1.1.2~1.1.3; 안정화 1.1.4 | Accepted through 1.1.4 event ordering and recovery contract | [결정](../../docs/adr/ADR-NF-003-sharing.md) |

@@ -6,9 +6,15 @@ current_phase: "../2.Patch-phase/1.1.7.a/5phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-15"
-updated_at: "2026-09-16"
-next_action: "P5 완료 후보 fd4d901a의 PR #150을 승인된 release/1.1.7a에 통합하고 merge SHA 전체 CI·동일 SHA 개발 인수 뒤 annotated v1.1.7a tag의 정식 signed image를 발행해 운영 서버에 exact digest로 배포한다. main과 미완료 1.1.8은 변경하지 않는다"
+updated_at: "2026-09-22"
+next_planned_version: "1.2.0"
+next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
+next_action: "1.1.8~1.1.14 후속 진행은 보류. v1.1.7a 기준의 1.2.0 코발트 Chroma Dock 리디자인 P1 계획을 다음 작업으로 인수한다. 이번 변경은 문서·목업 정리이며 제품 구현 미착수"
 ```
+
+## 2026-09-22 다음 계획 지정
+
+사용자 지시로 [3.Redesign-phase / 1.2.0](../3.Redesign-phase/1.2.0/README.md)을 다음 계획으로 정했다. 코발트 블루 Chroma Dock을 선택하고 1.1.8~1.1.14의 남은 작업을 보류한다. [전환 결정](../3.Redesign-phase/PLAN-CHANGE.md)을 따른다. 위 실행 `current_version/current_phase/state`와 아래 과거 완료/릴리스 증거는 유지한다. 실제 1.2.0 착수는 별도 실행 상태 인수 때 기록한다. 이 변경으로 이전 릴리스의 배포 결과를 새로 판정하지 않는다.
 
 ## 승인과 기준
 
@@ -223,6 +229,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.2.0 계획 정비 (구현 Phase 아님) | PLAN-RD-120 | 3.Redesign-phase 목업·계획, 2.Patch-phase 보류·진입 문서, 실행 STATUS 다음 계획 | 2026-09-22 사용자 코발트 Chroma Dock 선택·1.1.8 이후 보류 지시; v1.1.7a 기준 | 2026-09-22 | documented (계획·목업 검증 완료; 제품 Phase 미착수) |
 | Codex | 1.1.7a/P5 | LC-PLAN-117A-P5-01~05 | 사용자/지원·요구 추적·30 migration/환경/license/manifest·최종 CI/동일 SHA 개발·승인된 전용 릴리스 | 후보 `fd4d901`, Actions `35047546033` verify/네 signed dev image·동일 SHA 공개 두 owner 저장/격리/재시작·홈 PASS, 합성 자료 0건 | 2026-09-16 | complete |
 | Codex | 1.1.7a/P4 | LC-PLAN-117A-P4-01~06 | 두 계정·재로그인·Google 제공값·사진/RLS·ACK 유실·홈 이탈·PC/mobile 및 Linux 5-project 대리 회귀·상태/Future | P3 PR #148 merge `b4e5200`, 후보 `7621e8e`, Actions `35043634916` verify/네 signed dev image·동일 SHA 공개 재시작/두 owner 격리 PASS | 2026-09-16 | complete |
 | Codex | 1.1.7a/P3 | LC-PLAN-117A-P3-01~05 | 설정 계정 프로필 UI·셸 avatar/닉네임·브랜드 `/workspace` 이동·저장 이탈 guard·PC/mobile E2E/상태/Future | 후보 `675dbafa`, PR #148 merge `b4e5200`, Actions `35037281111` verify/네 signed dev image·동일 SHA 개발 공개 합성 프로필 영속 PASS | 2026-09-16 | complete |

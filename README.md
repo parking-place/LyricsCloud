@@ -15,6 +15,8 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 
 [1.1.7a release notes](./docs/releases/1.1.7a.md)와 [CHANGELOG.md](./CHANGELOG.md)에 사용자 변화·호환성·미실행 gate를 기록한다.
 
+> **다음 제품 계획 (2026-09-22):** [1.2.0 · 코발트 블루 Chroma Dock 리디자인](0.Plans/3.Redesign-phase/1.2.0/README.md). [선정 목업](0.Plans/3.Redesign-phase/1.2.0/mockup/index.html)을 기준으로 하며, 1.1.8~1.1.14 후속 계획은 보류합니다. 현재 제품 버전 변경이나 구현/배포 완료를 뜻하지 않습니다.
+
 ## 주요 기능
 
 - 곡 CRUD, 상태·메모·필터·즐겨찾기·핀과 곡 중심 대시보드
@@ -45,7 +47,8 @@ AI 생성·음원 업로드는 1.1.7a 범위가 아니다. 계정 사진 파일�
 | 항목 | 상태 |
 |---|---|
 | 소스·runtime version | `1.1.7a` 제품 버전; private npm package SemVer는 `1.1.7` 유지 |
-| 현재 작업 | [1.1.7a Phase 5 — 문서·최종 검증·릴리스 인계](<./0.Plans/2.Patch-phase/1.1.7.a/5phase.md>) |
+| 다음 계획 | [1.2.0 코발트 Chroma Dock 리디자인](./0.Plans/3.Redesign-phase/1.2.0/README.md), 제품 구현 미착수; 1.1.8~1.1.14 후속 진행 보류 |
+| 마지막 실행 Phase | [1.1.7a Phase 5 — 문서·최종 검증·릴리스 인계](<./0.Plans/2.Patch-phase/1.1.7.a/5phase.md>) |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.1.7`, tag/운영 `edb8b4a`, exact digest 운영 배포; `v1.1.7a` P5 gate 완료·정식 발행 대기 |
 | 개발 인수 | 1.1.7a P1~P5 완료; 후보 `fd4d901`, Actions `35047546033`, 동일 SHA 개발 공개 인수 PASS |

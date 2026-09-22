@@ -1,0 +1,21 @@
+{
+  "name": "gsap",
+  "version": "3.15.0",
+  "source": "https://registry.npmjs.org/gsap/-/gsap-3.15.0.tgz",
+  "registryIntegrity": "sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A==",
+  "docs": "https://gsap.com/docs/v3/Installation/",
+  "files": [
+    {
+      "file": "gsap.min.js",
+      "sha256": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb"
+    },
+    {
+      "file": "Draggable.min.js",
+      "sha256": "eb28ff7ac2d320ba24a5c065563fcd8f61f2df9d7574b175b9b30942e5867e8c"
+    },
+    {
+      "file": "package.json",
+      "sha256": "85cc13e31f7a3cd124b587a40f545f265f47d0dfb9a556bb122d70fc0fca3459"
+    }
+  ]
+}
