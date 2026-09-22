@@ -12,6 +12,8 @@ next_action: "사용자가 승인한 기존 웹 결함·성능 보정을 P4 추�
 
 ## 승인과 기준
 
+2026-09-22 웹 안정화 두 번째 후보 `a15271003e686995579ce3ddff26c4ac29c5dcbf`의 Actions [35697819946](https://github.com/parking-place/LyricsCloud/actions/runs/35697819946)은 owner E2E **402 PASS / 1 FAIL / 49 조건부 skip**이었다. 유일한 실패는 일반 웹 모드 안내 행이 없는 이전 모바일 즐겨찾기 기준과의 7% 차이다. 같은 변경이 적용되는 모바일 탐색 기준 5장을 공식 Linux 환경에서 생성·시각 확인하고 기존 6% 비교 허용치를 유지한 집중 회귀 1건을 PASS했다. 제품 코드 변경 없이 새 후보를 검증하며 image 발행·PC 전환·원격 개발 인수 전까지 완료로 표시하지 않는다.
+
 2026-09-22 웹 안정화 첫 후보 `cd87eb283ecaf5977a8bc9552f26bfa52f273f26` / PR #152의 Actions `35694180993`은 Windows build·production image·보안 검사 뒤 owner E2E **368 PASS / 35 FAIL / 49 조건부 skip**으로 종료했고 image 발행·PC 전환은 하지 않았다. PWA 안내의 중복 status 역할, 과거 복구 복사 기대값, 이동 ACK 전 드래그를 시작한 fixture와 모바일 기준 화면을 보정했다. PWA 단위 6 PASS, 영향 PC/mobile 10개 고유 사례 PASS, check·production build PASS이며 새 후보의 필수 CI·PC 갱신·동일 SHA 원격 개발 인수를 기다린다. 상세 실패/재검증은 [웹 안정화 기록](../../docs/runbooks/1.1.8-web-stabilization.md)에 남긴다. P4 review·P5/릴리스 보류는 유지한다.
 
 2026-09-22 사용자가 다른 공동작업자의 개발이 진행 중이지 않음을 알리고 기존 문제 수정·추가 결함 조사·계획에 따른 진행과 여러 모델의 서브 에이전트 분담을 요청했다. 핵심 제품 코드는 Astra가 맡는다. 현재 `1.1.8 P4` 후보를 기준으로 웹 저장/목록/검색/탐색/PWA의 기존 동작을 보정하고 PC Docker의 `1.0.0` 런타임을 데이터 보존 후 갱신하는 범위다. 이 추가 회귀는 새 기능이나 native 편집 범위 확장이 아니며, 기존 Windows 물리 검증·서명 gate와 `main`/정식 릴리스 조건을 충족한 것으로 간주하지 않는다. 개발 사이트는 계정 허용 제한이 있어 동일 배포 SHA의 PC 격리 환경과 기존 OIDC 합성 공급자로 먼저 UI를 확인한다. 원격 개발 관리 접속 정보 확보와 실제 개발 인수는 별도 미완료 항목으로 남긴다.
