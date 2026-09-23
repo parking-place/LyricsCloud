@@ -21,11 +21,12 @@ export function isEditableShortcutTarget(target: EventTarget | null): boolean {
   return Boolean(target.closest("input, textarea, select, [contenteditable='true'], .cm-editor"));
 }
 
-export function requestShortcutNavigation(detail: ShortcutNavigationDetail): void {
+export function requestShortcutNavigation(detail: ShortcutNavigationDetail, navigate: (href: string) => void): void {
+  if (new URL(detail.href, window.location.href).href === window.location.href) return;
   const allowed = window.dispatchEvent(new CustomEvent<ShortcutNavigationDetail>(BEFORE_SHORTCUT_NAVIGATION_EVENT, {
     bubbles: false,
     cancelable: true,
     detail
   }));
-  if (allowed) window.location.assign(detail.href);
+  if (allowed) navigate(detail.href);
 }

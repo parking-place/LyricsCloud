@@ -1,6 +1,7 @@
 import * as Y from "yjs";
 import { describe, expect, it } from "vitest";
-import { applyLyricUpdate, applyPromptUpdate, createLyricDocument, createPromptDocument, createRhymeDocument, encodeLyricSnapshot, encodePromptSnapshot, encodeTextRelativePosition, insertPromptToken, lyricBody, movePromptToken, projectLyric, projectPrompt, projectRhyme, removePromptToken, replacePromptSentence, replacePromptTokens, resolveTextRelativePosition, rhymeBody, setPromptMode } from "./crdt.js";
+import { applyComposedTextChanges } from "./browser-sync.js";
+import { applyLyricUpdate, applyPromptUpdate, createLyricDocument, createPromptDocument, createRhymeDocument, encodeLyricSnapshot, encodePromptSnapshot, encodeTextRelativePosition, insertPromptToken, lyricBody, movePromptToken, projectLyric, projectPrompt, projectRhyme, promptTitle, removePromptToken, replacePromptSentence, replacePromptTokens, resolveTextRelativePosition, rhymeBody, setPromptMode } from "./crdt.js";
 
 describe("lyric CRDT contract", () => {
   it("converges with reversed and duplicate delivery", () => {
@@ -127,6 +128,61 @@ it("stores a raw sentence and its mode in one transaction without mixing a concu
   replacePromptSentence(modeSide, "  다음, 문장.  ");
   expect(projectPrompt(modeSide).plainText).toBe("  다음, 문장.  ");
   baseline.destroy(); modeSide.destroy(); staleTagSide.destroy();
+});
+
+it.each([
+  { original: "노래를 만든다. 🎵", edited: "밝은 노래를 만든다. 🎵", suffix: " 기타 반주." },
+  { original: "리듬 🎵", edited: "리듬 🎶", suffix: " 기타 반주." }
+])("merges simultaneous edits to $original without duplicating unchanged text and keeps local undo local", ({ original, edited, suffix }) => {
+  const baseline = createPromptDocument("동시 문장", [], "sentence", original);
+  const seed = encodePromptSnapshot(baseline);
+  const left = createPromptDocument(); const right = createPromptDocument();
+  applyPromptUpdate(left, seed); applyPromptUpdate(right, seed);
+  const local = Symbol("local-input");
+  const undo = new Y.UndoManager(left.getText("prompt-sentence"), { trackedOrigins: new Set([local]) });
+  try {
+    left.transact(() => replacePromptSentence(left, edited), local);
+    replacePromptSentence(right, original + suffix);
+    applyPromptUpdate(left, encodePromptSnapshot(right));
+    applyPromptUpdate(right, encodePromptSnapshot(left));
+    expect(projectPrompt(left).sentenceText).toBe(edited + suffix);
+    expect(projectPrompt(right)).toEqual(projectPrompt(left));
+    undo.undo();
+    expect(projectPrompt(left).sentenceText).toBe(original + suffix);
+    applyPromptUpdate(right, encodePromptSnapshot(left));
+    expect(projectPrompt(right)).toEqual(projectPrompt(left));
+  } finally { undo.destroy(); baseline.destroy(); left.destroy(); right.destroy(); }
+});
+
+it("preserves queued remote prompt-title insertion when an IME replaces its own range", () => {
+  const seed = createPromptDocument("hello world");
+  const local = createPromptDocument(); const remote = createPromptDocument();
+  applyPromptUpdate(local, encodePromptSnapshot(seed)); applyPromptUpdate(remote, encodePromptSnapshot(seed));
+  const beforeRemote = Y.encodeStateVector(local);
+  promptTitle(remote).insert(6, "dear ");
+  const queued = Y.encodeStateAsUpdate(remote, beforeRemote);
+  applyComposedTextChanges(local, promptTitle(local), [{ from: 6, to: 11, insert: "WORLD" }], [queued], Symbol("local-title"));
+  expect(promptTitle(local).toString()).toBe("hello dear WORLD");
+  applyPromptUpdate(remote, encodePromptSnapshot(local));
+  expect(promptTitle(remote).toString()).toBe(promptTitle(local).toString());
+  seed.destroy(); local.destroy(); remote.destroy();
+});
+
+it("keeps an insertion inside an IME replacement and leaves it intact after local undo", () => {
+  const seed = createLyricDocument("abcde");
+  const local = createLyricDocument(); const remote = createLyricDocument();
+  applyLyricUpdate(local, encodeLyricSnapshot(seed)); applyLyricUpdate(remote, encodeLyricSnapshot(seed));
+  const base = Y.encodeStateVector(local);
+  lyricBody(remote).insert(3, "X");
+  const queued = Y.encodeStateAsUpdate(remote, base);
+  const origin = Symbol("local-ime");
+  const undo = new Y.UndoManager(lyricBody(local), { trackedOrigins: new Set([origin]) });
+  try {
+    applyComposedTextChanges(local, lyricBody(local), [{ from: 2, to: 4, insert: "YY" }], [queued], origin);
+    expect(lyricBody(local).toString()).toBe("abYYXe");
+    undo.undo();
+    expect(lyricBody(local).toString()).toBe("abcXde");
+  } finally { undo.destroy(); seed.destroy(); local.destroy(); remote.destroy(); }
 });
 
 it("replaces both prompt representations atomically for conversion and undo", () => {

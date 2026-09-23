@@ -35,7 +35,7 @@ export default defineConfig({
         APP_VERSION: process.env.APP_VERSION ?? "1.1.7b",
         BUILD_ID: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
         APP_CHANNEL: "dev",
-        APP_PHASE: process.env.APP_PHASE ?? "p1",
+        APP_PHASE: process.env.APP_PHASE ?? "p2",
         APP_ORIGIN: "http://127.0.0.1:3000",
         GOOGLE_ISSUER: "http://127.0.0.1:3100",
         GOOGLE_CLIENT_ID: "synthetic-e2e-client",

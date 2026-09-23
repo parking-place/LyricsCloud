@@ -123,7 +123,9 @@ test.describe("cursor insertion and global quick add", () => {
       await page.getByRole("button", { name: "선택 영역 삽입" }).click();
       const fallback = page.getByRole("dialog", { name: "직접 복사: 라임 표현" });
       await expect(fallback.getByRole("textbox", { name: "수동 복사할 라임 표현" })).toHaveValue("exact fallback rhyme");
-      await expect(page.getByText(/현재 가사가 삭제되었거나 접근할 수 없습니다/)).toBeVisible();
+      await expect(page.getByRole("status").filter({ hasText: /^(현재 가사가 삭제되었거나 접근할 수 없습니다|삽입 위치를 서버와 확인하지 못했습니다)\. 아래 원문을 직접 복사할 수 있습니다\.$/ })).toBeVisible();
+      await expect(page.locator(".cm-content")).toContainText("TARGET");
+      await expect(page.locator(".cm-content")).not.toContainText("exact fallback rhyme");
     } finally { await deleteAccounts([account.userId]); }
   });
 

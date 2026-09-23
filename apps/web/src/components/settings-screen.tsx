@@ -31,6 +31,7 @@ export function SettingsScreen({ initialSettings, ownerId, initialProfile, googl
   const savedRef = useRef(initialSettings);
 
   useEffect(() => { savedRef.current = saved; }, [saved]);
+  useEffect(() => applyTheme(draft.theme), [draft.theme]);
   useEffect(() => () => applyTheme(savedRef.current.theme), []);
   useEffect(() => { withdrawalBusyRef.current = withdrawalBusy; }, [withdrawalBusy]);
   useEffect(() => {
@@ -63,18 +64,17 @@ export function SettingsScreen({ initialSettings, ownerId, initialProfile, googl
   function patch<K extends keyof UserSettingsRecord>(key: K, value: UserSettingsRecord[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
     setMessage(""); setConflicted(false);
-    if (key === "theme") applyTheme(value as ThemePreference);
   }
-  function cancel() { setDraft(saved); applyTheme(saved.theme); setMessage("저장된 설정으로 되돌렸습니다."); setConflicted(false); }
+  function cancel() { setDraft(saved); setMessage("저장된 설정으로 되돌렸습니다."); setConflicted(false); }
   function defaults() {
     setDraft({ ...DEFAULT_USER_SETTINGS, rowVersion: saved.rowVersion, updatedAt: saved.updatedAt });
-    applyTheme(DEFAULT_USER_SETTINGS.theme);
     setMessage("제품 기본값을 미리 보고 있습니다. 저장해야 다른 기기에도 반영됩니다.");
   }
   function closeSheet() { setSheetOpen(false); }
 
   async function save(refreshVersion = false) {
     if (busy) return;
+    const submitted = draft;
     setBusy(true); setMessage(""); setConflicted(false);
     try {
       let version = saved.rowVersion;
@@ -86,8 +86,8 @@ export function SettingsScreen({ initialSettings, ownerId, initialProfile, googl
       const response = await fetch("/api/settings", {
         method: "PUT", cache: "no-store", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          rowVersion: version, theme: draft.theme, font: draft.font, fontSize: draft.fontSize,
-          lineHeight: draft.lineHeight, letterSpacing: draft.letterSpacing, focusModeDefault: draft.focusModeDefault
+          rowVersion: version, theme: submitted.theme, font: submitted.font, fontSize: submitted.fontSize,
+          lineHeight: submitted.lineHeight, letterSpacing: submitted.letterSpacing, focusModeDefault: submitted.focusModeDefault
         })
       });
       if (response.status === 409) {
@@ -97,7 +97,11 @@ export function SettingsScreen({ initialSettings, ownerId, initialProfile, googl
       }
       if (!response.ok) throw new Error("SAVE_FAILED");
       const next = ((await response.json()) as { settings: UserSettingsRecord }).settings;
-      setSaved(next); setDraft(next); applyTheme(next.theme);
+      setSaved(next);
+      // Acknowledging the submitted values must not replace edits made while awaiting the server.
+      setDraft((current) => fieldsChanged(submitted, current)
+        ? { ...current, rowVersion: next.rowVersion, updatedAt: next.updatedAt }
+        : next);
       setMessage("설정을 서버에 저장했습니다.");
     } catch {
       setMessage("서버에 저장하지 못했습니다. 로컬 미리보기 값은 유지되지만 다른 화면·기기에는 아직 반영되지 않았습니다.");
@@ -140,7 +144,7 @@ export function SettingsScreen({ initialSettings, ownerId, initialProfile, googl
   }
 
   return <section className="settings-page" aria-labelledby="settings-title" data-pending-profile={dirty || busy ? "true" : undefined}>
-    <header className="settings-heading"><div><p className="eyebrow">Preferences · 1.1.7b</p><h1 id="settings-title">설정</h1><p>창작 화면의 표시 방식과 계정 프로필을 저장합니다.</p></div></header>
+    <header className="settings-heading"><div><p className="eyebrow">Preferences · 1.1.7a</p><h1 id="settings-title">설정</h1><p>창작 화면의 표시 방식과 계정 프로필을 저장합니다.</p></div></header>
     <div className="settings-layout">
       <nav className="settings-sections" aria-label="설정 항목">
         <a className="active" href="#display">화면 및 작성</a><a href="#account">계정</a><a href="#keyboard">키보드</a>

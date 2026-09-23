@@ -45,6 +45,7 @@ async function DashboardData({ ownerId, song, returnTo }: { ownerId: string; son
   const prompts = promptsResult.status === "fulfilled" ? promptsResult.value.items : null;
   const sunoWorkspace = sunoResult.status === "fulfilled" ? sunoResult.value : null;
   return <SongDashboard
+    ownerId={ownerId}
     initialSong={song}
     initialCounts={counts}
     initialLyrics={lyrics}

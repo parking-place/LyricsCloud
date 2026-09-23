@@ -8,7 +8,7 @@ import {
   createPromptDocument, insertPromptToken, projectPrompt, replacePromptSentence, replacePromptTokens, setPromptMode,
   movePromptToken, promptTitle, promptTokenSequence, removePromptToken, type PromptSequenceItem
 } from "./crdt.js";
-import type { LocalSyncState } from "./browser-sync.js";
+import { applyComposedTextChanges, type LocalSyncState } from "./browser-sync.js";
 import { enqueueRemoteUpdate, SyncStorage, type QueuedUpdate } from "./sync-storage.js";
 
 export interface PromptEditorSnapshot {
@@ -24,7 +24,7 @@ export interface PromptEditorSnapshot {
 }
 
 export interface BrowserPromptSync {
-  setTitle(value: string): void;
+  setTitle(value: string, compositionBase?: string): void;
   setMode(mode: PromptMode, sentenceText?: string): void;
   replaceContent(mode: PromptMode, tokens: readonly string[], sentenceText: string): void;
   setSentenceText(value: string): void;
@@ -53,6 +53,16 @@ export interface BrowserPromptSyncOptions {
 
 const localOrigin = Symbol("lyricscloud-prompt-local");
 const remoteOrigin = Symbol("lyricscloud-prompt-remote");
+
+function titleChange(previous: string, next: string): { from: number; to: number; insert: string } {
+  let from = 0;
+  while (from < previous.length && from < next.length && previous[from] === next[from]) from++;
+  let end = previous.length; let nextEnd = next.length;
+  while (end > from && nextEnd > from && previous[end - 1] === next[nextEnd - 1]) { end--; nextEnd--; }
+  if (from > 0 && /[\uD800-\uDBFF]/u.test(previous[from - 1]!)) from--;
+  if (end < previous.length && /[\uDC00-\uDFFF]/u.test(previous[end]!)) { end++; nextEnd++; }
+  return { from, to: end, insert: next.slice(from, nextEnd) };
+}
 
 export async function createBrowserPromptSync(options: BrowserPromptSyncOptions): Promise<BrowserPromptSync> {
   options.onStateChange("loading");
@@ -276,11 +286,25 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
   } catch { fail("error"); }
 
   return {
-    setTitle(value) {
+    setTitle(value, compositionBase) {
       if (!initialized || halted) return;
       const title = promptTitle(document);
+      if (compositionBase !== undefined) {
+        if (title.toString() !== compositionBase) {
+          // A local change outside this IME session invalidates its range.
+          // Keep the queued remote updates, but do not replace the newer title.
+          for (const update of remoteQueue.splice(0)) Y.applyUpdate(document, update, remoteOrigin);
+          return;
+        }
+        applyComposedTextChanges(document, title, [titleChange(compositionBase, value)], remoteQueue.splice(0), localOrigin);
+        return;
+      }
       if (title.toString() === value) return;
-      document.transact(() => { title.delete(0, title.length); if (value) title.insert(0, value); }, localOrigin);
+      const change = titleChange(title.toString(), value);
+      document.transact(() => {
+        if (change.insert) title.insert(change.from, change.insert);
+        if (change.to > change.from) title.delete(change.from + change.insert.length, change.to - change.from);
+      }, localOrigin);
     },
     setMode(mode, sentenceText) {
       if (!initialized || halted) return;
