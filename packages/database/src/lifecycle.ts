@@ -42,6 +42,7 @@ interface TrashRow {
   deleted_at: Date;
   purge_at: Date;
   affected_lyrics: string;
+  permanently_deleted_lyrics: string;
   preserved_links: string;
 }
 
@@ -243,12 +244,13 @@ select 'resource'::text kind,r.id,r.type,r.title,
   l.song_id parent_song_id,(parent.deleted_at is not null) parent_deleted,r.deleted_at,r.purge_at,
   case when r.type='song' then (select count(*) from lyrics child join resources cr on cr.id=child.resource_id
     where child.song_id=r.id and cr.deleted_at is not null and cr.deletion_batch_id=r.deletion_batch_id) else 0 end affected_lyrics,
+  case when r.type='song' then (select count(*) from lyrics child where child.song_id=r.id and child.owner_id=r.owner_id) else 0 end permanently_deleted_lyrics,
   (select count(*) from song_resource_links link where link.song_resource_id=r.id or link.linked_resource_id=r.id) preserved_links
 from resources r left join lyrics l on l.resource_id=r.id left join resources parent on parent.id=l.song_id and parent.owner_id=l.owner_id
 where r.owner_id=$1 and r.deleted_at is not null and ($2='all' or r.type=$2)
 union all
 select 'template'::text kind,t.id,'template'::text type,t.title,'템플릿'::text original_location,
-  null::uuid parent_song_id,false parent_deleted,t.deleted_at,t.purge_at,0::bigint affected_lyrics,0::bigint preserved_links
+  null::uuid parent_song_id,false parent_deleted,t.deleted_at,t.purge_at,0::bigint affected_lyrics,0::bigint permanently_deleted_lyrics,0::bigint preserved_links
 from templates t where t.owner_id=$1 and t.deleted_at is not null and ($2 in ('all','template'))
 order by deleted_at desc,id`;
 
@@ -260,11 +262,12 @@ async function lockTrashRows(client: PoolClient, ownerId: string, references: re
           case when r.type='lyrics' then coalesce(parent.title,'삭제된 곡') else '독립 자료' end original_location,
           l.song_id parent_song_id,(parent.deleted_at is not null) parent_deleted,r.deleted_at,r.purge_at,
           case when r.type='song' then (select count(*) from lyrics child join resources cr on cr.id=child.resource_id where child.song_id=r.id and cr.deleted_at is not null and cr.deletion_batch_id=r.deletion_batch_id) else 0 end affected_lyrics,
+          case when r.type='song' then (select count(*) from lyrics child where child.song_id=r.id and child.owner_id=r.owner_id) else 0 end permanently_deleted_lyrics,
           (select count(*) from song_resource_links link where link.song_resource_id=r.id or link.linked_resource_id=r.id) preserved_links
         from resources r left join lyrics l on l.resource_id=r.id left join resources parent on parent.id=l.song_id and parent.owner_id=l.owner_id
         where r.id=$1 and r.owner_id=$2 and r.deleted_at is not null for update of r`
       : `select 'template'::text kind,t.id,'template'::text type,t.title,'템플릿'::text original_location,
-          null::uuid parent_song_id,false parent_deleted,t.deleted_at,t.purge_at,0::bigint affected_lyrics,0::bigint preserved_links
+          null::uuid parent_song_id,false parent_deleted,t.deleted_at,t.purge_at,0::bigint affected_lyrics,0::bigint permanently_deleted_lyrics,0::bigint preserved_links
         from templates t where t.id=$1 and t.owner_id=$2 and t.deleted_at is not null for update of t`;
     const found = await client.query<TrashRow>(query, [reference.id, ownerId]);
     if (found.rows[0]) rows.push(found.rows[0]);
@@ -294,7 +297,8 @@ function mapTrashRow(row: TrashRow): TrashItem {
     kind: row.kind, id: row.id, type: row.type, title: row.title, originalLocation: row.original_location,
     parentSongId: row.parent_song_id, parentDeleted: row.parent_deleted,
     deletedAt: row.deleted_at.toISOString(), purgeAt: row.purge_at.toISOString(),
-    affectedLyrics: Number(row.affected_lyrics), preservedLinks: Number(row.preserved_links)
+    affectedLyrics: Number(row.affected_lyrics), permanentlyDeletedLyrics: Number(row.permanently_deleted_lyrics),
+    preservedLinks: Number(row.preserved_links)
   };
 }
 

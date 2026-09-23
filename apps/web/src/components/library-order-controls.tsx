@@ -17,6 +17,7 @@ interface MoveBody {
 }
 
 interface PendingMove<T> {
+  readonly generation: number;
   readonly body: MoveBody;
   readonly title: string;
   readonly snapshot: T[];
@@ -24,7 +25,7 @@ interface PendingMove<T> {
 }
 
 export function useLibraryCardOrder<T extends OrderableLibraryItem>({
-  items, setItems, orderVersion, setOrderVersion, endpoint, noun, activateManual, reload, setNotice
+  items, setItems, orderVersion, setOrderVersion, endpoint, noun, activateManual, reload, setNotice, isManual, generation
 }: {
   items: T[];
   setItems: Dispatch<SetStateAction<T[]>>;
@@ -35,14 +36,21 @@ export function useLibraryCardOrder<T extends OrderableLibraryItem>({
   activateManual: () => void;
   reload: () => void;
   setNotice: Dispatch<SetStateAction<string>>;
+  isManual: boolean;
+  generation: { readonly current: number };
 }) {
   const [movingId, setMovingId] = useState<string | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [retryMove, setRetryMove] = useState<PendingMove<T> | null>(null);
   const moveInFlight = useRef(false);
 
+  function invalidate() {
+    setRetryMove(null);
+    setDraggedId(null);
+  }
+
   async function submitMove(pending: PendingMove<T>) {
-    if (moveInFlight.current) return;
+    if (moveInFlight.current || pending.generation !== generation.current) return;
     moveInFlight.current = true;
     setMovingId(pending.body.itemId);
     setRetryMove(null);
@@ -54,6 +62,7 @@ export function useLibraryCardOrder<T extends OrderableLibraryItem>({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pending.body)
       });
+      if (pending.generation !== generation.current) return;
       if (response.status === 409) {
         setItems(pending.snapshot);
         activateManual();
@@ -63,10 +72,12 @@ export function useLibraryCardOrder<T extends OrderableLibraryItem>({
       }
       if (!response.ok) throw new Error("SAVE_FAILED");
       const result = await response.json() as { orderVersion: number };
+      if (pending.generation !== generation.current) return;
       setOrderVersion(result.orderVersion);
       activateManual();
       setNotice(`${pending.title} 순서를 사용자 정렬로 저장했습니다.`);
     } catch {
+      if (pending.generation !== generation.current) return;
       setItems(pending.snapshot);
       setRetryMove(pending);
       setNotice(`${noun} 순서를 저장하지 못했습니다. 원래 순서로 복원했습니다.`);
@@ -91,6 +102,7 @@ export function useLibraryCardOrder<T extends OrderableLibraryItem>({
     const optimistic = items.map((candidate) => candidate.isPinned === item.isPinned ? nextGroup[groupIndex++]! : candidate);
     const newIndex = nextGroup.findIndex(({ id }) => id === itemId);
     void submitMove({
+      generation: generation.current,
       title: item.title,
       snapshot: items,
       optimistic,
@@ -98,7 +110,9 @@ export function useLibraryCardOrder<T extends OrderableLibraryItem>({
         requestId: crypto.randomUUID(),
         itemId,
         beforeId: nextGroup[newIndex + 1]?.id ?? null,
-        afterId: nextGroup[newIndex - 1]?.id ?? null,
+        // Only manual display guarantees that both neighbours have increasing ranks.
+        // Otherwise keep the contract's next visible anchor (or the last anchor).
+        afterId: isManual || !nextGroup[newIndex + 1] ? nextGroup[newIndex - 1]?.id ?? null : null,
         expectedVersion: orderVersion
       }
     });
@@ -120,7 +134,8 @@ export function useLibraryCardOrder<T extends OrderableLibraryItem>({
     retryMove,
     submitMove,
     moveItem,
-    moveToTarget
+    moveToTarget,
+    invalidate
   };
 }
 

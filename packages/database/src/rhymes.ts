@@ -208,9 +208,10 @@ export class PostgresRhymeStore {
       const requestHash = hashRequest("duplicate", { resourceId });
       const replay = await replayRequest(client, ownerId, requestId, requestHash);
       if (replay) return replay;
+      // Pin/move/create all acquire the owner's library order before resources.
+      await lockLibraryOrder(client, ownerId, "rhyme_note");
       const source = await lockRhyme(client, ownerId, resourceId);
       if (!source) return null;
-      await lockLibraryOrder(client, ownerId, "rhyme_note");
       await ensureLibraryOrder(client, ownerId, "rhyme_note");
       const suffix = " (복사본)";
       const created = await insertRhyme(client, ownerId, {

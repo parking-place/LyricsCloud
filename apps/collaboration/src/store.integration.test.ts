@@ -27,6 +27,47 @@ describe.runIf(enabled)("durable owner-only collaboration state", () => {
     }
   });
 
+  it("retries later valid documents beyond deleted and permanently failing batches without clearing failed markers", async () => {
+    const owner = (await pool!.query<{ id: string }>("insert into app_users default values returning id")).rows[0]!.id;
+    const retryStore = new CollaborationStore(databaseUrl);
+    const oversized = new Y.Doc();
+    oversized.getText("body").insert(0, "x".repeat(100_001));
+    const invalidSnapshot = Buffer.from(Y.encodeStateAsUpdate(oversized));
+    oversized.destroy();
+    try {
+      const documents: Array<{ id: string; key: string }> = [];
+      for (let index = 0; index < 41; index++) {
+        const rhyme = (await rhymes!.createRhymeNote(owner, parseCreateRhymeNoteInput({ requestId: randomUUID(), title: `retry fixture ${index}`, body: "durable synthetic body" }))).rhyme;
+        const mapping = (await retryStore.ensureDocument(owner, rhyme.id))!;
+        documents.push({ id: rhyme.id, key: mapping.document_key });
+      }
+      documents.sort((a, b) => a.key < b.key ? -1 : 1);
+      const deleted = documents.slice(0, 20), failing = documents.slice(20, 40), valid = documents[40]!;
+      for (const item of deleted) await rhymes!.deleteRhymeNote(owner, item.id);
+      await pool!.query("update sync_documents set snapshot=$2 where document_key=any($1::uuid[])", [failing.map((item) => item.key), invalidSnapshot]);
+      await pool!.query("update rhyme_notes set body='stale projection' where resource_id=$1", [valid.id]);
+      await pool!.query("update sync_documents set projection_error_code='SYNC_PROJECTION_FAILED',updated_at='2020-01-01' where owner_id=$1", [owner]);
+      await pool!.query("update sync_documents set updated_at='2021-01-01' where document_key=any($1::uuid[])", [failing.map((item) => item.key)]);
+      await pool!.query("update sync_documents set updated_at='2022-01-01' where document_key=$1", [valid.key]);
+      const first = await retryStore.retryPendingProjections();
+      const second = await retryStore.retryPendingProjections();
+      expect(await rhymes!.getRhymeNote(owner, valid.id)).toMatchObject({ body: "durable synthetic body" });
+      expect(first).toEqual({ attempted: 20, recovered: 0, failed: 20 });
+      expect(second).toEqual({ attempted: 1, recovered: 1, failed: 0 });
+      expect((await pool!.query("select count(*)::int count from sync_documents where owner_id=$1 and projection_error_code is not null", [owner])).rows[0]!.count).toBe(40);
+      // Repair one fixture; the next bounded pass wraps and retries it.
+      const repair = new Y.Doc();
+      repair.getText("body").insert(0, "repaired synthetic body");
+      await pool!.query("update sync_documents set snapshot=$2 where document_key=$1", [failing[0]!.key, Buffer.from(Y.encodeStateAsUpdate(repair))]);
+      repair.destroy();
+      expect(await retryStore.retryPendingProjections()).toEqual({ attempted: 20, recovered: 1, failed: 19 });
+      expect(await rhymes!.getRhymeNote(owner, failing[0]!.id)).toMatchObject({ body: "repaired synthetic body" });
+    } finally {
+      await retryStore.close();
+      await pool!.query("delete from app_users where id=$1", [owner]);
+    }
+  });
+
   it("deduplicates updates, projects UTF-8 text, compacts and recovers after restart", async () => {
     const [alice, bob] = users as [string, string];
     const song = (await songs!.createSong(alice, parseCreateSongInput({ title: "동기화 곡", requestId: randomUUID() }))).song;
@@ -64,7 +105,7 @@ describe.runIf(enabled)("durable owner-only collaboration state", () => {
 
     await pool!.query("update lyrics set body='stale projection' where resource_id=$1", [lyric.id]);
     await pool!.query("update sync_documents set projection_error_code='SYNC_PROJECTION_FAILED' where document_key=$1", [mapping!.document_key]);
-    expect(await sync!.retryPendingProjections()).toEqual({ attempted: 1, recovered: 1 });
+    expect(await sync!.retryPendingProjections()).toEqual({ attempted: 1, recovered: 1, failed: 0 });
     expect((await lyrics!.getLyric(alice, lyric.id))!.body).toBe(client.getText("body").toString());
     expect((await sync!.operationalMetrics()).pendingProjections).toBe(0);
 

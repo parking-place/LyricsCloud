@@ -160,3 +160,106 @@ it("R05 keeps independent template drafts across both format round trips", async
   expect(f.requests.at(-1)!.body).toMatchObject({ promptMode: "sentence", promptText: "새벽 풍경을 부드럽게 노래해 주세요." });
   expect(nodes(f.render()).find((node) => node.type === "fieldset").props.disabled).toBe(true);
 });
+
+const row = (id: string, extra: any = {}) => ({ id, title: id, isPinned: false, isFavorite: false, pinOrder: null, updatedAt: "2026-09-22T00:00:00Z", ...extra });
+const page = (...ids: string[]) => ({ items: ids.map((id) => row(id)), nextCursor: null, totalCount: ids.length, orderVersion: 1, filters: { tags: [], songs: [] } });
+const cards = (tree: any) => nodes(tree).filter((node) => /^(Song|Rhyme|Prompt|Saved)Card$/.test(node.type?.name ?? ""));
+const cardId = (card: any) => (card.props.song ?? card.props.note ?? card.props.prompt ?? card.props.item).id;
+const listFixture = (kind: string) => fixture(`${kind}-list-screen`, `${kind[0]!.toUpperCase()}${kind.slice(1)}ListScreen`, {
+  initialQuery: { search: "", status: "", work: "all", sort: "updated_desc", tag: "", song: "", favorite: false, recent: false }
+});
+
+for (const kind of ["song", "rhyme", "prompt"]) {
+  it(`R12 ${kind}: accepts a move when displayed neighbours have reversed persisted ranks`, async () => {
+    const f = listFixture(kind); f.render();
+    // Recently updated display is the reverse of the already persisted manual order.
+    const persisted = ["새벽", "아침", "저녁", "밤"];
+    await respond(f.requests[0]!, page(...[...persisted].reverse()));
+    cards(f.render())[0].props.onMove("next");
+    const move = f.requests.at(-1)!.body;
+    const without = persisted.filter((id) => id !== move.itemId);
+    const before = move.beforeId === null ? -1 : without.indexOf(move.beforeId);
+    const after = move.afterId === null ? -1 : without.indexOf(move.afterId);
+    // This is the server rank contract, not the display array's neighbour order.
+    expect(before >= 0 && after >= before, "the server must not reject reversed anchors").toBe(false);
+    const at = before >= 0 ? before : after + 1;
+    without.splice(at, 0, move.itemId);
+    expect(without.indexOf("밤") + 1).toBe(without.indexOf("아침"));
+    await respond(f.requests.at(-1)!, { orderVersion: 2 });
+    f.render();
+    expect(f.requests.at(-1)!.url).toContain("sort=manual");
+  });
+
+  it(`R13 ${kind}: a changed query invalidates an in-flight rollback and its retry`, async () => {
+    const f = listFixture(kind); f.render(); await respond(f.requests[0]!, page("오래된 A", "오래된 B"));
+    cards(f.render())[0].props.onMove("next"); const obsolete = f.requests.at(-1)!;
+    change(nodes(f.render()).find((node) => node.type === "input" && node.props.type === "search"), "새 검색");
+    f.render(); f.debounce(); f.render();
+    await respond(f.requests.at(-1)!, page("새 검색 결과"));
+    await respond(obsolete, {}, 503);
+    expect(cards(f.render()).map(cardId)).toEqual(["새 검색 결과"]);
+    expect(button(f.render(), "같은 이동 다시 시도")).toBeUndefined();
+  });
+
+  it(`R13 ${kind}: failed-query retry cannot replay an older failed move`, async () => {
+    const f = listFixture(kind); f.render(); await respond(f.requests[0]!, page("원래 A", "원래 B"));
+    cards(f.render())[0].props.onMove("next"); await respond(f.requests.at(-1)!, {}, 503);
+    const oldRetry = button(f.render(), "같은 이동 다시 시도"); expect(oldRetry).toBeDefined();
+    change(nodes(f.render()).find((node) => node.type === "input" && node.props.type === "search"), "다른 검색");
+    f.render(); f.debounce(); f.render(); await respond(f.requests.at(-1)!, {}, 503);
+    expect(button(f.render(), "같은 이동 다시 시도")).toBeUndefined();
+    const count = f.requests.length; oldRetry.props.onClick();
+    expect(f.requests).toHaveLength(count);
+  });
+}
+
+describe("R16 failed saved-resource changes", () => {
+  const saved = (id: string) => row(id, { type: "song", isFavorite: true });
+  const favorites = () => fixture("favorites-screen", "FavoritesScreen", {
+    initialItems: [saved("돌아올 곡"), saved("해제할 곡")], songs: [], query: { type: "all", scope: "favorites", status: "all" }
+  });
+  it("restores only the failed removal, leaving another successful removal intact", async () => {
+    const f = favorites(); let card = cards(f.render())[0]; card.props.onToggle(card.props.item, "isFavorite"); await tick();
+    const failed = f.requests.at(-1)!;
+    card = cards(f.render())[0]; card.props.onToggle(card.props.item, "isFavorite"); await tick();
+    await respond(f.requests.at(-1)!, { resource: { ...saved("해제할 곡"), isFavorite: false } });
+    await respond(failed, {}, 503);
+    expect(cards(f.render()).map(cardId)).toEqual(["돌아올 곡"]);
+    expect(text(f.render())).toContain("복원");
+  });
+  it("restores a favorite without undoing a newer pin on the same row", async () => {
+    const f = favorites(); const card = cards(f.render())[0];
+    card.props.onToggle(card.props.item, "isFavorite"); await tick(); const failed = f.requests.at(-1)!;
+    card.props.onToggle(card.props.item, "isPinned"); await tick();
+    await respond(failed, {}, 503); await tick();
+    const pin = f.requests.find((request) => request.url.endsWith("/pin"))!;
+    await respond(pin, { resource: { ...saved("돌아올 곡"), isPinned: true, pinOrder: 0 } });
+    expect(cards(f.render()).find((value) => cardId(value) === "돌아올 곡")?.props.item).toMatchObject({ isFavorite: true, isPinned: true });
+  });
+});
+
+it("R17 reports acknowledged song fields and retries only unsaved changes", async () => {
+  const song = { id: "song", title: "원래 제목", description: "", workNotes: "", status: "idea", color: null, isPinned: false, isFavorite: false };
+  const f = fixture("song-form", "SongForm", { song, returnTo: "/songs" });
+  change(nodes(f.render()).find((node) => node.props.name === "title"), "수정한 제목");
+  button(f.render(), "파랑").props.onClick();
+  const switches = nodes(f.render()).filter((node) => node.type === "input" && node.props.type === "checkbox");
+  switches[0].props.onChange({ target: { checked: true } }); switches[1].props.onChange({ target: { checked: true } });
+  const submit = () => nodes(f.render()).find((node) => node.type === "form").props.onSubmit({ preventDefault() {} });
+  void submit();
+  await respond(f.requests.at(-1)!, { song: { ...song, title: "수정한 제목" } });
+  await respond(f.requests.at(-1)!, {}); // color acknowledged
+  await respond(f.requests.at(-1)!, {}, 503); // pin failed; favorite not sent yet
+  const message = text(nodes(f.render()).find((node) => node.props.role === "alert"));
+  expect(message).toContain("저장 완료: 기본 정보, 표시 색상");
+  expect(message).toContain("미완료: 고정, 즐겨찾기");
+  expect(f.navigations).toEqual([]);
+  change(nodes(f.render()).find((node) => node.props.name === "workNotes"), "실패 뒤 덧붙인 메모");
+  const beforeRetry = f.requests.length; void submit();
+  await respond(f.requests.at(-1)!, { song: {} });
+  await respond(f.requests.at(-1)!, {});
+  await respond(f.requests.at(-1)!, {});
+  expect(f.requests.slice(beforeRetry).map((request) => request.url)).toEqual(["/api/songs/song", "/api/songs/song/pin", "/api/songs/song/favorite"]);
+  expect(f.requests[beforeRetry]!.body.workNotes).toBe("실패 뒤 덧붙인 메모");
+  expect(f.navigations).toEqual(["/songs/song?returnTo=%2Fsongs"]);
+});

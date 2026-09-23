@@ -44,6 +44,38 @@ test.describe("1.1.8 historical navigation and accessibility", () => {
     expect(await page.evaluate(() => performance.timeOrigin)).toBe(timeOrigin);
     expect(documents).toEqual([]);
   });
+
+  test("UI-01 collapsed classic and B1 sidebar controls retain their rendered accessible names", async ({ page }, info) => {
+    test.skip(Boolean(info.project.use.isMobile), "desktop collapsed sidebar");
+    await page.goto("/workspace");
+    await page.getByRole("button", { name: "좌측 메뉴 접기" }).click();
+    for (const variant of ["classic", "b1"]) {
+      await page.evaluate((value) => { document.documentElement.dataset.uiVariant = value; }, variant);
+      const side = page.locator(".side-nav");
+      for (const name of ["창작 홈", "곡", "라임 노트", "프롬프트", "통합 검색", "최근 작업", "즐겨찾기", "템플릿", "휴지통", "설정"]) {
+        await expect(side.getByRole("link", { name, exact: true })).toHaveAccessibleName(name);
+      }
+      await expect(side.getByRole("button", { name: "로그아웃", exact: true })).toHaveAccessibleName("로그아웃");
+    }
+  });
+
+  test("R07 Escape dismisses QuickAdd above More, then More, with focus inside the remaining dialog", async ({ page }, info) => {
+    test.skip(!info.project.use.isMobile, "mobile More dialog");
+    await page.goto("/workspace");
+    const trigger = page.getByRole("button", { name: "더보기", exact: true });
+    await trigger.click();
+    const more = page.getByRole("dialog", { name: "더보기", exact: true });
+    await expect(more).toBeVisible();
+    // Preserve the historical overlap: the existing floating QuickAdd can be opened over More.
+    await page.locator("a.quick-add").evaluate((element) => (element as HTMLAnchorElement).click());
+    const quick = page.getByRole("dialog", { name: "빠른 추가", exact: true });
+    await expect(quick).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(quick).toBeHidden(); await expect(more).toBeVisible();
+    await expect.poll(() => more.evaluate((element) => element.contains(document.activeElement))).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(more).toBeHidden(); await expect(trigger).toBeFocused();
+  });
 });
 
 test.describe("1.1.8 historical PWA build retention", () => {

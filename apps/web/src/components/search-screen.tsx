@@ -28,10 +28,24 @@ export function SearchScreen({ ownerId, initialQuery, initialType }: { ownerId: 
   const [recentError, setRecentError] = useState("");
   const [retryKey, setRetryKey] = useState(0);
   const requestSequence = useRef(0);
+  const loadingMoreSequence = useRef<number | null>(null);
+  const recentDeletionIds = useRef(new Set<string>());
+  const recentRequestSequence = useRef(0);
+  const clearingRecent = useRef(false);
+  const [recentDeleting, setRecentDeleting] = useState(0);
+  const [recentClearing, setRecentClearing] = useState(false);
   const resultLinks = useRef<Array<HTMLAnchorElement | null>>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const pageRef = useRef<HTMLElement>(null);
   const restoredScrollKey = useRef("");
+
+  function updateQuery(patch: { input?: string; type?: SearchTypeFilter }) {
+    const nextInput = patch.input ?? input; const nextType = patch.type ?? type;
+    if (nextInput === input && nextType === type) return;
+    ++requestSequence.current;
+    setLoading(true); setLoadingMore(false); setNextCursor(null); setError("");
+    setInput(nextInput); setType(nextType);
+  }
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => inputRef.current?.focus());
@@ -50,12 +64,14 @@ export function SearchScreen({ ownerId, initialQuery, initialType }: { ownerId: 
   }, [query, router, type]);
 
   useEffect(() => {
+    if (input.trim() !== query) return;
+    const sequence = ++requestSequence.current;
+    setLoadingMore(false);
     if (!query) {
       setItems([]); setNextCursor(null); setLoading(false); setError("");
       return;
     }
     const controller = new AbortController();
-    const sequence = ++requestSequence.current;
     setLoading(true); setError(""); setItems([]); setNextCursor(null);
     const params = new URLSearchParams({ q: query, type, limit: "20" });
     void fetch(`/api/search?${params}`, { cache: "no-store", signal: controller.signal })
@@ -70,42 +86,48 @@ export function SearchScreen({ ownerId, initialQuery, initialType }: { ownerId: 
       })
       .catch(() => { if (!controller.signal.aborted && sequence === requestSequence.current) setError("검색 결과를 불러오지 못했습니다. 연결을 확인한 뒤 다시 시도해 주세요."); })
       .finally(() => { if (!controller.signal.aborted && sequence === requestSequence.current) setLoading(false); });
-    return () => controller.abort();
-  }, [query, retryKey, type]);
+    return () => { controller.abort(); ++requestSequence.current; };
+  }, [input, query, retryKey, type]);
 
   useEffect(() => {
     if (query) return;
     const controller = new AbortController();
+    const sequence = ++recentRequestSequence.current;
     setRecentLoading(true); setRecentError("");
     void fetch("/api/search/recent", { cache: "no-store", signal: controller.signal })
       .then(async (response) => { if (!response.ok) throw new Error(); return response.json() as Promise<{ items: readonly RecentSearchRecord[] }>; })
-      .then(({ items: recentItems }) => setRecent(recentItems))
-      .catch(() => { if (!controller.signal.aborted) setRecentError("최근 검색어를 불러오지 못했습니다."); })
-      .finally(() => { if (!controller.signal.aborted) setRecentLoading(false); });
-    return () => controller.abort();
+      .then(({ items: recentItems }) => {
+        if (!controller.signal.aborted && sequence === recentRequestSequence.current && !clearingRecent.current) setRecent(recentItems.filter((item) => !recentDeletionIds.current.has(item.id)));
+      })
+      .catch(() => { if (!controller.signal.aborted && sequence === recentRequestSequence.current) setRecentError("최근 검색어를 불러오지 못했습니다."); })
+      .finally(() => { if (!controller.signal.aborted && sequence === recentRequestSequence.current) setRecentLoading(false); });
+    return () => { controller.abort(); ++recentRequestSequence.current; };
   }, [query, retryKey]);
 
   async function loadMore() {
-    if (!nextCursor || loadingMore) return;
+    if (loading || !nextCursor || loadingMoreSequence.current === requestSequence.current) return;
+    const sequence = requestSequence.current;
+    loadingMoreSequence.current = sequence;
     setLoadingMore(true); setError("");
     const params = new URLSearchParams({ q: query, type, limit: "20", cursor: nextCursor });
     try {
       const response = await fetch(`/api/search?${params}`, { cache: "no-store" });
       if (!response.ok) throw new Error();
       const page = await response.json() as UnifiedSearchPage;
+      if (sequence !== requestSequence.current) return;
       setItems((current) => [...current, ...page.items]); setNextCursor(page.nextCursor);
-    } catch { setError("다음 검색 결과를 불러오지 못했습니다. 현재 결과는 그대로 유지합니다."); }
-    finally { setLoadingMore(false); }
+    } catch { if (sequence === requestSequence.current) setError("다음 검색 결과를 불러오지 못했습니다. 현재 결과는 그대로 유지합니다."); }
+    finally { if (sequence === requestSequence.current) { loadingMoreSequence.current = null; setLoadingMore(false); } }
   }
 
   function selectType(value: SearchTypeFilter) {
-    setType(value); requestAnimationFrame(() => inputRef.current?.focus());
+    updateQuery({ type: value }); requestAnimationFrame(() => inputRef.current?.focus());
   }
 
   function onInputKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
     if (event.isDefaultPrevented() || event.nativeEvent.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === "ArrowDown" && items.length) { event.preventDefault(); resultLinks.current[0]?.focus(); }
-    else if (event.key === "Escape" && input) { event.preventDefault(); setInput(""); setQuery(""); }
+    else if (event.key === "Escape" && input) { event.preventDefault(); updateQuery({ input: "" }); setQuery(""); }
   }
 
   function onResultKeyDown(event: ReactKeyboardEvent<HTMLAnchorElement>, index: number) {
@@ -116,19 +138,36 @@ export function SearchScreen({ ownerId, initialQuery, initialType }: { ownerId: 
   }
 
   async function removeRecent(id: string) {
-    const previous = recent; setRecent((current) => current.filter((item) => item.id !== id));
+    if (clearingRecent.current || recentDeletionIds.current.has(id)) return;
+    const removed = recent.find((item) => item.id === id);
+    if (!removed) return;
+    ++recentRequestSequence.current; setRecentLoading(false);
+    recentDeletionIds.current.add(id); setRecentDeleting((value) => value + 1);
+    setRecent((current) => current.filter((item) => item.id !== id));
     const response = await fetch(`/api/search/recent/${id}`, { method: "DELETE" }).catch(() => null);
-    if (!response?.ok) { setRecent(previous); setRecentError("최근 검색어를 지우지 못했습니다."); }
+    recentDeletionIds.current.delete(id); setRecentDeleting((value) => value - 1);
+    if (!response?.ok) {
+      setRecent((current) => current.some((item) => item.id === id) ? current : [...current, removed].sort((a, b) => b.searchedAt.localeCompare(a.searchedAt)));
+      setRecentError("최근 검색어를 지우지 못했습니다.");
+    }
   }
 
   async function clearRecent() {
+    if (clearingRecent.current || recentDeletionIds.current.size) return;
+    ++recentRequestSequence.current; setRecentLoading(false);
+    clearingRecent.current = true; setRecentClearing(true);
     const previous = recent; setRecent([]);
     const response = await fetch("/api/search/recent", { method: "DELETE" }).catch(() => null);
-    if (!response?.ok) { setRecent(previous); setRecentError("최근 검색어를 모두 지우지 못했습니다."); }
+    if (!response?.ok) {
+      setRecent((current) => [...current, ...previous.filter((item) => !current.some(({ id }) => id === item.id))].sort((a, b) => b.searchedAt.localeCompare(a.searchedAt)));
+      setRecentError("최근 검색어를 모두 지우지 못했습니다.");
+    }
+    clearingRecent.current = false; setRecentClearing(false);
   }
 
   const grouped = SEARCH_RESOURCE_TYPES.map((resourceType) => ({ type: resourceType, items: items.filter((item) => item.type === resourceType) }))
     .filter((group) => group.items.length);
+  const displayedItems = grouped.flatMap((group) => group.items);
 
   const scrollKey = `lc:${ownerId}:search-scroll:${buildSearchUrl(query, type)}`;
   useEffect(() => {
@@ -149,24 +188,24 @@ export function SearchScreen({ ownerId, initialQuery, initialType }: { ownerId: 
     <header className="search-heading"><p className="eyebrow">Unified search · Private</p><h1 id="search-title" tabIndex={-1} data-login-focus>통합 검색</h1><p>내 곡, 가사, 라임 노트와 프롬프트를 한 번에 찾으세요.</p></header>
     <div className="search-controls">
       <label className="unified-search-input"><span aria-hidden="true">⌕</span><span className="sr-only">통합 검색어</span>
-        <input ref={inputRef} autoFocus type="search" aria-label="통합 검색어" maxLength={200} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={onInputKeyDown} placeholder="제목, 가사, 라임 또는 프롬프트 검색" />
-        {input ? <button type="button" aria-label="검색어 지우기" onClick={() => { setInput(""); setQuery(""); inputRef.current?.focus(); }}>×</button> : <kbd>/</kbd>}
+        <input ref={inputRef} autoFocus type="search" aria-label="통합 검색어" maxLength={200} value={input} onChange={(event) => updateQuery({ input: event.target.value })} onKeyDown={onInputKeyDown} placeholder="제목, 가사, 라임 또는 프롬프트 검색" />
+        {input ? <button type="button" aria-label="검색어 지우기" onClick={() => { updateQuery({ input: "" }); setQuery(""); inputRef.current?.focus(); }}>×</button> : <kbd>/</kbd>}
       </label>
       <div className="search-type-chips" role="group" aria-label="자료 유형 필터">
         {TYPES.map((value) => <button key={value} type="button" aria-pressed={type === value} className={type === value ? "active" : ""} onClick={() => selectType(value)}>{TYPE_LABELS[value]}</button>)}
       </div>
     </div>
 
-    {!query ? <SearchStart recent={recent} loading={recentLoading} error={recentError} onRun={(item) => { setInput(item.query); setType(item.type); }} onRemove={removeRecent} onClear={clearRecent} onRetry={() => setRetryKey((value) => value + 1)} /> : null}
+    {!query ? <SearchStart deleting={recentDeleting > 0} clearing={recentClearing} recent={recent} loading={recentLoading} error={recentError} onRun={(item) => { updateQuery({ input: item.query, type: item.type }); }} onRemove={removeRecent} onClear={clearRecent} onRetry={() => setRetryKey((value) => value + 1)} /> : null}
     {query ? <div className="search-results" aria-busy={loading}>
       <div className="search-summary" aria-live="polite"><strong>{loading ? "검색하는 중…" : `${items.length}개 결과${nextCursor ? " 이상" : ""}`}</strong><span>‘{query}’ · {TYPE_LABELS[type]}</span></div>
       {error ? <div className="search-error" role="alert"><p>{error}</p><button type="button" onClick={() => setRetryKey((value) => value + 1)}>다시 시도</button></div> : null}
       {loading ? <div className="search-loading" aria-label="검색 결과 불러오는 중">{Array.from({ length: 4 }, (_, index) => <span key={index} />)}</div> : null}
-      {!loading && !error && !items.length ? <StatePanel className="search-empty" kind="empty" title="검색 결과가 없습니다" detail="철자나 표현을 바꾸거나 다른 자료 유형을 선택해 보세요." action={<button type="button" onClick={() => { setInput(""); setQuery(""); inputRef.current?.focus(); }}>검색 조건 다시 고르기</button>} /> : null}
+      {!loading && !error && !items.length ? <StatePanel className="search-empty" kind="empty" title="검색 결과가 없습니다" detail="철자나 표현을 바꾸거나 다른 자료 유형을 선택해 보세요." action={<button type="button" onClick={() => { updateQuery({ input: "" }); setQuery(""); inputRef.current?.focus(); }}>검색 조건 다시 고르기</button>} /> : null}
       {!loading ? grouped.map((group) => <section className="search-result-group" key={group.type} aria-labelledby={`search-group-${group.type}`}>
         <h2 id={`search-group-${group.type}`}><span aria-hidden="true">{TYPE_ICONS[group.type]}</span>{TYPE_LABELS[group.type]} <small>{group.items.length}</small></h2>
         <div className="search-result-list">{group.items.map((item) => {
-          const index = items.indexOf(item);
+          const index = displayedItems.indexOf(item);
           return <a key={item.id} ref={(element) => { resultLinks.current[index] = element; }} onClick={rememberScrollPosition} onKeyDown={(event) => onResultKeyDown(event, index)} className="search-result-card" href={buildSearchResultHref(item, query, type)}>
             <div><span className={`search-kind kind-${item.type}`}>{TYPE_ICONS[item.type]} {TYPE_LABELS[item.type]}</span><time dateTime={item.updatedAt}>{formatDate(item.updatedAt)}</time></div>
             <h3><HighlightedText text={item.title} query={query} /></h3>
@@ -180,17 +219,18 @@ export function SearchScreen({ ownerId, initialQuery, initialType }: { ownerId: 
   </section>;
 }
 
-function SearchStart({ recent, loading, error, onRun, onRemove, onClear, onRetry }: {
+function SearchStart({ recent, loading, error, deleting, clearing, onRun, onRemove, onClear, onRetry }: {
   recent: readonly RecentSearchRecord[]; loading: boolean; error: string;
+  deleting: boolean; clearing: boolean;
   onRun: (item: RecentSearchRecord) => void; onRemove: (id: string) => void; onClear: () => void; onRetry: () => void;
 }) {
   return <div className="search-start">
     <section className="search-guidance"><span aria-hidden="true">⌕</span><h2>창작 자료를 다시 찾기 쉽게</h2><p>제목·본문·태그의 정확한 문자열을 내 활성 자료 안에서만 검색합니다.</p><ul><li>곡과 가사 제목</li><li>가사·라임 노트 본문</li><li>라임 태그·프롬프트 토큰</li></ul></section>
-    <section className="recent-searches" aria-labelledby="recent-search-title"><header><h2 id="recent-search-title">최근 검색어</h2>{recent.length ? <button type="button" onClick={onClear}>전체 지우기</button> : null}</header>
+    <section className="recent-searches" aria-labelledby="recent-search-title"><header><h2 id="recent-search-title">최근 검색어</h2>{recent.length ? <button type="button" disabled={deleting || clearing} onClick={onClear}>전체 지우기</button> : null}</header>
       {loading ? <p aria-live="polite">최근 검색어를 불러오는 중…</p> : null}
       {error ? <p role="alert">{error} <button type="button" onClick={onRetry}>다시 시도</button></p> : null}
       {!loading && !error && !recent.length ? <p>이 계정에서 실행한 최근 검색어가 아직 없습니다.</p> : null}
-      <ul>{recent.map((item) => <li key={item.id}><button className="recent-run" type="button" onClick={() => onRun(item)}><span>⌕</span><strong>{item.query}</strong><small>{TYPE_LABELS[item.type]} · {formatDate(item.searchedAt)}</small></button><button className="recent-remove" type="button" aria-label={`최근 검색어 ${item.query} 지우기`} onClick={() => onRemove(item.id)}>×</button></li>)}</ul>
+      <ul>{recent.map((item) => <li key={item.id}><button className="recent-run" type="button" onClick={() => onRun(item)}><span>⌕</span><strong>{item.query}</strong><small>{TYPE_LABELS[item.type]} · {formatDate(item.searchedAt)}</small></button><button className="recent-remove" type="button" disabled={clearing} aria-label={`최근 검색어 ${item.query} 지우기`} onClick={() => onRemove(item.id)}>×</button></li>)}</ul>
     </section>
   </div>;
 }

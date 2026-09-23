@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { setTimeout as delay } from "node:timers/promises";
 import { parseCreateRhymeNoteInput, parseCreateSongInput, RhymeConflictError } from "@lyricscloud/domain";
 import type { RhymeListInput } from "@lyricscloud/domain";
 import { Pool, type PoolClient } from "pg";
@@ -43,6 +44,44 @@ describe.runIf(enabled)("rhyme note PostgreSQL contract", () => {
     expect(sameFire.id).toBe(fire.id);
     expect(sameFire.displayValue).toBe("FIRE Tag");
     expect(decomposed.id).toBe(composed.id);
+  });
+
+  it("waits for library order before locking a duplicate source, then pins and replays concurrently", async () => {
+    const owner = users[0]!;
+    const source = (await rhymes!.createRhymeNote(owner, parseCreateRhymeNoteInput({ requestId: randomUUID(), title: "동시 복제", body: "air / chair" }))).rhyme;
+    const requestId = randomUUID();
+    const gate = await pool!.connect();
+    const pending: Promise<unknown>[] = [];
+    try {
+      await gate.query("begin");
+      const pid = (await gate.query<{ pid: number }>("select pg_backend_pid() pid")).rows[0]!.pid;
+      await gate.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [`library-order:${owner}:rhyme_note`]);
+      const duplicate = rhymes!.duplicateRhymeNote(owner, source.id, { requestId });
+      pending.push(duplicate);
+      const deadline = Date.now() + 3_000;
+      while (true) {
+        const blocked = await pool!.query("select 1 from pg_stat_activity where $1=any(pg_blocking_pids(pid))", [pid]);
+        if (blocked.rowCount) break;
+        if (Date.now() >= deadline) throw new Error("duplicate did not reach the library lock");
+        await delay(10);
+      }
+      // Old order holds the source row while waiting on the library and fails
+      // NOWAIT here (55P03), the prerequisite for the pin/duplicate deadlock.
+      await expect(pool!.query("select id from resources where id=$1 for update nowait", [source.id])).resolves.toMatchObject({ rowCount: 1 });
+      const pin = rhymes!.setPin(owner, source.id, true, 0);
+      const replay = rhymes!.duplicateRhymeNote(owner, source.id, { requestId });
+      pending.push(pin, replay);
+      await gate.query("commit");
+      const [copy, pinned, repeated] = await Promise.all([duplicate, pin, replay]);
+      expect(pinned).toMatchObject({ id: source.id, isPinned: true });
+      expect(copy).toMatchObject({ replayed: false, rhyme: { body: source.body, isPinned: false } });
+      expect(repeated).toMatchObject({ replayed: true, rhyme: { id: copy!.rhyme.id } });
+      expect((await pool!.query("select count(*)::int count from rhyme_note_create_requests where owner_id=$1 and request_id=$2", [owner, requestId])).rows[0]!.count).toBe(1);
+    } finally {
+      await gate.query("rollback");
+      gate.release();
+      await Promise.allSettled(pending);
+    }
   });
 
   it("rejects cross-owner tag and song links", async () => {

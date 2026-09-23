@@ -29,6 +29,8 @@ export interface BetaRedemptionInput {
   readonly principalDigest: string;
   readonly oauthStateHash: string;
   readonly now: Date;
+  /** Live service clock, sampled after lock waits. Omit to pin explicit test time. */
+  readonly currentTime?: () => Date;
 }
 
 export interface BetaRedemptionResult {
@@ -118,6 +120,7 @@ export class PostgresBetaSignupStore implements BetaSignupStore {
         [input.intentDigest, input.environment]
       );
       const intent = intentResult.rows[0];
+      input = { ...input, now: input.currentTime?.() ?? input.now };
       if (!intent || intent.completed_at || intent.cancelled_at || intent.expires_at <= input.now) {
         await client.query("rollback"); committed = true;
         throw new Error("BETA_SIGNUP_REJECTED");
@@ -146,6 +149,8 @@ export class PostgresBetaSignupStore implements BetaSignupStore {
       }
       if (grant?.state === "active") {
         const userId = await upsertIdentity(client, input.identity, input.now, existing?.user_id ?? grant.user_id);
+        input = { ...input, now: input.currentTime?.() ?? input.now };
+        if (intent.expires_at <= input.now) throw new Error("BETA_SIGNUP_REJECTED");
         if (grant.user_id !== userId) throw new Error("BETA_GRANT_IDENTITY_CONFLICT");
         await client.query(
           `update beta_signup_intents set cancelled_at=$3
@@ -156,14 +161,18 @@ export class PostgresBetaSignupStore implements BetaSignupStore {
         return { userId, outcome: "already_granted" };
       }
 
-      const codeResult = await client.query<{ id: string; epoch: string }>(
-        `select c.id,c.epoch::text from beta_codes c join beta_code_epochs e on e.environment=c.environment
+      const codeResult = await client.query<{ id: string; epoch: string; expires_at: Date }>(
+        `select c.id,c.epoch::text,c.expires_at from beta_codes c join beta_code_epochs e on e.environment=c.environment
          where c.environment=$1 and c.code_digest=$2 and c.epoch=e.epoch
            and c.consumed_at is null and c.revoked_at is null and c.expires_at>$3
          for update of c`,
         [input.environment, intent.claimed_code_digest, input.now]
       );
       const code = codeResult.rows[0];
+      input = { ...input, now: input.currentTime?.() ?? input.now };
+      if (intent.expires_at <= input.now || (code && code.expires_at <= input.now)) {
+        throw new Error("BETA_SIGNUP_REJECTED");
+      }
       if (!code) {
         await cancelAndRecordFailure(client, input);
         await client.query("commit"); committed = true;
@@ -171,6 +180,8 @@ export class PostgresBetaSignupStore implements BetaSignupStore {
       }
 
       const userId = await upsertIdentity(client, input.identity, input.now, existing?.user_id ?? null);
+      input = { ...input, now: input.currentTime?.() ?? input.now };
+      if (intent.expires_at <= input.now || code.expires_at <= input.now) throw new Error("BETA_SIGNUP_REJECTED");
       const grantResult = await client.query<{ id: string }>(
         `insert into admission_grants(environment,issuer,subject,user_id,source,state,granted_at,updated_at)
          values($1,$2,$3,$4,'beta_code','active',$5,$5) returning id`,

@@ -33,7 +33,7 @@ export function DialogFocusBoundary({ selector, onClose, blocked = false, initia
     const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const expandedTrigger = [...document.querySelectorAll<HTMLElement>('[aria-haspopup="dialog"][aria-expanded="true"]')]
       .find((item) => !root.contains(item) && item.getClientRects().length > 0) ?? null;
-    const prior = active && !root.contains(active) ? active : expandedTrigger;
+    const prior = active && active !== document.body && active !== document.documentElement && !root.contains(active) ? active : expandedTrigger;
     const frame = requestAnimationFrame(() => {
       const requested = initialFocus ? root.querySelector<HTMLElement>(initialFocus) : null;
       const first = root.querySelector<HTMLElement>(focusableSelector);
@@ -54,7 +54,12 @@ export function DialogFocusBoundary({ selector, onClose, blocked = false, initia
       requestAnimationFrame(() => {
         const current = document.activeElement;
         const focusLeftWithDialog = !current || current === document.body || (current instanceof Node && root.contains(current));
-        if (focusLeftWithDialog && prior?.isConnected) prior.focus();
+        if (!focusLeftWithDialog) return;
+        const remaining = [...document.querySelectorAll<HTMLElement>('[aria-modal="true"]')]
+          .filter((item) => item !== root && item.getClientRects().length > 0).at(-1);
+        if (remaining && (!prior?.isConnected || !remaining.contains(prior))) {
+          (remaining.querySelector<HTMLElement>(focusableSelector) ?? remaining).focus();
+        } else if (prior?.isConnected) prior.focus();
       });
     };
   }, [initialFocus, selector]);

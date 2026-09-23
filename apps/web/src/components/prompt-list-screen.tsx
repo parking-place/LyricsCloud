@@ -61,14 +61,25 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   const [duplicating, setDuplicating] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
   const requestSequence = useRef(0);
+  const loadingMoreSequence = useRef<number | null>(null);
   const metadataQueue = useRef(new Map<string, MetadataQueueEntry<unknown>>());
   const duplicateRequests = useRef(new Map<string, string>());
   const copyFeedback = useCopyFeedback();
   const order = useLibraryCardOrder({
-    items, setItems, orderVersion, setOrderVersion,
+    items, setItems, orderVersion, setOrderVersion, isManual: sort === "manual", generation: requestSequence,
     endpoint: "/api/prompts/order/moves", noun: "프롬프트",
     activateManual: () => setSort("manual"), reload: () => setRetryKey((value) => value + 1), setNotice
   });
+
+  function updateQuery(patch: Partial<PromptListQuery>) {
+    const current = { search, song, favorite, recent, sort };
+    if (!Object.entries(patch).some(([key, value]) => current[key as keyof PromptListQuery] !== value)) return;
+    const next = { ...current, ...patch };
+    ++requestSequence.current;
+    order.invalidate(); setNotice("");
+    setLoading(true); setLoadingMore(false); setNextCursor(null); setError("");
+    setSearch(next.search); setSong(next.song); setFavorite(next.favorite); setRecent(next.recent); setSort(next.sort);
+  }
 
   useEffect(() => {
     const timer = window.setTimeout(() => setAppliedSearch(search.trim()), 300);
@@ -76,11 +87,13 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   }, [search]);
 
   useEffect(() => {
+    if (search.trim() !== appliedSearch) return;
     const params = makeParams(appliedSearch, song, favorite, recent, sort);
     window.history.replaceState(null, "", `/prompts${params.size ? `?${params}` : ""}`);
     const sequence = ++requestSequence.current;
+    order.invalidate();
     const controller = new AbortController();
-    setLoading(true); setError("");
+    setLoading(true); setLoadingMore(false); setNextCursor(null); setError("");
     const api = makeParams(appliedSearch, song, favorite, recent, sort); api.set("limit", "12");
     void fetch(`/api/prompts?${api}`, { cache: "no-store", signal: controller.signal })
       .then(async (response) => {
@@ -99,8 +112,8 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
         setError(caught instanceof Error ? caught.message : "프롬프트를 불러오지 못했습니다.");
       })
       .finally(() => { if (sequence === requestSequence.current) setLoading(false); });
-    return () => controller.abort();
-  }, [appliedSearch, song, favorite, recent, sort, retryKey]);
+    return () => { controller.abort(); ++requestSequence.current; };
+  }, [search, appliedSearch, song, favorite, recent, sort, retryKey]);
 
   useEffect(() => {
     if (!notice || order.retryMove) return;
@@ -109,17 +122,20 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   }, [notice, order.retryMove]);
 
   async function loadMore() {
-    if (!nextCursor || loadingMore) return;
+    if (loading || !nextCursor || loadingMoreSequence.current === requestSequence.current) return;
+    const sequence = requestSequence.current;
+    loadingMoreSequence.current = sequence;
     setLoadingMore(true); setError("");
     const params = makeParams(appliedSearch, song, favorite, recent, sort); params.set("limit", "12"); params.set("cursor", nextCursor);
     try {
       const response = await fetch(`/api/prompts?${params}`, { cache: "no-store" });
       if (!response.ok) throw new Error("다음 프롬프트를 불러오지 못했습니다.");
       const result = await response.json() as PromptListResponse;
+      if (sequence !== requestSequence.current) return;
       setItems((current) => [...current, ...result.items]); setNextCursor(result.nextCursor); setFilters(result.filters);
       setOrderVersion(result.orderVersion);
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "다음 프롬프트를 불러오지 못했습니다."); }
-    finally { setLoadingMore(false); }
+    } catch (caught) { if (sequence === requestSequence.current) setError(caught instanceof Error ? caught.message : "다음 프롬프트를 불러오지 못했습니다."); }
+    finally { if (sequence === requestSequence.current) { loadingMoreSequence.current = null; setLoadingMore(false); } }
   }
 
   function toggle(prompt: PromptItem, field: "isFavorite" | "isPinned") {
@@ -204,21 +220,21 @@ export function PromptListScreen({ initialQuery }: { initialQuery: PromptListQue
   }
 
   function clearFilters() {
-    setSearch(""); setAppliedSearch(""); setSong(""); setFavorite(false); setRecent(false); setSort("favorite_first");
+    updateQuery({ search: "", song: "", favorite: false, recent: false, sort: "favorite_first" }); setAppliedSearch("");
   }
   const filtered = Boolean(appliedSearch || song || favorite || recent);
 
   return <section className="prompts-page" aria-labelledby="prompts-title">
     <header className="prompts-heading"><div><p className="eyebrow">Prompt library · Private beta</p><h1 id="prompts-title" tabIndex={-1} data-login-focus>프롬프트</h1><p>자주 쓰는 스타일 조합을 저장하고 Suno에 바로 옮기세요.</p></div><a className="primary-link new-prompt-link" href="/prompts/new">＋ 새 프롬프트</a></header>
     <div className="prompt-toolbar">
-      <label className="search-field"><span className="sr-only">프롬프트 검색</span><span aria-hidden="true">⌕</span><input value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} placeholder="제목, 태그·문장 또는 연결 곡 검색" type="search" /></label>
-      <label className="select-field"><span>연결 곡</span><select aria-label="프롬프트 연결 곡 필터" value={song} onChange={(event) => setSong(event.target.value)}><option value="">모든 곡</option>{filters.songs.map((item) => <option value={item.id} key={item.id}>{item.title}</option>)}</select></label>
-      <label className="select-field"><span>정렬</span><select aria-label="프롬프트 정렬" value={sort} onChange={(event) => setSort(event.target.value as PromptSort)}>{SORTS.map((value) => <option value={value} key={value}>{SORT_LABELS[value]}</option>)}</select></label>
+      <label className="search-field"><span className="sr-only">프롬프트 검색</span><span aria-hidden="true">⌕</span><input value={search} maxLength={200} onChange={(event) => updateQuery({ search: event.target.value })} placeholder="제목, 태그·문장 또는 연결 곡 검색" type="search" /></label>
+      <label className="select-field"><span>연결 곡</span><select aria-label="프롬프트 연결 곡 필터" value={song} onChange={(event) => updateQuery({ song: event.target.value })}><option value="">모든 곡</option>{filters.songs.map((item) => <option value={item.id} key={item.id}>{item.title}</option>)}</select></label>
+      <label className="select-field"><span>정렬</span><select aria-label="프롬프트 정렬" value={sort} onChange={(event) => updateQuery({ sort: event.target.value as PromptSort })}>{SORTS.map((value) => <option value={value} key={value}>{SORT_LABELS[value]}</option>)}</select></label>
     </div>
     <div className="prompt-filter-chips" aria-label="프롬프트 빠른 필터">
-      <button type="button" className={!favorite && !recent ? "active" : ""} aria-pressed={!favorite && !recent} onClick={() => { setFavorite(false); setRecent(false); }}>전체</button>
-      <button type="button" className={favorite ? "active" : ""} aria-pressed={favorite} onClick={() => setFavorite((value) => !value)}>★ 즐겨찾기</button>
-      <button type="button" className={recent ? "active" : ""} aria-pressed={recent} onClick={() => setRecent((value) => !value)}>◷ 최근 사용</button>
+      <button type="button" className={!favorite && !recent ? "active" : ""} aria-pressed={!favorite && !recent} onClick={() => updateQuery({ favorite: false, recent: false })}>전체</button>
+      <button type="button" className={favorite ? "active" : ""} aria-pressed={favorite} onClick={() => updateQuery({ favorite: !favorite })}>★ 즐겨찾기</button>
+      <button type="button" className={recent ? "active" : ""} aria-pressed={recent} onClick={() => updateQuery({ recent: !recent })}>◷ 최근 사용</button>
     </div>
     <LibraryViewModeSelector label="프롬프트 목록" state={libraryView} />
     <div className="list-summary" aria-live="polite"><strong>{loading ? "프롬프트를 불러오는 중" : `총 ${totalCount}개`}</strong><span>{filtered ? "현재 검색 조건" : "내 개인 프롬프트 보관함"}</span></div>
