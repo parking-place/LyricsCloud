@@ -45,3 +45,11 @@ AC-RD-117B-01~06/09/10(가사)/12. 새 함수·회귀만 복사하지 말고 실
 - 담당 Codex, 작업 `LC-RD-117B-P2-01~09`. 기준은 P1 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`과 문서 인수 commit이며, source head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`/기능 `0375825fe004fc74869250eefa14add267c4b3ae`를 재확인한다.
 - 책임 경로는 packages/editor, web editor/metadata-draft/account-cache/app-shell/settings/Suno/PWA, `public/sw.js`와 대응 시험이다. 기존 보호 계획 자료·native 1150·원격 운영 서버는 수정 대상이 아니다.
 - 현재는 P1 증거를 인수한 상태일 뿐 P2 수용을 PASS로 주장하지 않는다. 구현 전 worktree/remote source 이동과 실제 의존 파일을 다시 확인한다.
+
+## 2026-09-23 로컬 통합 후보 — 원격 인수 전
+
+- `phase/1.1.7b-p2-editing-save-pwa`는 P1 문서 인수 commit `cad03d5191ad3fedb91d913ee1eb16ae4b683481`에서 분기했다. 1.1.8 source 기능 SHA `0375825fe004fc74869250eefa14add267c4b3ae`의 WC-01/02/03/04/05/06/09/10(가사)/12 경로를 선택적으로 통합했다. source head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`는 재조회에서도 그대로다. 1.1.8 native·버전·migration, WC-08 목록 경쟁, WC-10 곡 부분 저장, WC-15 guest 권한 회수와 UI 접근성 정리는 P2에 섞지 않았다.
+- P2 최소 보정은 프롬프트 제목의 queued remote/IME 병합(`ES-03`), PWA 갱신에서 프로필 미저장 상태 차단이다. 둘 다 source C3의 단순 복사가 아니라 b 후보에서 추가한 수정이다. 제목은 조합 시작 원문과 확정 범위를 기준으로 원격 삽입을 매핑하며, 가사/공유/guest ChangeSet 경로와 같은 순서 계약을 사용한다.
+- Docker Node 24.20.0/pnpm 11.25.0의 `pnpm check`와 production web build PASS. 전체 일반 Unit **326 PASS / DB 조건부 122 skip**, 새 관련 fixture/단위와 서비스워커·Suno·템플릿 경계를 포함한다. 격리 PostgreSQL 18의 현재 웹 migration 적용 후 관련 display/Suno/prompt/lyric DB **19 PASS**다. Docker에는 Git metadata가 없어 버전 shell guard 단독 시험 1건이 실패했지만, 실제 Git checkout에서 동일 4건 PASS; 컨테이너 실패를 PASS로 소급하지 않는다.
+- 격리 DB와 production build를 쓰는 Chromium desktop P2 브라우저 **9 PASS**, mobile **8 PASS / desktop-only PWA 1 skip**. offline metadata 복구·응답 유실 duplicate·client navigation/history·두 build 캐시·문장/제목 IME·표시/전역 설정 지연 ACK를 포함한다. 기존 Suno 재진입과 템플릿 저장 잠금 desktop **2 PASS**를 별도로 확인했다. Linux Chromium 대리 결과이지 실제 OS 한글 IME·물리 기기/AT 증거가 아니다.
+- 현재 결과는 **로컬 후보**다. source 전체 잔여 원인, P2 후보의 전체 원격 CI·네 signed dev image·동일 SHA 개발 서버/public smoke는 미실행이다. 해당 gate 전에는 위 작업 체크박스와 실행 STATUS를 완료로 바꾸지 않는다. 기존 `BE/ES/UI/OPS` 개별 최종 판정은 P4 책임이고, P2의 알려진 잔여는 차단 목록에서 open으로 계속 추적한다.

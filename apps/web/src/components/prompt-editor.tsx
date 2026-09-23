@@ -10,6 +10,7 @@ import { registerLogoutSave } from "../lib/account-cache.js";
 import { writingDisplayVariables } from "../lib/font-assets.js";
 import { DialogFocusBoundary, trapDialogTab } from "../lib/dialog-focus.js";
 import { promptCopyView } from "../lib/prompt-copy.js";
+import { hasVolatilePendingInput } from "../lib/update-safety.js";
 import { PromptHistory } from "./prompt-history.js";
 import { PromptTokenBuilder } from "./prompt-token-builder.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
@@ -26,6 +27,7 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
     tagText: initialPrompt.tagText, sentenceText: initialPrompt.sentenceText ?? "", plainText: initialPrompt.plainText, duplicates: []
   });
   const [syncState, setSyncState] = useState<LocalSyncState>("loading");
+  const [composingInput, setComposingInput] = useState(false);
   const [editable, setEditable] = useState(false);
   const [notice, setNotice] = useState("");
   const [conversion, setConversion] = useState<PromptConversion | null>(null);
@@ -53,6 +55,7 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
   const snapshotRef = useRef(snapshot);
   const syncRef = useRef<BrowserPromptSync | null>(null);
   const composing = useRef(false);
+  const titleCompositionBase = useRef<string | null>(null);
   const sentenceComposing = useRef(false);
   const duplicateRequest = useRef<string | null>(null);
   const copyFeedback = useCopyFeedback();
@@ -99,9 +102,7 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
       finishPromptTitle(sync);
       finishPromptSentence(sync);
       return sync?.flush() ?? true;
-    }, () => ({
-      resourceId: initialPrompt.id, title: snapshotRef.current.title, body: snapshotRef.current.plainText
-    }));
+    }, readRecoveryDraft);
     void createBrowserPromptSync({
       ownerId, resourceId: initialPrompt.id,
       onPromptChange(value) { if (active) { snapshotRef.current = value; setSnapshot(value); } },
@@ -163,9 +164,12 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
   function finishPromptTitle(sync = syncRef.current) {
     if (!composing.current) return;
     const value = snapshotRef.current.title;
+    const base = titleCompositionBase.current;
+    titleCompositionBase.current = null;
     composing.current = false;
+    setComposingInput(sentenceComposing.current);
+    sync?.setTitle(value, base ?? undefined);
     sync?.setComposing(sentenceComposing.current);
-    sync?.setTitle(value);
   }
 
   function changeSentence(value: string) {
@@ -179,8 +183,9 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
     if (!sentenceComposing.current) return;
     const value = snapshotRef.current.sentenceText;
     sentenceComposing.current = false;
-    sync?.setComposing(composing.current);
+    setComposingInput(composing.current);
     sync?.setSentenceText(value);
+    sync?.setComposing(composing.current);
   }
 
   function requestMode(target: PromptMode) {
@@ -214,6 +219,9 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
       }
       if (!await sync.checkpoint("large_paste")) throw new Error();
       const current = snapshotRef.current;
+      if (current.mode !== pending.sourceMode || current.plainText !== pending.sourceText) {
+        setConversion(null); setNotice("미리보기 뒤 다른 변경이 반영되어 변환을 취소했습니다. 최신 내용을 다시 확인해 주세요."); return;
+      }
       setConversionUndo({ mode: current.mode, tokens: current.items.map(({ displayValue }) => displayValue), sentenceText: current.sentenceText });
       sync.replaceContent(pending.target,
         pending.target === "tags" ? pending.tokens : current.items.map(({ displayValue }) => displayValue),
@@ -246,6 +254,17 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
       const response = await fetch(`/api/prompts/${initialPrompt.id}/use`, { method: "POST" });
       if (!response.ok) throw new Error();
     } catch { setNotice("프롬프트는 복사했지만 최근 사용 기록을 저장하지 못했습니다."); }
+  }
+
+  function readRecoveryDraft() {
+    const current = snapshotRef.current;
+    return { resourceId: initialPrompt.id, title: current.title, body: current.plainText,
+      mode: current.mode, tagText: current.tagText, sentenceText: current.sentenceText };
+  }
+
+  function copyRecovery() {
+    const { title, body, mode, tagText, sentenceText } = readRecoveryDraft();
+    void copyFeedback.copyText(JSON.stringify({ title, body, mode, tagText, sentenceText }, null, 2), "프롬프트 복구본", "제목·태그·문장 원문을 포함한 복구본을 복사했습니다.");
   }
 
   async function completeManualCopy() {
@@ -359,7 +378,8 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
   const sentenceSpans = useMemo(() => splitPromptSentenceDisplay(snapshot.sentenceText), [snapshot.sentenceText]);
   const titleError = !snapshot.title.trim() ? "제목을 입력해야 검색용 읽기 모델에 반영됩니다."
     : titleLength > PROMPT_LIMITS.title ? `제목은 ${PROMPT_LIMITS.title}자 이하로 입력해 주세요.` : "";
-  return <section className="prompt-editor-page" aria-labelledby="prompt-editor-heading" style={writingDisplayVariables(displaySettings)}>
+  return <section className="prompt-editor-page" aria-labelledby="prompt-editor-heading" style={writingDisplayVariables(displaySettings)}
+    data-pending-input={composingInput || hasVolatilePendingInput("saved", syncState) || undefined}>
     <h1 className="sr-only" id="prompt-editor-heading">프롬프트 편집: {snapshot.title || "제목 없음"}</h1>
     <header className="prompt-editor-header"><div><button type="button" className="back-button" onClick={() => void back()}>← 프롬프트</button><p className="eyebrow">Prompt editor</p></div>
       <div className="prompt-editor-actions"><button type="button" aria-pressed={isFavorite} disabled={!editable || metadataBusy !== null} onClick={() => void toggleMetadata("favorite")}>★ {isFavorite ? "즐겨찾기됨" : "즐겨찾기"}</button>
@@ -368,14 +388,14 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
         <button type="button" disabled={!editable} onClick={() => setHistoryOpen(true)}>수정 기록</button>
         <button type="button" className="prompt-copy-button" disabled={!editable} onClick={() => void copyPrompt()}>전체 복사</button><span className={`prompt-header-copy-length${copyView.exceedsRecommendedLimit ? " over" : ""}`}>{copyView.codePointCount.toLocaleString("ko-KR")}자</span></div>
       <div className="editor-save-strip" data-sync-state={syncState}>
-        <SyncIndicator state={syncState} onRetry={() => syncRef.current?.retry()} />
+        <SyncIndicator state={syncState} onRetry={() => syncRef.current?.retry()} onCopy={copyRecovery} />
       </div>
     </header>
     {notice ? <p className="editor-command-notice" role="status">{notice}{conversionUndo ? <> <button type="button" disabled={conversionBusy || !editable} onClick={() => void undoConversion()}>변환 취소</button></> : null}</p> : null}
     <div className="prompt-editor-title"><label id="prompt-title-label" htmlFor="prompt-title">프롬프트 제목</label>
       <input id="prompt-title" value={snapshot.title} disabled={!editable} aria-invalid={Boolean(titleError)}
         onChange={(event) => changeTitle(event.target.value)}
-        onCompositionStart={() => { composing.current = true; syncRef.current?.setComposing(true); }}
+        onCompositionStart={() => { titleCompositionBase.current = snapshotRef.current.title; composing.current = true; setComposingInput(true); syncRef.current?.setComposing(true); }}
         onCompositionEnd={() => finishPromptTitle()} />
       <span className={titleLength > PROMPT_LIMITS.title ? "over" : ""}>{titleLength} / {PROMPT_LIMITS.title}</span>
       {titleError ? <small role="alert">{titleError}</small> : null}
@@ -391,7 +411,7 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
         <label className="sr-only" htmlFor="prompt-sentence">문장형 프롬프트 원문</label><textarea id="prompt-sentence" rows={12} value={snapshot.sentenceText} disabled={!editable}
           aria-invalid={[...snapshot.sentenceText].length > PROMPT_LIMITS.serialized}
           onChange={(event) => changeSentence(event.target.value)}
-          onCompositionStart={() => { sentenceComposing.current = true; syncRef.current?.setComposing(true); }}
+          onCompositionStart={() => { sentenceComposing.current = true; setComposingInput(true); syncRef.current?.setComposing(true); }}
           onCompositionEnd={() => finishPromptSentence()} />
         <div className="prompt-sentence-display" aria-label="마침표 기준 문장 표시">{sentenceSpans.length
           ? sentenceSpans.map((span) => <span className={span.terminated ? "sentence-span" : "sentence-span unfinished"} key={span.start}>{span.text}</span>)
@@ -443,12 +463,12 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
       <p className="eyebrow">휴지통으로 이동</p><h2 id="prompt-delete-title">‘{snapshot.title}’ 프롬프트를 삭제할까요?</h2><p>프롬프트와 곡 연결은 숨겨지며 30일 동안 휴지통에서 복원할 수 있습니다.</p>
       <div><button type="button" autoFocus className="secondary-button" disabled={deleting} onClick={() => setDeleteOpen(false)}>취소</button><button type="button" className="danger-button" disabled={deleting} onClick={() => void deleteCurrent()}>{deleting ? "삭제 중…" : "프롬프트 삭제 확인"}</button></div>
     </section></div> : null}
-    <CopyFeedback state={copyFeedback} onManualComplete={completeManualCopy}
-      dialogTitle={() => "프롬프트를 직접 복사해 주세요"} textareaLabel={() => "수동 복사할 프롬프트"} />
+    <CopyFeedback state={copyFeedback} onManualComplete={copyFeedback.manual?.target === "프롬프트 복구본" ? undefined : completeManualCopy}
+      dialogTitle={(target) => target === "프롬프트 복구본" ? "프롬프트 복구본을 직접 복사해 주세요" : "프롬프트를 직접 복사해 주세요"} textareaLabel={(target) => `수동 복사할 ${target}`} />
   </section>;
 }
 
-function SyncIndicator({ state, onRetry }: { state: LocalSyncState; onRetry: () => void }) {
+function SyncIndicator({ state, onRetry, onCopy }: { state: LocalSyncState; onRetry: () => void; onCopy: () => void }) {
   const labels: Record<LocalSyncState, string> = {
     loading: "초안과 서버 연결 확인 중…", "saving-local": "이 기기에 저장하는 중…", ready: "방금 저장됨",
     local: "이 기기에 임시 저장됨 · 서버 연결 대기", syncing: "이 기기에 임시 저장됨 · 서버 동기화 중…",
@@ -456,5 +476,6 @@ function SyncIndicator({ state, onRetry }: { state: LocalSyncState; onRetry: () 
     error: "저장 실패 · 다시 시도 필요", unavailable: "로그인 또는 문서 접근을 확인해 주세요.", conflict: "동기화 충돌 · 현재 입력 보존됨"
   };
   return <p className={`local-draft-state state-${state}`} role="status" aria-live="polite"><span aria-hidden="true" />{labels[state]}
-    {state === "error" || state === "local" || state === "unavailable" ? <button type="button" onClick={onRetry}>다시 시도</button> : null}</p>;
+    {state === "error" || state === "local" || state === "unavailable" ? <button type="button" onClick={onRetry}>다시 시도</button> : null}
+    {state === "error" || state === "unavailable" ? <button type="button" onClick={onCopy}>현재 입력 복사</button> : null}</p>;
 }

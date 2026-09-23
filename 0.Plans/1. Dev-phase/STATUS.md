@@ -9,12 +9,16 @@ started_at: "2026-09-23"
 updated_at: "2026-09-23"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "1.1.7b P1 동일 SHA 개발 인수를 보존하고 P2의 metadata 초안·IME/autosave·prompt·탐색·설정·Suno·PWA 웹 수정을 의존성 단위로 통합한다"
+next_action: "1.1.7b P2 로컬 통합 후보를 원격 CI·signed dev image·동일 SHA 개발 서버 공개 인수로 검증한다"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
 
 사용자 지시로 다음 제품 계획을 **[1.1.7b 웹 안정화 통합](../3.Redesign-phase/1.1.7.b/README.md)**으로 변경했다. 실제 순서는 **1.1.7a → 1.1.7b → 1.2.0 → 1.2.1~1.2.8**이다. b에서 1.1.8 웹 안정화 코드·회귀를 먼저 통합하고 같은 SHA의 개발 인수까지 완료한 뒤, 그 b SHA에서 코발트 리디자인을 시작한다. 완료된 1.1.7a tag·운영 배포 기록은 유지한다. 2026-09-23 P1을 `phase/1.1.7b-p1-contract-runtime`의 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 완료하고 P2를 착수했다. 1.1.8~1.1.14 네이티브 잔여 계획은 계속 보류한다.
+
+### 2026-09-23 — 1.1.7b P2 로컬 후보
+
+P2는 전용 `phase/1.1.7b-p2-editing-save-pwa`에서 로컬 통합 후보를 만들었다. WC-01/02/03/04/05/06/09/10(가사)/12의 source `0375825`를 선택 인수하고 ES-03 제목 조합·PWA 프로필 dirty 경계를 추가 보정했다. Node 24/pnpm 11의 check·production web build, 일반 Unit **326 PASS / DB 조건부 122 skip**, 격리 DB 관련 19 PASS, 격리 Chromium desktop 9 PASS/mobile 8 PASS·desktop-only PWA 1 skip, 기존 Suno/템플릿 추가 브라우저 2 PASS다. 실제 OS IME/기기/AT와 P2 전체 CI·signed image·같은 SHA 개발 공개 인수는 미완료다. 따라서 P2 상태는 `in_progress`이고 P3로 넘어가지 않는다. [P2 로컬 증거](../3.Redesign-phase/1.1.7.b/2phase.md)를 따른다.
 
 ### 2026-09-23 — 1.1.7b P1 완료·P2 진입
 

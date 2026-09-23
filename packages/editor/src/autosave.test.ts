@@ -4,6 +4,49 @@ import { SerializedSaveController, type SaveState, type TextDraft } from "./auto
 const initial = { title: "초안", body: "[Verse]\n처음" };
 
 describe("SerializedSaveController", () => {
+  it("suspends a pending timer from composition start until the final value even when other fields change", async () => {
+    vi.useFakeTimers();
+    const saves: TextDraft[] = [];
+    const controller = new SerializedSaveController({ initialDraft: initial, initialRowVersion: 1,
+      save: async (draft) => { saves.push(draft); return { rowVersion: 2 }; } });
+    try {
+      controller.change({ ...initial, title: "확정 입력" });
+      controller.compositionStart();
+      await vi.advanceTimersByTimeAsync(6_000);
+      await controller.flush();
+      expect(saves).toEqual([]);
+      controller.change({ ...initial, title: "확정 입력ㅎ" }, { composing: true });
+      controller.change({ ...controller.draft, body: "다른 필드 변경" });
+      await controller.retry();
+      expect(saves).toEqual([]);
+      controller.change({ ...controller.draft, title: "확정 입력한" }, { composing: true });
+      controller.compositionEnd();
+      await controller.flush();
+      expect(saves).toEqual([{ title: "확정 입력한", body: "다른 필드 변경" }]);
+    } finally { controller.destroy(); vi.useRealTimers(); }
+  });
+
+  it.each(["timer", "flush", "retry", "dispose"] as const)("does not let %s save preedit after an earlier committed change", async (trigger) => {
+    vi.useFakeTimers();
+    const saves: TextDraft[] = [];
+    const controller = new SerializedSaveController({ initialDraft: initial, initialRowVersion: 1,
+      save: async (draft) => { saves.push(draft); return { rowVersion: 2 }; } });
+    try {
+      controller.change({ ...initial, title: "확정 입력" });
+      await vi.advanceTimersByTimeAsync(800);
+      controller.change({ ...initial, title: "확정 입력ㅎ" }, { composing: true });
+      if (trigger === "timer") await vi.advanceTimersByTimeAsync(6_000);
+      else await controller[trigger]();
+      expect(saves).toEqual([]);
+      if (trigger === "dispose") return;
+      controller.change({ ...initial, title: "확정 입력한" }, { composing: true });
+      controller.compositionEnd();
+      await controller.flush();
+      expect(saves).toEqual([{ ...initial, title: "확정 입력한" }]);
+      expect(controller.state.status).toBe("saved");
+    } finally { controller.destroy(); vi.useRealTimers(); }
+  });
+
   it("waits for composition end and sends plain document snapshots only", async () => {
     vi.useFakeTimers();
     const saves: TextDraft[] = [];

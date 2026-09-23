@@ -42,6 +42,7 @@ export class SerializedSaveController<Draft extends TextDraft = TextDraft> {
   #queue: Promise<void> = Promise.resolve();
   #delayTimer: ReturnType<typeof setTimeout> | null = null;
   #maxTimer: ReturnType<typeof setTimeout> | null = null;
+  #composing = false;
   #destroyed = false;
 
   constructor(options: SerializedSaveOptions<Draft>) {
@@ -59,19 +60,26 @@ export class SerializedSaveController<Draft extends TextDraft = TextDraft> {
   get rowVersion(): number { return this.#rowVersion; }
 
   change(next: Draft, options: { readonly composing?: boolean } = {}): void {
+    if (options.composing) this.compositionStart();
     if (this.#destroyed || same(next, this.#draft)) return;
     this.#draft = copy(next);
     this.#sequence += 1;
     this.#publish("dirty", null);
-    if (!options.composing) this.#schedule();
+    if (!this.#composing) this.#schedule();
+  }
+
+  compositionStart(): void {
+    this.#composing = true;
+    this.#clearTimers();
   }
 
   compositionEnd(): void {
+    this.#composing = false;
     if (!this.#destroyed && !same(this.#draft, this.#persisted)) this.#schedule();
   }
 
   async flush(): Promise<void> {
-    if (this.#destroyed || same(this.#draft, this.#persisted)) return this.#queue;
+    if (this.#destroyed || this.#composing || same(this.#draft, this.#persisted)) return this.#queue;
     this.#clearTimers();
     const sequence = this.#sequence;
     const snapshot = copy(this.#draft);
