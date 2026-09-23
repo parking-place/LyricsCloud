@@ -64,7 +64,10 @@ test("1.0.2 save failure keeps current lyric and offers exact-copy recovery", as
     await expect(page.getByText("저장하지 못했습니다")).toBeVisible();
     await expect(page.locator(".lyric-editor-page")).toHaveAttribute("data-pending-input", "true");
     await page.getByRole("button", { name: "현재 입력 복사" }).first().click();
-    await expect.poll(() => page.evaluate(() => (window as typeof window & { __copiedText?: string }).__copiedText)).toBe(text);
+    await expect.poll(() => page.evaluate(() => {
+      const copied = (window as typeof window & { __copiedText?: string }).__copiedText;
+      try { return JSON.parse(copied ?? "null"); } catch { return null; }
+    })).toEqual({ title: "서버 저장 실패 상태", body: text, memo: "" });
     await expect(page.locator(".cm-content")).toContainText(text);
     expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
     await page.screenshot({ path: `docs/runbooks/evidence/1.0.2-p3-save-recovery-${testInfo.project.name}.png`, fullPage: true });

@@ -9,7 +9,7 @@ started_at: "2026-09-23"
 updated_at: "2026-09-23"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "1.1.7b P2 로컬 통합 후보를 원격 CI·signed dev image·동일 SHA 개발 서버 공개 인수로 검증한다"
+next_action: "1.1.7b P2 최종 전체 로컬 회귀 후 새 SHA의 필수 CI·signed dev image·동일 SHA 개발 공개 인수를 검증한다"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
@@ -19,6 +19,8 @@ next_action: "1.1.7b P2 로컬 통합 후보를 원격 CI·signed dev image·동
 ### 2026-09-23 — 1.1.7b P2 로컬 후보
 
 P2는 전용 `phase/1.1.7b-p2-editing-save-pwa`에서 로컬 통합 후보를 만들었다. WC-01/02/03/04/05/06/09/10(가사)/12의 source `0375825`를 선택 인수하고 ES-03 제목 조합·PWA 프로필 dirty 경계를 추가 보정했다. Node 24/pnpm 11의 check·production web build, 일반 Unit **326 PASS / DB 조건부 122 skip**, 격리 DB 관련 19 PASS, 격리 Chromium desktop 9 PASS/mobile 8 PASS·desktop-only PWA 1 skip, 기존 Suno/템플릿 추가 브라우저 2 PASS다. 실제 OS IME/기기/AT와 P2 전체 CI·signed image·같은 SHA 개발 공개 인수는 미완료다. 따라서 P2 상태는 `in_progress`이고 P3로 넘어가지 않는다. [P2 로컬 증거](../3.Redesign-phase/1.1.7.b/2phase.md)를 따른다.
+
+첫 전체 로컬 Chromium 검사는 **406 PASS / 44 skip / 4 FAIL**(옛 복구본 형식 기대 2, PWA 표시 전 모바일 기준 이미지 2)이었고, 해당 후보의 원격 PR·push Actions는 취소했다. 집중 6건 PASS 뒤 두 번째 전체 검사는 **409 PASS / 44 skip / 1 FAIL**(삭제된 가사의 선행 동기화 실패 안내 분기)이었다. 원문 직접 복사·비삽입 경계를 보강한 검사 10회 반복 PASS, 최종 전체 **410 PASS / 44 skip / 0 FAIL**(무재시도)이며 수정 후 `pnpm check`·production web build와 `CI=true` 집중 7 PASS/1 skip도 확인했다. 실패·취소를 PASS로 소급하지 않으며 새 SHA의 원격 필수 CI·네 signed image·동일 SHA 개발 공개 인수 전 P2는 미완료다.
 
 ### 2026-09-23 — 1.1.7b P1 완료·P2 진입
 
