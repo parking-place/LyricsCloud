@@ -1,6 +1,6 @@
 # 1.1.7b Phase 3 — API·데이터·목록·복구·UI 통합
 
-**상태: 착수 (`in_progress`)**. P2 문서 인수 SHA `dcfa2b894e04b988076df08d490874af34195eb9`에서 전용 브랜치를 분기했다. P3 구현·검증·개발 인수는 아직 미완료다. [수용 기준](ACCEPTANCE.md) · [통합 맵](SOURCE-MAP.md) · [차단 목록](BLOCKERS.md).
+**상태: 완료 (`complete`)**. P2 문서 인수 SHA `dcfa2b894e04b988076df08d490874af34195eb9`에서 전용 브랜치를 분기했고 기능 SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`를 검증·개발 인수했다. P4/P5의 최종 차단 해소·실기기 검증은 별도다. [수용 기준](ACCEPTANCE.md) · [통합 맵](SOURCE-MAP.md) · [차단 목록](BLOCKERS.md).
 
 ## 목표·진입
 
@@ -10,15 +10,15 @@
 
 ## 작업
 
-- [ ] `LC-RD-117B-P3-01` WC-07 곡/라임/prompt/search의 query generation·cursor commit·stale error와 표시 순서 기반 실제 링크 focus를 통합한다. song-link-manager의 미변경 범위는 UI-03 잔여로 구분하고 새 listbox를 도입하지 않는다.
-- [ ] `LC-RD-117B-P3-02` WC-08 목록 필드/항목별 metadata·favorite 빠른 반전·최근 검색 삭제/clear·수동 순서 경쟁을 통합한다. rhyme duplicate lock 순서를 library order→resource로 맞춘 코드와 실제 DB replay/두 owner 회귀를 함께 인수한다.
-- [ ] `LC-RD-117B-P3-03` WC-10 곡 다단계 저장의 confirmed snapshot·savedSongId·성공/남은 필드 안내와 재시도를 인수한다. 새 입력을 보존하며 이미 성공한 단계를 무조건 반복하지 않고 응답 유실·부분 성공을 시험한다.
-- [ ] `LC-RD-117B-P3-04` WC-11 중첩 dialog focus/Escape·touch 복귀·도구막대/preview 잘림·쓰기 설정·공백 Extend marker copy를 기존 B1/classic 기준에 통합한다. 코발트 layout/CSS를 아직 적용하지 않으며 UI-07 오류 위치·UI-08 FAB 겹침과는 별도 판정한다.
-- [ ] `LC-RD-117B-P3-05` WC-13 OAuth 왕복 및 DB intent/code/identity lock 뒤 live clock 재검사·beta index key fail-closed를 인수한다. 만료 시 session/grant/code 소비가 남지 않고 tombstone 보존·다른 kid/같은 kid secret 교체 제약이 유지되는지 검사한다. BE-01/02 잔여를 별도로 둔다.
-- [ ] `LC-RD-117B-P3-06` WC-14 협업 projection retry의 stable keyset/wrap·trash 제외·timer 중첩 방지·Y.Doc cleanup·실패 관측을 통합한다. 지속 실패 20개 뒤 정상 문서의 처리·timestamp/marker 보존을 확인하고 worker purge M-04와 혼동하지 않는다.
-- [ ] `LC-RD-117B-P3-07` WC-15 guest 회수/epoch-stale 뒤 서버 수용 body/cache 복귀와 authoredText 분리를 통합한다. 재연결/권한 재허용 뒤 거부 입력 재생이 없고 private snapshot을 노출하지 않는지 확인하며 ES-06 persist 실패 보관과 함께 인수한다.
-- [ ] `LC-RD-117B-P3-08` WC-16 export v1의 Suno/photo section·참조/owner 검증과 lifecycle/domain/trash의 삭제 영향·mutation 성공/refresh 실패 분리를 한 묶음으로 인수한다. 과거 v1 사진 필드 부재 호환, 오래전 삭제한 자식 cascade 수와 실제 결과를 검사한다.
-- [ ] `LC-RD-117B-P3-09` 통합 경계의 현행 목록/복사/프로필/설정/공유/복구 수용과 API 오류·권한·합성 두 계정 검사를 수행한다. 기존 fixture의 1.1.8 기대값은 b로 의미 있게 변경하고 원격 snapshot을 검토 없이 승인하지 않는다.
+- [x] `LC-RD-117B-P3-01` WC-07 곡/라임/prompt/search의 query generation·cursor commit·stale error와 표시 순서 기반 실제 링크 focus를 통합한다. song-link-manager의 미변경 범위는 UI-03 잔여로 구분하고 새 listbox를 도입하지 않는다.
+- [x] `LC-RD-117B-P3-02` WC-08 목록 필드/항목별 metadata·favorite 빠른 반전·최근 검색 삭제/clear·수동 순서 경쟁을 통합한다. rhyme duplicate lock 순서를 library order→resource로 맞춘 코드와 실제 DB replay/두 owner 회귀를 함께 인수한다.
+- [x] `LC-RD-117B-P3-03` WC-10 곡 다단계 저장의 confirmed snapshot·savedSongId·성공/남은 필드 안내와 재시도를 인수한다. 새 입력을 보존하며 이미 성공한 단계를 무조건 반복하지 않고 응답 유실·부분 성공을 시험한다.
+- [x] `LC-RD-117B-P3-04` WC-11 중첩 dialog focus/Escape·touch 복귀·도구막대/preview 잘림·쓰기 설정·공백 Extend marker copy를 기존 B1/classic 기준에 통합한다. 코발트 layout/CSS를 아직 적용하지 않으며 UI-07 오류 위치·UI-08 FAB 겹침과는 별도 판정한다.
+- [x] `LC-RD-117B-P3-05` WC-13 OAuth 왕복 및 DB intent/code/identity lock 뒤 live clock 재검사·beta index key fail-closed를 인수한다. 만료 시 session/grant/code 소비가 남지 않고 tombstone 보존·다른 kid/같은 kid secret 교체 제약이 유지되는지 검사한다. BE-01/02 잔여를 별도로 둔다.
+- [x] `LC-RD-117B-P3-06` WC-14 협업 projection retry의 stable keyset/wrap·trash 제외·timer 중첩 방지·Y.Doc cleanup·실패 관측을 통합한다. 지속 실패 20개 뒤 정상 문서의 처리·timestamp/marker 보존을 확인하고 worker purge M-04와 혼동하지 않는다.
+- [x] `LC-RD-117B-P3-07` WC-15 guest 회수/epoch-stale 뒤 서버 수용 body/cache 복귀와 authoredText 분리를 통합한다. 재연결/권한 재허용 뒤 거부 입력 재생이 없고 private snapshot을 노출하지 않는지 확인하며 ES-06 persist 실패 보관과 함께 인수한다.
+- [x] `LC-RD-117B-P3-08` WC-16 export v1의 Suno/photo section·참조/owner 검증과 lifecycle/domain/trash의 삭제 영향·mutation 성공/refresh 실패 분리를 한 묶음으로 인수한다. 과거 v1 사진 필드 부재 호환, 오래전 삭제한 자식 cascade 수와 실제 결과를 검사한다.
+- [x] `LC-RD-117B-P3-09` 통합 경계의 현행 목록/복사/프로필/설정/공유/복구 수용과 API 오류·권한·합성 두 계정 검사를 수행한다. 기존 fixture의 1.1.8 기대값은 b로 의미 있게 변경하고 원격 snapshot을 검토 없이 승인하지 않는다.
 
 ## 책임 경로·산출물
 
@@ -52,3 +52,12 @@ AC-RD-117B-07/08/10(곡)/11/13~16. 목록/서버/DB·실제 오류 복구의 경
 - Node 24.20.0/pnpm 11.25.0 Docker에서 `pnpm check`와 production web build PASS, 일반 Unit **374 PASS / DB 조건부 128 skip**이다. `AUTH_DATABASE_INTEGRATION=true`의 별도 `lyricscloud_test`에서 관련 DB **21 PASS / beta 조건부 8 skip**, `BETA_SIGNUP_DATABASE_INTEGRATION=true`에서 beta DB **8 PASS**다. 첫 시도의 다른 이름인 `lyricscloud_p3_test` DB는 fixture의 정확한 이름 제한으로 beforeAll 4 FAIL/29 skip이었고 제품 PASS로 세지 않는다.
 - 격리 `lyricscloud_p3_test`의 production Chromium 핵심 P3 PC/mobile **12 PASS / 조건부 6 skip**, 전체 무재시도 **419 PASS / 조건부 49 skip / 0 FAIL**(468건, 14.5분)이다. 첫 집중 실행의 `APP_PHASE`만 준 설정 오류는 `APP_CHANNEL=dev`를 함께 전달해 바로잡았으며 PASS로 소급하지 않는다. 실제 PostgreSQL owner 분리·공유 guest·가사 저장·목록·export/trash의 기존 전체 회귀도 포함한다.
 - source 원본의 수정 전 실패→수정 후 결과는 선행 증거이며, 현재 b tree에서는 선택 이식 후 결과만 검증했다. 실제 OS IME/물리 기기/AT, 외부 OAuth 왕복·proxy 조건, 세 DB 유형/rollback 및 22개 원인 최종 판정은 P4/P5에 남는다. **원격 CI·signed image·같은 SHA 개발 공개 인수 전 P3는 `in_progress`이며 아래 체크를 완료로 바꾸지 않는다.**
+
+## 2026-09-24 P3 기능 SHA 최종 인수
+
+- 기능 commit `1626c754d1ebc581f01c4d29873319827be0b6fd`가 원격 `phase/1.1.7b-p3-data-lists-recovery` 및 [PR #155](https://github.com/parking-place/LyricsCloud/pull/155) head와 일치한다. [PR Actions 35876265426](https://github.com/parking-place/LyricsCloud/actions/runs/35876265426)은 verify PASS·PR image 정상 skip, [push Actions 35876233972](https://github.com/parking-place/LyricsCloud/actions/runs/35876233972)은 verify와 네 publish job 모두 PASS다. 원격 Unit/DB **494 PASS/8 조건부 skip**, Chromium **419 PASS/49 조건부 skip**, release browser matrix **10 PASS**다.
+- web `b8fcd014dc3e5f3590774d86d0b9f878a4e7ad7195ef11075b05af6778786b15`, collaboration `b630c869179d4c0a4eb54a7286482c05c5806ba9a3fb59a9ccbfa79c260f27f2`, worker `0c4b689bc7301517f4693942d75b457812a361fc02342e0d5d3116f4ad727958`, migrate `2873aef63b229d46ffc15eeb5caf662bacc92c1d960d713f2f42b039d87f1725`가 각 서비스의 full-SHA·`dev-1.1.7b-p3`·`Dev`·`Dev-latest`에서 동일 digest다. CI keyless signature와 Dockerfile/target/source SHA provenance PASS를 확인했고 정식 Release alias는 이동하지 않았다.
+- 개발 서버 배포 전 P2 SHA `3915a71f5abd9116bdd097ee4cc45cc6c71eadf0`·네 서비스 healthy·tracked clean·필수 설정 존재를 확인했다. 배포 스크립트 성공 후 checkout·BUILD_ID·공개 HTTPS live/ready가 기능 SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`와 `1.1.7b/dev/p3`, ready schema `1151_profile_customization.sql`에 일치하고 네 서비스 healthy다. migration 31건 지문 `42111a6b819fdb3a9a3282fefc566d409be9722342b8e8c5a0762c0fed02914a`와 native 1150 객체·profile 1151은 전후 보존됐다.
+- 공개 합성 owner의 PC 목록 검색→즐겨찾기, 비로그인 export 401/owner ZIP 200, 모바일 곡 화면·가로 넘침 없음, 삭제 곡의 휴지통 표시, `/auth` production asset를 PASS했다. 첫 smoke의 숨겨진 필터 옵션 선택 오류와 두 번째의 동일 제목 중복 선택 오류는 검사 도구의 locator 문제로, 고유 제목과 보이는 제목을 지정한 최종 실행 PASS다. 합성 owner와 생성 자료는 삭제·부재 확인했다.
+- 개발 배포 스크립트의 health·정적 asset 확인 뒤 Docker 정리 PASS. 로컬에서는 이번 P3 전용 project 범위와 미사용 BuildKit cache를 정리했고 Docker volume 및 이전 작업의 중지 컨테이너는 보존했다. 공유 builder의 미사용 cache 약 7.6GB는 삭제되어 필요하면 다시 빌드된다.
+- P3 WC-07/08/10(곡)/11/13~16의 **최초 웹 통합**은 이 SHA에서 완료다. P4에는 BE/ES/UI/OPS 22개 원인의 재판정·필수 해소, 실제 OS IME/물리 기기/AT(사용자가 현재 제공 불가), 외부 provider/proxy, 세 DB 유형과 rollback을 넘긴다. 미실행은 PASS가 아니며 `main`·정식 tag/image·릴리스 서버·native 파일은 변경하지 않았다.

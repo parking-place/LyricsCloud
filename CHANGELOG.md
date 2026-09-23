@@ -6,7 +6,7 @@
 - 환경 값과 allowlist 날짜 도구를 보강하고 개발 후보 검사와 정식 tag 승인 검사를 분리했다. P1 기능 SHA `a04bbcb`는 PR/push 전체 CI·네 signed dev image와 동일 SHA 개발 공개 live/ready·auth/CSS 인수를 완료했다. DB의 기존 native 1150/profile 1151 이력은 보존했으며 P2~P5의 웹 통합·차단 해소와 정식 출시는 아직 미완료다.
 - P2에서 가사·라임·프롬프트 초안/IME/자동 저장, 안전한 화면 이동, 표시 설정의 늦은 저장 응답, Suno 수동 모델 초안, 가사 복제, 템플릿 원문과 PWA 다중 build/업데이트 보호를 통합했다. 프로필 미저장 상태에서 강제 PWA 갱신을 막는다.
 - P2 기능 SHA `3915a71`의 전체 로컬 Chromium 410 PASS/44 skip, PR/push 필수 CI·네 signed dev image와 동일 SHA 개발 공개 PC/mobile 가사·Suno·PWA 재진입 smoke를 완료했다. 합성 계정은 삭제했고 기존 DB native 1150/profile 1151 이력은 보존했다. P3~P5의 나머지 통합·심화 검증과 정식 출시는 아직 미완료이며 사용자 요청으로 P3 전 일시 중단했다.
-- P3 로컬 후보에서 목록 응답 경쟁·순서/즐겨찾기, 곡 부분 저장, dialog/복사, 인증 만료, 협업 projection, guest 회수, export/trash 복구를 통합했다. 전체 Chromium 419 PASS/49 조건부 skip·관련 DB 29 PASS와 check/production build를 확인했다. 원격 CI·네 signed dev image·개발 공개 인수와 P4/P5 최종 차단 검토 전이므로 P3 완료나 정식 출시로 보지 않는다.
+- P3에서 목록 응답 경쟁·순서/즐겨찾기, 곡 부분 저장, dialog/복사, 인증 만료, 협업 projection, guest 회수, export/trash 복구를 통합했다. 기능 SHA `1626c754`의 전체 Chromium 419 PASS/49 조건부 skip, 원격 Unit/DB 494 PASS/8 조건부 skip, PR/push CI·네 signed dev image와 동일 SHA 개발 공개 목록·export·휴지통 smoke를 완료했다. P4/P5의 최종 차단 해소·실기기·rollback 및 정식 출시는 아직 미완료다.
 
 ## [1.1.7a] - 2026-09-16
 

@@ -3,16 +3,20 @@
 ```yaml
 current_version: "1.1.7b"
 current_phase: "../3.Redesign-phase/1.1.7.b/3phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
-updated_at: "2026-09-23"
+updated_at: "2026-09-24"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "1.1.7b P3 로컬 전체 수용 후보의 원격 CI·signed dev image·동일 SHA 개발 공개 인수를 확인한다"
+next_action: "1.1.7b P3 문서 인수 SHA에서 P4 전용 브랜치를 열고 22개 원인·DB 호환·rollback을 검증한다"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-24 — 1.1.7b P3 완료·P4 진입 대기
+
+P3 기능 SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`의 [PR #155 Actions 35876265426](https://github.com/parking-place/LyricsCloud/actions/runs/35876265426) verify PASS, [push Actions 35876233972](https://github.com/parking-place/LyricsCloud/actions/runs/35876233972) verify·네 signed dev image PASS다. 원격 Unit/DB **494 PASS/8 조건부 skip**, Chromium **419 PASS/49 조건부 skip**, release browser matrix **10 PASS**와 네 서비스의 SHA·P3 dev/Dev 별칭 동일 digest·서명/provenance를 확인했다. 같은 SHA 개발 서버의 checkout·BUILD_ID·공개 live/ready `1.1.7b/dev/p3`, 네 서비스 health, migration 31건 지문/native 1150/profile 1151 보존을 확인했다. 공개 합성 owner로 PC 목록/즐겨찾기, owner export/비로그인 차단, 모바일 곡, 휴지통 smoke PASS 후 계정·자료를 제거했다. 첫 두 smoke의 selector 오류는 테스트 도구를 보정하고 최종 재실행으로 검증했으며 제품 PASS로 소급하지 않는다. P4/P5의 22개 원인 필수 해소, 세 DB 유형·rollback, 실제 OS IME/물리 기기/AT는 미완료이고 사용자는 현재 실기기 제공이 어렵다고 답했다. [P3 최종 증거](../3.Redesign-phase/1.1.7.b/3phase.md)를 따른다. `main`·정식 tag/image·릴리스 서버·native 파일은 변경하지 않았다.
 
 ### 2026-09-23 — 1.1.7b P3 착수
 
