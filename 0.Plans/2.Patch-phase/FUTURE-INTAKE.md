@@ -407,3 +407,7 @@ tracked 목록과 hidden/untracked 공개 탐색에서 Future 관련 문서 4개
 ## 2026-09-23 — 1.1.7b P2 전체 회귀 보정 push 전 재검수
 
 tracked·untracked·hidden 공개 경로의 Future 관련 문서는 다시 4개이며 현행 입력 `Future_Feature.md` blob은 `8f42d20b638e245eb775415ccfdabef56a96f694` 그대로다. 129개 FF ID·체크·본문, 이동·삭제·신규 공개 후보가 없고 나머지 세 문서는 절차·과거 scope/mapping이다. 원격 source head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`도 동일하다. 이번 보정은 P2 복구본 기대값·삭제 가사 안전 안내 경계와 변경된 PWA 모바일 기준 이미지 2장, 실패/취소·최종 로컬 검증 기록에 한정한다. 새 Future 배정이나 P3/P4·1.2.x 선소비가 없으며 ignored/private 원본과 보호 계획·native·main·정식 tag/image·릴리스 서버는 변경하지 않는다.
+
+## 2026-09-23 — 1.1.7b P2 원격 모바일 시각 기준 보정 push 전 재검수
+
+공개 tracked·untracked·hidden Future 탐색은 다시 4문서이며 입력 blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 129개 ID·체크·본문은 동일하다. 원격 source head도 `c230c024aeb0297b1c130e3f3e8b507a43a7e871`로 이동하지 않았다. 새 후보는 P2 PWA 안내가 보이는 모바일 탐색 기준 5장과 실패/취소 원격 증거 기록뿐이다. 현행 Future 재선정, P3/P4·후속 1.2.x 작업 선소비, ignored/private 원본 강제 공개, 보호 계획·native·main·정식 tag/image·릴리스 서버 변경은 없다.

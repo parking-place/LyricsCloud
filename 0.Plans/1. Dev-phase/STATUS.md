@@ -22,6 +22,8 @@ P2는 전용 `phase/1.1.7b-p2-editing-save-pwa`에서 로컬 통합 후보를 �
 
 첫 전체 로컬 Chromium 검사는 **406 PASS / 44 skip / 4 FAIL**(옛 복구본 형식 기대 2, PWA 표시 전 모바일 기준 이미지 2)이었고, 해당 후보의 원격 PR·push Actions는 취소했다. 집중 6건 PASS 뒤 두 번째 전체 검사는 **409 PASS / 44 skip / 1 FAIL**(삭제된 가사의 선행 동기화 실패 안내 분기)이었다. 원문 직접 복사·비삽입 경계를 보강한 검사 10회 반복 PASS, 최종 전체 **410 PASS / 44 skip / 0 FAIL**(무재시도)이며 수정 후 `pnpm check`·production web build와 `CI=true` 집중 7 PASS/1 skip도 확인했다. 실패·취소를 PASS로 소급하지 않으며 새 SHA의 원격 필수 CI·네 signed image·동일 SHA 개발 공개 인수 전 P2는 미완료다.
 
+후속 후보 `c9e0cb4189a11311918f50753832d584eb68304f`의 PR Actions `35862852788`은 모바일 즐겨찾기 빈 상태 옛 기준 이미지 차이 7%로 **409 PASS / 44 skip / 1 FAIL**이었다. push Actions `35862846539` attempt 1은 성능 라운드 편차로 FAIL·image skipped, attempt 2는 성능 통과 뒤 PR 실패 확인으로 취소했다. 실패/취소를 PASS로 바꾸지 않는다. PWA 안내가 반영되지 않았던 모바일 탐색 상태 5장만 시각 확인 후 재생성하고 `CI=true` PC·모바일 집중 **2 PASS**다. 새 후보의 전체 CI·image·개발 인수 전까지 상태는 `in_progress`다.
+
 ### 2026-09-23 — 1.1.7b P1 완료·P2 진입
 
 P1의 제품 `1.1.7b`/계획 `1.1.7.b`/private package `1.1.7` 계약, WC-17/18, dev/정식 gate 분리를 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 인수했다. 로컬 경계 42 PASS, `pnpm check`와 production web build PASS, 격리 PostgreSQL 18의 migration 2회·Unit 393 PASS/조건부 beta 5 skip이다. PR [#153](https://github.com/parking-place/LyricsCloud/pull/153)의 [Actions 35849543496](https://github.com/parking-place/LyricsCloud/actions/runs/35849543496) verify PASS; push [Actions 35849536417](https://github.com/parking-place/LyricsCloud/actions/runs/35849536417) attempt 2 verify·네 signed dev image/provenance PASS. 첫 push의 mockup 해시 오탐, 중간 후보의 공개 링크 재연결 시험 경쟁, 최종 push attempt 1의 성능 라운드 편차 FAIL은 각각 실패 이력으로 유지하고 PASS로 소급하지 않는다.
