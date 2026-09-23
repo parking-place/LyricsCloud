@@ -1,6 +1,6 @@
 # 1.1.7b Phase 1 — 기준 동결·통합 계약·1.1.7b 실행 기반
 
-**상태: 진행 중 (`in_progress`)**. 로컬 후보는 통과했으며 원격 CI·signed dev image·동일 SHA 개발 인수 전에는 완료가 아니다. [수용 기준](ACCEPTANCE.md) · [통합 맵](SOURCE-MAP.md) · [차단 목록](BLOCKERS.md).
+**상태: 완료 (`complete`)**. 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`의 원격 CI·네 signed dev image·동일 SHA 개발 인수를 완료했다. P2~P5의 통합·차단 해소는 별도 미완료다. [수용 기준](ACCEPTANCE.md) · [통합 맵](SOURCE-MAP.md) · [차단 목록](BLOCKERS.md).
 
 ## 목표·진입
 
@@ -10,14 +10,14 @@
 
 ## 작업
 
-- [ ] `LC-RD-117B-P1-01` 현재 작업자·미커밋 변경·worktree·원격 ref를 확인하고 통합 기준을 v1.1.7a 제품 tree와 최신 계획 문서에서 분리 기록한다. 원격 head c230c02/기능 0375825 이후 변경이 있으면 추가 diff만 검토해 source를 다시 동결한다.
-- [ ] `LC-RD-117B-P1-02` WC-01~18별 원본 commit·실제 코드/타입/호출자/시험 경로와 최소 의존성 묶음을 SOURCE-MAP에 확정한다. native 앱/API/auth/1150 신규 적용·1.1.8 metadata·이전 STATUS와 코발트 적용은 통합 제외로 구분한다.
-- [ ] `LC-RD-117B-P1-03` VERSION-CONTRACT의 제품 1.1.7b / 폴더 1.1.7.b / private package 1.1.7을 정확한 단일 예외로 등록한다. 1.1.7a 역사와 숫자 버전은 유지하고 다른 임의 suffix·개행/경로 조작은 계속 거부한다.
-- [ ] `LC-RD-117B-P1-04` WC-18의 안전한 build 설정과 release-phase/image/tag/deploy validator 의도를 선별한다. 3.Redesign-phase 경로·가변 Phase·a/b 매핑을 지원하고 runtime/health/build ID/CI/Compose 기대값을 함께 정렬한다. 이 작업을 P5나 1.2.0까지 미루지 않는다.
-- [ ] `LC-RD-117B-P1-05` dev-candidate 검사와 정식 release 승인/봉인 검사를 분리한다. manifest 존재만으로 P5/productionAuthorized가 강제되는 경로를 명시적으로 보정하며, WC-18 strict tag 검사와 웹 필수 job 의존을 유지하되 windows-native를 도입하지 않는다.
-- [ ] `LC-RD-117B-P1-06` WC-17의 optional 환경 값/안전 정수/공백 검증·offset deadline 정규화·import-safe helper와 회귀를 함께 인수한다. 실제 keyring·secret·회전이나 backup 운영 설정 변경은 수행하지 않는다.
-- [ ] `LC-RD-117B-P1-07` BLOCKERS의 22개 원인과 DB 세 종류를 현재 후보에서 확인할 입력/담당/차단표로 등록한다. native 1150이 이미 적용된 환경의 보존·API 비노출·rollback 계약을 정하고 임의 down/drop을 금지한다.
-- [ ] `LC-RD-117B-P1-08` 기존 a/숫자 버전·b/새 경로·잘못된 값 거부·dev/정식 tag 격리 회귀와 실제 P1 runtime 빌드를 인수한다. 계약/도구 변경·Phase source SHA·CI/개발 인수 증거를 남기고 P2/P3 파일 작성자를 확정한다.
+- [x] `LC-RD-117B-P1-01` 현재 작업자·미커밋 변경·worktree·원격 ref를 확인하고 통합 기준을 v1.1.7a 제품 tree와 최신 계획 문서에서 분리 기록한다. 원격 head c230c02/기능 0375825 이후 변경이 있으면 추가 diff만 검토해 source를 다시 동결한다.
+- [x] `LC-RD-117B-P1-02` WC-01~18별 원본 commit·실제 코드/타입/호출자/시험 경로와 최소 의존성 묶음을 SOURCE-MAP에 확정한다. native 앱/API/auth/1150 신규 적용·1.1.8 metadata·이전 STATUS와 코발트 적용은 통합 제외로 구분한다.
+- [x] `LC-RD-117B-P1-03` VERSION-CONTRACT의 제품 1.1.7b / 폴더 1.1.7.b / private package 1.1.7을 정확한 단일 예외로 등록한다. 1.1.7a 역사와 숫자 버전은 유지하고 다른 임의 suffix·개행/경로 조작은 계속 거부한다.
+- [x] `LC-RD-117B-P1-04` WC-18의 안전한 build 설정과 release-phase/image/tag/deploy validator 의도를 선별한다. 3.Redesign-phase 경로·가변 Phase·a/b 매핑을 지원하고 runtime/health/build ID/CI/Compose 기대값을 함께 정렬한다. 이 작업을 P5나 1.2.0까지 미루지 않는다.
+- [x] `LC-RD-117B-P1-05` dev-candidate 검사와 정식 release 승인/봉인 검사를 분리한다. manifest 존재만으로 P5/productionAuthorized가 강제되는 경로를 명시적으로 보정하며, WC-18 strict tag 검사와 웹 필수 job 의존을 유지하되 windows-native를 도입하지 않는다.
+- [x] `LC-RD-117B-P1-06` WC-17의 optional 환경 값/안전 정수/공백 검증·offset deadline 정규화·import-safe helper와 회귀를 함께 인수한다. 실제 keyring·secret·회전이나 backup 운영 설정 변경은 수행하지 않는다.
+- [x] `LC-RD-117B-P1-07` BLOCKERS의 22개 원인과 DB 세 종류를 현재 후보에서 확인할 입력/담당/차단표로 등록한다. native 1150이 이미 적용된 환경의 보존·API 비노출·rollback 계약을 정하고 임의 down/drop을 금지한다.
+- [x] `LC-RD-117B-P1-08` 기존 a/숫자 버전·b/새 경로·잘못된 값 거부·dev/정식 tag 격리 회귀와 실제 P1 runtime 빌드를 인수한다. 계약/도구 변경·Phase source SHA·CI/개발 인수 증거를 남기고 P2/P3 파일 작성자를 확정한다.
 
 ## 책임 경로·산출물
 
@@ -46,4 +46,11 @@ AC-RD-117B-17/18/19/20; b를 명시 거부하던 기존 회귀의 승인된 기�
 - dev 후보의 `productionAuthorized=false`와 명시적 `--require-release`를 분리했다. strict annotated tag gate는 웹 `verify`에 연결하고 windows-native job/needs는 가져오지 않았다.
 - WC-17 optional backup 안전 정수·공백, offset deadline UTC 정규화, import-safe helper와 회귀를 C3에서 선별했다. secret/keyring은 읽거나 회전하지 않았다.
 - 지원 Docker Node 24.20.0/pnpm 11.25.0에서 경계 Node 42 PASS, `pnpm check` PASS, production web image build PASS. 무 volume 격리 PostgreSQL 18에서 migration 2회와 Unit **393 PASS / 조건부 beta 5 skip**이다. 첫 경계 회귀의 6 FAIL은 branch parser가 `-pN-topic`까지 버전으로 잡은 시험 단계 결함이었고 정확한 숫자/a/b parser로 보정 후 42 PASS다.
-- 현재 미완료: 원격 필수 CI·네 signed dev image, 동일 SHA 개발 배포/공개 smoke. 이 증거 전에는 위 작업 checkbox와 Phase 상태를 완료로 바꾸지 않는다.
+- 후보 작성 당시에는 원격 CI·image·개발 인수가 미완료였으며, 아래 동일 SHA 증거로 완료했다.
+
+## 2026-09-23 P1 완료 인수
+
+- 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`을 원격 `phase/1.1.7b-p1-contract-runtime`과 PR [#153](https://github.com/parking-place/LyricsCloud/pull/153)에 고정했다. PR Actions [35849543496](https://github.com/parking-place/LyricsCloud/actions/runs/35849543496) 전체 verify PASS, push Actions [35849536417](https://github.com/parking-place/LyricsCloud/actions/runs/35849536417) attempt 2 전체 verify와 네 signed dev image/provenance PASS다. web `sha256:20e851cb04a5f08a3c365321b793f935a954fe594ad40f8ad46b89cef8b866a3`, collaboration `sha256:5d30e76136cebed311702067a57e05d036c2c879b4766b6face3aa965750b4d5`, worker `sha256:088e4006469658dded0bb735be3ad5cb528a734d65da9521d6796bd58171be52`, migrate `sha256:3dc41a4aef0055e7c2412244c369ec1f8c303de70d6bb16f5cda4bb879506a6c`다.
+- 첫 push `2301605`의 Git 비밀 검사 실패는 공개 mockup source SHA-256 값을 key로 오인한 것이며, rule·파일·필드·해시 형식에 한정한 예외를 추가했다. 중간 `eba666e` push는 공개 링크 E2E가 작성자 서버 반영 전 재연결한 시험 경쟁으로 FAIL했고 같은 SHA PR은 PASS했다. 작성자 API의 실제 반영을 먼저 확인하도록 시험을 강화했다. 최종 push attempt 1의 과거 성능 라운드 편차 FAIL(절대 지연·오류율은 기준 내)도 PASS로 재분류하지 않으며, 기준 변경 없이 attempt 2를 통과했다.
+- 개발 서버 배포 전 checkout `a7d8e4538c58202f4a1e39371517906e891ae1bf`의 네 서비스 healthy·공개 ready 200을 확인했다. 기능 SHA 배포 뒤 checkout·환경 BUILD_ID·공개 live/ready가 `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`과 `1.1.7b/dev/p1`로 일치했다. 네 서비스 healthy, `/auth`와 공개 CSS 200, HMR 없음, 내부 production CSS 검사·Docker cleanup PASS다. migration 31건의 비밀 없는 지문 `42111a6b819fdb3a9a3282fefc566d409be9722342b8e8c5a0762c0fed02914a`와 native 1150 객체·profile 1151 이력은 배포 전후 동일하다. DB down/drop, 볼륨·secret 변경, main·정식 tag/image·릴리스 서버 변경 없음.
+- 공개 smoke는 P1의 버전·health·정적 자산 경계다. 실제 owner 브라우저·외부 OAuth·물리 기기/IME/AT, populated a DB와 native 객체의 상세 권한·rollback은 미실행이며 P2~P5 수용 기준을 대신하지 않는다. `WC-01~16`과 22개 원인은 아직 해결/검증 완료가 아니므로 P2/P3 통합과 P4 차단 해소를 계속한다.

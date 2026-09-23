@@ -2,19 +2,25 @@
 
 ```yaml
 current_version: "1.1.7b"
-current_phase: "../3.Redesign-phase/1.1.7.b/1phase.md"
+current_phase: "../3.Redesign-phase/1.1.7.b/2phase.md"
 state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-23"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "1.1.7b P1에서 완료된 1.1.7a 릴리스 기록을 보존하고, 1.1.8 웹 안정화 선별 통합을 위한 정확한 b 버전·도구·source 계약과 개발/정식 릴리스 경계를 검증한다"
+next_action: "1.1.7b P1 동일 SHA 개발 인수를 보존하고 P2의 metadata 초안·IME/autosave·prompt·탐색·설정·Suno·PWA 웹 수정을 의존성 단위로 통합한다"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
 
-사용자 지시로 다음 제품 계획을 **[1.1.7b 웹 안정화 통합](../3.Redesign-phase/1.1.7.b/README.md)**으로 변경했다. 실제 순서는 **1.1.7a → 1.1.7b → 1.2.0 → 1.2.1~1.2.8**이다. b에서 1.1.8 웹 안정화 코드·회귀를 먼저 통합하고 같은 SHA의 개발 인수까지 완료한 뒤, 그 b SHA에서 코발트 리디자인을 시작한다. 완료된 1.1.7a tag·운영 배포 기록은 유지하며, 2026-09-23 `phase/1.1.7b-p1-contract-runtime`에서 P1 구현을 착수했다. 1.1.8~1.1.14 네이티브 잔여 계획은 계속 보류한다.
+사용자 지시로 다음 제품 계획을 **[1.1.7b 웹 안정화 통합](../3.Redesign-phase/1.1.7.b/README.md)**으로 변경했다. 실제 순서는 **1.1.7a → 1.1.7b → 1.2.0 → 1.2.1~1.2.8**이다. b에서 1.1.8 웹 안정화 코드·회귀를 먼저 통합하고 같은 SHA의 개발 인수까지 완료한 뒤, 그 b SHA에서 코발트 리디자인을 시작한다. 완료된 1.1.7a tag·운영 배포 기록은 유지한다. 2026-09-23 P1을 `phase/1.1.7b-p1-contract-runtime`의 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 완료하고 P2를 착수했다. 1.1.8~1.1.14 네이티브 잔여 계획은 계속 보류한다.
+
+### 2026-09-23 — 1.1.7b P1 완료·P2 진입
+
+P1의 제품 `1.1.7b`/계획 `1.1.7.b`/private package `1.1.7` 계약, WC-17/18, dev/정식 gate 분리를 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 인수했다. 로컬 경계 42 PASS, `pnpm check`와 production web build PASS, 격리 PostgreSQL 18의 migration 2회·Unit 393 PASS/조건부 beta 5 skip이다. PR [#153](https://github.com/parking-place/LyricsCloud/pull/153)의 [Actions 35849543496](https://github.com/parking-place/LyricsCloud/actions/runs/35849543496) verify PASS; push [Actions 35849536417](https://github.com/parking-place/LyricsCloud/actions/runs/35849536417) attempt 2 verify·네 signed dev image/provenance PASS. 첫 push의 mockup 해시 오탐, 중간 후보의 공개 링크 재연결 시험 경쟁, 최종 push attempt 1의 성능 라운드 편차 FAIL은 각각 실패 이력으로 유지하고 PASS로 소급하지 않는다.
+
+같은 기능 SHA로 개발 서버 checkout·BUILD_ID·공개 HTTPS live/ready가 `1.1.7b/dev/p1`에 일치하고 `/auth`·CSS 200, HMR 없음, 네 서비스 healthy, production CSS·Docker cleanup PASS다. 기존 개발 DB의 migration 31건 지문 `42111a6b819fdb3a9a3282fefc566d409be9722342b8e8c5a0762c0fed02914a`와 native 1150 객체·profile 1151 이력은 배포 전후 그대로다. P2~P5 웹 수정·22개 원인 해소와 세 DB 유형·물리 기기/AT·rollback 최종 인수는 아직 PASS가 아니다. `main`·정식 tag/image·릴리스 서버는 변경하지 않았다. [P1 세부 증거](../3.Redesign-phase/1.1.7.b/1phase.md)를 따른다.
 
 아래 2026-09-22의 직접 1.2.0 지정은 당시 이력이며, 현재 착수 순서는 이 절과 위 next_planned 값을 따른다.
 
@@ -232,12 +238,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.7a P2 | complete | 후보 `4c2a42a`, Actions `35026679109`, 네 signed dev image·동일 SHA 개발 1151 migration/합성 profile API 영속 인수 완료 |
 | 1.1.7a P3 | complete | 후보 `675dbafa`, Actions `35037281111`, Unit 393/E2E 387/release 10 PASS·네 signed dev image·동일 SHA 공개 PC/mobile 닉네임·사진 저장/재진입·홈 guard 인수 완료 |
 | 1.1.7a P4 | complete | 후보 `7621e8e`, 첫 CI `35043201011` performance CV FAIL 기록, 동일 SHA 재실행 `35043634916` Unit 393/E2E 393/release 10·네 signed dev image PASS·동일 SHA 공개 재시작/새 session·두 owner 격리·홈 guard 인수 완료. 실제 OS/기기·AT 미실행 |
+| 1.1.7b P1 | complete | 기능 `a04bbcb`, PR `35849543496` verify·push `35849536417` attempt 2 verify/네 signed dev image PASS, 동일 SHA 개발 공개 live/ready·auth/CSS·네 health와 native 1150/1151 DB 지문 보존. P2~P5 작업은 미완료 |
+| 1.1.7b P2 | in_progress | WC-01~06/09/10(가사)/12의 편집·저장·탐색·PWA 웹 통합 착수. P1 기능 SHA에서 분기하되 제품 기능 검증·개발 인수 전에는 완료 아님 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.7b/P1 | LC-RD-117B-P1-01~08 | 버전/source freeze·release/image/deploy validator·환경 경계·DB matrix·CI/개발 인수 | `v1.1.7a`/`fc2463c` 제품 기준, 1.1.8 P4 source `c230c02`·기능 후보 `0375825`; 보호 계획 문서 불변 | 2026-09-23 | in_progress |
+| Codex | 1.1.7b/P2 | LC-RD-117B-P2-01~09 | 편집·저장·탐색·PWA 코드/호출자/시험 통합 | P1 기능 `a04bbcb`, source `c230c02`/기능 `0375825`, WC-01~06/09/10(가사)/12; 보호 계획 문서 불변 | 2026-09-23 | in_progress |
+| Codex | 1.1.7b/P1 | LC-RD-117B-P1-01~08 | 버전/source freeze·release/image/deploy validator·환경 경계·DB matrix·CI/개발 인수 | 기능 `a04bbcb`, PR/push Actions `35849543496`/`35849536417`와 동일 SHA 공개 개발 인수 완료 | 2026-09-23 | complete |
 | Codex | 1.1.7b 선행 통합 계획 (구현 Phase 아님) | PLAN-RD-117B | 3.Redesign-phase/1.1.7.b, 후속 순서·후보 소유권·버전 정책·실행 STATUS의 다음 계획 | 사용자 1.1.8 웹 안정화 선행 통합 지시; source c230c02/기능0375825 | 2026-09-23T12:18+09:00 | documented (5 Phase·42작업·24수용 기준·18 WC 상세 계획 및 문서 검증; 제품 미착수) |
 | Codex | 1.2.1 이후 계획 정비 (구현 Phase 아님) | PLAN-RD-12X | 3.Redesign-phase 후속 버전·추적·수용 계획, 계획 진입·Future 인수, 실행 STATUS의 계획 작업 기록 | 2026-09-22 사용자 요청; 0922 리뷰와 1.2.0 계획 인수; 네이티브 보류 유지 | 2026-09-22T19:22+09:00 | documented (8버전·41 Phase·205작업·리뷰/원격 비교 검증 완료; 제품 미착수) |
 | Codex | 1.2.0 계획 정비 (구현 Phase 아님) | PLAN-RD-120 | 3.Redesign-phase 목업·계획, 2.Patch-phase 보류·진입 문서, 실행 STATUS 다음 계획 | 2026-09-22 사용자 코발트 Chroma Dock 선택·1.1.8 이후 보류 지시; v1.1.7a 기준 | 2026-09-22 | documented (계획·목업 검증 완료; 제품 Phase 미착수) |

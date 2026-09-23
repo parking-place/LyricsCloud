@@ -63,7 +63,7 @@ WC-06의 범위 치환/IME와 checkpoint 변환은 b P2-03/P2-04, WC-10의 가�
 | WC-17 | C3 | environment validator, allowlist provisioner, environment/HMAC 회귀 | P1-06 |
 | WC-18 | C1+C3 | Next build tracing, CI strict tag gate, publication/final-release 회귀; windows-native 제외 | P1-04/05 |
 
-P1은 WC-17과 WC-18만 `ported → local_verified`다. WC-01~16은 위 묶음을 고정했을 뿐 아직 `planned`이며 P2/P3 통합 전 완료로 읽지 않는다. native 앱·17 native route·1150 파일·1.1.8 manifest/version/STATUS·Windows CI job은 묶음에서 제외한다.
+P1은 WC-17과 WC-18만 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 `ported → verified`다. [P1](1phase.md)의 로컬 경계·원격 CI·네 signed dev image·동일 SHA 공개 개발 인수를 근거로 한다. WC-01~16은 위 묶음을 고정했을 뿐 아직 `planned`이며 P2/P3 통합 전 완료로 읽지 않는다. native 앱·17 native route·1150 파일·1.1.8 manifest/version/STATUS·Windows CI job은 묶음에서 제외한다.
 
 ## 충돌·제외 경계
 

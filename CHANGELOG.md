@@ -3,7 +3,7 @@
 ## [1.1.7b] - 개발 중
 
 - P1 후보에서 제품·health 버전을 `1.1.7b`로 정렬하고 기존 private package 버전 `1.1.7`을 유지한다. 1.1.8 웹 안정화 수정의 통합은 P2~P4에 배정했다.
-- 환경 값과 allowlist 날짜 도구를 보강하고 개발 후보 검사와 정식 tag 승인 검사를 분리했다. P1 원격 CI·signed image·동일 SHA 개발 인수 전에는 완료 또는 출시로 표시하지 않는다.
+- 환경 값과 allowlist 날짜 도구를 보강하고 개발 후보 검사와 정식 tag 승인 검사를 분리했다. P1 기능 SHA `a04bbcb`는 PR/push 전체 CI·네 signed dev image와 동일 SHA 개발 공개 live/ready·auth/CSS 인수를 완료했다. DB의 기존 native 1150/profile 1151 이력은 보존했으며 P2~P5의 웹 통합·차단 해소와 정식 출시는 아직 미완료다.
 
 ## [1.1.7a] - 2026-09-16
 
