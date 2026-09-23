@@ -1,0 +1,17 @@
+title = "LyricsCloud secret scan"
+
+[extend]
+useDefault = true
+
+# The mockup source manifest records a SHA-256 digest for tokens.css. It is
+# public integrity metadata, not a credential. Keep the exception limited to
+# that exact file, JSON field, digest shape, and generic-key rule.
+[[rules]]
+id = "generic-api-key"
+
+  [[rules.allowlists]]
+  description = "tokens.css source-manifest SHA-256 digest"
+  condition = "AND"
+  paths = ['''(^|/)0\.Plans/3\.Redesign-phase/1\.2\.0/mockup/source-manifest\.json$''']
+  regexTarget = "line"
+  regexes = ['''^\s*"tokens\.css": "[0-9a-f]{64}",?\s*$''']
