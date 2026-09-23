@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
+import { EXPORT_SCHEMA_VERSION, validateExportDocument } from "@lyricscloud/domain";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { PostgresExportStore } from "./export.js";
+import { PostgresExportStore, type ExportRecord } from "./export.js";
 
 const enabled = process.env.AUTH_DATABASE_INTEGRATION === "true";
 const databaseUrl = process.env.DATABASE_URL ?? "";
@@ -21,6 +22,9 @@ describe.runIf(enabled)("owner export repeatable snapshot", () => {
     try {
       await pool!.query("insert into app_users(id,status) values($1,'active'),($2,'active')", [owner, other]);
       await pool!.query("insert into user_profiles(owner_id,display_name) values($1,'Export A'),($2,'Export B')", [owner, other]);
+      const photo = (await pool!.query<{ id: string }>(`insert into profile_avatar_photos(owner_id,webp_bytes,content_sha256)
+        values($1,$2,$3) returning id`, [owner, Buffer.from("synthetic-photo"), "a".repeat(64)])).rows[0]!.id;
+      await pool!.query("update user_profiles set avatar_photo_id=$2 where owner_id=$1", [owner, photo]);
       await pool!.query("insert into resources(id,owner_id,type,title) values($1,$2,'song','같은 제목'),($3,$2,'lyrics','가사/초안'),($4,$2,'prompt','문장 프롬프트'),($5,$6,'song','다른 계정')", [song, owner, lyric, prompt, otherSong, other]);
       await pool!.query("insert into songs(resource_id,owner_id,status,description,work_notes) values($1,$2,'idea','설명','메모'),($3,$4,'idea','','')", [song, owner, otherSong, other]);
       await pool!.query("insert into song_suno_workspaces(song_resource_id,owner_id,model_label,row_version) values($1,$2,'custom-v6',1)", [song, owner]);
@@ -47,7 +51,7 @@ describe.runIf(enabled)("owner export repeatable snapshot", () => {
     const readableTemplates = [];
     for await (const row of snapshot.readableTemplates(1)) readableTemplates.push(row);
     expect(readableTemplates).toContainEqual(expect.objectContaining({ id: template, promptMode: "sentence", promptText: " template, raw " }));
-    const records = [];
+    const records: ExportRecord[] = [];
     for await (const row of snapshot.records(1)) records.push(row);
     expect(JSON.stringify(records)).not.toContain(otherSong);
     expect(records.find((row) => row.section === "lyrics")?.data.body).toBe("snapshot-before");
@@ -55,6 +59,11 @@ describe.runIf(enabled)("owner export repeatable snapshot", () => {
     expect(records.find((row) => row.section === "songSunoLinks")?.data.url).toBe("https://suno.com/s/export11");
     expect(await snapshot.settings()).toMatchObject({ profile: { display_name: "Export A" }, settings: { theme: "dark" } });
     await snapshot.close(true);
+    // Validate the actual streamed JSON shape, not a parallel hand-built schema.
+    const exported = JSON.parse(JSON.stringify({ schemaVersion: EXPORT_SCHEMA_VERSION, exportedAt: snapshot.exportedAt, records }));
+    expect(validateExportDocument(exported).records).toHaveLength(records.length);
+    expect(() => validateExportDocument({ ...exported, records: records.filter((row) => row.section !== "songSunoWorkspaces") })).toThrow("EXPORT_REFERENCE_INVALID");
+    expect(() => validateExportDocument({ ...exported, records: records.filter((row) => row.section !== "profileAvatarPhotos") })).toThrow("EXPORT_REFERENCE_INVALID");
   });
 
   afterAll(async () => {

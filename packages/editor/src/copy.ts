@@ -45,5 +45,5 @@ function normalizeLyricLineEndings(document: string): string {
 }
 
 function isExtendMarkerLine(line: string): boolean {
-  return /^[^\S\n]*\[Extend(?::[^\[\]\n]*)?\][^\S\n]*$/u.test(line);
+  return /^[^\S\n]*\[(?:Extend|[^\S\n]*Extend[^\S\n]*:[^\[\]\n]*)\][^\S\n]*$/u.test(line);
 }

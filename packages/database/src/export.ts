@@ -1,8 +1,9 @@
 import type { Pool, PoolClient } from "pg";
 import { createDatabasePool } from "./pool.js";
+import type { ExportSection } from "@lyricscloud/domain";
 
 export interface ExportRecord {
-  readonly section: string;
+  readonly section: ExportSection;
   readonly data: Record<string, unknown>;
 }
 
@@ -58,7 +59,7 @@ export class PostgresExportStore {
     try {
       await client.query("begin isolation level repeatable read read only");
       const result = await client.query<{ exported_at: Date }>("select transaction_timestamp() exported_at");
-      const bootstrap = await client.query<{ section: string; data: Record<string, unknown> }>(`
+      const bootstrap = await client.query<ExportRecord>(`
         select 'account' section,jsonb_build_object('id',u.id,'status',u.status,'created_at',u.created_at,'updated_at',u.updated_at) data
           from app_users u where u.id=$1
         union all select 'profile',to_jsonb(p)-'owner_id' from user_profiles p where p.owner_id=$1
@@ -180,7 +181,7 @@ const EXPORT_SECTIONS = [
   { name: "recentItems", query: `select to_jsonb(q) data from (select resource_id,resource_type,last_opened_at,cursor_offset,songform_label,songform_occurrence,scroll_top,viewport,position_saved_at,position_basis_updated_at from recent_items where owner_id=app_current_user_id() order by resource_id) q` },
   { name: "recentSearches", query: `select to_jsonb(q) data from (select id,query,search_type,searched_at from recent_searches where owner_id=app_current_user_id() order by searched_at,id) q` },
   { name: "lyricRevisions", query: `select to_jsonb(q) data from (select d.resource_id,r.id,r.body,r.reason,r.created_at from lyric_revisions r join sync_documents d on d.document_key=r.document_key and d.owner_id=r.owner_id where r.owner_id=app_current_user_id() order by d.resource_id,r.created_at,r.sequence) q` }
-] as const;
+] as const satisfies readonly { readonly name: ExportSection; readonly query: string }[];
 
 const READABLE_RESOURCES_QUERY = `select r.id,r.type,r.title,r.deleted_at,l.song_id,
   coalesce(s.status,l.status) status,coalesce(s.description,'') description,coalesce(s.work_notes,'') work_notes,

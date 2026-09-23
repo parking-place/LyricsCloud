@@ -41,6 +41,7 @@ describe.runIf(enabled)("trash and withdrawal lifecycle PostgreSQL contract", ()
     const trash = await lifecycle!.listTrash(owner);
     const parent = trash.find((item) => item.id === song.id)!;
     expect(parent.affectedLyrics).toBe(1);
+    expect(parent.permanentlyDeletedLyrics).toBe(2);
     expect(new Date(parent.purgeAt).getTime() - new Date(parent.deletedAt).getTime()).toBe(30 * 86_400_000);
     await lifecycle!.restore(owner, [{ kind: "resource", id: song.id }]);
     expect(await songs!.getSong(owner, song.id)).not.toBeNull();
@@ -60,6 +61,24 @@ describe.runIf(enabled)("trash and withdrawal lifecycle PostgreSQL contract", ()
     await lifecycle!.restore(owner, [{ kind: "resource", id: lyric.id }], "move_to_song", destination.id);
     expect((await lyrics!.getLyric(owner, lyric.id))?.songId).toBe(destination.id);
     expect(await songs!.getSong(owner, parent.id)).toBeNull();
+  });
+
+  it("reports all children for permanent deletion and removes links while retaining the independent note", async () => {
+    const owner = users[0]!;
+    const song = (await songs!.createSong(owner, parseCreateSongInput({ requestId: randomUUID(), title: "전체 삭제 영향" }))).song;
+    const older = (await lyrics!.createLyric(owner, parseCreateLyricInput({ requestId: randomUUID(), title: "이전 묶음", body: "older" }, song.id)))!.lyric;
+    const current = (await lyrics!.createLyric(owner, parseCreateLyricInput({ requestId: randomUUID(), title: "현재 묶음", body: "current" }, song.id)))!.lyric;
+    const note = (await rhymes!.createRhymeNote(owner, parseCreateRhymeNoteInput({ requestId: randomUUID(), title: "독립 노트", body: "retained" }))).rhyme;
+    await rhymes!.linkSong(owner, note.id, song.id);
+    await lyrics!.deleteLyric(owner, older.id);
+    await songs!.deleteSong(owner, song.id);
+    const impact = (await lifecycle!.listTrash(owner)).find((item) => item.id === song.id)!;
+    expect(impact).toMatchObject({ affectedLyrics: 1, permanentlyDeletedLyrics: 2, preservedLinks: 1 });
+    const ref = { kind: "resource" as const, id: song.id };
+    expect(await lifecycle!.permanentlyDelete(owner, [ref], [{ ...ref, title: song.title }])).toBe(1);
+    expect((await pool!.query("select id from resources where id=any($1::uuid[])", [[song.id, older.id, current.id]])).rows).toEqual([]);
+    expect((await pool!.query("select 1 from song_resource_links where song_resource_id=$1", [song.id])).rowCount).toBe(0);
+    expect(await rhymes!.getRhymeNote(owner, note.id)).toMatchObject({ body: "retained", linkedSongIds: [] });
   });
 
   it("keeps permanent deletion atomic, title-confirmed and owner scoped", async () => {

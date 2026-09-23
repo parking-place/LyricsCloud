@@ -1,6 +1,6 @@
 export const EXPORT_SCHEMA_VERSION = "lyricscloud.export.v1" as const;
 export const EXPORT_BATCH_SIZE = 50;
-export const EXPORT_SECTIONS = ["account", "profile", "identities", "resources", "songs", "lyrics", "rhymeNotes", "prompts", "promptDictionary", "promptTokens", "tags", "resourceTags", "songResourceLinks", "templates", "templatePreferences", "settings", "lyricDisplaySettings", "recentItems", "recentSearches", "lyricRevisions"] as const;
+export const EXPORT_SECTIONS = ["account", "profile", "identities", "resources", "songs", "lyrics", "rhymeNotes", "prompts", "promptDictionary", "promptTokens", "tags", "resourceTags", "songResourceLinks", "songSunoWorkspaces", "songSunoLinks", "templates", "templatePreferences", "settings", "profileAvatarPhotos", "lyricDisplaySettings", "recentItems", "recentSearches", "lyricRevisions"] as const;
 export type ExportSection = typeof EXPORT_SECTIONS[number];
 export interface ExportDocument { readonly schemaVersion: typeof EXPORT_SCHEMA_VERSION; readonly exportedAt: string; readonly records: readonly { readonly section: ExportSection; readonly data: Record<string, unknown> }[] }
 
@@ -43,6 +43,14 @@ export function validateExportDocument(value: unknown): ExportDocument {
   requireReferences(bySection.get("promptTokens"), "prompt_resource_id", resources); requireReferences(bySection.get("promptTokens"), "dictionary_token_id", dictionary);
   requireReferences(bySection.get("resourceTags"), "resource_id", resources); requireReferences(bySection.get("resourceTags"), "tag_id", tags);
   requireReferences(bySection.get("songResourceLinks"), "song_resource_id", resources); requireReferences(bySection.get("songResourceLinks"), "linked_resource_id", resources);
+  const songs = ids(bySection.get("songs"), "resource_id");
+  const songResources = ids(bySection.get("resources")?.filter((row) => row.type === "song"));
+  requireReferences(bySection.get("songSunoWorkspaces"), "song_resource_id", songs, false);
+  requireReferences(bySection.get("songSunoWorkspaces"), "song_resource_id", songResources, false);
+  requireReferences(bySection.get("songSunoLinks"), "song_resource_id", ids(bySection.get("songSunoWorkspaces"), "song_resource_id"), false);
+  // Historical v1 profiles predate avatar_photo_id; current non-null references
+  // must resolve to the owner's exported photo, just as the database FK does.
+  requireReferences(bySection.get("profile")?.filter((row) => "avatar_photo_id" in row), "avatar_photo_id", ids(bySection.get("profileAvatarPhotos")));
   requireReferences(bySection.get("templatePreferences"), "template_id", templates);
   requireReferences(bySection.get("lyricDisplaySettings"), "lyric_id", resources);
   requireReferences(bySection.get("recentItems"), "resource_id", resources);
@@ -50,9 +58,9 @@ export function validateExportDocument(value: unknown): ExportDocument {
   return input as unknown as ExportDocument;
 }
 
-function ids(rows: readonly Record<string, unknown>[] | undefined): Set<string> {
-  return new Set((rows ?? []).map((row) => row.id).filter((id): id is string => typeof id === "string"));
+function ids(rows: readonly Record<string, unknown>[] | undefined, field = "id"): Set<string> {
+  return new Set((rows ?? []).map((row) => row[field]).filter((id): id is string => typeof id === "string"));
 }
-function requireReferences(rows: readonly Record<string, unknown>[] | undefined, field: string, targets: ReadonlySet<string>): void {
-  for (const row of rows ?? []) if (row[field] !== null && (typeof row[field] !== "string" || !targets.has(row[field] as string))) throw new Error(`EXPORT_REFERENCE_INVALID:${field}`);
+function requireReferences(rows: readonly Record<string, unknown>[] | undefined, field: string, targets: ReadonlySet<string>, nullable = true): void {
+  for (const row of rows ?? []) if (!(nullable && row[field] === null) && (typeof row[field] !== "string" || !targets.has(row[field] as string))) throw new Error(`EXPORT_REFERENCE_INVALID:${field}`);
 }

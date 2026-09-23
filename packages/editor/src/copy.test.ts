@@ -23,6 +23,15 @@ describe("lyric copy contract", () => {
     });
   });
 
+  it("filters spaced Extend subtags recognized by songform without changing partial copy", () => {
+    const body = "[Verse]\n앞\n[Extend : 3:00]\n뒤\n[ Extend\t: 4:00 ]\n끝";
+    const sections = parseSongForm(body);
+    expect(sections.map((section) => section.label)).toEqual(["Verse", "Extend", "Extend"]);
+    expect(copyWholeLyric(body)).toBe("[Verse]\n앞\n뒤\n끝");
+    expect(copySongFormSections(body, sections, [sections[1]!.id])).toBe("[Extend : 3:00]\n뒤\n");
+    expect(copyWholeLyric("[Extend ]\n[Extendable : 3:00]\n문장 [Extend : 3:00]")).toBe("[Extend ]\n[Extendable : 3:00]\n문장 [Extend : 3:00]");
+  });
+
   it("copies one exact tag-inclusive section including blank lines", () => {
     const body = "머리말\n[Verse: whisper]\n첫 줄\n\n둘째 줄\n[Hook]\n후렴";
     const sections = parseSongForm(body);

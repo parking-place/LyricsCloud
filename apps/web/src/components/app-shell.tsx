@@ -4,7 +4,7 @@ import type { MouseEvent, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { clearAccountCache, clearOtherAccountCaches, coordinateAccountLogout, downloadRecoveryDrafts, guardWorkspaceNavigation } from "../lib/account-cache.js";
-import { trapDialogTab } from "../lib/dialog-focus.js";
+import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 import { commandForKeyboardEvent, isEditableShortcutTarget, requestShortcutNavigation } from "../lib/shortcut-runtime.js";
 import { PROFILE_UPDATED_EVENT, profileChannelName, type ProfileView } from "../lib/profile-state.js";
 import { Brand, BrandMark } from "./auth-screen.js";
@@ -76,8 +76,6 @@ export function WorkspaceShell({
   const mainShell = useRef<HTMLDivElement>(null);
   const pausedFocus = useRef<HTMLElement | null>(null);
   const guard = useRef<ReturnType<typeof coordinateAccountLogout> | null>(null);
-  const mobileMoreButton = useRef<HTMLButtonElement>(null);
-  const mobileMoreDialog = useRef<HTMLElement>(null);
   const homePending = useRef(false);
   const homeComposing = useRef(false);
   const closeShortcutHelp = useCallback(() => setShortcutHelpOpen(false), []);
@@ -99,14 +97,16 @@ export function WorkspaceShell({
       const latest = (event as CustomEvent<ProfileView>).detail;
       if (latest?.userId === profile.userId) setShownProfile(latest);
     };
-    void refreshProfile();
+    // The page already resolved this profile. Revalidate on external changes,
+    // including a restored document, rather than fetching it again on hydration.
+    const pageShown = (event: PageTransitionEvent) => { if (event.persisted) void refreshProfile(); };
     window.addEventListener("focus", refreshProfile);
     window.addEventListener("online", refreshProfile);
-    window.addEventListener("pageshow", refreshProfile);
+    window.addEventListener("pageshow", pageShown);
     window.addEventListener(PROFILE_UPDATED_EVENT, updated);
     channel?.addEventListener("message", refreshProfile);
     return () => { mounted = false; window.removeEventListener("focus", refreshProfile);
-      window.removeEventListener("online", refreshProfile); window.removeEventListener("pageshow", refreshProfile);
+      window.removeEventListener("online", refreshProfile); window.removeEventListener("pageshow", pageShown);
       window.removeEventListener(PROFILE_UPDATED_EVENT, updated); channel?.removeEventListener("message", refreshProfile); channel?.close(); };
   }, [profile.userId]);
 
@@ -141,21 +141,6 @@ export function WorkspaceShell({
       setHomeMessage(`저장 상태를 확인하지 못해 ${home ? "홈으로" : "다른 화면으로"} 이동하지 않았습니다. 연결을 확인한 뒤 다시 시도하세요.`);
     }).finally(() => { homePending.current = false; });
   }
-
-  useEffect(() => {
-    if (!mobileMoreOpen) return;
-    const frame = requestAnimationFrame(() => mobileMoreDialog.current?.querySelector<HTMLAnchorElement>("a")?.focus());
-    function keyboard(event: KeyboardEvent) {
-      if (event.key === "Escape") { event.preventDefault(); closeMobileMore(); }
-      else trapDialogTab(event, "[data-mobile-more-dialog]");
-    }
-    document.addEventListener("keydown", keyboard);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.removeEventListener("keydown", keyboard);
-      requestAnimationFrame(() => mobileMoreButton.current?.focus());
-    };
-  }, [closeMobileMore, mobileMoreOpen]);
 
   useEffect(() => {
     let composing = false;
@@ -328,11 +313,12 @@ export function WorkspaceShell({
       <span className="mobile-nav-spacer" aria-hidden="true" />
       <a href="/search" className={`mobile-nav-item${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}><span aria-hidden="true">⌕</span><strong>검색</strong></a>
       <a href="/favorites" aria-label="즐겨찾기" className={`mobile-nav-item mobile-favorites-direct${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><strong aria-hidden="true">저장</strong></a>
-      <button ref={mobileMoreButton} type="button" className={`mobile-nav-item mobile-more-button${["favorites", "recent", "templates", "trash", "settings"].includes(active) ? " active" : ""}`}
+      <button type="button" className={`mobile-nav-item mobile-more-button${["favorites", "recent", "templates", "trash", "settings"].includes(active) ? " active" : ""}`}
         aria-haspopup="dialog" aria-expanded={mobileMoreOpen} onClick={() => setMobileMoreOpen(true)}><span aria-hidden="true">•••</span><strong>더보기</strong></button>
     </nav>
     {mobileMoreOpen ? <div className="mobile-more-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) closeMobileMore(); }}>
-      <section ref={mobileMoreDialog} className="mobile-more-sheet" role="dialog" aria-modal="true" aria-labelledby="mobile-more-title" data-mobile-more-dialog>
+      <section className="mobile-more-sheet" role="dialog" aria-modal="true" aria-labelledby="mobile-more-title" data-mobile-more-dialog>
+        <DialogFocusBoundary selector="[data-mobile-more-dialog]" onClose={closeMobileMore} initialFocus="a" />
         <div className="sheet-handle" aria-hidden="true" />
         <header><div><p className="eyebrow">Workspace</p><h2 id="mobile-more-title">더보기</h2></div><button type="button" onClick={closeMobileMore}>닫기</button></header>
         <nav aria-label="모바일 추가 메뉴" onClick={navigateWorkspace}>

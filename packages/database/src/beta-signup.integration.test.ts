@@ -19,6 +19,74 @@ describe.runIf(enabled)("PostgreSQL beta signup", () => {
     await cleanup();
   });
 
+  it("preserves tombstones and refuses a new index kid after refresh", async () => {
+    const now = new Date("2026-09-09T12:00:00.000Z");
+    const randomSource = (size: number) => Buffer.alloc(size, 0);
+    await issueBetaCodes(pool!, { environment: "test", count: 1, keys, now, randomSource });
+    await refreshUnusedBetaCodes(pool!, "test", now);
+    const tombstonesBefore = (await pool!.query("select * from beta_codes where environment='test' order by id")).rows;
+    expect(tombstonesBefore).toHaveLength(1);
+    expect(tombstonesBefore[0]).toMatchObject({
+      digest_kid: keys.indexKid, revoked_at: now, sealed_code: null, seal_nonce: null, seal_tag: null
+    });
+    await expect(issueBetaCodes(pool!, { environment: "test", count: 1,
+      keys: { ...keys, indexKid: "unsupported-next", indexKey: Buffer.alloc(32, 99) }, now, randomSource
+    })).rejects.toThrow("BETA_INDEX_KEY_CHANGE_UNSUPPORTED");
+    expect((await pool!.query("select * from beta_codes where environment='test' order by id")).rows)
+      .toEqual(tombstonesBefore);
+    await expect(issueBetaCodes(pool!, { environment: "test", count: 1, keys, now, randomSource }))
+      .rejects.toThrow("BETA_CODE_COLLISION_LIMIT");
+    expect((await pool!.query(`select
+      (select count(*)::int from beta_codes) codes,
+      (select count(*)::int from beta_code_batches) batches,
+      (select count(*)::int from beta_codes where revoked_at is not null and sealed_code is null) tombstones`)).rows[0])
+      .toEqual({ codes: 1, batches: 1, tombstones: 1 });
+  });
+
+  it.each(["intent", "code"] as const)("rejects %s expiry after an actual database lock wait", async (expires) => {
+    const now = new Date("2026-09-09T12:00:00.000Z");
+    let current = now;
+    const code = (await issueBetaCodes(pool!, { environment: "test", count: 1, keys, now }))[0]!.code;
+    const identity = syntheticIdentity(`expired-${expires}`, `expired-${expires}@example.test`);
+    const intentDigest = digest(`expired-${expires}`);
+    await register(intentDigest, code, identity.email, now);
+    if (expires === "code") await pool!.query("update beta_codes set expires_at=$1 where environment='test'",
+      [new Date(now.getTime() + 1_000)]);
+    const blocker = await pool!.connect();
+    let attempt: Promise<unknown> | undefined;
+    try {
+      await blocker.query("begin");
+      const pid = (await blocker.query("select pg_backend_pid() pid")).rows[0].pid;
+      if (expires === "intent") {
+        await blocker.query("select pg_advisory_xact_lock(hashtextextended($1,0))", ["lyricscloud-beta-code:test"]);
+      } else {
+        await blocker.query("select id from beta_codes where environment='test' for update");
+      }
+      // Attach the rejection assertion before releasing the blocker.
+      attempt = expect(store!.redeemBetaSignup({ ...redemption(intentDigest, identity, now),
+        currentTime: () => current })).rejects.toThrow("BETA_SIGNUP_REJECTED");
+      let waiting = false;
+      for (let count = 0; count < 100; count += 1) {
+        waiting = (await pool!.query(`select exists(select 1 from pg_stat_activity
+          where datname=current_database() and $1::int=any(pg_blocking_pids(pid))) waiting`, [pid])).rows[0].waiting;
+        if (waiting) break;
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+      expect(waiting).toBe(true);
+      current = new Date(now.getTime() + (expires === "intent" ? 600_000 : 1_000));
+      await blocker.query("commit");
+      await attempt;
+      expect((await pool!.query(`select
+        (select count(*)::int from beta_codes where consumed_at is not null) consumed,
+        (select count(*)::int from admission_grants) grants,
+        (select count(*)::int from beta_redemptions) receipts`)).rows[0]).toEqual({ consumed: 0, grants: 0, receipts: 0 });
+    } finally {
+      await blocker.query("rollback");
+      blocker.release();
+      await attempt;
+    }
+  });
+
   it("atomically consumes one code into one verified grant and recovers after a lost response", async () => {
     const now = new Date("2026-09-09T12:00:00.000Z");
     const code = (await issueBetaCodes(pool!, { environment: "test", count: 1, keys, now }))[0]!.code;

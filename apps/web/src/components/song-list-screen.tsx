@@ -51,11 +51,14 @@ interface SongMoveBody {
 }
 
 interface PendingSongMove {
+  readonly generation: number;
   readonly body: SongMoveBody;
   readonly title: string;
   readonly snapshot: Song[];
   readonly optimistic: Song[];
 }
+
+interface MetadataQueueEntry { desired: boolean; confirmed: boolean; running: boolean; confirmedPinOrder: number | null }
 
 const STATUS_LABELS: Record<SongStatus, string> = {
   idea: "아이디어",
@@ -101,10 +104,22 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [retryMove, setRetryMove] = useState<PendingSongMove | null>(null);
   const requestSequence = useRef(0);
+  const loadingMoreSequence = useRef<number | null>(null);
+  const metadataQueue = useRef(new Map<string, MetadataQueueEntry>());
   const moveInFlight = useRef(false);
   const loadButton = useRef<HTMLButtonElement>(null);
   const pageRef = useRef<HTMLElement>(null);
   const restoredScrollKey = useRef("");
+
+  function updateQuery(patch: Partial<SongListQuery>) {
+    const current = { search, status, work, sort };
+    if (!Object.entries(patch).some(([key, value]) => current[key as keyof SongListQuery] !== value)) return;
+    const next = { ...current, ...patch };
+    ++requestSequence.current;
+    setRetryMove(null); setDraggedId(null); setNotice("");
+    setLoading(true); setLoadingMore(false); setNextCursor(null); setError("");
+    setSearch(next.search); setStatus(next.status); setWork(next.work); setSort(next.sort);
+  }
 
   useEffect(() => {
     const timer = window.setTimeout(() => setAppliedSearch(search.trim()), 300);
@@ -112,6 +127,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
   }, [search]);
 
   useEffect(() => {
+    if (search.trim() !== appliedSearch) return;
     const params = new URLSearchParams();
     if (appliedSearch) params.set("search", appliedSearch);
     if (status) params.set("status", status);
@@ -120,8 +136,10 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     window.history.replaceState(null, "", `/songs${params.size ? `?${params}` : ""}`);
 
     const sequence = ++requestSequence.current;
+    setRetryMove(null); setDraggedId(null);
     const controller = new AbortController();
     setLoading(true);
+    setLoadingMore(false); setNextCursor(null);
     setError("");
     const apiParams = new URLSearchParams({ sort, limit: "12" });
     if (appliedSearch) apiParams.set("search", appliedSearch);
@@ -148,11 +166,13 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
         setError(caught instanceof Error ? caught.message : "목록을 불러오지 못했습니다.");
       })
       .finally(() => { if (sequence === requestSequence.current) setLoading(false); });
-    return () => controller.abort();
-  }, [appliedSearch, status, work, sort, retryKey]);
+    return () => { controller.abort(); ++requestSequence.current; };
+  }, [search, appliedSearch, status, work, sort, retryKey]);
 
   async function loadMore(restoreFocus = true) {
-    if (!nextCursor || loadingMore) return;
+    if (loading || !nextCursor || loadingMoreSequence.current === requestSequence.current) return;
+    const sequence = requestSequence.current;
+    loadingMoreSequence.current = sequence;
     let loaded = false;
     setLoadingMore(true);
     setError("");
@@ -164,42 +184,67 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
       const response = await fetch(`/api/songs?${params}`, { cache: "no-store" });
       if (!response.ok) throw new Error("다음 곡을 불러오지 못했습니다.");
       const result = await response.json() as SongListResponse;
+      if (sequence !== requestSequence.current) return;
       setSongs((current) => [...current, ...result.items]);
       setNextCursor(result.nextCursor);
       setOrderVersion(result.orderVersion);
       loaded = true;
     } catch (caught) {
+      if (sequence !== requestSequence.current) return;
       setError(caught instanceof Error ? caught.message : "다음 곡을 불러오지 못했습니다.");
     } finally {
-      setLoadingMore(false);
-      if (loaded && restoreFocus) window.requestAnimationFrame(() => window.requestAnimationFrame(() => loadButton.current?.focus()));
+      if (sequence === requestSequence.current) {
+        loadingMoreSequence.current = null; setLoadingMore(false);
+        if (loaded && restoreFocus) window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+          if (sequence === requestSequence.current) loadButton.current?.focus();
+        }));
+      }
     }
   }
 
-  async function toggle(song: Song, field: "isFavorite" | "isPinned") {
-    const value = !song[field];
-    setNotice("");
-    setSongs((current) => current.map((item) => item.id === song.id ? { ...item, [field]: value } : item));
-    const endpoint = field === "isFavorite" ? "favorite" : "pin";
-    const body = field === "isPinned" ? { value, pinOrder: value ? 0 : null } : { value };
-    try {
-      const response = await fetch(`/api/songs/${song.id}/${endpoint}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      if (!response.ok) throw new Error();
-      const result = await response.json() as { song: Song };
-      setSongs((current) => current.map((item) => item.id === song.id ? result.song : item));
-      setNotice(`${song.title}의 ${field === "isFavorite" ? "즐겨찾기" : "고정"}를 ${value ? "설정" : "해제"}했습니다.`);
-    } catch {
-      setSongs((current) => current.map((item) => item.id === song.id ? song : item));
-      setNotice("변경을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+  function toggle(song: Song, field: "isFavorite" | "isPinned") {
+    const key = `${song.id}:${field}`;
+    let entry = metadataQueue.current.get(key);
+    if (entry) entry.desired = !entry.desired;
+    else {
+      entry = { desired: !song[field], confirmed: song[field], running: false, confirmedPinOrder: song.pinOrder };
+      metadataQueue.current.set(key, entry);
     }
+    const apply = (value: boolean, pinOrder = value ? 0 : null) => setSongs((current) => current.map((item) => item.id === song.id
+      ? { ...item, ...(field === "isPinned" ? { isPinned: value, pinOrder } : { isFavorite: value }) } : item));
+    apply(entry.desired); setNotice("");
+    if (entry.running) return;
+    entry.running = true;
+    const endpoint = field === "isFavorite" ? "favorite" : "pin";
+    void (async () => {
+      while (entry!.confirmed !== entry!.desired) {
+        const sent = entry!.desired;
+        try {
+          const response = await fetch(`/api/songs/${song.id}/${endpoint}`, {
+            method: "PUT", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(field === "isPinned" ? { value: sent, pinOrder: sent ? 0 : null } : { value: sent })
+          });
+          if (!response.ok) throw new Error();
+          entry!.confirmed = sent;
+          if (field === "isPinned") entry!.confirmedPinOrder = sent ? 0 : null;
+          if (entry!.desired === sent) {
+            apply(sent);
+            setNotice(`${song.title}의 ${field === "isFavorite" ? "즐겨찾기" : "고정"}를 ${sent ? "설정" : "해제"}했습니다.`);
+          }
+        } catch {
+          if (entry!.desired === sent) {
+            entry!.desired = entry!.confirmed; apply(entry!.confirmed, entry!.confirmedPinOrder);
+            setNotice("변경을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+          }
+        }
+      }
+      entry!.running = false;
+      if (metadataQueue.current.get(key) === entry) metadataQueue.current.delete(key);
+    })();
   }
 
   async function submitMove(pending: PendingSongMove) {
-    if (moveInFlight.current) return;
+    if (moveInFlight.current || pending.generation !== requestSequence.current) return;
     moveInFlight.current = true;
     setMovingId(pending.body.itemId);
     setRetryMove(null);
@@ -211,6 +256,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pending.body)
       });
+      if (pending.generation !== requestSequence.current) return;
       if (response.status === 409) {
         setSongs(pending.snapshot);
         setSort("manual");
@@ -220,10 +266,12 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
       }
       if (!response.ok) throw new Error("SAVE_FAILED");
       const result = await response.json() as { orderVersion: number };
+      if (pending.generation !== requestSequence.current) return;
       setOrderVersion(result.orderVersion);
       setSort("manual");
       setNotice(`${pending.title} 순서를 사용자 정렬로 저장했습니다.`);
     } catch {
+      if (pending.generation !== requestSequence.current) return;
       setSongs(pending.snapshot);
       setRetryMove(pending);
       setNotice("곡 순서를 저장하지 못했습니다. 원래 순서로 복원했습니다.");
@@ -245,6 +293,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     const optimistic = songs.map((item) => item.isPinned === song.isPinned ? nextGroup[groupIndex++]! : item);
     const newIndex = nextGroup.findIndex(({ id }) => id === itemId);
     void submitMove({
+      generation: requestSequence.current,
       title: song.title,
       snapshot: songs,
       optimistic,
@@ -252,7 +301,8 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
         requestId: crypto.randomUUID(),
         itemId,
         beforeId: nextGroup[newIndex + 1]?.id ?? null,
-        afterId: nextGroup[newIndex - 1]?.id ?? null,
+        // Nonmanual display can reverse the persisted ranks of these neighbours.
+        afterId: sort === "manual" || !nextGroup[newIndex + 1] ? nextGroup[newIndex - 1]?.id ?? null : null,
         expectedVersion: orderVersion
       }
     });
@@ -307,12 +357,12 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     </header>
 
     <div className="song-toolbar">
-      <label className="search-field"><span className="sr-only">곡 검색</span><span aria-hidden="true">⌕</span><input value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} placeholder="곡 제목·메모 또는 가사 검색" type="search" /></label>
-      <label className="select-field"><span>상태</span><select aria-label="곡 상태 필터" value={status} onChange={(event) => setStatus(event.target.value as SongStatus | "")}><option value="">전체 상태</option>{STATUSES.map((value) => <option key={value} value={value}>{STATUS_LABELS[value]}</option>)}</select></label>
-      <label className="select-field"><span>작업</span><select aria-label="곡 작업 조건 필터" value={work} onChange={(event) => setWork(event.target.value as SongWorkFilter)}>{WORK_FILTERS.map((value) => <option key={value} value={value}>{WORK_FILTER_LABELS[value]}</option>)}</select></label>
-      <label className="select-field"><span>정렬</span><select aria-label="곡 정렬" value={sort} onChange={(event) => setSort(event.target.value as SongSort)}>{SORTS.map((value) => <option key={value} value={value}>{SORT_LABELS[value]}</option>)}</select></label>
+      <label className="search-field"><span className="sr-only">곡 검색</span><span aria-hidden="true">⌕</span><input value={search} maxLength={200} onChange={(event) => updateQuery({ search: event.target.value })} placeholder="곡 제목·메모 또는 가사 검색" type="search" /></label>
+      <label className="select-field"><span>상태</span><select aria-label="곡 상태 필터" value={status} onChange={(event) => updateQuery({ status: event.target.value as SongStatus | "" })}><option value="">전체 상태</option>{STATUSES.map((value) => <option key={value} value={value}>{STATUS_LABELS[value]}</option>)}</select></label>
+      <label className="select-field"><span>작업</span><select aria-label="곡 작업 조건 필터" value={work} onChange={(event) => updateQuery({ work: event.target.value as SongWorkFilter })}>{WORK_FILTERS.map((value) => <option key={value} value={value}>{WORK_FILTER_LABELS[value]}</option>)}</select></label>
+      <label className="select-field"><span>정렬</span><select aria-label="곡 정렬" value={sort} onChange={(event) => updateQuery({ sort: event.target.value as SongSort })}>{SORTS.map((value) => <option key={value} value={value}>{SORT_LABELS[value]}</option>)}</select></label>
     </div>
-    <div className="status-chips" aria-label="곡 상태 빠른 필터"><button className={!status ? "active" : ""} aria-pressed={!status} onClick={() => setStatus("")}>전체</button>{STATUSES.map((value) => <button key={value} className={status === value ? "active" : ""} aria-pressed={status === value} onClick={() => setStatus(value)}>{STATUS_LABELS[value]}</button>)}</div>
+    <div className="status-chips" aria-label="곡 상태 빠른 필터"><button className={!status ? "active" : ""} aria-pressed={!status} onClick={() => updateQuery({ status: "" })}>전체</button>{STATUSES.map((value) => <button key={value} className={status === value ? "active" : ""} aria-pressed={status === value} onClick={() => updateQuery({ status: value })}>{STATUS_LABELS[value]}</button>)}</div>
     <LibraryViewModeSelector label="곡 목록" state={libraryView} />
 
     <div className="list-summary" aria-live="polite"><strong>{loading ? "곡을 불러오는 중" : `총 ${totalCount}곡`}</strong>{filtered ? <span>현재 검색 조건</span> : <span>내 개인 작업 공간</span>}</div>
@@ -320,7 +370,7 @@ export function SongListScreen({ initialQuery }: { initialQuery: SongListQuery }
     {error ? <div className="list-error" role="alert"><strong>{error}</strong><button type="button" onClick={() => setRetryKey((value) => value + 1)}>다시 시도</button></div> : null}
 
     {loading ? <div className={`song-grid library-grid library-view-${libraryView.viewMode}`} aria-label="곡 목록 불러오는 중">{Array.from({ length: 6 }, (_, index) => <div className="song-card skeleton" key={index} aria-hidden="true" />)}</div> : null}
-    {!loading && !error && songs.length === 0 ? <div className="empty-state song-empty"><span aria-hidden="true">{filtered ? "⌕" : "♪"}</span><h2>{filtered ? "조건에 맞는 곡이 없어요" : "아직 만든 곡이 없어요"}</h2><p>{filtered ? "검색어나 필터를 바꾸면 다른 곡을 찾을 수 있어요." : "떠오른 아이디어를 첫 곡으로 기록해보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={() => { setSearch(""); setStatus(""); setWork("all"); }}>검색 조건 지우기</button> : <a className="primary-link" href={newSongHref}>첫 곡 만들기</a>}</div> : null}
+    {!loading && !error && songs.length === 0 ? <div className="empty-state song-empty"><span aria-hidden="true">{filtered ? "⌕" : "♪"}</span><h2>{filtered ? "조건에 맞는 곡이 없어요" : "아직 만든 곡이 없어요"}</h2><p>{filtered ? "검색어나 필터를 바꾸면 다른 곡을 찾을 수 있어요." : "떠오른 아이디어를 첫 곡으로 기록해보세요."}</p>{filtered ? <button className="secondary-button" type="button" onClick={() => updateQuery({ search: "", status: "", work: "all" })}>검색 조건 지우기</button> : <a className="primary-link" href={newSongHref}>첫 곡 만들기</a>}</div> : null}
     {!loading && songs.length > 0 ? <div className={`song-grid library-grid library-view-${libraryView.viewMode}`} data-view-mode={libraryView.viewMode}>{songs.map((song) => {
       const { position, groupSize } = groupPositions.get(song.id)!;
       return <SongCard song={song} returnTo={returnTo} key={song.id} onOpen={rememberScroll} onToggle={toggle}

@@ -63,7 +63,7 @@ WC-06의 범위 치환/IME와 checkpoint 변환은 b P2-03/P2-04, WC-10의 가�
 | WC-17 | C3 | environment validator, allowlist provisioner, environment/HMAC 회귀 | P1-06 |
 | WC-18 | C1+C3 | Next build tracing, CI strict tag gate, publication/final-release 회귀; windows-native 제외 | P1-04/05 |
 
-P1은 WC-17과 WC-18을 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 `ported → verified`했다. [P1](1phase.md)의 로컬 경계·원격 CI·네 signed dev image·동일 SHA 공개 개발 인수를 근거로 한다. P2는 WC-01/02/03/04/05/06/09/10 중 가사 복제/12를 기능 SHA `3915a71f5abd9116bdd097ee4cc45cc6c71eadf0`에서 `ported → verified`했다. [P2](2phase.md)의 전체 로컬 410 PASS, PR/push CI, 네 signed dev image, 같은 SHA 개발 서버·공개 PC/mobile smoke를 근거로 한다. WC-07/08/10 중 곡 부분 저장/11/13~16은 여전히 `planned`이며 P3 전 완료로 읽지 않는다. native 앱·17 native route·1150 파일·1.1.8 manifest/version/STATUS·Windows CI job은 묶음에서 제외한다.
+P1은 WC-17과 WC-18을 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 `ported → verified`했다. [P1](1phase.md)의 로컬 경계·원격 CI·네 signed dev image·동일 SHA 공개 개발 인수를 근거로 한다. P2는 WC-01/02/03/04/05/06/09/10 중 가사 복제/12를 기능 SHA `3915a71f5abd9116bdd097ee4cc45cc6c71eadf0`에서 `ported → verified`했다. [P2](2phase.md)의 전체 로컬 410 PASS, PR/push CI, 네 signed dev image, 같은 SHA 개발 서버·공개 PC/mobile smoke를 근거로 한다. P3는 WC-07/08/10 중 곡 부분 저장/11/13~16을 기능 SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`에서 `ported → verified`했다. [P3](3phase.md)의 전체 로컬/원격 419 PASS, PR/push CI, 네 signed dev image와 같은 SHA 개발 공개 목록/export/trash smoke를 근거로 한다. 이는 P4의 22개 원인 최종 해소·실기기/DB/rollback PASS가 아니다. native 앱·17 native route·1150 파일·1.1.8 manifest/version/STATUS·Windows CI job은 묶음에서 제외한다.
 
 ## 충돌·제외 경계
 

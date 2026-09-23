@@ -49,6 +49,7 @@ type UpdateAudit =
 
 export class CollaborationStore {
   readonly #pool: Pool;
+  #projectionRetryCursor: string | null = null;
   constructor(databaseUrl: string) { this.#pool = createDatabasePool(databaseUrl, 10); }
   close() { return this.#pool.end(); }
 
@@ -341,7 +342,8 @@ export class CollaborationStore {
       const loaded = await this.#loadLocked(client, ownerId, documentKey, true);
       if (!loaded) return false;
       const document = materialize(loaded.snapshot, loaded.updates);
-      await projectDocument(client, loaded.resourceType, loaded.resourceId, ownerId, document); document.destroy();
+      try { await projectDocument(client, loaded.resourceType, loaded.resourceId, ownerId, document); }
+      finally { document.destroy(); }
       await client.query("update sync_documents set projected_at=statement_timestamp(),projection_error_code=null,updated_at=statement_timestamp() where document_key=$1", [documentKey]);
       return true;
     });
@@ -442,13 +444,31 @@ export class CollaborationStore {
   }
 
   async retryPendingProjections(limit = 20) {
-    const pending = await this.#pool.query<{ owner_id: string; document_key: string }>(`select owner_id,document_key
-      from sync_documents where projection_error_code is not null order by updated_at limit $1`, [limit]);
-    let recovered = 0;
-    for (const item of pending.rows) {
-      try { if (await this.retryProjection(item.owner_id, item.document_key)) recovered++; } catch { /* leave the retry marker in place */ }
+    const size = Number.isFinite(limit) ? Math.max(1, Math.min(200, Math.floor(limit))) : 20;
+    const page = (cursor: string | null) => this.#pool.query<{ owner_id: string; document_key: string }>(`
+      select d.owner_id,d.document_key from sync_documents d
+      join resources r on r.id=d.resource_id and r.owner_id=d.owner_id
+      where d.projection_error_code is not null and r.deleted_at is null
+        and ($2::uuid is null or d.document_key>$2::uuid)
+      order by d.document_key limit $1`, [size, cursor]);
+    // A stable keyset scan gives every pending live document a turn even when
+    // earlier failures cannot be repaired. Wrap in at most one extra query.
+    // Keep error markers (including trash) and source timestamps intact.
+    let pending = await page(this.#projectionRetryCursor);
+    if (!pending.rows.length && this.#projectionRetryCursor !== null) {
+      this.#projectionRetryCursor = null;
+      pending = await page(null);
     }
-    return { attempted: pending.rowCount ?? 0, recovered };
+    let recovered = 0;
+    let failed = 0;
+    for (const item of pending.rows) {
+      try {
+        if (await this.retryProjection(item.owner_id, item.document_key)) recovered++;
+        else failed++;
+      } catch { failed++; }
+      finally { this.#projectionRetryCursor = item.document_key; }
+    }
+    return { attempted: pending.rows.length, recovered, failed };
   }
 
   async #loadLocked(client: PoolClient, ownerId: string, key: string, lock: boolean) {

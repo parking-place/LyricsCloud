@@ -2,17 +2,29 @@
 
 ```yaml
 current_version: "1.1.7b"
-current_phase: "../3.Redesign-phase/1.1.7.b/2phase.md"
+current_phase: "../3.Redesign-phase/1.1.7.b/3phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
-updated_at: "2026-09-23"
+updated_at: "2026-09-24"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "사용자 재개 지시를 기다린 뒤 1.1.7b P3를 P2 문서 인수 SHA에서 착수한다; 현재 일시 중단"
+next_action: "1.1.7b P3 문서 인수 SHA에서 P4 전용 브랜치를 열고 22개 원인·DB 호환·rollback을 검증한다"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-24 — 1.1.7b P3 완료·P4 진입 대기
+
+P3 기능 SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`의 [PR #155 Actions 35876265426](https://github.com/parking-place/LyricsCloud/actions/runs/35876265426) verify PASS, [push Actions 35876233972](https://github.com/parking-place/LyricsCloud/actions/runs/35876233972) verify·네 signed dev image PASS다. 원격 Unit/DB **494 PASS/8 조건부 skip**, Chromium **419 PASS/49 조건부 skip**, release browser matrix **10 PASS**와 네 서비스의 SHA·P3 dev/Dev 별칭 동일 digest·서명/provenance를 확인했다. 같은 SHA 개발 서버의 checkout·BUILD_ID·공개 live/ready `1.1.7b/dev/p3`, 네 서비스 health, migration 31건 지문/native 1150/profile 1151 보존을 확인했다. 공개 합성 owner로 PC 목록/즐겨찾기, owner export/비로그인 차단, 모바일 곡, 휴지통 smoke PASS 후 계정·자료를 제거했다. 첫 두 smoke의 selector 오류는 테스트 도구를 보정하고 최종 재실행으로 검증했으며 제품 PASS로 소급하지 않는다. P4/P5의 22개 원인 필수 해소, 세 DB 유형·rollback, 실제 OS IME/물리 기기/AT는 미완료이고 사용자는 현재 실기기 제공이 어렵다고 답했다. [P3 최종 증거](../3.Redesign-phase/1.1.7.b/3phase.md)를 따른다. `main`·정식 tag/image·릴리스 서버·native 파일은 변경하지 않았다.
+
+### 2026-09-23 — 1.1.7b P3 착수
+
+사용자 재개 지시로 P2 문서 인수 SHA `dcfa2b894e04b988076df08d490874af34195eb9`에서 `phase/1.1.7b-p3-data-lists-recovery`를 분기했다. 담당 Codex, 작업 `LC-RD-117B-P3-01~09`; source head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`/기능 `0375825fe004fc74869250eefa14add267c4b3ae`를 기준으로 apps/collaboration, packages/auth/database/domain/editor copy, web list/search/song/trash/dialog/style 및 대응 시험을 검토한다. 착수 당시에는 P3 코드·CI·image·개발 인수가 미완료였다. 기존 P2 개발 SHA와 자료·보호 계획 문서·`main`·정식 tag/image·릴리스 서버를 보존한다.
+
+### 2026-09-23 — 1.1.7b P3 로컬 후보
+
+WC-07/08/10(곡)/11/13~16의 source 변경과 대응 시험을 선택 통합하고 P2 고유 보정은 유지했다. Docker check·production build, 일반 Unit **374 PASS/128 조건부 skip**, 격리 DB 관련 **21 PASS/8 조건부 skip + beta DB 8 PASS**, production Chromium PC/mobile 전체 **419 PASS/49 조건부 skip/0 FAIL**이다. 최초 DB 이름 제한 및 Playwright 채널 설정 오류는 수정한 실행 환경에서 재검증했고 제품 PASS로 소급하지 않는다. source의 red→green은 선행 증거이고 현재 b tree의 post-port 검증과 구별한다. 원격 CI·네 signed dev image·동일 SHA 개발 공개 smoke는 아직 미실행이므로 P3는 `in_progress`다. [P3 로컬 기록](../3.Redesign-phase/1.1.7.b/3phase.md)을 따른다.
 
 사용자 지시로 다음 제품 계획을 **[1.1.7b 웹 안정화 통합](../3.Redesign-phase/1.1.7.b/README.md)**으로 변경했다. 실제 순서는 **1.1.7a → 1.1.7b → 1.2.0 → 1.2.1~1.2.8**이다. b에서 1.1.8 웹 안정화 코드·회귀를 먼저 통합하고 같은 SHA의 개발 인수까지 완료한 뒤, 그 b SHA에서 코발트 리디자인을 시작한다. 완료된 1.1.7a tag·운영 배포 기록은 유지한다. 2026-09-23 P1을 `phase/1.1.7b-p1-contract-runtime`의 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 완료하고 P2를 착수했다. 1.1.8~1.1.14 네이티브 잔여 계획은 계속 보류한다.
 
@@ -252,11 +264,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.7a P4 | complete | 후보 `7621e8e`, 첫 CI `35043201011` performance CV FAIL 기록, 동일 SHA 재실행 `35043634916` Unit 393/E2E 393/release 10·네 signed dev image PASS·동일 SHA 공개 재시작/새 session·두 owner 격리·홈 guard 인수 완료. 실제 OS/기기·AT 미실행 |
 | 1.1.7b P1 | complete | 기능 `a04bbcb`, PR `35849543496` verify·push `35849536417` attempt 2 verify/네 signed dev image PASS, 동일 SHA 개발 공개 live/ready·auth/CSS·네 health와 native 1150/1151 DB 지문 보존. P2~P5 작업은 미완료 |
 | 1.1.7b P2 | complete | 기능 `3915a71`, PR `35866450768` verify·push `35866445486` verify/네 signed dev image PASS, 동일 SHA 개발 공개 live/ready·PC/mobile 가사/Suno/PWA smoke와 합성 계정 정리 완료. P3 착수 전 사용자 요청으로 일시 중단 |
+| 1.1.7b P3 | in_progress | P2 문서 인수 `dcfa2b8`에서 전용 브랜치 분기; WC-07/08/10(곡)/11/13~16의 코드·검증·개발 인수 미완료 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7b/P3 | LC-RD-117B-P3-01~09 | apps/collaboration, packages/auth/database/domain/editor copy, web list/search/song/trash/dialog/style와 대응 시험 | P2 인수 `dcfa2b8`, source head `c230c02`/기능 `0375825`; 보호 계획·native·운영 환경 불변 | 2026-09-23 | in_progress |
 | Codex | 1.1.7b/P2 | LC-RD-117B-P2-01~09 | 편집·저장·탐색·PWA 코드/호출자/시험 통합 | P1 기능 `a04bbcb`, source `c230c02`/기능 `0375825`, 완료 기능 `3915a71`·동일 SHA 개발 공개 인수; 보호 계획 문서 불변 | 2026-09-23 | complete; P3 전 사용자 요청 일시 중단 |
 | Codex | 1.1.7b/P1 | LC-RD-117B-P1-01~08 | 버전/source freeze·release/image/deploy validator·환경 경계·DB matrix·CI/개발 인수 | 기능 `a04bbcb`, PR/push Actions `35849543496`/`35849536417`와 동일 SHA 공개 개발 인수 완료 | 2026-09-23 | complete |
 | Codex | 1.1.7b 선행 통합 계획 (구현 Phase 아님) | PLAN-RD-117B | 3.Redesign-phase/1.1.7.b, 후속 순서·후보 소유권·버전 정책·실행 STATUS의 다음 계획 | 사용자 1.1.8 웹 안정화 선행 통합 지시; source c230c02/기능0375825 | 2026-09-23T12:18+09:00 | documented (5 Phase·42작업·24수용 기준·18 WC 상세 계획 및 문서 검증; 제품 미착수) |

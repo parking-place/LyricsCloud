@@ -1,6 +1,6 @@
 # 1.1.7b 수용·DB 호환·되돌림
 
-**24개 수용 기준 중 P1 담당 계약·첫 환경 검증과 P2 담당 AC-01~06/09/10(가사)/12의 최초 통합 인수를 완료했고, 전체 b 최종 수용은 미완료다.** AC-07/08/10(곡)/11/13~16과 P4/P5의 심화·교차 검증은 아직 실행하지 않았다. 원격 source의 시험 통과와 이번 b 후보 검증을 구별한다. [통합 맵](SOURCE-MAP.md) · [버전 계약](VERSION-CONTRACT.md) · [차단표](BLOCKERS.md).
+**24개 수용 기준 중 P1 담당 계약·첫 환경 검증, P2 담당 AC-01~06/09/10(가사)/12, P3 담당 AC-07/08/10(곡)/11/13~16의 최초 통합 인수를 완료했고, 전체 b 최종 수용은 미완료다.** P4/P5의 22개 원인·실기기·DB·rollback 심화·교차 검증이 남아 있다. 원격 source의 시험 통과와 새 b SHA의 검증을 구별한다. [통합 맵](SOURCE-MAP.md) · [버전 계약](VERSION-CONTRACT.md) · [차단표](BLOCKERS.md).
 
 | 수용 ID | 대상 | 통과 기준 | 담당 |
 |---|---|---|---|
@@ -30,6 +30,8 @@
 | `AC-RD-117B-24` | 동일 SHA 개발 인수·1.2.0 진입 | 원격 branch의 기능 SHA=CI source=image provenance=개발 배포 source가 일치하고 공개 live/ready·핵심 smoke를 통과한다. HANDOFF의 실제 b SHA를 채운 뒤에만 1.2.0 P1을 시작한다. 문서 전용 후속 SHA는 기능 SHA와 별도로 기록한다. | P5 |
 
 P2의 최초 통합 판정 근거는 기능 SHA `3915a71f5abd9116bdd097ee4cc45cc6c71eadf0`의 로컬 전체 Chromium 410 PASS/44 skip, 격리 DB 관련 19 PASS, [PR verify](https://github.com/parking-place/LyricsCloud/actions/runs/35866450768)와 [push verify·네 signed dev image](https://github.com/parking-place/LyricsCloud/actions/runs/35866445486) PASS, 같은 SHA 개발 서버·공개 PC/mobile 저장/재진입 smoke다. AC-10은 **가사 복제 부분만** P2 판정이며 곡 부분 저장은 P3이다. AC-20의 개발 DB migration 31건 지문/native 1150/profile 1151 보존은 P2 배포 후에도 동일하지만 세 환경 전체 수용은 아니다. AC-22의 실제 OS IME·물리 기기·AT와 AC-21 22개 원인 최종 판정은 P4/P5에 남는다. 자세한 입력·실패 이력·합성 계정 정리는 [P2 인수 기록](2phase.md)을 따른다.
+
+P3의 최초 통합 판정 근거는 기능 SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`의 전체 로컬·원격 Chromium **419 PASS/49 조건부 skip**, 원격 Unit/DB **494 PASS/8 조건부 skip**, [PR verify](https://github.com/parking-place/LyricsCloud/actions/runs/35876265426)와 [push verify·네 signed dev image](https://github.com/parking-place/LyricsCloud/actions/runs/35876233972) PASS, 같은 SHA 개발 서버·공개 PC/mobile 목록/즐겨찾기/export/trash smoke다. AC-10의 곡 부분 저장을 P3에서 인수했고 AC-15의 guest 경계는 기존 실제 WS/DB 브라우저 매트릭스와 새 브라우저-sync 회귀로 확인했다. 외부 OAuth provider 장애/복구, 실제 OS IME·기기/AT, 세 DB 유형·rollback 및 22개 원인의 최종 판정은 P4/P5에 남는다. [P3 인수 기록](3phase.md)을 따른다.
 
 ## DB·환경 인수 행렬
 
