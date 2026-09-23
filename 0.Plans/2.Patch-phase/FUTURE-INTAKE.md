@@ -411,3 +411,7 @@ tracked·untracked·hidden 공개 경로의 Future 관련 문서는 다시 4개�
 ## 2026-09-23 — 1.1.7b P2 원격 모바일 시각 기준 보정 push 전 재검수
 
 공개 tracked·untracked·hidden Future 탐색은 다시 4문서이며 입력 blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 129개 ID·체크·본문은 동일하다. 원격 source head도 `c230c024aeb0297b1c130e3f3e8b507a43a7e871`로 이동하지 않았다. 새 후보는 P2 PWA 안내가 보이는 모바일 탐색 기준 5장과 실패/취소 원격 증거 기록뿐이다. 현행 Future 재선정, P3/P4·후속 1.2.x 작업 선소비, ignored/private 원본 강제 공개, 보호 계획·native·main·정식 tag/image·릴리스 서버 변경은 없다.
+
+## 2026-09-23 — 1.1.7b P2 완료 기록 push 전·Phase 완료 검수
+
+tracked 목록과 hidden/untracked 공개 경로의 Future 관련 문서 4개를 재확인했다. 현행 입력 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`, 후보 129개 ID·체크·본문은 앞선 P2 검수와 같고 신규·이동·삭제 Future 후보는 없다. 나머지 세 문서는 검수 절차와 기존 scope/mapping으로 중복 후보가 아니다. 원격 source head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`도 동일하다. 새 배정 없이 P2 기능 SHA `3915a71f5abd9116bdd097ee4cc45cc6c71eadf0`의 CI·signed image·개발 공개 인수만 문서화한다. 사용자 요청에 따라 P3 착수는 보류하며 ignored/private 원본·보호 계획·native·main·정식 tag/image·릴리스 서버는 변경하거나 자동 공개하지 않는다. 이전 P2 검수의 동일 입력을 재참조하고 재선정하지 않는다.

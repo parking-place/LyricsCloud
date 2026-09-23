@@ -1,6 +1,6 @@
 # 1.1.7b 웹 수정 통합 맵
 
-[원격 정적 비교](../BRANCH-COMPARISON-118-P4.md)의 source SHA와 22개 원인 판정은 보존한다. 2026-09-23 사용자 지시로 **18 WC의 최초 코드 통합은 이 b 계획이 담당**한다. 기존 1.2.x 작업 ID는 잔여 보정·확장 수용·코발트 전환 회귀에 유지한다. 아래는 계획상 소유권이며 실제 코드를 채택한 상태가 아니다.
+[원격 정적 비교](../BRANCH-COMPARISON-118-P4.md)의 source SHA와 22개 원인 판정은 보존한다. 2026-09-23 사용자 지시로 **18 WC의 최초 코드 통합은 이 b 계획이 담당**한다. 기존 1.2.x 작업 ID는 잔여 보정·확장 수용·코발트 전환 회귀에 유지한다. 아래 표는 계획상 소유권이며 실제 진행은 하단의 P1/P2 SHA별 기록을 따른다.
 
 ## 후보별 최초 통합과 후속
 
@@ -63,7 +63,7 @@ WC-06의 범위 치환/IME와 checkpoint 변환은 b P2-03/P2-04, WC-10의 가�
 | WC-17 | C3 | environment validator, allowlist provisioner, environment/HMAC 회귀 | P1-06 |
 | WC-18 | C1+C3 | Next build tracing, CI strict tag gate, publication/final-release 회귀; windows-native 제외 | P1-04/05 |
 
-P1은 WC-17과 WC-18만 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 `ported → verified`다. [P1](1phase.md)의 로컬 경계·원격 CI·네 signed dev image·동일 SHA 공개 개발 인수를 근거로 한다. WC-01~16은 위 묶음을 고정했을 뿐 아직 `planned`이며 P2/P3 통합 전 완료로 읽지 않는다. native 앱·17 native route·1150 파일·1.1.8 manifest/version/STATUS·Windows CI job은 묶음에서 제외한다.
+P1은 WC-17과 WC-18을 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 `ported → verified`했다. [P1](1phase.md)의 로컬 경계·원격 CI·네 signed dev image·동일 SHA 공개 개발 인수를 근거로 한다. P2는 WC-01/02/03/04/05/06/09/10 중 가사 복제/12를 기능 SHA `3915a71f5abd9116bdd097ee4cc45cc6c71eadf0`에서 `ported → verified`했다. [P2](2phase.md)의 전체 로컬 410 PASS, PR/push CI, 네 signed dev image, 같은 SHA 개발 서버·공개 PC/mobile smoke를 근거로 한다. WC-07/08/10 중 곡 부분 저장/11/13~16은 여전히 `planned`이며 P3 전 완료로 읽지 않는다. native 앱·17 native route·1150 파일·1.1.8 manifest/version/STATUS·Windows CI job은 묶음에서 제외한다.
 
 ## 충돌·제외 경계
 

@@ -3,20 +3,24 @@
 ```yaml
 current_version: "1.1.7b"
 current_phase: "../3.Redesign-phase/1.1.7.b/2phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-23"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "1.1.7b P2 최종 전체 로컬 회귀 후 새 SHA의 필수 CI·signed dev image·동일 SHA 개발 공개 인수를 검증한다"
+next_action: "사용자 재개 지시를 기다린 뒤 1.1.7b P3를 P2 문서 인수 SHA에서 착수한다; 현재 일시 중단"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
 
 사용자 지시로 다음 제품 계획을 **[1.1.7b 웹 안정화 통합](../3.Redesign-phase/1.1.7.b/README.md)**으로 변경했다. 실제 순서는 **1.1.7a → 1.1.7b → 1.2.0 → 1.2.1~1.2.8**이다. b에서 1.1.8 웹 안정화 코드·회귀를 먼저 통합하고 같은 SHA의 개발 인수까지 완료한 뒤, 그 b SHA에서 코발트 리디자인을 시작한다. 완료된 1.1.7a tag·운영 배포 기록은 유지한다. 2026-09-23 P1을 `phase/1.1.7b-p1-contract-runtime`의 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 완료하고 P2를 착수했다. 1.1.8~1.1.14 네이티브 잔여 계획은 계속 보류한다.
 
-### 2026-09-23 — 1.1.7b P2 로컬 후보
+### 2026-09-23 — 1.1.7b P2 완료, P3 착수 전 일시 중단
+
+P2 기능 SHA `3915a71f5abd9116bdd097ee4cc45cc6c71eadf0`에서 WC-01~06/09/10(가사)/12를 통합했다. 최종 로컬 전체 Chromium **410 PASS / 44 skip / 0 FAIL**, 격리 DB 관련 19 PASS, check·production build PASS다. [PR #154 verify](https://github.com/parking-place/LyricsCloud/actions/runs/35866450768)와 [push verify·네 signed dev image](https://github.com/parking-place/LyricsCloud/actions/runs/35866445486)가 같은 SHA에서 PASS했다. 개발 checkout·BUILD_ID·공개 live/ready `1.1.7b/dev/p2`, 네 서비스 health, 기존 migration 31건 지문/native 1150/profile 1151 보존을 확인했다. 합성 owner로 공개 PC·모바일 가사 저장/재진입, Suno 수동 모델 재진입, PWA 온라인/모바일 넘침 없음 PASS 후 계정을 삭제·부재 확인했다. 이전 실패/취소 CI는 아래 이력처럼 PASS로 소급하지 않는다. 실제 OS IME·물리 기기/AT, 세 DB 유형·rollback·22개 원인 최종 판정과 P3~P5는 미완료다. 사용자 요청으로 **P3 브랜치·코드·배포는 시작하지 않고 여기서 멈춘다.** `main`·정식 tag/image·릴리스 서버는 변경하지 않았다. [P2 최종 증거](../3.Redesign-phase/1.1.7.b/2phase.md)를 따른다.
+
+### 2026-09-23 — 1.1.7b P2 로컬 후보 (당시 기록)
 
 P2는 전용 `phase/1.1.7b-p2-editing-save-pwa`에서 로컬 통합 후보를 만들었다. WC-01/02/03/04/05/06/09/10(가사)/12의 source `0375825`를 선택 인수하고 ES-03 제목 조합·PWA 프로필 dirty 경계를 추가 보정했다. Node 24/pnpm 11의 check·production web build, 일반 Unit **326 PASS / DB 조건부 122 skip**, 격리 DB 관련 19 PASS, 격리 Chromium desktop 9 PASS/mobile 8 PASS·desktop-only PWA 1 skip, 기존 Suno/템플릿 추가 브라우저 2 PASS다. 실제 OS IME/기기/AT와 P2 전체 CI·signed image·같은 SHA 개발 공개 인수는 미완료다. 따라서 P2 상태는 `in_progress`이고 P3로 넘어가지 않는다. [P2 로컬 증거](../3.Redesign-phase/1.1.7.b/2phase.md)를 따른다.
 
@@ -247,13 +251,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.7a P3 | complete | 후보 `675dbafa`, Actions `35037281111`, Unit 393/E2E 387/release 10 PASS·네 signed dev image·동일 SHA 공개 PC/mobile 닉네임·사진 저장/재진입·홈 guard 인수 완료 |
 | 1.1.7a P4 | complete | 후보 `7621e8e`, 첫 CI `35043201011` performance CV FAIL 기록, 동일 SHA 재실행 `35043634916` Unit 393/E2E 393/release 10·네 signed dev image PASS·동일 SHA 공개 재시작/새 session·두 owner 격리·홈 guard 인수 완료. 실제 OS/기기·AT 미실행 |
 | 1.1.7b P1 | complete | 기능 `a04bbcb`, PR `35849543496` verify·push `35849536417` attempt 2 verify/네 signed dev image PASS, 동일 SHA 개발 공개 live/ready·auth/CSS·네 health와 native 1150/1151 DB 지문 보존. P2~P5 작업은 미완료 |
-| 1.1.7b P2 | in_progress | WC-01~06/09/10(가사)/12의 편집·저장·탐색·PWA 웹 통합 착수. P1 기능 SHA에서 분기하되 제품 기능 검증·개발 인수 전에는 완료 아님 |
+| 1.1.7b P2 | complete | 기능 `3915a71`, PR `35866450768` verify·push `35866445486` verify/네 signed dev image PASS, 동일 SHA 개발 공개 live/ready·PC/mobile 가사/Suno/PWA smoke와 합성 계정 정리 완료. P3 착수 전 사용자 요청으로 일시 중단 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.7b/P2 | LC-RD-117B-P2-01~09 | 편집·저장·탐색·PWA 코드/호출자/시험 통합 | P1 기능 `a04bbcb`, source `c230c02`/기능 `0375825`, WC-01~06/09/10(가사)/12; 보호 계획 문서 불변 | 2026-09-23 | in_progress |
+| Codex | 1.1.7b/P2 | LC-RD-117B-P2-01~09 | 편집·저장·탐색·PWA 코드/호출자/시험 통합 | P1 기능 `a04bbcb`, source `c230c02`/기능 `0375825`, 완료 기능 `3915a71`·동일 SHA 개발 공개 인수; 보호 계획 문서 불변 | 2026-09-23 | complete; P3 전 사용자 요청 일시 중단 |
 | Codex | 1.1.7b/P1 | LC-RD-117B-P1-01~08 | 버전/source freeze·release/image/deploy validator·환경 경계·DB matrix·CI/개발 인수 | 기능 `a04bbcb`, PR/push Actions `35849543496`/`35849536417`와 동일 SHA 공개 개발 인수 완료 | 2026-09-23 | complete |
 | Codex | 1.1.7b 선행 통합 계획 (구현 Phase 아님) | PLAN-RD-117B | 3.Redesign-phase/1.1.7.b, 후속 순서·후보 소유권·버전 정책·실행 STATUS의 다음 계획 | 사용자 1.1.8 웹 안정화 선행 통합 지시; source c230c02/기능0375825 | 2026-09-23T12:18+09:00 | documented (5 Phase·42작업·24수용 기준·18 WC 상세 계획 및 문서 검증; 제품 미착수) |
 | Codex | 1.2.1 이후 계획 정비 (구현 Phase 아님) | PLAN-RD-12X | 3.Redesign-phase 후속 버전·추적·수용 계획, 계획 진입·Future 인수, 실행 STATUS의 계획 작업 기록 | 2026-09-22 사용자 요청; 0922 리뷰와 1.2.0 계획 인수; 네이티브 보류 유지 | 2026-09-22T19:22+09:00 | documented (8버전·41 Phase·205작업·리뷰/원격 비교 검증 완료; 제품 미착수) |
