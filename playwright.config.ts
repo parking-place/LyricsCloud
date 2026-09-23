@@ -32,7 +32,7 @@ export default defineConfig({
         NODE_ENV: "production",
         OIDC_TEST_FIXTURE: "true",
         DATABASE_URL: process.env.E2E_DATABASE_URL ?? "postgresql://user:synthetic@127.0.0.1:65432/missing",
-        APP_VERSION: process.env.APP_VERSION ?? "1.1.7a",
+        APP_VERSION: process.env.APP_VERSION ?? "1.1.7b",
         BUILD_ID: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
         APP_CHANNEL: "dev",
         APP_PHASE: process.env.APP_PHASE ?? "p1",

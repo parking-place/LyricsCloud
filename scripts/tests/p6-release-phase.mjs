@@ -33,3 +33,11 @@ test('additional phases and multi-digit versions remain data-driven', () => {
   assert.equal(check(patchStatus('1.12.91', 13, 'complete'), { phaseCount: 13, requireRelease: true }), 13);
   assert.throws(() => check(patchStatus('1.12.91', 14), { phaseCount: 13 }));
 });
+test('registered redesign plans consume their own final phase metadata', () => {
+  const redesign = (version, phase, state = 'review') =>
+    `current_version: "${version}"\ncurrent_phase: "../3.Redesign-phase/${version}/${phase}phase.md"\nstate: "${state}"\n`;
+  assert.equal(check(redesign('1.2.2', 6)), 6);
+  assert.equal(check(redesign('1.2.2', 6, 'complete'), { requireRelease: true }), 6);
+  assert.throws(() => check(redesign('1.2.2', 7)), /RELEASE_PHASE_COUNT_INVALID/);
+  assert.throws(() => check(redesign('1.2.2', 6), { phaseCount: 5 }), /RELEASE_PHASE_COUNT_MISMATCH/);
+});

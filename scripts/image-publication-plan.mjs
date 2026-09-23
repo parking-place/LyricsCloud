@@ -1,11 +1,12 @@
 import { appendFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { getReleaseVersionContract, isProductVersion } from './release-version-contract.mjs';
 
 /** Candidate, development and release aliases stay disjoint. */
 export function getImagePublication({ eventName, refType, refName, sha, version, release }) {
   if (!['push', 'workflow_dispatch'].includes(eventName)) throw new Error('PUBLICATION_EVENT_INVALID');
-  if (typeof version !== 'string' || (version !== '1.1.7a' && !/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/u.test(version))) {
+  if (!isProductVersion(version)) {
     throw new Error('PUBLICATION_VERSION_INVALID');
   }
   if (typeof sha !== 'string' || !/^[0-9a-f]{40}$/u.test(sha)) throw new Error('PUBLICATION_SHA_INVALID');
@@ -18,10 +19,13 @@ export function getImagePublication({ eventName, refType, refName, sha, version,
     tags = [version, sha, 'Release', 'latest', 'Release-latest'];
   } else {
     if (refType !== 'branch') throw new Error('PUBLICATION_BRANCH_REQUIRED');
-    const phaseVersion = /^phase\/([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a)-/u.exec(refName)?.[1];
+    const phaseMatch = /^phase\/((?:(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))|1\.1\.7[ab])-p([1-9][0-9]*)-[A-Za-z0-9][A-Za-z0-9._-]*$/u.exec(refName);
+    const phaseVersion = phaseMatch?.[1];
     if (refName.startsWith('phase/') && !phaseVersion) throw new Error('PUBLICATION_BRANCH_VERSION_INVALID');
     if (phaseVersion && phaseVersion !== version) throw new Error('PUBLICATION_BRANCH_VERSION_MISMATCH');
-    const phase = /^phase\/(?:[0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a)-p([1-9][0-9]*)-/u.exec(refName)?.[1];
+    const phase = phaseMatch?.[2];
+    if (phase && ['1.1.7a', '1.1.7b', '1.2.2'].includes(version)
+      && Number(phase) > getReleaseVersionContract(version).phaseCount) throw new Error('PUBLICATION_PHASE_INVALID');
     tags = /^phase\/1\.0\.0-p6-/u.test(refName)
       ? [sha, `candidate-${version}-${sha}`]
       : [sha, ...(phase ? [`dev-${version}-p${phase}`] : []), 'Dev', 'Dev-latest'];

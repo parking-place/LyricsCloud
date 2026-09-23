@@ -29,17 +29,61 @@ if [ "$remote_commit" != "$expected_commit" ]; then
 fi
 
 git fetch --no-tags origin "refs/heads/$branch"
-git switch --detach "$expected_commit"
-
-if [ "$(git rev-parse HEAD)" != "$expected_commit" ]; then
-  printf 'Server checkout SHA verification failed.\n' >&2
-  exit 5
+app_version=$(git show "$expected_commit:VERSION")
+if [ "$app_version" != "1.1.7a" ] && [ "$app_version" != "1.1.7b" ] && [[ ! $app_version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+  printf 'Invalid application VERSION; deployment stopped.\n' >&2
+  exit 6
+fi
+if [[ $branch =~ ^phase/([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a|1\.1\.7b)-p([1-9][0-9]*)-[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+  ref_version=${BASH_REMATCH[1]}
+  ref_phase=${BASH_REMATCH[2]}
+  if [ "$ref_version" != "$app_version" ]; then
+    printf 'Development branch version does not match VERSION.\n' >&2
+    exit 6
+  fi
+  if { [ "$app_version" = "1.1.7a" ] || [ "$app_version" = "1.1.7b" ]; } && [ "$ref_phase" -gt 5 ]; then
+    printf 'Development phase exceeds the registered plan.\n' >&2
+    exit 6
+  fi
+  if [ "$app_version" = "1.2.2" ] && [ "$ref_phase" -gt 6 ]; then
+    printf 'Development phase exceeds the registered plan.\n' >&2
+    exit 6
+  fi
+  app_phase=p${ref_phase}
+elif [ "$branch" = main ]; then
+  app_phase=
+else
+  printf 'Development branch must be main or include a version and pN phase.\n' >&2
+  exit 6
+fi
+target_status_version=$(git show "$expected_commit:0.Plans/1. Dev-phase/STATUS.md" | awk -F'"' '/^current_version:/ { if (++count == 1) value=$2 } END { if (count == 1) print value }')
+if [ "$target_status_version" != "$app_version" ]; then
+  printf 'Target STATUS version does not match VERSION.\n' >&2
+  exit 6
+fi
+if [ -n "$app_phase" ]; then
+  target_status_phase=$(git show "$expected_commit:0.Plans/1. Dev-phase/STATUS.md" | awk -F'"' '/^current_phase:/ { if (++count == 1) value=$2 } END { if (count == 1) print value }')
+  case "$app_version" in
+    1.1.7a) expected_phase_path="../2.Patch-phase/1.1.7.a/${ref_phase}phase.md" ;;
+    1.1.7b) expected_phase_path="../3.Redesign-phase/1.1.7.b/${ref_phase}phase.md" ;;
+    1.2.*) expected_phase_path="../3.Redesign-phase/${app_version}/${ref_phase}phase.md" ;;
+    *) expected_phase_path="../2.Patch-phase/${app_version}/${ref_phase}phase.md" ;;
+  esac
+  if [ "$target_status_phase" != "$expected_phase_path" ]; then
+    printf 'Target STATUS phase does not match the development branch.\n' >&2
+    exit 6
+  fi
 fi
 allowlist_keyring=.private/keys/auth_allowlist_hmac_keyring
 beta_index_key=.private/runtime/beta_code_index_key
 if [ ! -s .env ] || [ ! -s .test_users ] || [ ! -s "$allowlist_keyring" ] || [ ! -s "$beta_index_key" ]; then
   printf 'Development .env, HMAC allowlist/keyring, or beta index key is missing.\n' >&2
   exit 6
+fi
+git switch --detach "$expected_commit"
+if [ "$(git rev-parse HEAD)" != "$expected_commit" ]; then
+  printf 'Server checkout SHA verification failed.\n' >&2
+  exit 5
 fi
 chmod 600 .env .test_users "$allowlist_keyring" "$beta_index_key"
 
@@ -82,19 +126,6 @@ stage_runtime_auth_secrets
 
 environment_file=$(mktemp)
 trap 'unlink "$environment_file" 2>/dev/null || true' EXIT
-app_version=$(tr -d '\r\n' < VERSION)
-if [ "$app_version" != "1.1.7a" ] && [[ ! $app_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  printf 'Invalid application VERSION; deployment stopped.\n' >&2
-  exit 6
-fi
-if [[ $branch =~ ^phase/([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a)-p([1-9][0-9]*)- ]]; then
-  app_phase=p${BASH_REMATCH[2]}
-elif [ "$branch" = main ]; then
-  app_phase=
-else
-  printf 'Development branch must be main or include a version and pN phase.\n' >&2
-  exit 6
-fi
 awk -v build_id="$expected_commit" -v app_version="$app_version" -v app_phase="$app_phase" '
   BEGIN { found = 0; version_found = 0; channel_found = 0; phase_found = 0 }
   /^BUILD_ID=/ {

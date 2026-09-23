@@ -12,7 +12,7 @@ version=$(tr -d '\r\n' < "$repository_root/VERSION")
 status_version=$(awk -F'"' '/^current_version:/ { print $2; exit }' \
   "$repository_root/0.Plans/1. Dev-phase/STATUS.md")
 
-if [ "$version" != "1.1.7a" ] && [[ ! $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+if [ "$version" != "1.1.7a" ] && [ "$version" != "1.1.7b" ] && [[ ! $version =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
   printf 'VERSION must contain one stable semantic version.\n' >&2
   exit 2
 fi
@@ -34,8 +34,17 @@ esac
 
 case "$channel:$ref_type" in
   dev:branch)
-    if [[ "$ref_name" =~ ^phase/([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a)- ]]; then
+    if [[ "$ref_name" =~ ^phase/([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a|1\.1\.7b)-p([1-9][0-9]*)-[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
       ref_version=${BASH_REMATCH[1]}
+      ref_phase=${BASH_REMATCH[2]}
+      if { [ "$ref_version" = "1.1.7a" ] || [ "$ref_version" = "1.1.7b" ]; } && [ "$ref_phase" -gt 5 ]; then
+        printf 'Development phase exceeds the registered plan.\n' >&2
+        exit 6
+      fi
+      if [ "$ref_version" = "1.2.2" ] && [ "$ref_phase" -gt 6 ]; then
+        printf 'Development phase exceeds the registered plan.\n' >&2
+        exit 6
+      fi
     elif [[ "$ref_name" == phase/* ]]; then
       printf 'Development phase branch has an invalid version.\n' >&2
       exit 6
@@ -44,7 +53,7 @@ case "$channel:$ref_type" in
     fi
     ;;
   release:tag)
-    if [[ ! "$ref_name" =~ ^v([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a)$ ]]; then
+    if [[ ! "$ref_name" =~ ^v([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a|1\.1\.7b)$ ]]; then
       printf 'Release Git tag must contain one stable semantic version.\n' >&2
       exit 6
     fi

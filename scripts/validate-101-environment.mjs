@@ -65,6 +65,17 @@ assert(validateEnvironment("backup", {
   PGPASSWORD_FILE: "/run/secrets/postgres", AGE_RECIPIENT_FILE: "/run/secrets/age"
 }));
 assert.throws(() => validateEnvironment("web", { ...common, APP_PHASE: "p9" }), /Invalid environment keys/);
+const backup = {
+  NODE_ENV: "production", APP_VERSION: version, BUILD_ID: "a".repeat(40), APP_CHANNEL: "release",
+  BACKUP_STORAGE_ID: "external-1", BACKUP_REPOSITORY_DIR: "/backup/repository",
+  PGPASSWORD_FILE: "/run/secrets/postgres", AGE_RECIPIENT_FILE: "/run/secrets/age"
+};
+for (const [name, minimum] of [["BACKUP_RETENTION_DAYS", 1], ["BACKUP_MAX_AGE_HOURS", 1], ["BACKUP_MIN_FREE_BYTES", 67108864]]) {
+  assert(validateEnvironment("backup", { ...backup, [name]: String(minimum) }));
+  for (const value of ["", " ", "0", "-1", "1.5", "Infinity", "NaN", "9007199254740992", String(minimum - 1)]) {
+    assert.throws(() => validateEnvironment("backup", { ...backup, [name]: value }), new RegExp(name));
+  }
+}
 for (const name of ["DATABASE_URL", "GOOGLE_CLIENT_SECRET", "SESSION_SECRET"]) assert.equal(schema.properties[name]["x-secret"], true);
 for (const name of ["AUTH_ALLOWED_EMAILS_FILE", "AUTH_ALLOWLIST_HMAC_KEYRING_FILE", "BETA_CODE_INDEX_KEY_FILE", "BETA_CODE_AEAD_KEY_FILE"]) {
   assert.equal(schema.properties[name]["x-secret-file"], true);

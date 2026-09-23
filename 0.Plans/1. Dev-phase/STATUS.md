@@ -1,20 +1,26 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.1.7a"
-current_phase: "../2.Patch-phase/1.1.7.a/5phase.md"
-state: "complete"
+current_version: "1.1.7b"
+current_phase: "../3.Redesign-phase/1.1.7.b/2phase.md"
+state: "in_progress"
 owner: "Codex"
-started_at: "2026-09-15"
+started_at: "2026-09-23"
 updated_at: "2026-09-23"
-next_planned_version: "1.1.7b"
-next_planned_phase: "../3.Redesign-phase/1.1.7.b/1phase.md"
-next_action: "1.1.7b P1에서 1.1.8 웹 안정화 선별 통합과 정확한 b 버전·도구 계약을 인수한다. b P5 개발 인수 완료 뒤 그 SHA에서 1.2.0을 시작한다. native 1.1.8~1.1.14 보류; 이번은 계획 작성"
+next_planned_version: "1.2.0"
+next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
+next_action: "1.1.7b P1 동일 SHA 개발 인수를 보존하고 P2의 metadata 초안·IME/autosave·prompt·탐색·설정·Suno·PWA 웹 수정을 의존성 단위로 통합한다"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
 
-사용자 지시로 다음 제품 계획을 **[1.1.7b 웹 안정화 통합](../3.Redesign-phase/1.1.7.b/README.md)**으로 변경했다. 실제 순서는 **1.1.7a → 1.1.7b → 1.2.0 → 1.2.1~1.2.8**이다. b에서 1.1.8 웹 안정화 코드·회귀를 먼저 통합하고 같은 SHA의 개발 인수까지 완료한 뒤, 그 b SHA에서 코발트 리디자인을 시작한다. 현재 실행의 1.1.7a 완료 기록은 유지한다. 이번 작업은 계획이며 코드 통합·버전 변경·배포를 아직 수행하지 않았다. 1.1.8~1.1.14 네이티브 잔여 계획은 계속 보류한다.
+사용자 지시로 다음 제품 계획을 **[1.1.7b 웹 안정화 통합](../3.Redesign-phase/1.1.7.b/README.md)**으로 변경했다. 실제 순서는 **1.1.7a → 1.1.7b → 1.2.0 → 1.2.1~1.2.8**이다. b에서 1.1.8 웹 안정화 코드·회귀를 먼저 통합하고 같은 SHA의 개발 인수까지 완료한 뒤, 그 b SHA에서 코발트 리디자인을 시작한다. 완료된 1.1.7a tag·운영 배포 기록은 유지한다. 2026-09-23 P1을 `phase/1.1.7b-p1-contract-runtime`의 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 완료하고 P2를 착수했다. 1.1.8~1.1.14 네이티브 잔여 계획은 계속 보류한다.
+
+### 2026-09-23 — 1.1.7b P1 완료·P2 진입
+
+P1의 제품 `1.1.7b`/계획 `1.1.7.b`/private package `1.1.7` 계약, WC-17/18, dev/정식 gate 분리를 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에서 인수했다. 로컬 경계 42 PASS, `pnpm check`와 production web build PASS, 격리 PostgreSQL 18의 migration 2회·Unit 393 PASS/조건부 beta 5 skip이다. PR [#153](https://github.com/parking-place/LyricsCloud/pull/153)의 [Actions 35849543496](https://github.com/parking-place/LyricsCloud/actions/runs/35849543496) verify PASS; push [Actions 35849536417](https://github.com/parking-place/LyricsCloud/actions/runs/35849536417) attempt 2 verify·네 signed dev image/provenance PASS. 첫 push의 mockup 해시 오탐, 중간 후보의 공개 링크 재연결 시험 경쟁, 최종 push attempt 1의 성능 라운드 편차 FAIL은 각각 실패 이력으로 유지하고 PASS로 소급하지 않는다.
+
+같은 기능 SHA로 개발 서버 checkout·BUILD_ID·공개 HTTPS live/ready가 `1.1.7b/dev/p1`에 일치하고 `/auth`·CSS 200, HMR 없음, 네 서비스 healthy, production CSS·Docker cleanup PASS다. 기존 개발 DB의 migration 31건 지문 `42111a6b819fdb3a9a3282fefc566d409be9722342b8e8c5a0762c0fed02914a`와 native 1150 객체·profile 1151 이력은 배포 전후 그대로다. P2~P5 웹 수정·22개 원인 해소와 세 DB 유형·물리 기기/AT·rollback 최종 인수는 아직 PASS가 아니다. `main`·정식 tag/image·릴리스 서버는 변경하지 않았다. [P1 세부 증거](../3.Redesign-phase/1.1.7.b/1phase.md)를 따른다.
 
 아래 2026-09-22의 직접 1.2.0 지정은 당시 이력이며, 현재 착수 순서는 이 절과 위 next_planned 값을 따른다.
 
@@ -87,6 +93,8 @@ P1 후보 `b6031851ecea1361b39274cd6be6412c93f71311`의 Actions [35014698215](ht
 P4 완료 문서-only `646c9a7c98b1984e6a4b647b8621e5556ba611df`는 `[skip ci]`로 push했고 PR #149는 승인된 `release/1.1.7a` merge `8d3ed3fdade28902957e7c5253c341edf8ded5c4`에 통합됐다. `main`·1.1.8·정식 tag/image·릴리스 서버는 그대로다. P5 전용 Phase 브랜치는 이 merge SHA에서 분기했다.
 
 P5 최종 후보 `fd4d901a4c57626d193c88938c7889f035d69192`의 Actions [35047546033](https://github.com/parking-place/LyricsCloud/actions/runs/35047546033)은 verify와 네 signed dev image가 모두 **PASS**다. 전체 owner E2E **393 PASS / 조건부 43 skip**, release browser matrix **10 PASS**이며, 게시된 full-SHA/`dev-1.1.7a-p5` 이미지의 signature·provenance를 확인했다. 같은 SHA 개발 서버는 공개 live/ready `1.1.7a/dev/p5`·schema `1151_profile_customization.sql`, `/auth` 200·익명 사진 401, 네 서비스 healthy다. 합성 두 owner로 닉네임/사진 저장→재진입, 타 owner 사진 차단, web 재시작·새 session 지속, PC/mobile 홈 이동, 위장 파일 거부/기존 사진 유지, 최신 Google 값 복귀를 PASS했고 사용자·session·profile·photo를 각각 **0건**으로 정리했다. 첫 공개 probe는 root checkout의 로컬 `sharp` 미설치로 제품 요청 전에 중단됐고 설치된 P5 worktree 재실행은 PASS했으며 첫 시도를 PASS로 재분류하지 않았다. 실제 Windows Edge/iOS/Android/OS IME/AT는 미실행이고 `OPS-100-001` backup/RPO 예외는 사용자 승인대로 남는다. 미해결 제품 P0/P1은 0건이며 P5 gate를 완료했다. 아직 `v1.1.7a` tag·정식 image·릴리스 서버 변경은 없고 승인된 전용 release 절차로 인계한다.
+
+PR #150은 전용 `release/1.1.7a` merge `fc2463cdb47d9fd7d0042779f602c6ddb7d734cf`에 통합됐고 reviewed tree와 동일하다. merge SHA Actions [35050125353](https://github.com/parking-place/LyricsCloud/actions/runs/35050125353)과 annotated `v1.1.7a` tag Actions [35052520619](https://github.com/parking-place/LyricsCloud/actions/runs/35052520619)은 전체 verify·네 signed image가 모두 **PASS**다. tag의 `1.1.7a`·full SHA·`Release`·`latest`·`Release-latest`는 서비스별 exact digest로 일치한다. 운영은 migrate 우선으로 29→30 migrations·schema 1140→1151을 적용하면서 기존 사용자 8명·session 14개를 보존한 뒤 앱 세 서비스를 exact digest로 전환했다. 공개 `1.1.7a/release`·exact SHA·phase 없음·네 health·`/auth` 200·익명 사진 401, 합성 두 owner 저장/사진 격리·web 재시작/새 session·PC/mobile 홈·위장 파일 보존을 PASS하고 합성 자료를 0건으로 삭제했다. 전역 `LyricsCloud betacode ls`와 GitHub Release가 PASS이며 `main`·미완료 1.1.8은 변경하지 않았다. 실제 OS/기기·IME/AT와 `OPS-100-001` backup 위험은 미실행/승인 예외로 남는다.
 
 P5 로컬 후보는 실제 frozen lockfile과 production license 65개 package group/버전 일치, Node 24 계열 check·production web build, 1151 populated 1140→1151/반복/RLS/application-first rollback, release validator 1001/1002/1004/1005/101, 격리 PostgreSQL profile/photo **14 PASS**, Linux 5-project 영향 브라우저 **15 PASS**, 한 번짜리 버전 경계 **4 PASS**다. 첫 격리 migration/E2E 컨테이너는 `APP_CHANNEL` 누락으로 기본 release와 시험용 `APP_PHASE`가 충돌해 시작 실패했고, dev 채널 명시 재실행에서 PASS했다. Docker Git worktree 메타데이터 미마운트로 oneoff shell guard 1건이 실패했으나 로컬 Git 환경의 같은 4건은 PASS했다. 이 실패 시도는 PASS가 아니다. P4 제품 코드·전체 E2E 393 PASS는 해당 P4 SHA의 선행 근거로만 계승하고 P5 새 후보 SHA의 필수 CI·네 signed dev image·동일 SHA 개발 공개 인수 전에는 P5를 완료하지 않는다.
 
@@ -230,15 +238,19 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.7a P2 | complete | 후보 `4c2a42a`, Actions `35026679109`, 네 signed dev image·동일 SHA 개발 1151 migration/합성 profile API 영속 인수 완료 |
 | 1.1.7a P3 | complete | 후보 `675dbafa`, Actions `35037281111`, Unit 393/E2E 387/release 10 PASS·네 signed dev image·동일 SHA 공개 PC/mobile 닉네임·사진 저장/재진입·홈 guard 인수 완료 |
 | 1.1.7a P4 | complete | 후보 `7621e8e`, 첫 CI `35043201011` performance CV FAIL 기록, 동일 SHA 재실행 `35043634916` Unit 393/E2E 393/release 10·네 signed dev image PASS·동일 SHA 공개 재시작/새 session·두 owner 격리·홈 guard 인수 완료. 실제 OS/기기·AT 미실행 |
+| 1.1.7b P1 | complete | 기능 `a04bbcb`, PR `35849543496` verify·push `35849536417` attempt 2 verify/네 signed dev image PASS, 동일 SHA 개발 공개 live/ready·auth/CSS·네 health와 native 1150/1151 DB 지문 보존. P2~P5 작업은 미완료 |
+| 1.1.7b P2 | in_progress | WC-01~06/09/10(가사)/12의 편집·저장·탐색·PWA 웹 통합 착수. P1 기능 SHA에서 분기하되 제품 기능 검증·개발 인수 전에는 완료 아님 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7b/P2 | LC-RD-117B-P2-01~09 | 편집·저장·탐색·PWA 코드/호출자/시험 통합 | P1 기능 `a04bbcb`, source `c230c02`/기능 `0375825`, WC-01~06/09/10(가사)/12; 보호 계획 문서 불변 | 2026-09-23 | in_progress |
+| Codex | 1.1.7b/P1 | LC-RD-117B-P1-01~08 | 버전/source freeze·release/image/deploy validator·환경 경계·DB matrix·CI/개발 인수 | 기능 `a04bbcb`, PR/push Actions `35849543496`/`35849536417`와 동일 SHA 공개 개발 인수 완료 | 2026-09-23 | complete |
 | Codex | 1.1.7b 선행 통합 계획 (구현 Phase 아님) | PLAN-RD-117B | 3.Redesign-phase/1.1.7.b, 후속 순서·후보 소유권·버전 정책·실행 STATUS의 다음 계획 | 사용자 1.1.8 웹 안정화 선행 통합 지시; source c230c02/기능0375825 | 2026-09-23T12:18+09:00 | documented (5 Phase·42작업·24수용 기준·18 WC 상세 계획 및 문서 검증; 제품 미착수) |
 | Codex | 1.2.1 이후 계획 정비 (구현 Phase 아님) | PLAN-RD-12X | 3.Redesign-phase 후속 버전·추적·수용 계획, 계획 진입·Future 인수, 실행 STATUS의 계획 작업 기록 | 2026-09-22 사용자 요청; 0922 리뷰와 1.2.0 계획 인수; 네이티브 보류 유지 | 2026-09-22T19:22+09:00 | documented (8버전·41 Phase·205작업·리뷰/원격 비교 검증 완료; 제품 미착수) |
 | Codex | 1.2.0 계획 정비 (구현 Phase 아님) | PLAN-RD-120 | 3.Redesign-phase 목업·계획, 2.Patch-phase 보류·진입 문서, 실행 STATUS 다음 계획 | 2026-09-22 사용자 코발트 Chroma Dock 선택·1.1.8 이후 보류 지시; v1.1.7a 기준 | 2026-09-22 | documented (계획·목업 검증 완료; 제품 Phase 미착수) |
-| Codex | 1.1.7a/P5 | LC-PLAN-117A-P5-01~05 | 사용자/지원·요구 추적·30 migration/환경/license/manifest·최종 CI/동일 SHA 개발·승인된 전용 릴리스 | 후보 `fd4d901`, Actions `35047546033` verify/네 signed dev image·동일 SHA 공개 두 owner 저장/격리/재시작·홈 PASS, 합성 자료 0건 | 2026-09-16 | complete |
+| Codex | 1.1.7a/P5 | LC-PLAN-117A-P5-01~05 | 사용자/지원·요구 추적·30 migration/환경/license/manifest·최종 CI/동일 SHA 개발·승인된 전용 릴리스 | 후보 `fd4d901`, merge/tag `fc2463c`, Actions `35047546033`·`35050125353`·`35052520619`, 개발/운영 exact SHA·signed digest·공개 smoke·합성 자료 0건·GitHub Release PASS | 2026-09-16 | complete |
 | Codex | 1.1.7a/P4 | LC-PLAN-117A-P4-01~06 | 두 계정·재로그인·Google 제공값·사진/RLS·ACK 유실·홈 이탈·PC/mobile 및 Linux 5-project 대리 회귀·상태/Future | P3 PR #148 merge `b4e5200`, 후보 `7621e8e`, Actions `35043634916` verify/네 signed dev image·동일 SHA 공개 재시작/두 owner 격리 PASS | 2026-09-16 | complete |
 | Codex | 1.1.7a/P3 | LC-PLAN-117A-P3-01~05 | 설정 계정 프로필 UI·셸 avatar/닉네임·브랜드 `/workspace` 이동·저장 이탈 guard·PC/mobile E2E/상태/Future | 후보 `675dbafa`, PR #148 merge `b4e5200`, Actions `35037281111` verify/네 signed dev image·동일 SHA 개발 공개 합성 프로필 영속 PASS | 2026-09-16 | complete |
 | Codex | 1.1.7a/P2 | LC-PLAN-117A-P2-01~05 | 1151 migration·owned/auth/beta/signup·profile/photo API·공유/export/lifecycle·관련 검증·상태/Future | PR #147 기능 `4c2a42a`, Actions `35026679109` verify/네 signed dev image PASS·동일 SHA 공개 live/ready/합성 owner GET→PATCH→재조회→복귀 PASS; P3 UI 인계 | 2026-09-16 | complete |

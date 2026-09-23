@@ -353,6 +353,8 @@
 
 | 2026-09-16 `1.1.7a` P5 완료·정식 릴리스 인계 push 전 | `Future_Feature.md`·P5 CI/동일 SHA 개발 공개 인수 | 현행 후보 대조 | 최종 후보 `fd4d901a4c57626d193c88938c7889f035d69192` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 전역 hidden/tracked 탐색 4문서; 선택 후보 129개 FF ID·체크·본문 변경 없음, 추가 Future 선택 파일 없음 | Actions `35047546033` 전체 verify·네 signed dev image와 동일 SHA 개발 공개 두 owner 저장/격리·재시작/홈 guard PASS만 P5 완료로 인수. 정식 tag/image·운영 exact digest 배포는 전용 release 절차로 인계하고 1.1.8/main·다른 Future 범위는 선소비하지 않음 | 직전 1.1.7a P5 문서·artifact 후보 push 전 행 |
 
+| 2026-09-16 `1.1.7a` 정식 릴리스 완료 기록 push 전 | `Future_Feature.md`·merge/tag CI·운영 exact digest 인수 | 현행 후보 대조 | merge/tag/운영 `fc2463cdb47d9fd7d0042779f602c6ddb7d734cf` / `8f42d20b638e245eb775415ccfdabef56a96f694` → 동일 blob | 전역 hidden/tracked 탐색 4문서; 선택 후보 129개 FF ID·체크·본문 변경 없음, 추가 Future 선택 파일 없음 | merge/tag CI·네 signed release image·1151 migrate 우선·운영 저장/격리/재시작/홈·beta CLI·GitHub Release만 완료 기록. main의 1.1.8 Windows review와 다른 Future 범위는 변경/선소비하지 않음 | 직전 1.1.7a P5 완료·정식 릴리스 인계 push 전 행 |
+
 이때 전역 탐색으로 현행 후보 파일과 이 절차 문서, `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`를 찾았다. 뒤의 세 문서는 절차·이력·매핑 근거이며 별도 선택 목록으로 중복 처리하지 않았다. 원본 `LyricsCloud_Plans` 사본과 비공개 ZIP은 보존·업로드 제외 대상으로 구분했다. 다른 위치에서 추가된 검수 후보 파일은 없었다.
 
 자동 hook·새 검수 스크립트·별도 스케줄을 만들지 않는다. Agent.md의 필수 단계와 이 절차 한 곳을 사용한다.
@@ -384,3 +386,16 @@
 발견된 나머지 세 문서는 이 절차와 `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`다. 절차·과거 매핑 원본을 별도 선택 후보로 처리하지 않는다. 보류된 native 1.1.8~1.1.14의 원문 42개 파일·과거 진행 상태를 보존한다. 비공개 리뷰 원본 8개의 hash와 코발트 목업·Sketch/Stack/Mock-up도 유지했다. ignored 자료를 강제 추가하지 않는다.
 
 이번 push는 `codex/1.1.7b-web-integration-plan`의 문서 계획 게시다. 실행 current 1.1.7a 완료는 유지하고 next만 b로 바꾼다. 제품 merge/port·VERSION·migration·main/tag/image·서버 변경은 수행하지 않았다. 실제 b Phase 완료/정식 발행으로 해석하지 않는다.
+
+## 2026-09-23 — 1.1.7b P1 후보 push 전 검수
+
+| 출처 | 이전 인수 기준 → 현행 | 발견·변경 판정 | 배정·보존 |
+|---|---|---|---|
+| `0.Plans/2.Patch-phase/Future_Feature.md` | 직전 계획 게시 `458030ada5474a53223b33cfb4337fefbdbb1b71` / blob `8f42d20b638e245eb775415ccfdabef56a96f694` → 작업 트리 동일 blob | tracked·untracked·hidden 공개 탐색 4문서. 129개 FF ID·체크·본문 변경 없음, 새 공개 후보 없음 | 재배정 없음. 이번 후보는 이미 승인된 b P1 버전·도구·WC-17/18 기반만 구현 |
+| 원격 `phase/1.1.8-p4-web-stabilization` | head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`; 기능 `0375825fe004fc74869250eefa14add267c4b3ae` | 원격 head와 Future blob 이동 없음. 18 WC 최소 코드/호출자/시험 묶음을 source map에 고정 | P1은 WC-17/18만 local verified, WC-01~16은 P2/P3 planned 유지. native/1150/Windows CI 제외 |
+
+나머지 공개 세 파일은 이 절차와 `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`이며 절차·과거 매핑이므로 후보로 중복 처리하지 않는다. `.private` 아래 기존 증거 참조는 비공개/ignored로 유지하고 읽거나 강제 add하지 않았다. Sketch·Implementation-Stack·Mock-up 보호 문서는 변경하지 않았다. 이번 push는 P1 원격 CI와 동일 SHA 개발 인수를 위한 후보이며 main·정식 tag/image·릴리스 서버 승인이 아니다.
+
+## 2026-09-23 — 1.1.7b P1 완료·P2 진입 문서 push 전 검수
+
+tracked·untracked·hidden 공개 경로에서 Future 관련 4문서를 다시 확인했다. 현행 입력 `0.Plans/2.Patch-phase/Future_Feature.md`의 blob은 직전 P1 후보 인수와 동일한 `8f42d20b638e245eb775415ccfdabef56a96f694`이며 129개 FF ID·체크·본문 변경과 새 공개 후보가 없다. 나머지 세 문서는 절차·과거 매핑이며 중복 후보가 아니다. 원격 source head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`도 이동하지 않았다. 따라서 새 배정은 없고 기존 b P2/P3·후속 1.2.x 담당을 유지한다. 이번 문서-only `[skip ci]` push는 P1 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`의 검증·개발 인수를 기록하고 P2 상태를 여는 것뿐이다. ignored/private 자료, 보호된 Sketch·Implementation-Stack·Mock-up, native·main·정식 tag/image·릴리스 서버를 추가 공개/변경하지 않는다. 이 기록은 P1 후보 push 전 검수의 동일 입력을 재참조하며 재선정이 아니다.

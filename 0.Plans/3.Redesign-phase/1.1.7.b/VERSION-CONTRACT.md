@@ -41,7 +41,7 @@ P1은 공통 경로/버전 매핑/Phase metadata의 최초 지원을 담당한�
 
 ## P1 계약 파일과 P5 최종 봉인의 구별
 
-실제 P1에서 b용 환경 schema·migration 목록·license 목록·release manifest의 경로와 필수 내용을 준비하고 생성/검증 도구를 맞춘다. 예상 파일은 `config/environment-schema.1.1.7b.json`, `config/migrations.1.1.7b.json`, `config/licenses.1.1.7b.json`, `config/release-manifest.1.1.7b.json`이며 **이번 문서 작업에서 생성한 파일은 아니다**. 실제 기존 명명 규칙과 validator 의존을 확인해 경로를 확정한다. P1의 구조/환경 검증과 P5의 최종 hash·문서·image 증거 봉인을 구별한다.
+P1에서 b용 환경 schema·migration 목록·license 목록·release manifest의 경로와 필수 내용을 준비하고 생성/검증 도구를 맞췄다. 실제 파일은 `config/environment-schema.1.1.7b.json`, `config/migrations.1.1.7b.json`, `config/licenses.1.1.7b.json`, `config/release-manifest.1.1.7b.json`이다. P1은 dev 후보의 구조/환경과 `productionAuthorized=false`를 검증했으며, P5의 최종 hash·문서·image 증거 봉인 및 정식 승인과 구별한다.
 
 현재 루트·3개 app·7개 package의 private manifest는 기존 SemVer `1.1.7`을 유지하는 계획이다. 제품 `1.1.7b`와의 매핑을 별도 검증하고, 실제 package 목록이 변했다면 그 목록도 다시 확인한다. 원격 1.1.8 manifest는 1150/1151 목록이 runtime과 다를 수 있으므로 그대로 복사하지 않는다. a의 `productionAuthorized`도 b 승인이 아니다. native 1150이 이미 있는 DB의 호환성은 별도 수용표에 기록한다.
 

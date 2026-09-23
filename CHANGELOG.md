@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.7b] - 개발 중
+
+- P1 후보에서 제품·health 버전을 `1.1.7b`로 정렬하고 기존 private package 버전 `1.1.7`을 유지한다. 1.1.8 웹 안정화 수정의 통합은 P2~P4에 배정했다.
+- 환경 값과 allowlist 날짜 도구를 보강하고 개발 후보 검사와 정식 tag 승인 검사를 분리했다. P1 기능 SHA `a04bbcb`는 PR/push 전체 CI·네 signed dev image와 동일 SHA 개발 공개 live/ready·auth/CSS 인수를 완료했다. DB의 기존 native 1150/profile 1151 이력은 보존했으며 P2~P5의 웹 통합·차단 해소와 정식 출시는 아직 미완료다.
+
 ## [1.1.7a] - 2026-09-16
 
 ### Added
@@ -16,7 +21,8 @@
 ### Validation and release
 
 - P4 후보 `7621e8e`의 격리 DB 14 PASS, 전체 PC/mobile 393 PASS·43 조건부 skip, Linux 5-project 신규 15 PASS, 재실행 Actions `35043634916` 전체 verify·네 signed dev image 및 같은 SHA 개발 공개 두 owner/재시작/홈 guard 인수 PASS. 첫 Actions `35043201011`의 성능 측정 라운드 편차 FAIL은 그대로 기록한다
-- P5 후보 `fd4d901`, Actions `35047546033` 전체 verify·네 signed dev image, 동일 SHA 개발 공개 저장/격리/재시작/홈 인수 PASS. 별도 `release/1.1.7a` tag/정식 image·운영 배포 결과는 실행 뒤 기록한다. 기존 `v1.1.7`과 `main`의 미완료 1.1.8은 변경하지 않는다
+- P5 후보 `fd4d901` Actions `35047546033`, merge SHA `fc2463c` Actions `35050125353`, tag Actions `35052520619`의 전체 verify·네 signed image와 동일 SHA 개발/운영 공개 저장·격리·재시작·홈 인수 PASS
+- annotated `v1.1.7a`와 네 서비스 exact digest를 운영 배포하고 schema `1151_profile_customization.sql`, 기존 사용자/세션, beta CLI·코드·secret/allowlist를 보존했다. GitHub Release를 공개했으며 기존 `v1.1.7`과 `main`의 미완료 1.1.8은 변경하지 않았다
 
 ## [1.1.7] - 2026-09-15
 

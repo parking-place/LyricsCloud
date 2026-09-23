@@ -67,7 +67,7 @@ async function applyThrough1140(pool) {
 
 function migrate() {
   const result = spawnSync("corepack", ["pnpm", "migrate"], {
-    env: { ...process.env, NODE_ENV: "test", DATABASE_URL: url.href, APP_VERSION: "1.1.7a", APP_PHASE: "p2" },
+    env: { ...process.env, NODE_ENV: "test", DATABASE_URL: url.href, APP_VERSION: "1.1.7b", APP_PHASE: "p2" },
     encoding: "utf8"
   });
   if (result.status !== 0) throw new Error(result.stderr || result.stdout || "migration failed");

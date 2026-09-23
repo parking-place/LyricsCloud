@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getImagePublication } from "./image-publication-plan.mjs";
 import { validateReleasePhase } from "./release-phase-state.mjs";
+import { getReleaseVersionContract } from "./release-version-contract.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relative) => readFileSync(path.join(root, relative), "utf8");
@@ -12,6 +13,7 @@ const assert = (condition, message) => { if (!condition) failures.push(message);
 const requireRelease = process.argv.includes("--require-release");
 const currentVersion = read("VERSION").trim();
 const oneOff117a = currentVersion === "1.1.7a";
+const currentContract = getReleaseVersionContract(currentVersion);
 const releasedVersion = "1.0.1";
 
 const phasePaths = [1, 2, 3, 4, 5].map((phase) => `0.Plans/1. Dev-phase/1.0.0/${phase}phase.md`);
@@ -79,10 +81,10 @@ const releaseTags = getImagePublication(publicationInput).tags;
 for (const tag of ["1.0.0", "Release", "latest", "Release-latest"]) assert(releaseTags.includes(tag), `release tag missing: ${tag}`);
 const candidateTags = getImagePublication({ ...publicationInput, refType: "branch", refName: "phase/1.0.0-p6-stabilization", release: false }).tags;
 for (const tag of ["1.0.0", "Release", "latest", "Dev", "Dev-latest"]) assert(!candidateTags.includes(tag), `P6 candidate moves protected tag: ${tag}`);
-assert(tagScript.includes("release:tag") && tagScript.includes("^v([0-9]+\\.[0-9]+\\.[0-9]+|1\\.1\\.7a)$"), "release tag guard missing");
+assert(tagScript.includes("release:tag") && tagScript.includes("^v([0-9]+\\.[0-9]+\\.[0-9]+|1\\.1\\.7a|1\\.1\\.7b)$"), "release tag guard missing");
 try {
   const phase6Plan = status.includes('current_phase: "1.0.0/6phase.md"') ? read("0.Plans/1. Dev-phase/1.0.0/6phase.md") : "";
-  validateReleasePhase(status, { requireRelease, phase6Plan, phaseCount: currentVersion === "1.0.1" ? 10 : 5 });
+  validateReleasePhase(status, { requireRelease, phase6Plan });
 } catch { failures.push("STATUS must identify an allowed historical or current release phase"); }
 for (const marker of [`${currentVersion} Phase 5`, `${currentVersion} release notes`, "CHANGELOG.md"]) {
   assert(readme.includes(marker), `README release handoff marker missing: ${marker}`);
@@ -105,10 +107,10 @@ assert(currentManifest.releaseVersion === releasedVersion && currentManifest.dat
 const currentReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${releasedVersion}`,
   sha: "b".repeat(40), version: releasedVersion, release: true }).tags;
 for (const tag of [releasedVersion, "Release", "latest", "Release-latest"]) assert(currentReleaseTags.includes(tag), `sealed release tag missing: ${tag}`);
-const currentDevTags = getImagePublication({ eventName: "push", refType: "branch", refName: `phase/${currentVersion}-p5-release`,
+const currentDevTags = getImagePublication({ eventName: "push", refType: "branch", refName: `phase/${currentVersion}-p${currentContract.phaseCount}-release`,
   sha: "b".repeat(40), version: currentVersion, release: false }).tags;
 for (const tag of [currentVersion, "1.0.2", releasedVersion, "Release", "latest", "Release-latest"]) assert(!currentDevTags.includes(tag), `P5 dev moves protected tag: ${tag}`);
-for (const marker of [`APP_VERSION: ${currentVersion}`, "APP_PHASE: p5", "test:migration:1002", "test:environment:101"]) {
+for (const marker of [`APP_VERSION: ${currentVersion}`, `APP_FINAL_PHASE: p${currentContract.phaseCount}`, "test:migration:1002", "test:environment:101"]) {
   assert(workflow.includes(marker), `P5 CI marker missing: ${marker}`);
 }
 for (const marker of oneOff117a
@@ -131,7 +133,7 @@ for (const marker of ["main", `annotated \`v${currentVersion}\``, "exact digest"
   assert(formalReleaseChecklist.includes(marker), `${currentVersion} release checklist marker missing: ${marker}`);
 }
 assert(formalManifest.releaseVersion === currentVersion && formalManifest.releaseChannel === "release"
-  && formalManifest.productionAuthorized === true && formalManifest.database.requiredLatestSchema === (oneOff117a ? "1151_profile_customization.sql" : "1140_sharing_stability.sql"),
+  && formalManifest.productionAuthorized === requireRelease && formalManifest.database.requiredLatestSchema === (["1.1.7a", "1.1.7b"].includes(currentVersion) ? "1151_profile_customization.sql" : "1140_sharing_stability.sql"),
   `${currentVersion} formal release manifest boundary invalid`);
 const formalReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${currentVersion}`,
   sha: "c".repeat(40), version: currentVersion, release: true }).tags;
