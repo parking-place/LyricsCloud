@@ -18,6 +18,18 @@ describe("lifecycle contract", () => {
       .toThrow(LifecycleValidationError);
   });
 
+  it("accepts an exact Unicode title using the same code-point limit as creation", () => {
+    const emojiTitle = "🎵".repeat(101);
+    expect([...emojiTitle]).toHaveLength(101);
+    expect(emojiTitle.length).toBe(202);
+    expect(parseTrashMutationInput({
+      items: [{ kind: "resource", id }], confirmedTitles: [{ kind: "resource", id, title: emojiTitle }]
+    }).confirmedTitles[0]?.title).toBe(emojiTitle);
+    expect(() => parseTrashMutationInput({
+      items: [{ kind: "resource", id }], confirmedTitles: [{ kind: "resource", id, title: "🎵".repeat(201) }]
+    })).toThrow(LifecycleValidationError);
+  });
+
   it("uses ceiling days at the retention boundary", () => {
     const now = new Date("2026-01-01T00:00:00.000Z");
     expect(remainingTrashDays("2026-01-01T00:00:00.001Z", now)).toBe(1);

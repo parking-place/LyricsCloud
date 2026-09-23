@@ -72,15 +72,22 @@ export class GoogleOidcAdapter implements OidcAdapter {
   }
 
   #configuration(): Promise<Configuration> {
-    this.#client ??= discovery(
-      new URL(this.#config.issuer),
-      this.#config.clientId,
-      this.#config.clientSecret,
-      undefined,
-      new URL(this.#config.issuer).protocol === "http:"
-        ? { execute: [allowInsecureRequests], timeout: 10 }
-        : { timeout: 10 }
-    );
+    if (!this.#client) {
+      const issuer = new URL(this.#config.issuer);
+      const pending = discovery(
+        issuer,
+        this.#config.clientId,
+        this.#config.clientSecret,
+        undefined,
+        issuer.protocol === "http:"
+          ? { execute: [allowInsecureRequests], timeout: 10 }
+          : { timeout: 10 }
+      );
+      this.#client = pending;
+      void pending.catch(() => {
+        if (this.#client === pending) this.#client = undefined;
+      });
+    }
     return this.#client;
   }
 }

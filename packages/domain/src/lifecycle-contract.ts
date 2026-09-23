@@ -58,7 +58,7 @@ export function parseTrashMutationInput(value: unknown): TrashMutationInput {
   }
   for (const [index, item] of confirmations.entries()) {
     if (!item || (item.kind !== "resource" && item.kind !== "template") || !isUuid(item.id)
-      || typeof item.title !== "string" || !item.title.length || item.title.length > 200) {
+      || typeof item.title !== "string" || !item.title.length || [...item.title].length > 200) {
       issues.push({ field: `confirmedTitles.${index}`, code: "invalid" });
     }
   }

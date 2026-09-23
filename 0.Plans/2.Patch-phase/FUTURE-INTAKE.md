@@ -423,3 +423,7 @@ Git tracked 목록과 hidden/untracked 공개 탐색에서 Future 관련 4문서
 ## 2026-09-24 — 1.1.7b P3 완료 기록 push 전·Phase 완료 검수
 
 tracked 목록과 hidden/untracked 공개 경로에서 Future 관련 4문서를 다시 확인했다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`는 직전 P3 기능 후보 인수와 동일하고 129개 FF ID·체크·본문, 신규·이동·삭제는 없다. 나머지 세 문서는 절차와 기존 scope/mapping이며 새 후보가 아니다. staged/unstaged Future 변경은 이 완료 검수 문단 외에 없다. 원격 source head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`와 P3 기능 브랜치 SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`가 유지된다. 새 배정 없이 P3 원격 CI·네 signed image·동일 SHA 공개 개발 인수를 기록하고 P4/P5 잔여를 유지한다. ignored/private 원본·보호 계획·native·main·정식 tag/image·릴리스 서버는 변경하거나 자동 공개하지 않았다. 직전 P3 검수의 동일 입력을 재참조하며 재선정하지 않는다.
+
+## 2026-09-24 — 1.1.7b P4 중간 보존 push 전 검수
+
+Git tracked 목록과 hidden/untracked 공개 탐색에서 Future 관련 문서는 동일한 4개다. 현행 `0.Plans/2.Patch-phase/Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`는 P3 문서 인수 SHA `cc4fc5646a395023f1e95b04985ec9da1759c74b`와 동일하다. 129개 FF ID·체크·본문 및 나머지 세 문서의 후보 범위에 신규·이동·삭제·수정은 없고, 현재 변경은 이 검수 기록과 P4 부분 보정·상태 기록뿐이다. 원격 source head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`도 동일하다. 새 후보를 배정하지 않고 P4 BE-01/04의 로컬 후보와 OPS-01 미해결·실기기 미제공을 `review`로 보존하며 P5/1.2.x를 선소비하지 않는다. ignored/private 원본은 자동 공개하지 않고 보호 계획·native·main·정식 tag/image·릴리스 서버를 변경하지 않는다. 직전 P3 완료 검수의 동일 입력을 재참조하며 재선정하지 않는다.

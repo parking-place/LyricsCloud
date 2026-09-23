@@ -1,6 +1,6 @@
 # 1.1.7b Phase 4 — 통합 회귀·잔여 차단·DB 호환·되돌림
 
-**상태: 계획 / 구현 미착수 (`planned`)**. [수용 기준](ACCEPTANCE.md) · [통합 맵](SOURCE-MAP.md) · [차단 목록](BLOCKERS.md).
+**상태: 검토 대기 (`review`)**. P3 문서 인수 SHA `cc4fc5646a395023f1e95b04985ec9da1759c74b`에서 전용 브랜치를 분기했다. BE-01/04는 로컬 보정 후보이고 OPS-01과 필수 환경 검증은 남아 P4 완료·P5 진입 불가다. [수용 기준](ACCEPTANCE.md) · [통합 맵](SOURCE-MAP.md) · [차단 목록](BLOCKERS.md).
 
 ## 목표·진입
 
@@ -38,3 +38,15 @@ AC-RD-117B-19~24 및 WC별 기존 수용. 입력 손실·거짓 저장·인가 �
 되돌림은 [수용표의 환경별 절차](ACCEPTANCE.md)를 따른다. native 1150 down/drop·기존 migration 재작성·초안/outbox 삭제·a 태그 이동은 금지한다. 제품 동작을 바꾸지 않은 문서 수정은 문서 검증으로 기록한다.
 
 다음: [P5](5phase.md).
+
+## 2026-09-24 착수 기록
+
+- 담당 Codex, 작업 `LC-RD-117B-P4-01~08`. P3 문서 인수 SHA `cc4fc5646a395023f1e95b04985ec9da1759c74b`에서 `phase/1.1.7b-p4-regression-blockers`를 분기했고 tracked worktree는 깨끗했다. 기능 기준 SHA는 `1626c754d1ebc581f01c4d29873319827be0b6fd`다.
+- 원래 `.private/0922` review 재현 입력과 공개 BLOCKERS 22개를 현재 b 코드에서 다시 판정한다. 사용자 제공 실기기/OS IME/AT 증거는 현재 없으며 대리 자동화로 PASS 처리하지 않는다. `main`·정식 tag/image·릴리스 서버·native 1150/1151·보호 계획 문서는 변경하지 않는다.
+
+## 2026-09-24 부분 보정·중단 증거
+
+- `BE-01`: 새 로컬 OIDC provider가 첫 discovery 503을 반환한 뒤 같은 adapter의 재시도가 실패하는 수정 전 회귀 **1 FAIL**. 실패 Promise만 해제하고 진행 중 요청·성공 구성은 공유하도록 고친 후 OIDC 집중 **3 PASS**. 실제 Google 제공자 장애/복구는 실행하지 않았으며 전체 CI·개발 인수 전 해결 확정이 아니다.
+- `BE-04`: code point 101/UTF-16 202인 정상 프롬프트 제목이 trash parser에서 거부되는 수정 전 회귀 **1 FAIL**. 정확한 제목 비교는 그대로 두고 길이 단위만 맞춘 후 domain 집중 **4 PASS**. 격리 PostgreSQL/production Chromium에서 프롬프트 생성→soft delete→틀린 제목 409→정확한 제목 영구 삭제 200→조회 404가 desktop/mobile **2 PASS**. 첫 HTTP 시도의 곡 101자 제목 생성 400은 프롬프트 결함을 검사하지 못한 fixture 오류로 PASS에 포함하지 않는다.
+- Docker Node 24.20.0/pnpm 11.25.0 `pnpm check`·production web build PASS, 일반 Unit **376 PASS/128 DB 조건부 skip**. `OPS-01` 격리 백업 shell SIGKILL 후 재시도 두 번 exit 1·잠금 잔존으로 **재현**, 실제 DB dump/암호화·운영 backup을 실행한 결과는 아니다. 단순 lockfile 교체는 구/신 실행 혼용 배제를 증명하지 못하므로 적용하지 않았다.
+- 나머지 22개 원인별 최종 판정·필수 P0/P1 해소, 세 DB 환경·application rollback, 실제 OS IME/Windows/iOS/Android 물리 기기/AT는 미실행이다. 사용자가 실기기/증거를 현재 제공하기 어렵다고 답했다. 전체 P4 CI·signed image·같은 SHA 개발 서버 인수도 하지 않았다. 이 상태는 `review`이며 체크박스·P5·1.2.0을 완료로 진행하지 않는다. P3 기능 SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`가 개발 서버에 유지된다.

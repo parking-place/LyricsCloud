@@ -115,6 +115,34 @@ test.describe("0.8.0 trash and account lifecycle", () => {
   });
 });
 
+test.describe("1.1.7b BE-04 Unicode deletion confirmation", () => {
+  test.skip(!process.env.E2E_DATABASE_URL, "requires isolated E2E database");
+
+  test("permanently deletes a valid emoji title only when the exact stored title is confirmed", async ({ context, page }) => {
+    const account = await createAccount(context, "Unicode deletion fixture");
+    const title = "🎵".repeat(101);
+    try {
+      const created = await page.request.post("/api/prompts", { headers, data: {
+        requestId: randomUUID(), title, tokens: ["synthetic"]
+      } });
+      expect(created.status()).toBe(201);
+      const promptId = ((await created.json()).prompt as { id: string }).id;
+      expect((await page.request.delete(`/api/prompts/${promptId}`, { headers })).status()).toBe(200);
+      const item = { kind: "resource", id: promptId };
+      const wrong = await page.request.post("/api/trash/permanent", { headers, data: {
+        items: [item], confirmedTitles: [{ ...item, title: title.slice(0, -2) }]
+      } });
+      expect(wrong.status()).toBe(409);
+      expect((await page.request.get("/api/trash")).status()).toBe(200);
+      const exact = await page.request.post("/api/trash/permanent", { headers, data: {
+        items: [item], confirmedTitles: [{ ...item, title }]
+      } });
+      expect(exact.status()).toBe(200);
+      expect((await page.request.get(`/api/prompts/${promptId}`)).status()).toBe(404);
+    } finally { await deleteAccounts([account.userId]); }
+  });
+});
+
 async function createSong(page: Page, title: string): Promise<string> {
   const response = await page.request.post("/api/songs", { headers, data: { requestId: randomUUID(), title } });
   expect(response.status()).toBe(201); return ((await response.json()).song as { id: string }).id;

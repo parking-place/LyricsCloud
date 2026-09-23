@@ -9,6 +9,35 @@ let server: Server | undefined;
 describe("Google OIDC adapter protocol", () => {
   afterEach(async () => { if (server) await new Promise<void>((resolve) => server!.close(() => resolve())); server = undefined; });
 
+  it("retries discovery after a transient failure while sharing concurrent attempts", async () => {
+    let requests = 0;
+    server = createServer((request, response) => {
+      if (request.url !== "/.well-known/openid-configuration") return response.writeHead(404).end();
+      requests += 1;
+      if (requests === 1) return response.writeHead(503).end();
+      const origin = `http://127.0.0.1:${(server!.address() as { port: number }).port}`;
+      return json(response, {
+        issuer: origin, authorization_endpoint: `${origin}/authorize`, token_endpoint: `${origin}/token`, jwks_uri: `${origin}/jwks`,
+        response_types_supported: ["code"], subject_types_supported: ["public"], id_token_signing_alg_values_supported: ["RS256"]
+      });
+    });
+    await new Promise<void>((resolve) => server!.listen(0, "127.0.0.1", resolve));
+    const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+    const adapter = new GoogleOidcAdapter({
+      appOrigin: "http://localhost:8080", issuer: origin, clientId: "client", clientSecret: "secret",
+      sessionSecret: "synthetic-session-secret-at-least-32-bytes", allowedEmails: new Set(), secureCookies: false
+    });
+    const input = { state: "state", nonce: "nonce", codeChallenge: "challenge" };
+    const failed = await Promise.allSettled([adapter.authorizationUrl(input), adapter.authorizationUrl(input)]);
+    expect(failed.map((result) => result.status)).toEqual(["rejected", "rejected"]);
+    expect(requests).toBe(1);
+    const recovered = await Promise.all([adapter.authorizationUrl(input), adapter.authorizationUrl(input)]);
+    expect(recovered.every((url) => url.origin === origin)).toBe(true);
+    expect(requests).toBe(2);
+    await adapter.authorizationUrl(input);
+    expect(requests).toBe(2);
+  });
+
   it("uses only OIDC profile scopes and verifies a signed nonce-bound ID token", async () => {
     const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
     let expectedNonce = "";

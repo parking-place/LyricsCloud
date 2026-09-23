@@ -2,17 +2,27 @@
 
 ```yaml
 current_version: "1.1.7b"
-current_phase: "../3.Redesign-phase/1.1.7.b/3phase.md"
-state: "complete"
+current_phase: "../3.Redesign-phase/1.1.7.b/4phase.md"
+state: "review"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-24"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "1.1.7b P3 문서 인수 SHA에서 P4 전용 브랜치를 열고 22개 원인·DB 호환·rollback을 검증한다"
+next_action: "1.1.7b P4 OPS-01·나머지 필수 차단, 세 DB 유형·rollback 및 실제 OS IME/기기/AT 증거를 확보한다; 그전 P5 금지"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-24 — 1.1.7b P4 착수
+
+P3 문서 인수 SHA `cc4fc5646a395023f1e95b04985ec9da1759c74b`의 깨끗한 worktree에서 `phase/1.1.7b-p4-regression-blockers`를 분기했다. 담당 Codex, 작업 `LC-RD-117B-P4-01~08`; 현재 b 기능 기준은 P3 SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`, 원래 0922 review 입력과 BLOCKERS 22개를 독립 재판정한다. P4 코드·DB 환경 행렬·rollback·필수 CI·이미지·개발 인수는 아직 미완료다. 사용자는 실제 Windows/iOS/Android 기기·OS IME·AT 자료를 현재 제공하기 어렵다고 답했다. 자동화 대리 결과를 실기기 PASS로 쓰지 않으며 필수 gate가 남으면 P4 `review`에서 멈춘다.
+
+### 2026-09-24 — 1.1.7b P4 부분 보정·review
+
+BE-01 최초 OIDC discovery 503 뒤 같은 adapter의 재시도 실패, BE-04 생성 가능한 이모지 101자 프롬프트의 삭제 확인 거부를 현재 b tree의 신규 회귀에서 각각 수정 전 FAIL로 재현했다. 실패 Promise만 캐시에서 해제하고 동시 요청/성공 캐시는 유지하는 최소 수정, 삭제 확인 제목을 생성 정책과 같은 code-point 길이로 검사하는 최소 수정을 적용했다. 수정 후 집중 Unit 7 PASS, Docker `pnpm check`·production web build PASS, 일반 Unit **376 PASS/128 DB 조건부 skip**, BE-04 실제 격리 DB HTTP desktop/mobile **2 PASS**다. 최초 HTTP 시험은 원인 대상이 아닌 곡 제목 101자 fixture가 생성 400으로 거부된 것이며, 원래 리뷰 대상인 프롬프트로 정정한 실행만 PASS다. 실제 외부 Google 장애/복구는 미실행이다.
+
+OPS-01은 현재 backup shell의 격리 SIGKILL 재현에서 뒤이은 실행 두 번 모두 실패하고 잠금이 남아 **여전히 재현**된다. 구/신 잠금 혼용·실행 중 백업 보호를 해결하지 않은 단순 파일 잠금 교체는 적용하지 않았다. 나머지 원인별 최종 판정, 세 DB 환경·rollback, 실제 OS IME/물리 기기/AT(사용자 현재 제공 어려움), 전체 P4 CI·signed image·동일 SHA 개발 인수는 미완료다. 따라서 P4는 `review`, P5와 1.2.0은 시작하지 않는다. [P4 부분 증거](../3.Redesign-phase/1.1.7.b/4phase.md)를 따른다. 기존 P3 개발 배포·DB·`main`·정식 tag/image·릴리스 서버는 유지했다.
 
 ### 2026-09-24 — 1.1.7b P3 완료·P4 진입 대기
 
