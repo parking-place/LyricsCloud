@@ -2,6 +2,8 @@
 
 2026-09-22 추가 사용자 요청에 따라 최신 원격 브랜치를 가져와 **Git tree·소스·회귀 파일·인수 문서**를 비교했다. 현재 checkout을 바꾸거나 이 브랜치를 병합·제품 적용하지 않았다. [전체 로드맵](ROADMAP.md)과 아래 선택 후보를 각 Phase가 소비한다.
 
+2026-09-23 현재 통합 소유: 사용자 요청으로 **[1.1.7b](1.1.7.b/README.md)에서 웹 코드를 먼저 통합한 뒤 1.2.0을 시작**한다. 아래 source/정적 비교 사실은 보존하며, WC 표의 기존 1.2.x 작업은 b 인수 뒤 잔여·코발트 회귀 소유다. 최초 통합의 실제 작업은 [b SOURCE-MAP](1.1.7.b/SOURCE-MAP.md)에 연결한다.
+
 ## 고정한 기준과 범위
 
 | 항목 | 값·의미 |
@@ -67,26 +69,26 @@ WC ID는 이번 비교의 선택 인수 단위이며 신규 확정 결함 수가
 
 | 후보 | 원격 변경·의존 파일 | 적용 작업·남은 수용 |
 |---|---|---|
-| `WC-01` metadata 초안·늦은 ACK·계정별 복구 | metadata-draft.ts, lyric-editor.tsx, rhyme-editor.tsx, account-cache.ts | [1.2.1 P2](1.2.1/2phase.md) `LC-RD-121-P2-01`. owner/kind/document/revision별 보관, offline 닫기→재진입·명시 복원·quota·계정 전환·다른 탭 revision/새 입력을 늦은 ACK가 지우지 않는지 확인한다. |
-| `WC-02` 자동 저장 timer·가사/공유 IME ChangeSet | autosave.ts, browser-sync.ts, autosave.test.ts, lyric-sync.spec.ts | [1.2.2 P2](1.2.2/2phase.md) `LC-RD-122-P2-05`. 조합 중 timer/flush/retry/dispose가 preedit를 확정 저장하지 않고 remote 내부 삽입·local undo가 보존되는지 확인한다. prompt 제목 잔존 문제와 별도 경로로 인수한다. |
-| `WC-03` guarded client navigation·shortcut | app-shell.tsx, shortcut-runtime.ts, pwa-shell-stabilization.test.ts | [1.2.1 P3](1.2.1/3phase.md) `LC-RD-121-P3-03`. 동일 URL no-op·modified click·editor veto를 유지하며 await 뒤 pending 상태를 재확인한다. profile/PWA·back/reload와 page-local 링크까지 누락 경계를 마무리한다. |
-| `WC-04` 전역·가사 표시 설정 저장 응답 경쟁 | settings-screen.tsx, lyric-display-settings.tsx, settings-save-race.spec.ts, lyric-display-settings-race.spec.ts | [1.2.1 P3](1.2.1/3phase.md) `LC-RD-121-P3-02`. 제출 snapshot만 ACK하고 대기 중 새 draft/default/theme preview를 유지한다. reset conflict retry는 DELETE 의미와 최신 rowVersion을 보존한다. |
-| `WC-05` Suno 수동 workspace 초안·생성 재시도 | suno-workspace-panel.tsx, song-dashboard.tsx, songs/[songId]/page.tsx, account-cache.ts | [1.2.1 P3](1.2.1/3phase.md) `LC-RD-121-P3-01`. owner namespace·legacy key 정리·동기 in-flight lock·응답 뒤 계속 입력 보존·ACK된 생성의 edit 전환을 한 묶음으로 검사한다. 자동 metadata 수집은 포함하지 않는다. |
-| `WC-06` prompt 부분 치환·IME 순서·변환 재검사 | crdt.ts, prompt-editor.tsx, crdt.test.ts, historical-sync-1.1.8.spec.ts | [1.2.2 P2](1.2.2/2phase.md) `LC-RD-122-P2-01`은 ES-02/03, [P4](1.2.2/4phase.md) `LC-RD-122-P4-01`은 ES-04 담당. ES-02/04 후보를 재사용하되 ES-03 제목, 치환 구간 내부 remote, 복수 update·실제 OS IME·변환 권한/undo 잔여를 인수한다. |
-| `WC-07` 목록 응답 세대·검색 표시/키보드 순서 | song/rhyme/prompt-list-screen.tsx, search-screen.tsx, list-response-races.test.ts | [1.2.5 P2](1.2.5/2phase.md) `LC-RD-125-P2-01`. 4화면 후보와 회귀를 선별한다. song-link-manager까지 확대하고 items/count/cursor/filterOptions/orderVersion/loading/error가 최신 query 소유인지 확인한다. |
-| `WC-08` 목록 metadata·favorite·최근 검색·수동 순서 경쟁 | song-list-screen.tsx, favorites-screen.tsx, search-screen.tsx, library-order-controls.tsx, database/rhymes.ts | [1.2.5 P3](1.2.5/3phase.md) `LC-RD-125-P3-05`. 서로 다른 필드/항목의 성공을 실패 rollback이 덮지 않고 빠른 반전·동시 삭제/clear·오래된 move 실패를 처리한다. 비manual view anchor와 duplicate의 lock 순서/replay를 실제 DB로 검사한다. |
-| `WC-09` 템플릿 형식별 원문 draft | template-screen.tsx, historical-ui-1.1.8.test.ts | [1.2.2 P4](1.2.2/4phase.md) `LC-RD-122-P4-03`. 형식 왕복 원문과 locked fieldset을 인수하되 type/target/selection 전환 보호·UI-04/05는 별도로 구현한다. |
-| `WC-10` 곡 부분 저장·가사 복제 응답 유실 | song-form.tsx, lyric-editor.tsx, historical-ui-1.1.8.test.ts, historical-editor-1.1.8.spec.ts | [1.2.6 P2](1.2.6/2phase.md) `LC-RD-126-P2-02`. 곡 다단계 저장의 성공 필드/미완료를 구별하고 새 입력을 보존한다. 가사 duplicate는 checkpoint 전 lock·동일 requestId replay·대기 중 metadata 변경 시 중단을 확인한다. |
-| `WC-11` 중첩 modal·도구막대·preview·복사 | dialog-focus.ts, styles.css, prompt-editor.tsx, editor/copy.ts, editor-responsive-toolbar.spec.ts | [1.2.6 P3](1.2.6/3phase.md) `LC-RD-126-P3-05`. Escape가 최상단만 닫고 touch focus가 복귀하며 도구가 잘리지 않는지 코발트에서 확인한다. Extend 공백 marker·원문/선택 copy와 preview 설정 회귀를 유지한다. UI-07/08 해결로 간주하지 않는다. |
-| `WC-12` Service Worker 다중 build·명시 업데이트 | public/sw.js, pwa-manager.tsx, service-worker.test.ts, pwa-shell-stabilization.test.ts | [1.2.8 P4](1.2.8/4phase.md) `LC-RD-128-P4-01`. 1.2.0 P1/P4에서 먼저 보존 gate로 인수한다. 구 탭 lazy chunk·unknown client/worker restart·탭별 승인·offline activation·private/no-store/Set-Cookie 배제·중복 fetch를 검사한다. 1.2.1 guard가 reload를 소비한다. |
-| `WC-13` OAuth/DB 잠금 뒤 만료·beta index key 방어 | auth/service.ts, database/beta-signup.ts, database/beta-access.ts, beta-signup.integration.test.ts | [1.2.3 P2](1.2.3/2phase.md) `LC-RD-123-P2-05`. provider 왕복과 intent/code/identity lock 뒤 live clock을 확인해 만료 시 session/grant/code 소비가 남지 않는지 시험한다. 다른 kid와 동일 kid bytes 변경의 운영 제약·tombstone을 유지하고 BE-01/02와 구별한다. |
-| `WC-14` 협업 projection 재시도 공정성 | collaboration/server.ts, store.ts, store.integration.test.ts | [1.2.4 P4](1.2.4/4phase.md) `LC-RD-124-P4-05`. 지속 실패 20개 뒤 정상 문서가 굶지 않는 keyset/wrap·trash 제외·timer 재진입 방지·Y.Doc cleanup·timestamp/오류 marker 보존을 검사한다. worker purge M-04 완료와 구별한다. |
-| `WC-15` guest 회수 뒤 서버 상태·authoredText 분리 | browser-sync.ts, public-guest-sync.test.ts, new-feature-1.1.3.spec.ts | [1.2.7 P2](1.2.7/2phase.md) `LC-RD-127-P2-05`. 회수/epoch-stale 시 서버 수용 body/cache로 복귀하고 작성 원문만 복구함에 둔다. 재연결·재허용 뒤 거절 입력 자동 재생이 없으며 ES-06 실패 보관과 충돌하지 않는지 실제 WS/DB로 인수한다. |
-| `WC-16` export v1 검증·휴지통 결과·삭제 영향 | export-contract.ts, database/export.ts, lifecycle.ts, lifecycle-contract.ts, trash-screen.tsx, trash-refresh-result.spec.ts | [1.2.7 P3](1.2.7/3phase.md) `LC-RD-127-P3-04`. 과거 v1 사진 필드 부재·새 Suno/photo 참조·owner 격리와 실제 export→validator를 검사한다. mutation 성공/refresh 실패를 분리하고 deletion batch 복원 수와 전체 cascade 자식 수를 구별한다. BE-04는 별도다. |
-| `WC-17` 환경 값·allowlist 날짜 도구 | check-environment.mjs, provision-auth-allowlist-keys.mjs, hmac-allowlist.mjs | [1.2.4 P1](1.2.4/1phase.md) `LC-RD-124-P1-05`. 제공된 optional env의 안전 정수/공백·backup 값과 offset deadline의 ISO UTC 정규화를 인수한다. import-safe main guard/test를 함께 가져오며 실제 secret/keyring을 복사하거나 회전하지 않는다. |
-| `WC-18` 엄격한 release tag gate·build 설정 | .github/workflows/ci.yml, p6-historical-release-tag-gate.mjs, next.config.ts | [1.2.8 P3](1.2.8/3phase.md) `LC-RD-128-P3-03`. annotated release gate와 fileURLToPath 의도를 검토하되 windows-native needs/assertion·1.1.8 build ID와 분리한다. native 재개 없이 같은 정책 의미를 유지하고 1.2.0 P1 metadata/6 Phase 지원을 재사용한다. |
+| `WC-01` metadata 초안·늦은 ACK·계정별 복구 | metadata-draft.ts, lyric-editor.tsx, rhyme-editor.tsx, account-cache.ts | [1.2.1 P2](1.2.1/2phase.md) `LC-RD-121-P2-01`. owner/kind/document/revision별 보관, offline 닫기→재진입·명시 복원·quota·계정 전환·다른 탭 revision/새 입력을 늦은 ACK가 지우지 않는지 확인한다.  최초 통합: [b P2](1.1.7.b/2phase.md) `LC-RD-117B-P2-01`. |
+| `WC-02` 자동 저장 timer·가사/공유 IME ChangeSet | autosave.ts, browser-sync.ts, autosave.test.ts, lyric-sync.spec.ts | [1.2.2 P2](1.2.2/2phase.md) `LC-RD-122-P2-05`. 조합 중 timer/flush/retry/dispose가 preedit를 확정 저장하지 않고 remote 내부 삽입·local undo가 보존되는지 확인한다. prompt 제목 잔존 문제와 별도 경로로 인수한다.  최초 통합: [b P2](1.1.7.b/2phase.md) `LC-RD-117B-P2-02`. |
+| `WC-03` guarded client navigation·shortcut | app-shell.tsx, shortcut-runtime.ts, pwa-shell-stabilization.test.ts | [1.2.1 P3](1.2.1/3phase.md) `LC-RD-121-P3-03`. 동일 URL no-op·modified click·editor veto를 유지하며 await 뒤 pending 상태를 재확인한다. profile/PWA·back/reload와 page-local 링크까지 누락 경계를 마무리한다.  최초 통합: [b P2](1.1.7.b/2phase.md) `LC-RD-117B-P2-05`. |
+| `WC-04` 전역·가사 표시 설정 저장 응답 경쟁 | settings-screen.tsx, lyric-display-settings.tsx, settings-save-race.spec.ts, lyric-display-settings-race.spec.ts | [1.2.1 P3](1.2.1/3phase.md) `LC-RD-121-P3-02`. 제출 snapshot만 ACK하고 대기 중 새 draft/default/theme preview를 유지한다. reset conflict retry는 DELETE 의미와 최신 rowVersion을 보존한다.  최초 통합: [b P2](1.1.7.b/2phase.md) `LC-RD-117B-P2-06`. |
+| `WC-05` Suno 수동 workspace 초안·생성 재시도 | suno-workspace-panel.tsx, song-dashboard.tsx, songs/[songId]/page.tsx, account-cache.ts | [1.2.1 P3](1.2.1/3phase.md) `LC-RD-121-P3-01`. owner namespace·legacy key 정리·동기 in-flight lock·응답 뒤 계속 입력 보존·ACK된 생성의 edit 전환을 한 묶음으로 검사한다. 자동 metadata 수집은 포함하지 않는다.  최초 통합: [b P2](1.1.7.b/2phase.md) `LC-RD-117B-P2-07`. |
+| `WC-06` prompt 부분 치환·IME 순서·변환 재검사 | crdt.ts, prompt-editor.tsx, crdt.test.ts, historical-sync-1.1.8.spec.ts | [1.2.2 P2](1.2.2/2phase.md) `LC-RD-122-P2-01`은 ES-02/03, [P4](1.2.2/4phase.md) `LC-RD-122-P4-01`은 ES-04 담당. ES-02/04 후보를 재사용하되 ES-03 제목, 치환 구간 내부 remote, 복수 update·실제 OS IME·변환 권한/undo 잔여를 인수한다.  최초 통합: [b P2](1.1.7.b/2phase.md) `LC-RD-117B-P2-03`·`LC-RD-117B-P2-04`. |
+| `WC-07` 목록 응답 세대·검색 표시/키보드 순서 | song/rhyme/prompt-list-screen.tsx, search-screen.tsx, list-response-races.test.ts | [1.2.5 P2](1.2.5/2phase.md) `LC-RD-125-P2-01`. 4화면 후보와 회귀를 선별한다. song-link-manager까지 확대하고 items/count/cursor/filterOptions/orderVersion/loading/error가 최신 query 소유인지 확인한다.  최초 통합: [b P3](1.1.7.b/3phase.md) `LC-RD-117B-P3-01`. |
+| `WC-08` 목록 metadata·favorite·최근 검색·수동 순서 경쟁 | song-list-screen.tsx, favorites-screen.tsx, search-screen.tsx, library-order-controls.tsx, database/rhymes.ts | [1.2.5 P3](1.2.5/3phase.md) `LC-RD-125-P3-05`. 서로 다른 필드/항목의 성공을 실패 rollback이 덮지 않고 빠른 반전·동시 삭제/clear·오래된 move 실패를 처리한다. 비manual view anchor와 duplicate의 lock 순서/replay를 실제 DB로 검사한다.  최초 통합: [b P3](1.1.7.b/3phase.md) `LC-RD-117B-P3-02`. |
+| `WC-09` 템플릿 형식별 원문 draft | template-screen.tsx, historical-ui-1.1.8.test.ts | [1.2.2 P4](1.2.2/4phase.md) `LC-RD-122-P4-03`. 형식 왕복 원문과 locked fieldset을 인수하되 type/target/selection 전환 보호·UI-04/05는 별도로 구현한다.  최초 통합: [b P2](1.1.7.b/2phase.md) `LC-RD-117B-P2-04`. |
+| `WC-10` 곡 부분 저장·가사 복제 응답 유실 | song-form.tsx, lyric-editor.tsx, historical-ui-1.1.8.test.ts, historical-editor-1.1.8.spec.ts | [1.2.6 P2](1.2.6/2phase.md) `LC-RD-126-P2-02`. 곡 다단계 저장의 성공 필드/미완료를 구별하고 새 입력을 보존한다. 가사 duplicate는 checkpoint 전 lock·동일 requestId replay·대기 중 metadata 변경 시 중단을 확인한다.  최초 통합: [b P2](1.1.7.b/2phase.md) `LC-RD-117B-P2-08`; [b P3](1.1.7.b/3phase.md) `LC-RD-117B-P3-03`. |
+| `WC-11` 중첩 modal·도구막대·preview·복사 | dialog-focus.ts, styles.css, prompt-editor.tsx, editor/copy.ts, editor-responsive-toolbar.spec.ts | [1.2.6 P3](1.2.6/3phase.md) `LC-RD-126-P3-05`. Escape가 최상단만 닫고 touch focus가 복귀하며 도구가 잘리지 않는지 코발트에서 확인한다. Extend 공백 marker·원문/선택 copy와 preview 설정 회귀를 유지한다. UI-07/08 해결로 간주하지 않는다.  최초 통합: [b P3](1.1.7.b/3phase.md) `LC-RD-117B-P3-04`. |
+| `WC-12` Service Worker 다중 build·명시 업데이트 | public/sw.js, pwa-manager.tsx, service-worker.test.ts, pwa-shell-stabilization.test.ts | [1.2.8 P4](1.2.8/4phase.md) `LC-RD-128-P4-01`. b P2/P4에서 먼저 인수하고 1.2.0은 전환 회귀로 확인한다. 구 탭 lazy chunk·unknown client/worker restart·탭별 승인·offline activation·private/no-store/Set-Cookie 배제·중복 fetch를 검사한다. b guard가 미전송 입력의 reload를 먼저 차단하며 1.2.1은 확장 계약과 잔여를 담당한다.  최초 통합: [b P2](1.1.7.b/2phase.md) `LC-RD-117B-P2-09`. |
+| `WC-13` OAuth/DB 잠금 뒤 만료·beta index key 방어 | auth/service.ts, database/beta-signup.ts, database/beta-access.ts, beta-signup.integration.test.ts | [1.2.3 P2](1.2.3/2phase.md) `LC-RD-123-P2-05`. provider 왕복과 intent/code/identity lock 뒤 live clock을 확인해 만료 시 session/grant/code 소비가 남지 않는지 시험한다. 다른 kid와 동일 kid bytes 변경의 운영 제약·tombstone을 유지하고 BE-01/02와 구별한다.  최초 통합: [b P3](1.1.7.b/3phase.md) `LC-RD-117B-P3-05`. |
+| `WC-14` 협업 projection 재시도 공정성 | collaboration/server.ts, store.ts, store.integration.test.ts | [1.2.4 P4](1.2.4/4phase.md) `LC-RD-124-P4-05`. 지속 실패 20개 뒤 정상 문서가 굶지 않는 keyset/wrap·trash 제외·timer 재진입 방지·Y.Doc cleanup·timestamp/오류 marker 보존을 검사한다. worker purge M-04 완료와 구별한다.  최초 통합: [b P3](1.1.7.b/3phase.md) `LC-RD-117B-P3-06`. |
+| `WC-15` guest 회수 뒤 서버 상태·authoredText 분리 | browser-sync.ts, public-guest-sync.test.ts, new-feature-1.1.3.spec.ts | [1.2.7 P2](1.2.7/2phase.md) `LC-RD-127-P2-05`. 회수/epoch-stale 시 서버 수용 body/cache로 복귀하고 작성 원문만 복구함에 둔다. 재연결·재허용 뒤 거절 입력 자동 재생이 없으며 ES-06 실패 보관과 충돌하지 않는지 실제 WS/DB로 인수한다.  최초 통합: [b P3](1.1.7.b/3phase.md) `LC-RD-117B-P3-07`. |
+| `WC-16` export v1 검증·휴지통 결과·삭제 영향 | export-contract.ts, database/export.ts, lifecycle.ts, lifecycle-contract.ts, trash-screen.tsx, trash-refresh-result.spec.ts | [1.2.7 P3](1.2.7/3phase.md) `LC-RD-127-P3-04`. 과거 v1 사진 필드 부재·새 Suno/photo 참조·owner 격리와 실제 export→validator를 검사한다. mutation 성공/refresh 실패를 분리하고 deletion batch 복원 수와 전체 cascade 자식 수를 구별한다. BE-04는 별도다.  최초 통합: [b P3](1.1.7.b/3phase.md) `LC-RD-117B-P3-08`. |
+| `WC-17` 환경 값·allowlist 날짜 도구 | check-environment.mjs, provision-auth-allowlist-keys.mjs, hmac-allowlist.mjs | [1.2.4 P1](1.2.4/1phase.md) `LC-RD-124-P1-05`. 제공된 optional env의 안전 정수/공백·backup 값과 offset deadline의 ISO UTC 정규화를 인수한다. import-safe main guard/test를 함께 가져오며 실제 secret/keyring을 복사하거나 회전하지 않는다.  최초 통합: [b P1](1.1.7.b/1phase.md) `LC-RD-117B-P1-06`. |
+| `WC-18` 엄격한 release tag gate·build 설정 | .github/workflows/ci.yml, p6-historical-release-tag-gate.mjs, next.config.ts | [1.2.8 P3](1.2.8/3phase.md) `LC-RD-128-P3-03`. annotated release gate와 fileURLToPath 의도를 검토하되 windows-native needs/assertion·1.1.8 build ID와 분리한다. native 재개 없이 같은 정책 의미를 유지하고 b P1에서 버전/경로·가변 Phase를 최초 지원하며 1.2.0 P1이 이를 인수한다.  최초 통합: [b P1](1.1.7.b/1phase.md) `LC-RD-117B-P1-04`·`LC-RD-117B-P1-05`. |
 
-WC-12의 서비스워커 자산 수명과 WC-02 입력 보존, WC-03/11 탐색·focus는 **1.2.0 전환 전 보존 gate**에서도 인수한다. 1.2.8 소유는 잔여 검증/구조 개선이며 기존 탭 파손이나 입력 유실을 뒤 버전까지 허용하는 배정이 아니다. 각 후속 계획에서 선해결된 코드는 재구현하지 않는다.
+WC-12의 서비스워커 자산 수명과 WC-02 입력 보존, WC-03/11 탐색·focus는 **1.1.7b에서 최초 통합·인수하고 1.2.0 전환에서 재검증**한다. 1.2.8 소유는 잔여 검증/구조 개선이며 기존 탭 파손이나 입력 유실을 뒤 버전까지 허용하는 배정이 아니다. 각 후속 계획에서 선해결된 코드는 재구현하지 않는다.
 
 ## 디자인·UX·운영 제안 비교
 
@@ -94,7 +96,7 @@ WC-12의 서비스워커 자산 수명과 WC-02 입력 보존, WC-03/11 탐색·
 |---|---|---|
 | D-01/02/03/06/08/09/11/14 | 핵심 제안 미변경 | 홈/프로필/깊은 복귀/연결 tabs/quick-add/인증·토큰 책임 계획 유지 |
 | D-04/05/07/12/13 | 관련 상태 경쟁·초안·dialog/toolbar 일부 개선 | sheet 명시 저장·목록 정보 위계·mobile preview·skip link/landmark·전체 문구/타이포는 잔여 |
-| D-10 | mutation 성공과 refresh 실패 분리 후보·전용 E2E | WC-16을 1.2.7 P3에서 채택 후 재검증 |
+| D-10 | mutation 성공과 refresh 실패 분리 후보·전용 E2E | b P3-08에서 WC-16 최초 통합 후 1.2.7 P3에서 잔여·코발트 회귀 인수 |
 | UX-03/04/06/11/12/15/20/21/22/24 | 위 WC 후보로 일부 개선 | 사용자 여정 전체 성공·이해도는 미측정. 연결된 원인과 남은 과제 인수 |
 | UX-07/08/10/18/19 | 편집/guest 일부 후보; ES-01/06/07 핵심 미해결 | UI 문구·가사 경로 수정으로 prompt/selected 저장 준비 문제를 닫지 않음 |
 | UX-01/02/05/09/13/14/16/17/23 | 해당 여정 전체의 해결 증거 없음 | 1.2.3/6/7 계약·사용성 과제 유지 |
@@ -111,7 +113,7 @@ WC-12의 서비스워커 자산 수명과 WC-02 입력 보존, WC-03/11 탐색·
 
 ## 실제 통합 절차와 중단 조건
 
-1. 1.2.0 P1에서 C1~C3/WC 목록과 최신 remote SHA를 확인하고, 필요한 release blocker의 범위/담당/소비 Phase를 PLAN-CHANGE에 기록한다.
+1. 1.1.7b P1에서 C1~C3/WC 목록과 최신 remote SHA를 확인하고, 필요한 release blocker의 범위/담당/소비 Phase를 b 차단표와 PLAN-CHANGE에 기록한다. 1.2.0은 실제 b 인수를 선행조건으로 소비한다.
 2. 각 WC별 최소 코드·타입·호출자·fixture의 의존표를 만든다. native·version·migration·권한·저장 포맷이 섞이면 의미 단위로 분리하며 기계적인 전체 merge/cherry-pick을 하지 않는다.
 3. 코발트 셸에 **동작 계약**을 옮긴다. 이전 B1 JSX/CSS 전체 복사나 snapshot 일괄 수용으로 리디자인을 덮지 않는다.
 4. 0922 원래 실패 입력과 원격 신규 회귀를 새 통합 SHA에서 확인한다. ES-03 제목, song-link-manager, profile/PWA, UI-04/05/07/08, OPS 미변경 경계는 명시적으로 남긴다.

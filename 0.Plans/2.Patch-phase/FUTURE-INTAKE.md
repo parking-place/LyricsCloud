@@ -373,3 +373,14 @@
 | 원격 `phase/1.1.8-p4-web-stabilization` | head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`; Future 후보 blob도 위 값과 동일 | 새 후보/체크 변경 없음. 원격 인수 문서의 웹 안정화 기록은 해당 source의 별도 이력 | [비교·선택 인수](../3.Redesign-phase/BRANCH-COMPARISON-118-P4.md)만 작성. native 계획 재개·원격 STATUS 이식·제품 코드 병합 없음 |
 
 발견된 나머지 세 문서는 이 절차와 `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`다. 절차·역사 매핑이며 별도 후보로 중복 처리하지 않는다. 비공개 원본 리뷰 8개와 재현/목업은 유지하고, 게시하는 것은 사용자 요청 범위의 비식별 요약·버전/Phase·수용/되돌림·브랜치 비교 계획이다. ignored 파일을 강제 추가하지 않는다. 1.2.0 다음 순서와 1.1.8~1.1.14 보류·기진행 증거를 유지한다. 이번 push는 문서 계획의 원격 게시이며 제품 Phase 완료·main 병합·배포가 아니다.
+
+## 2026-09-23 — 1.1.7b 선행 웹 통합 계획 게시 전 검수
+
+| 출처 | 이전 인수 기준 → 현행 | 발견·변경 판정 | 배정·보존 |
+|---|---|---|---|
+| `0.Plans/2.Patch-phase/Future_Feature.md` | 직전 게시 `e00a3cd62b90741a8bd629dfd669459169a1cbdb` / blob `8f42d20b638e245eb775415ccfdabef56a96f694` → 작업 트리 동일 blob | tracked·untracked·hidden 전역 탐색 4문서. 129개 FF ID·체크·본문 변경 없음. 새 후보 파일 없음 | Future 재선정 없음. 사용자 지시로 [1.1.7b 웹 안정화 통합](../3.Redesign-phase/1.1.7.b/README.md)을 1.2.0 앞에 배정 |
+| 원격 `phase/1.1.8-p4-web-stabilization` | head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`; 기능 `0375825fe004fc74869250eefa14add267c4b3ae`; Future blob도 위 값과 동일 | 원격 head 이동 없음. source의 원래 비교 판정 14 미변경/5 부분 대응/3 해결 후보 보존 | 18 WC의 최초 코드 통합 담당만 [b 통합 맵](../3.Redesign-phase/1.1.7.b/SOURCE-MAP.md)으로 이동. 기존 후속 작업은 증거 인수·코발트 회귀·잔여 확대 담당 |
+
+발견된 나머지 세 문서는 이 절차와 `docs/planning/future-idea-scope.md`, `docs/planning/mandatory-future-mapping.md`다. 절차·과거 매핑 원본을 별도 선택 후보로 처리하지 않는다. 보류된 native 1.1.8~1.1.14의 원문 42개 파일·과거 진행 상태를 보존한다. 비공개 리뷰 원본 8개의 hash와 코발트 목업·Sketch/Stack/Mock-up도 유지했다. ignored 자료를 강제 추가하지 않는다.
+
+이번 push는 `codex/1.1.7b-web-integration-plan`의 문서 계획 게시다. 실행 current 1.1.7a 완료는 유지하고 next만 b로 바꾼다. 제품 merge/port·VERSION·migration·main/tag/image·서버 변경은 수행하지 않았다. 실제 b Phase 완료/정식 발행으로 해석하지 않는다.

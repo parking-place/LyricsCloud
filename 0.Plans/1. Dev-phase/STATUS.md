@@ -6,11 +6,17 @@ current_phase: "../2.Patch-phase/1.1.7.a/5phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-15"
-updated_at: "2026-09-22"
-next_planned_version: "1.2.0"
-next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "1.1.8~1.1.14 후속 진행은 보류. v1.1.7a 기준의 1.2.0 코발트 Chroma Dock 리디자인 P1 계획을 다음 작업으로 인수한다. 이번 변경은 문서·목업 정리이며 제품 구현 미착수"
+updated_at: "2026-09-23"
+next_planned_version: "1.1.7b"
+next_planned_phase: "../3.Redesign-phase/1.1.7.b/1phase.md"
+next_action: "1.1.7b P1에서 1.1.8 웹 안정화 선별 통합과 정확한 b 버전·도구 계약을 인수한다. b P5 개발 인수 완료 뒤 그 SHA에서 1.2.0을 시작한다. native 1.1.8~1.1.14 보류; 이번은 계획 작성"
 ```
+
+## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+사용자 지시로 다음 제품 계획을 **[1.1.7b 웹 안정화 통합](../3.Redesign-phase/1.1.7.b/README.md)**으로 변경했다. 실제 순서는 **1.1.7a → 1.1.7b → 1.2.0 → 1.2.1~1.2.8**이다. b에서 1.1.8 웹 안정화 코드·회귀를 먼저 통합하고 같은 SHA의 개발 인수까지 완료한 뒤, 그 b SHA에서 코발트 리디자인을 시작한다. 현재 실행의 1.1.7a 완료 기록은 유지한다. 이번 작업은 계획이며 코드 통합·버전 변경·배포를 아직 수행하지 않았다. 1.1.8~1.1.14 네이티브 잔여 계획은 계속 보류한다.
+
+아래 2026-09-22의 직접 1.2.0 지정은 당시 이력이며, 현재 착수 순서는 이 절과 위 next_planned 값을 따른다.
 
 ## 2026-09-22 다음 계획 지정
 
@@ -229,6 +235,7 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7b 선행 통합 계획 (구현 Phase 아님) | PLAN-RD-117B | 3.Redesign-phase/1.1.7.b, 후속 순서·후보 소유권·버전 정책·실행 STATUS의 다음 계획 | 사용자 1.1.8 웹 안정화 선행 통합 지시; source c230c02/기능0375825 | 2026-09-23T12:18+09:00 | documented (5 Phase·42작업·24수용 기준·18 WC 상세 계획 및 문서 검증; 제품 미착수) |
 | Codex | 1.2.1 이후 계획 정비 (구현 Phase 아님) | PLAN-RD-12X | 3.Redesign-phase 후속 버전·추적·수용 계획, 계획 진입·Future 인수, 실행 STATUS의 계획 작업 기록 | 2026-09-22 사용자 요청; 0922 리뷰와 1.2.0 계획 인수; 네이티브 보류 유지 | 2026-09-22T19:22+09:00 | documented (8버전·41 Phase·205작업·리뷰/원격 비교 검증 완료; 제품 미착수) |
 | Codex | 1.2.0 계획 정비 (구현 Phase 아님) | PLAN-RD-120 | 3.Redesign-phase 목업·계획, 2.Patch-phase 보류·진입 문서, 실행 STATUS 다음 계획 | 2026-09-22 사용자 코발트 Chroma Dock 선택·1.1.8 이후 보류 지시; v1.1.7a 기준 | 2026-09-22 | documented (계획·목업 검증 완료; 제품 Phase 미착수) |
 | Codex | 1.1.7a/P5 | LC-PLAN-117A-P5-01~05 | 사용자/지원·요구 추적·30 migration/환경/license/manifest·최종 CI/동일 SHA 개발·승인된 전용 릴리스 | 후보 `fd4d901`, Actions `35047546033` verify/네 signed dev image·동일 SHA 공개 두 owner 저장/격리/재시작·홈 PASS, 합성 자료 0건 | 2026-09-16 | complete |

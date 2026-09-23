@@ -1,5 +1,7 @@
 # 1.2.5 Phase 3 — 템플릿 mutation·검색 키보드·복귀
 
+> 2026-09-23 순서 개정: [1.1.7b 통합](../1.1.7.b/README.md)과 1.2.0 인수가 선행한다. WC 후보의 최초 포팅은 b가 소유하며 이 문서의 같은 작업은 b 해결 SHA·회귀 인수와 남은 범위만 수행한다. 미완료 원격 코드를 완료로 간주하지 않는다.
+
 **상태: 계획 / 구현 미착수 (`planned`)**. [버전 범위](README.md) · [수용 기준](ACCEPTANCE.md) · [공통 gate](../QUALITY-GATES.md).
 
 ## 목표·진입
@@ -14,7 +16,7 @@
 - [ ] `LC-RD-125-P3-02` 복제/즐겨찾기/삭제의 reject/non2xx를 처리해 draft와 기존 항목을 보존한다. 권한 변경·대상 소멸·성공 후 reload 실패를 구별한다.
 - [ ] `LC-RD-125-P3-03` 통합 검색의 표시 그룹과 keyboard index를 동일한 flatten 순서로 만들고 현재의 실제 링크 focus 방식으로 Arrow/Tab의 이동 대상이 표시 순서와 일치하게 한다. aria-activedescendant를 사용하는 새 복합 widget을 이 수정에 도입하지 않는다.
 - [ ] `LC-RD-125-P3-04` 상세에서 검색으로 돌아올 때 pages/anchor를 회복하고 삭제/회수된 anchor는 가까운 유효 위치와 안내로 대체한다.
-- [ ] `LC-RD-125-P3-05` 목록 preview bytes·row 수·p95·EXPLAIN baseline을 수집한다. 측정 없이 새 index나 keyset을 필수 구현으로 추가하지 않는다. **[WC-08](../BRANCH-COMPARISON-118-P4.md)**의 기존 수정·회귀를 먼저 선별 인수한다: 서로 다른 필드/항목의 성공을 실패 rollback이 덮지 않고 빠른 반전·동시 삭제/clear·오래된 move 실패를 처리한다. 비manual view anchor와 duplicate의 lock 순서/replay를 실제 DB로 검사한다.
+- [ ] `LC-RD-125-P3-05` 목록 preview bytes·row 수·p95·EXPLAIN baseline을 수집한다. 측정 없이 새 index나 keyset을 필수 구현으로 추가하지 않는다. **[WC-08](../BRANCH-COMPARISON-118-P4.md)**의 b에 통합된 수정·회귀를 먼저 인수하고 미인수 잔여에만 추가 적용한다: 서로 다른 필드/항목의 성공을 실패 rollback이 덮지 않고 빠른 반전·동시 삭제/clear·오래된 move 실패를 처리한다. 비manual view anchor와 duplicate의 lock 순서/replay를 실제 DB로 검사한다.
 
 ## 산출물·검증
 

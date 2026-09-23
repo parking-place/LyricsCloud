@@ -1,17 +1,19 @@
 # 후속 기능 계획 상태
 
+> **2026-09-23 현재 순서:** [1.1.7b 웹 통합](../3.Redesign-phase/1.1.7.b/README.md) → 1.2.0 → 1.2.1~1.2.8. 이전 날짜의 직접 1.2.0 착수 안내는 이 순서로 대체하며 native 보류·완료 이력은 유지한다.
+
 > 2026-09-22 후속 추가: **1.2.0 → [1.2.1~1.2.8](../3.Redesign-phase/ROADMAP.md)**. [0922 추적](../3.Redesign-phase/REVIEW-TRACEABILITY.md)과 [1.1.8 P4 웹 안정화 비교](../3.Redesign-phase/BRANCH-COMPARISON-118-P4.md)를 반영한 계획이며 제품 미착수·native 보류는 유지한다.
 
 ```yaml
 plan_state: "on_hold_from_1.1.8"
 plan_owner: "Codex"
 prepared_at: "2026-09-09"
-updated_at: "2026-09-22"
+updated_at: "2026-09-23"
 planning_root: "0.Plans/2.Patch-phase"
 execution_authorized_by_this_file: false
 runtime_status_source: "0.Plans/1. Dev-phase/STATUS.md"
-next_planned_version: "1.2.0"
-next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
+next_planned_version: "1.1.7b"
+next_planned_phase: "../3.Redesign-phase/1.1.7.b/1phase.md"
 next_planning_root: "0.Plans/3.Redesign-phase"
 deferred_versions: "1.1.8 through 1.1.14"
 prerequisite: "v1.1.7a 기준 및 기존 기능/데이터/작업 경계 인수; 보류 플랫폼 버전 완료를 요구하지 않음"
@@ -21,7 +23,7 @@ release_server_authorized_after_all_phases: false
 
 ## 단일 상태 원본
 
-현재 실행 상태 원본은 [개발 STATUS](<../1. Dev-phase/STATUS.md>)이며 1.1.7a의 기존 완료 기록을 유지한다. 다음 계획은 [1.2.0 리디자인](../3.Redesign-phase/1.2.0/README.md)이다. 이 파일은 제품 구현 착수/배포를 승인하지 않는다.
+현재 실행 상태 원본은 [개발 STATUS](<../1. Dev-phase/STATUS.md>)이며 1.1.7a의 기존 완료 기록을 유지한다. 다음 계획은 [1.1.7b 웹 통합](../3.Redesign-phase/1.1.7.b/README.md)이며 이후 1.2.0 리디자인으로 이어진다. 이 파일은 제품 구현 착수/배포를 승인하지 않는다.
 
 [보류 결정](../3.Redesign-phase/PLAN-CHANGE.md)에 따라 1.1.8의 남은 작업과 1.1.9~1.1.14를 진행하지 않는다. 원래 계획·작업 ID·체크 상태·별도 개발선의 선행 인수는 보존한다. 기존 승인 기록은 당시 작업 범위에 남으며, 2026-09-22의 계획 배정 요청을 새로운 실행/운영 승인으로 확대하지 않는다.
 

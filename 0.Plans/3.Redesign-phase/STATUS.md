@@ -4,11 +4,13 @@
 plan_state: "ready"
 plan_owner: "Codex"
 prepared_at: "2026-09-22"
+updated_at: "2026-09-23"
+planned_sequence: "1.1.7b -> 1.2.0 -> 1.2.1 through 1.2.8"
 planning_root: "0.Plans/3.Redesign-phase"
 baseline_version: "1.1.7a"
 baseline_sha: "fc2463cdb47d9fd7d0042779f602c6ddb7d734cf"
-next_planned_version: "1.2.0"
-next_planned_phase: "1.2.0/1phase.md"
+next_planned_version: "1.1.7b"
+next_planned_phase: "1.1.7.b/1phase.md"
 selected_design: "Chroma Dock / Cobalt Blue (color study 04)"
 deferred_patch_versions: "1.1.8 through 1.1.14"
 implementation_state: "not_started"
@@ -16,7 +18,7 @@ execution_authorized_by_this_file: false
 runtime_status_source: "0.Plans/1. Dev-phase/STATUS.md"
 ```
 
-사용자가 승인한 내용은 코발트 블루 시안의 선택, 1.2.0 계획 배정, 1.1.8 이후 패치 우선순위 보류다. 이번 산출물은 계획·목업 정리이며 제품 구현 착수·완료나 배포 승인을 기록하지 않는다.
+현재 다음 계획은 [1.1.7b 통합](1.1.7.b/README.md)이며 5 Phase·42개 작업은 모두 planned다. P1 계약/버전 도구 → P2 편집·저장·PWA → P3 API·DB·목록·UI → P4 회귀/차단·DB 호환 → P5 동일 SHA 개발 인수 후 1.2.0으로 이어진다. 사용자 선택인 코발트 디자인과 native 보류는 유지한다. 아래 표는 b 다음에 진행할 1.2.0 계획이다. 이번 산출물은 계획·목업 정리이며 제품 구현 착수·완료나 배포 승인을 기록하지 않는다.
 
 | Phase | 계획 | 구현 상태 | 완료 증거 |
 |---|---|---|---|
@@ -30,7 +32,7 @@ runtime_status_source: "0.Plans/1. Dev-phase/STATUS.md"
 
 ## 2026-09-22 후속 계획 추가
 
-사용자는 0922 리뷰 기반 1.2.1 이후 버전 계획과 새 1.1.8 P4 웹 안정화 브랜치 비교를 요청했다. 아래는 **계획 배정 완료 / 구현 미착수**이며 위 next_planned_version은 계속 1.2.0이다. 계획 상세·순서는 [로드맵](ROADMAP.md), 차이와 재사용 후보는 [브랜치 비교](BRANCH-COMPARISON-118-P4.md), 검증은 [후속 계획 검증](POST120-VERIFICATION.md)에 있다.
+사용자는 0922 리뷰 기반 1.2.1 이후 버전 계획과 새 1.1.8 P4 웹 안정화 브랜치 비교를 요청했다. 아래는 **계획 배정 완료 / 구현 미착수**이며 당시 next_planned_version은 1.2.0이었다. 2026-09-23부터는 b 선행 통합 뒤 이 순서로 이어진다. 계획 상세·순서는 [로드맵](ROADMAP.md), 차이와 재사용 후보는 [브랜치 비교](BRANCH-COMPARISON-118-P4.md), 검증은 [후속 계획 검증](POST120-VERIFICATION.md)에 있다.
 
 | 버전 | 결과 | Phase / 작업 | 구현 상태 |
 |---|---|---:|---|
@@ -43,4 +45,4 @@ runtime_status_source: "0.Plans/1. Dev-phase/STATUS.md"
 | [1.2.7](1.2.7/README.md) | 공유·복구·계정 UX | 5 / 25 | planned / 미착수 |
 | [1.2.8](1.2.8/README.md) | 구조·품질 자동화·검증 공백 | 5 / 25 | planned / 미착수 |
 
-계획 정의는 총 8버전·41 Phase·205작업이다. 문서 검증과 원격 후보의 CI를 제품 구현 완료로 세지 않는다. 1.2.0 선해결은 새 후보 SHA의 수용 근거로만 인수하며, 보류 native를 자동 재개하지 않는다.
+계획 정의는 총 8버전·41 Phase·205작업이다. 문서 검증과 원격 후보의 CI를 제품 구현 완료로 세지 않는다. b/1.2.0 선해결은 새 후보 SHA의 수용 근거로만 인수하며, 보류 native를 자동 재개하지 않는다.

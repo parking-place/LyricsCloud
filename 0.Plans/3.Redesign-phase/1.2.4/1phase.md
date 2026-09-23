@@ -1,5 +1,7 @@
 # 1.2.4 Phase 1 — 환경·조건부 위험·연결 예산 계약
 
+> 2026-09-23 순서 개정: [1.1.7b 통합](../1.1.7.b/README.md)과 1.2.0 인수가 선행한다. WC 후보의 최초 포팅은 b가 소유하며 이 문서의 같은 작업은 b 해결 SHA·회귀 인수와 남은 범위만 수행한다. 미완료 원격 코드를 완료로 간주하지 않는다.
+
 **상태: 계획 / 구현 미착수 (`planned`)**. [버전 범위](README.md) · [수용 기준](ACCEPTANCE.md) · [공통 gate](../QUALITY-GATES.md).
 
 ## 목표·진입
@@ -14,7 +16,7 @@
 - [ ] `LC-RD-124-P1-02` 단일 호스트/공유 파일시스템별 잠금 보장을 확인하고 FD lock 또는 lease 선택과 의존 도구 가용성을 정한다.
 - [ ] `LC-RD-124-P1-03` 정규화 client IP 전달 주체/헤더·주소 검증·CDN 신뢰 범위와 경로별 bytes 제한표를 정한다.
 - [ ] `LC-RD-124-P1-04` worker success age/duration/failures/backlog age, query/lock timeout·drain 및 각 프로세스 pool 연결 예산의 baseline을 측정한다.
-- [ ] `LC-RD-124-P1-05` OPS-100-001과 코드 결함을 구별하고 실제 백업/복원·외부 환경 인수에서 남은 gate와 승인된 변경 환경을 기록한다. **[WC-17](../BRANCH-COMPARISON-118-P4.md)**의 기존 수정·회귀를 먼저 선별 인수한다: 제공된 optional env의 안전 정수/공백·backup 값과 offset deadline의 ISO UTC 정규화를 인수한다. import-safe main guard/test를 함께 가져오며 실제 secret/keyring을 복사하거나 회전하지 않는다.
+- [ ] `LC-RD-124-P1-05` OPS-100-001과 코드 결함을 구별하고 실제 백업/복원·외부 환경 인수에서 남은 gate와 승인된 변경 환경을 기록한다. **[WC-17](../BRANCH-COMPARISON-118-P4.md)**의 b에 통합된 수정·회귀를 먼저 인수하고 미인수 잔여에만 추가 적용한다: 제공된 optional env의 안전 정수/공백·backup 값과 offset deadline의 ISO UTC 정규화를 인수한다. import-safe main guard/test를 함께 가져오며 실제 secret/keyring을 복사하거나 회전하지 않는다.
 
 ## 산출물·검증
 

@@ -894,7 +894,14 @@
         "version": "1.2.1",
         "phase": 2,
         "task": "LC-RD-121-P2-01",
-        "acceptance": "owner/kind/document/revision별 보관, offline 닫기→재진입·명시 복원·quota·계정 전환·다른 탭 revision/새 입력을 늦은 ACK가 지우지 않는지 확인한다."
+        "acceptance": "owner/kind/document/revision별 보관, offline 닫기→재진입·명시 복원·quota·계정 전환·다른 탭 revision/새 입력을 늦은 ACK가 지우지 않는지 확인한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 2,
+          "task": "LC-RD-117B-P2-01",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-02",
@@ -902,7 +909,14 @@
         "version": "1.2.2",
         "phase": 2,
         "task": "LC-RD-122-P2-05",
-        "acceptance": "조합 중 timer/flush/retry/dispose가 preedit를 확정 저장하지 않고 remote 내부 삽입·local undo가 보존되는지 확인한다. prompt 제목 잔존 문제와 별도 경로로 인수한다."
+        "acceptance": "조합 중 timer/flush/retry/dispose가 preedit를 확정 저장하지 않고 remote 내부 삽입·local undo가 보존되는지 확인한다. prompt 제목 잔존 문제와 별도 경로로 인수한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 2,
+          "task": "LC-RD-117B-P2-02",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-03",
@@ -910,7 +924,14 @@
         "version": "1.2.1",
         "phase": 3,
         "task": "LC-RD-121-P3-03",
-        "acceptance": "동일 URL no-op·modified click·editor veto를 유지하며 await 뒤 pending 상태를 재확인한다. profile/PWA·back/reload와 page-local 링크까지 누락 경계를 마무리한다."
+        "acceptance": "동일 URL no-op·modified click·editor veto를 유지하며 await 뒤 pending 상태를 재확인한다. profile/PWA·back/reload와 page-local 링크까지 누락 경계를 마무리한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 2,
+          "task": "LC-RD-117B-P2-05",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-04",
@@ -918,7 +939,14 @@
         "version": "1.2.1",
         "phase": 3,
         "task": "LC-RD-121-P3-02",
-        "acceptance": "제출 snapshot만 ACK하고 대기 중 새 draft/default/theme preview를 유지한다. reset conflict retry는 DELETE 의미와 최신 rowVersion을 보존한다."
+        "acceptance": "제출 snapshot만 ACK하고 대기 중 새 draft/default/theme preview를 유지한다. reset conflict retry는 DELETE 의미와 최신 rowVersion을 보존한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 2,
+          "task": "LC-RD-117B-P2-06",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-05",
@@ -926,7 +954,14 @@
         "version": "1.2.1",
         "phase": 3,
         "task": "LC-RD-121-P3-01",
-        "acceptance": "owner namespace·legacy key 정리·동기 in-flight lock·응답 뒤 계속 입력 보존·ACK된 생성의 edit 전환을 한 묶음으로 검사한다. 자동 metadata 수집은 포함하지 않는다."
+        "acceptance": "owner namespace·legacy key 정리·동기 in-flight lock·응답 뒤 계속 입력 보존·ACK된 생성의 edit 전환을 한 묶음으로 검사한다. 자동 metadata 수집은 포함하지 않는다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 2,
+          "task": "LC-RD-117B-P2-07",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-06",
@@ -938,7 +973,16 @@
         "additional_tasks": [
           "LC-RD-122-P4-01"
         ],
-        "phase_scope": "P2: ES-02/03; P4: ES-04"
+        "phase_scope": "P2: ES-02/03; P4: ES-04",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 2,
+          "task": "LC-RD-117B-P2-03",
+          "additional_tasks": [
+            "LC-RD-117B-P2-04"
+          ]
+        }
       },
       {
         "id": "WC-07",
@@ -946,7 +990,14 @@
         "version": "1.2.5",
         "phase": 2,
         "task": "LC-RD-125-P2-01",
-        "acceptance": "4화면 후보와 회귀를 선별한다. song-link-manager까지 확대하고 items/count/cursor/filterOptions/orderVersion/loading/error가 최신 query 소유인지 확인한다."
+        "acceptance": "4화면 후보와 회귀를 선별한다. song-link-manager까지 확대하고 items/count/cursor/filterOptions/orderVersion/loading/error가 최신 query 소유인지 확인한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 3,
+          "task": "LC-RD-117B-P3-01",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-08",
@@ -954,7 +1005,14 @@
         "version": "1.2.5",
         "phase": 3,
         "task": "LC-RD-125-P3-05",
-        "acceptance": "서로 다른 필드/항목의 성공을 실패 rollback이 덮지 않고 빠른 반전·동시 삭제/clear·오래된 move 실패를 처리한다. 비manual view anchor와 duplicate의 lock 순서/replay를 실제 DB로 검사한다."
+        "acceptance": "서로 다른 필드/항목의 성공을 실패 rollback이 덮지 않고 빠른 반전·동시 삭제/clear·오래된 move 실패를 처리한다. 비manual view anchor와 duplicate의 lock 순서/replay를 실제 DB로 검사한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 3,
+          "task": "LC-RD-117B-P3-02",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-09",
@@ -962,7 +1020,14 @@
         "version": "1.2.2",
         "phase": 4,
         "task": "LC-RD-122-P4-03",
-        "acceptance": "형식 왕복 원문과 locked fieldset을 인수하되 type/target/selection 전환 보호·UI-04/05는 별도로 구현한다."
+        "acceptance": "형식 왕복 원문과 locked fieldset을 인수하되 type/target/selection 전환 보호·UI-04/05는 별도로 구현한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 2,
+          "task": "LC-RD-117B-P2-04",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-10",
@@ -970,7 +1035,16 @@
         "version": "1.2.6",
         "phase": 2,
         "task": "LC-RD-126-P2-02",
-        "acceptance": "곡 다단계 저장의 성공 필드/미완료를 구별하고 새 입력을 보존한다. 가사 duplicate는 checkpoint 전 lock·동일 requestId replay·대기 중 metadata 변경 시 중단을 확인한다."
+        "acceptance": "곡 다단계 저장의 성공 필드/미완료를 구별하고 새 입력을 보존한다. 가사 duplicate는 checkpoint 전 lock·동일 requestId replay·대기 중 metadata 변경 시 중단을 확인한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 2,
+          "task": "LC-RD-117B-P2-08",
+          "additional_tasks": [
+            "LC-RD-117B-P3-03"
+          ]
+        }
       },
       {
         "id": "WC-11",
@@ -978,7 +1052,14 @@
         "version": "1.2.6",
         "phase": 3,
         "task": "LC-RD-126-P3-05",
-        "acceptance": "Escape가 최상단만 닫고 touch focus가 복귀하며 도구가 잘리지 않는지 코발트에서 확인한다. Extend 공백 marker·원문/선택 copy와 preview 설정 회귀를 유지한다. UI-07/08 해결로 간주하지 않는다."
+        "acceptance": "Escape가 최상단만 닫고 touch focus가 복귀하며 도구가 잘리지 않는지 코발트에서 확인한다. Extend 공백 marker·원문/선택 copy와 preview 설정 회귀를 유지한다. UI-07/08 해결로 간주하지 않는다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 3,
+          "task": "LC-RD-117B-P3-04",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-12",
@@ -986,7 +1067,14 @@
         "version": "1.2.8",
         "phase": 4,
         "task": "LC-RD-128-P4-01",
-        "acceptance": "1.2.0 P1/P4에서 먼저 보존 gate로 인수한다. 구 탭 lazy chunk·unknown client/worker restart·탭별 승인·offline activation·private/no-store/Set-Cookie 배제·중복 fetch를 검사한다. 1.2.1 guard가 reload를 소비한다."
+        "acceptance": "b P2/P4에서 먼저 인수하고 1.2.0은 전환 회귀로 확인한다. 구 탭 lazy chunk·unknown client/worker restart·탭별 승인·offline activation·private/no-store/Set-Cookie 배제·중복 fetch를 검사한다. b guard가 미전송 입력의 reload를 먼저 차단하며 1.2.1은 확장 계약과 잔여를 담당한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 2,
+          "task": "LC-RD-117B-P2-09",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-13",
@@ -994,7 +1082,14 @@
         "version": "1.2.3",
         "phase": 2,
         "task": "LC-RD-123-P2-05",
-        "acceptance": "provider 왕복과 intent/code/identity lock 뒤 live clock을 확인해 만료 시 session/grant/code 소비가 남지 않는지 시험한다. 다른 kid와 동일 kid bytes 변경의 운영 제약·tombstone을 유지하고 BE-01/02와 구별한다."
+        "acceptance": "provider 왕복과 intent/code/identity lock 뒤 live clock을 확인해 만료 시 session/grant/code 소비가 남지 않는지 시험한다. 다른 kid와 동일 kid bytes 변경의 운영 제약·tombstone을 유지하고 BE-01/02와 구별한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 3,
+          "task": "LC-RD-117B-P3-05",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-14",
@@ -1002,7 +1097,14 @@
         "version": "1.2.4",
         "phase": 4,
         "task": "LC-RD-124-P4-05",
-        "acceptance": "지속 실패 20개 뒤 정상 문서가 굶지 않는 keyset/wrap·trash 제외·timer 재진입 방지·Y.Doc cleanup·timestamp/오류 marker 보존을 검사한다. worker purge M-04 완료와 구별한다."
+        "acceptance": "지속 실패 20개 뒤 정상 문서가 굶지 않는 keyset/wrap·trash 제외·timer 재진입 방지·Y.Doc cleanup·timestamp/오류 marker 보존을 검사한다. worker purge M-04 완료와 구별한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 3,
+          "task": "LC-RD-117B-P3-06",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-15",
@@ -1010,7 +1112,14 @@
         "version": "1.2.7",
         "phase": 2,
         "task": "LC-RD-127-P2-05",
-        "acceptance": "회수/epoch-stale 시 서버 수용 body/cache로 복귀하고 작성 원문만 복구함에 둔다. 재연결·재허용 뒤 거절 입력 자동 재생이 없으며 ES-06 실패 보관과 충돌하지 않는지 실제 WS/DB로 인수한다."
+        "acceptance": "회수/epoch-stale 시 서버 수용 body/cache로 복귀하고 작성 원문만 복구함에 둔다. 재연결·재허용 뒤 거절 입력 자동 재생이 없으며 ES-06 실패 보관과 충돌하지 않는지 실제 WS/DB로 인수한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 3,
+          "task": "LC-RD-117B-P3-07",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-16",
@@ -1018,7 +1127,14 @@
         "version": "1.2.7",
         "phase": 3,
         "task": "LC-RD-127-P3-04",
-        "acceptance": "과거 v1 사진 필드 부재·새 Suno/photo 참조·owner 격리와 실제 export→validator를 검사한다. mutation 성공/refresh 실패를 분리하고 deletion batch 복원 수와 전체 cascade 자식 수를 구별한다. BE-04는 별도다."
+        "acceptance": "과거 v1 사진 필드 부재·새 Suno/photo 참조·owner 격리와 실제 export→validator를 검사한다. mutation 성공/refresh 실패를 분리하고 deletion batch 복원 수와 전체 cascade 자식 수를 구별한다. BE-04는 별도다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 3,
+          "task": "LC-RD-117B-P3-08",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-17",
@@ -1026,7 +1142,14 @@
         "version": "1.2.4",
         "phase": 1,
         "task": "LC-RD-124-P1-05",
-        "acceptance": "제공된 optional env의 안전 정수/공백·backup 값과 offset deadline의 ISO UTC 정규화를 인수한다. import-safe main guard/test를 함께 가져오며 실제 secret/keyring을 복사하거나 회전하지 않는다."
+        "acceptance": "제공된 optional env의 안전 정수/공백·backup 값과 offset deadline의 ISO UTC 정규화를 인수한다. import-safe main guard/test를 함께 가져오며 실제 secret/keyring을 복사하거나 회전하지 않는다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 1,
+          "task": "LC-RD-117B-P1-06",
+          "additional_tasks": []
+        }
       },
       {
         "id": "WC-18",
@@ -1034,8 +1157,40 @@
         "version": "1.2.8",
         "phase": 3,
         "task": "LC-RD-128-P3-03",
-        "acceptance": "annotated release gate와 fileURLToPath 의도를 검토하되 windows-native needs/assertion·1.1.8 build ID와 분리한다. native 재개 없이 같은 정책 의미를 유지하고 1.2.0 P1 metadata/6 Phase 지원을 재사용한다."
+        "acceptance": "annotated release gate와 fileURLToPath 의도를 검토하되 windows-native needs/assertion·1.1.8 build ID와 분리한다. native 재개 없이 같은 정책 의미를 유지하고 b P1에서 버전/경로·가변 Phase를 최초 지원하며 1.2.0 P1이 이를 인수한다.",
+        "first_integration": {
+          "version": "1.1.7b",
+          "folder": "1.1.7.b",
+          "phase": 1,
+          "task": "LC-RD-117B-P1-04",
+          "additional_tasks": [
+            "LC-RD-117B-P1-05"
+          ]
+        }
       }
-    ]
+    ],
+    "ownership_note": "candidate version/phase/task retain followup residual ownership; first_integration is 1.1.7b"
+  },
+  "updated_at": "2026-09-23",
+  "next_planned_version": "1.1.7b",
+  "sequence": [
+    "1.1.7b",
+    "1.2.0",
+    "1.2.1",
+    "1.2.2",
+    "1.2.3",
+    "1.2.4",
+    "1.2.5",
+    "1.2.6",
+    "1.2.7",
+    "1.2.8"
+  ],
+  "pre_redesign_integration": {
+    "version": "1.1.7b",
+    "folder": "1.1.7.b",
+    "phases": 5,
+    "tasks": 42,
+    "acceptance": 24,
+    "state": "planned"
   }
 }

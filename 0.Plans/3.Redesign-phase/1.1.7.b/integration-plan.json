@@ -1,0 +1,289 @@
+{
+  "version": "1.1.7b",
+  "folder": "1.1.7.b",
+  "prepared_at": "2026-09-23",
+  "state": "planned",
+  "baseline_sha": "fc2463cdb47d9fd7d0042779f602c6ddb7d734cf",
+  "planning_base": "e00a3cd62b90741a8bd629dfd669459169a1cbdb",
+  "source_head": "c230c024aeb0297b1c130e3f3e8b507a43a7e871",
+  "source_functional_sha": "0375825fe004fc74869250eefa14add267c4b3ae",
+  "next_version": "1.2.0",
+  "phase_count": 5,
+  "task_count": 42,
+  "acceptance_count": 24,
+  "phases": [
+    {
+      "title": "기준 동결·통합 계약·1.1.7b 실행 기반",
+      "goal": "현재 웹 기준과 원격 수정의 경계를 고정하고 첫 Phase CI 전에 정확한 b 버전·경로를 지원한다.",
+      "paths": "VERSION, package/lockfile, packages/config, scripts의 version/phase/image/deploy/manifest 도구, CI/Compose/Playwright metadata와 이 계획 문서",
+      "tasks": [
+        "현재 작업자·미커밋 변경·worktree·원격 ref를 확인하고 통합 기준을 v1.1.7a 제품 tree와 최신 계획 문서에서 분리 기록한다. 원격 head c230c02/기능 0375825 이후 변경이 있으면 추가 diff만 검토해 source를 다시 동결한다.",
+        "WC-01~18별 원본 commit·실제 코드/타입/호출자/시험 경로와 최소 의존성 묶음을 SOURCE-MAP에 확정한다. native 앱/API/auth/1150 신규 적용·1.1.8 metadata·이전 STATUS와 코발트 적용은 통합 제외로 구분한다.",
+        "VERSION-CONTRACT의 제품 1.1.7b / 폴더 1.1.7.b / private package 1.1.7을 정확한 단일 예외로 등록한다. 1.1.7a 역사와 숫자 버전은 유지하고 다른 임의 suffix·개행/경로 조작은 계속 거부한다.",
+        "WC-18의 안전한 build 설정과 release-phase/image/tag/deploy validator 의도를 선별한다. 3.Redesign-phase 경로·가변 Phase·a/b 매핑을 지원하고 runtime/health/build ID/CI/Compose 기대값을 함께 정렬한다. 이 작업을 P5나 1.2.0까지 미루지 않는다.",
+        "dev-candidate 검사와 정식 release 승인/봉인 검사를 분리한다. manifest 존재만으로 P5/productionAuthorized가 강제되는 경로를 명시적으로 보정하며, WC-18 strict tag 검사와 웹 필수 job 의존을 유지하되 windows-native를 도입하지 않는다.",
+        "WC-17의 optional 환경 값/안전 정수/공백 검증·offset deadline 정규화·import-safe helper와 회귀를 함께 인수한다. 실제 keyring·secret·회전이나 backup 운영 설정 변경은 수행하지 않는다.",
+        "BLOCKERS의 22개 원인과 DB 세 종류를 현재 후보에서 확인할 입력/담당/차단표로 등록한다. native 1150이 이미 적용된 환경의 보존·API 비노출·rollback 계약을 정하고 임의 down/drop을 금지한다.",
+        "기존 a/숫자 버전·b/새 경로·잘못된 값 거부·dev/정식 tag 격리 회귀와 실제 P1 runtime 빌드를 인수한다. 계약/도구 변경·Phase source SHA·CI/개발 인수 증거를 남기고 P2/P3 파일 작성자를 확정한다."
+      ],
+      "checks": "AC-RD-117B-17/18/19/20; b를 명시 거부하던 기존 회귀의 승인된 기대값만 변경하고 a 보호·invalid 거부는 유지한다."
+    },
+    {
+      "title": "편집·저장·탐색·PWA 웹 코드 통합",
+      "goal": "작성 중 입력과 이전 탭을 보존하는 원격 수정 및 회귀를 기존 화면에 통합한다.",
+      "paths": "packages/editor, web editor/metadata-draft/account-cache/app-shell/settings/Suno/PWA, public/sw.js 및 대응 tests",
+      "tasks": [
+        "WC-01 metadata 초안을 owner/kind/document/revision별로 통합한다. lyric/rhyme 제목·메모의 늦은 ACK가 새 입력/다른 탭 revision을 삭제하지 않는지와 offline 종료→재진입·명시 복원·quota·계정 전환을 검사한다.",
+        "WC-02 autosave timer와 가사/selected/guest ChangeSet 보존 수정을 함께 인수한다. composition 시작·flush/retry/dispose의 preedit 확정 금지와 치환 범위 내부 remote 삽입·local undo를 검사하며 prompt 경로까지 해결됐다고 확장하지 않는다.",
+        "WC-06 중 prompt 부분 범위 치환·surrogate 경계·문장형 IME 순서 후보를 통합한다. ES-03 제목 잔존과 기준점/겹침 연산 한계를 분리 기록하고 원래 실패 입력·복수 update·undo/재연결 회귀를 유지한다.",
+        "WC-06 checkpoint 이후 source 재검사와 WC-09 형식별 template raw draft/locked fieldset을 함께 인수한다. stale preview·확인 연타·권한 종료·unmount·변환 undo와 type/target/selection 이탈 잔여를 별도 판정한다.",
+        "WC-03 guarded client navigation·shortcut·같은 URL no-op·modified click·await 뒤 pending 재검사를 기존 셸에 통합한다. profile/PWA·back/reload·page-local 링크의 누락을 추적하고 필요 최소 보호를 보완한다.",
+        "WC-04 전역/문서별 표시 설정의 제출 snapshot ACK·현재 draft/default/theme 유지와 reset conflict의 DELETE/rowVersion 의미를 인수한다. 늦은 응답이 이후 입력을 덮지 않는지 실제 브라우저로 확인한다.",
+        "WC-05 Suno 수동 workspace 초안의 owner namespace·legacy key 정리·동기 in-flight lock·생성 ACK 뒤 edit 전환을 dashboard의 owner 전달까지 통합한다. 원격 metadata 자동 수집은 포함하지 않는다.",
+        "WC-10의 가사 복제 부분을 인수한다. checkpoint 전 command lock·응답 유실 뒤 같은 requestId·기다리는 동안 metadata 변경 시 중단을 검사하고 곡 다단계 저장은 P3에 넘긴다.",
+        "WC-12 서비스워커/PWA의 구 build cache·lazy chunk·unknown client/worker restart·탭별 명시 update를 함께 통합한다. private/no-store/Set-Cookie 응답 제외·중복 fetch·offline activation과 미전송 입력의 reload 차단을 확인한다."
+      ],
+      "checks": "AC-RD-117B-01~06/09/10(가사)/12. 새 함수·회귀만 복사하지 말고 실제 UI→저장/서버 호출자까지 같은 후보로 확인한다."
+    },
+    {
+      "title": "API·데이터·목록·복구·UI 통합",
+      "goal": "나머지 웹 수정의 타입·API·DB·화면·시험을 의존성 단위로 완성한다.",
+      "paths": "apps/collaboration, packages/auth/database/domain/editor copy, web list/search/template/song/trash/dialog/style 및 대응 tests",
+      "tasks": [
+        "WC-07 곡/라임/prompt/search의 query generation·cursor commit·stale error와 표시 순서 기반 실제 링크 focus를 통합한다. song-link-manager의 미변경 범위는 UI-03 잔여로 구분하고 새 listbox를 도입하지 않는다.",
+        "WC-08 목록 필드/항목별 metadata·favorite 빠른 반전·최근 검색 삭제/clear·수동 순서 경쟁을 통합한다. rhyme duplicate lock 순서를 library order→resource로 맞춘 코드와 실제 DB replay/두 owner 회귀를 함께 인수한다.",
+        "WC-10 곡 다단계 저장의 confirmed snapshot·savedSongId·성공/남은 필드 안내와 재시도를 인수한다. 새 입력을 보존하며 이미 성공한 단계를 무조건 반복하지 않고 응답 유실·부분 성공을 시험한다.",
+        "WC-11 중첩 dialog focus/Escape·touch 복귀·도구막대/preview 잘림·쓰기 설정·공백 Extend marker copy를 기존 B1/classic 기준에 통합한다. 코발트 layout/CSS를 아직 적용하지 않으며 UI-07 오류 위치·UI-08 FAB 겹침과는 별도 판정한다.",
+        "WC-13 OAuth 왕복 및 DB intent/code/identity lock 뒤 live clock 재검사·beta index key fail-closed를 인수한다. 만료 시 session/grant/code 소비가 남지 않고 tombstone 보존·다른 kid/같은 kid secret 교체 제약이 유지되는지 검사한다. BE-01/02 잔여를 별도로 둔다.",
+        "WC-14 협업 projection retry의 stable keyset/wrap·trash 제외·timer 중첩 방지·Y.Doc cleanup·실패 관측을 통합한다. 지속 실패 20개 뒤 정상 문서의 처리·timestamp/marker 보존을 확인하고 worker purge M-04와 혼동하지 않는다.",
+        "WC-15 guest 회수/epoch-stale 뒤 서버 수용 body/cache 복귀와 authoredText 분리를 통합한다. 재연결/권한 재허용 뒤 거부 입력 재생이 없고 private snapshot을 노출하지 않는지 확인하며 ES-06 persist 실패 보관과 함께 인수한다.",
+        "WC-16 export v1의 Suno/photo section·참조/owner 검증과 lifecycle/domain/trash의 삭제 영향·mutation 성공/refresh 실패 분리를 한 묶음으로 인수한다. 과거 v1 사진 필드 부재 호환, 오래전 삭제한 자식 cascade 수와 실제 결과를 검사한다.",
+        "통합 경계의 현행 목록/복사/프로필/설정/공유/복구 수용과 API 오류·권한·합성 두 계정 검사를 수행한다. 기존 fixture의 1.1.8 기대값은 b로 의미 있게 변경하고 원격 snapshot을 검토 없이 승인하지 않는다."
+      ],
+      "checks": "AC-RD-117B-07/08/10(곡)/11/13~16. 목록/서버/DB·실제 오류 복구의 경계 증거와 모든 WC의 미해결 항목을 P4에 전달한다."
+    },
+    {
+      "title": "통합 회귀·잔여 차단·DB 호환·되돌림",
+      "goal": "b가 안전한 리디자인 출발점인지 독립 경계 시험으로 판정한다.",
+      "paths": "통합된 제품 경계의 필요한 최소 보정, tests/격리 DB/브라우저, BLOCKERS/ACCEPTANCE/통합 기록",
+      "tasks": [
+        "원래 0922 입력과 원격 신규 회귀를 새 b SHA에서 실행해 22개 원인을 선해결/재현/미확인으로 판정한다. 원격 CI 성공이나 후보 코드 존재를 현재 PASS로 쓰지 않는다.",
+        "ES-01 raw move/move·move/remove→store ACK, ES-03 제목/조합, ES-05 volatile guard, ES-06 selected/guest quota latch·원문 복구, ES-07 빈 캐시 bootstrap의 잔여를 검증한다. 현재 재현되는 손실/거짓 저장은 최소 보정과 같은 입력 회귀로 닫고 범위가 커지면 인수를 중단한다.",
+        "BE-01 최초 discovery 실패→회복을 필수로 확인하고 BE-02 SSR/cookie, BE-03 동일 POST expiry/replay, BE-04 Unicode 삭제 확인은 실제 API 결과로 판정한다. 상태/권한/파괴 작업에 영향을 주는 잔여는 차단표에 기록하며 후속 번호만으로 면제하지 않는다.",
+        "OPS-01 KILL 뒤 잠금 회복, 실제 환경에 적용되는 OPS-02 신뢰 proxy와 UI-01/02 입력 보존을 인수 차단으로 확인한다. OPS-03 업로드 경계 등 P2도 영향·재현·후속을 명시하고 OPS-100-001 예외와 코드 결함을 분리한다. 필요한 최소 수정/검사만 b에 편입한다.",
+        "새 웹 DB·populated 1.1.7a DB·기존 1150+1151 DB의 migration 집합/checksum·native 객체/권한·RLS·원문/사진/export를 검사한다. ready 1151만으로 동등성을 주장하지 않으며 native 1150을 down/drop/재번호화하지 않는다.",
+        "서비스 재시작·offline 재연결·다중탭/계정 전환·권한 회수·두 build 동시 사용·unknown SW client에서 원문/outbox·cache 비공개·반영 상태를 검사한다. owner/selected/guest 수명과 과거 ACK를 구별한다.",
+        "현행 지원 브라우저·320/390/768/1440 양 테마·200%/forced colors·reduced motion·가상 키보드/OS IME/AT·성능 예산을 영향 범위로 인수한다. 합성 browser 결과와 실제 OS/물리 기기 미실행을 구별한다.",
+        "환경별 application rollback을 검증하고 기존 웹 a 이미지와 native 포함 PC 이미지를 구분한다. 통합된 draft/outbox를 삭제하지 않고 필요시 쓰기 중단·원문 복구를 먼저 수행하며 필수 미실행/미해결 P0/P1이면 P4를 review로 남긴다."
+      ],
+      "checks": "AC-RD-117B-19~24 및 WC별 기존 수용. 입력 손실·거짓 저장·인가 확대·복구 불가와 필수 gate 미완료는 P5/1.2.0 진입을 막는다."
+    },
+    {
+      "title": "최종 증거·동일 SHA 개발 인수·1.2.0 인계",
+      "goal": "완료된 통합 SHA를 리디자인의 유일한 실행 출발점으로 봉인한다.",
+      "paths": "계획/통합수용 기록, docs/실행 STATUS/현재 manifest·릴리스 도구, 승인된 개발 환경 인수",
+      "tasks": [
+        "WC-01~18을 빠짐없이 채택/수정 후 채택/선행 해결/근거 있는 제외로 판정한다. 각 원본 SHA→최소 코드/시험 의존→새 통합 commit→회귀 결과를 연결하고 제외로 원문 보존이나 필수 웹 수정을 빠뜨리지 않는다.",
+        "정확한 b runtime/package/schema/Phase·manifest·Docker 채널과 a/일반 버전 회귀를 봉인한다. dev 문서에 과거 productionAuthorized=true나 a 전용 release 예외를 복사하지 않고 정식 발행 미승인을 사실대로 기록한다.",
+        "필요한 전체 unit/DB/브라우저/production·보안/라이선스·성능과 최종 mandatory CI, 서비스별 signed image·digest/provenance를 같은 b 후보로 인수한다. 동일 SHA 성공 근거를 재사용하며skip/cancel을PASS로 표시하지 않는다.",
+        "승인된 개발 대상의 실제 배포 SHA·DB 유형·이전 rollback 이미지/자료 보존을 확인한 뒤 같은 b SHA를 배포한다. tracked 변경·secret 누락·알 수 없는 migration 차이가 있으면 덮어쓰지 않는다. PC나 릴리스 서버를 자동 갱신하지 않는다.",
+        "개발 공개 live/ready·버전/phase/schema·저장/재진입·IME/공유 회수·목록/설정·trash/export·구탭PWA 핵심 smoke와 필요 서비스 재시작을 수행하고 합성 자료를 정리한다. 새 b SHA의 원격 인수 전에는 PC의 원격 C3 결과로 완료시키지 않는다.",
+        "통합/사용자/지원 문서와 release 경로의 승인 상태·실기기/외부backup/RPO 잔여·rollback을 기록한다. a의 별도 release branch 승인이나 기존 main 통합을 b의 정식 발행 권한으로 승계하지 않는다.",
+        "HANDOFF-TO-1.2.0의 기준 source/CI/image/DB/웹 회귀/원래 review 잔여/디자인 보존 표를 실제값으로 완성한다. 1.2.0은 이 인수된 b SHA에서 시작하고 a나 원격 1.1.8 전체 tree에서 재시작하지 않는다.",
+        "현재 버전/Phase 완료·Future 검수·검증 증거·후속 단계 담당을 실행STATUS에 기록하고 다음 계획을 1.2.0 P1로 넘긴다. 후속 41 Phase/205개 작업은 b에서 해결된 부분을 재구현하지 않게 근거/잔여로 정리하고 native 보류는 유지한다."
+      ],
+      "checks": "18 WC 판정·22개 원인 차단 목록·24개 수용 기준과 동일 SHA 개발 인수가 완료되어야 한다. 정식 tag/image/릴리스 서버는 별도 현재 승인 없으면 미실행으로 인계한다."
+    }
+  ],
+  "candidates": [
+    {
+      "id": "WC-01",
+      "phase": 2,
+      "task": "LC-RD-117B-P2-01",
+      "additional_tasks": [],
+      "followup_version": "1.2.1",
+      "followup_task": "LC-RD-121-P2-01",
+      "acceptance_id": "AC-RD-117B-01",
+      "state": "planned"
+    },
+    {
+      "id": "WC-02",
+      "phase": 2,
+      "task": "LC-RD-117B-P2-02",
+      "additional_tasks": [],
+      "followup_version": "1.2.2",
+      "followup_task": "LC-RD-122-P2-05",
+      "acceptance_id": "AC-RD-117B-02",
+      "state": "planned"
+    },
+    {
+      "id": "WC-03",
+      "phase": 2,
+      "task": "LC-RD-117B-P2-05",
+      "additional_tasks": [],
+      "followup_version": "1.2.1",
+      "followup_task": "LC-RD-121-P3-03",
+      "acceptance_id": "AC-RD-117B-03",
+      "state": "planned"
+    },
+    {
+      "id": "WC-04",
+      "phase": 2,
+      "task": "LC-RD-117B-P2-06",
+      "additional_tasks": [],
+      "followup_version": "1.2.1",
+      "followup_task": "LC-RD-121-P3-02",
+      "acceptance_id": "AC-RD-117B-04",
+      "state": "planned"
+    },
+    {
+      "id": "WC-05",
+      "phase": 2,
+      "task": "LC-RD-117B-P2-07",
+      "additional_tasks": [],
+      "followup_version": "1.2.1",
+      "followup_task": "LC-RD-121-P3-01",
+      "acceptance_id": "AC-RD-117B-05",
+      "state": "planned"
+    },
+    {
+      "id": "WC-06",
+      "phase": 2,
+      "task": "LC-RD-117B-P2-03",
+      "additional_tasks": [
+        "LC-RD-117B-P2-04"
+      ],
+      "followup_version": "1.2.2",
+      "followup_task": "LC-RD-122-P2-01",
+      "acceptance_id": "AC-RD-117B-06",
+      "state": "planned",
+      "followup_additional_tasks": [
+        "LC-RD-122-P4-01"
+      ]
+    },
+    {
+      "id": "WC-07",
+      "phase": 3,
+      "task": "LC-RD-117B-P3-01",
+      "additional_tasks": [],
+      "followup_version": "1.2.5",
+      "followup_task": "LC-RD-125-P2-01",
+      "acceptance_id": "AC-RD-117B-07",
+      "state": "planned"
+    },
+    {
+      "id": "WC-08",
+      "phase": 3,
+      "task": "LC-RD-117B-P3-02",
+      "additional_tasks": [],
+      "followup_version": "1.2.5",
+      "followup_task": "LC-RD-125-P3-05",
+      "acceptance_id": "AC-RD-117B-08",
+      "state": "planned"
+    },
+    {
+      "id": "WC-09",
+      "phase": 2,
+      "task": "LC-RD-117B-P2-04",
+      "additional_tasks": [],
+      "followup_version": "1.2.2",
+      "followup_task": "LC-RD-122-P4-03",
+      "acceptance_id": "AC-RD-117B-09",
+      "state": "planned"
+    },
+    {
+      "id": "WC-10",
+      "phase": 2,
+      "task": "LC-RD-117B-P2-08",
+      "additional_tasks": [
+        "LC-RD-117B-P3-03"
+      ],
+      "followup_version": "1.2.6",
+      "followup_task": "LC-RD-126-P2-02",
+      "acceptance_id": "AC-RD-117B-10",
+      "state": "planned"
+    },
+    {
+      "id": "WC-11",
+      "phase": 3,
+      "task": "LC-RD-117B-P3-04",
+      "additional_tasks": [],
+      "followup_version": "1.2.6",
+      "followup_task": "LC-RD-126-P3-05",
+      "acceptance_id": "AC-RD-117B-11",
+      "state": "planned"
+    },
+    {
+      "id": "WC-12",
+      "phase": 2,
+      "task": "LC-RD-117B-P2-09",
+      "additional_tasks": [],
+      "followup_version": "1.2.8",
+      "followup_task": "LC-RD-128-P4-01",
+      "acceptance_id": "AC-RD-117B-12",
+      "state": "planned"
+    },
+    {
+      "id": "WC-13",
+      "phase": 3,
+      "task": "LC-RD-117B-P3-05",
+      "additional_tasks": [],
+      "followup_version": "1.2.3",
+      "followup_task": "LC-RD-123-P2-05",
+      "acceptance_id": "AC-RD-117B-13",
+      "state": "planned"
+    },
+    {
+      "id": "WC-14",
+      "phase": 3,
+      "task": "LC-RD-117B-P3-06",
+      "additional_tasks": [],
+      "followup_version": "1.2.4",
+      "followup_task": "LC-RD-124-P4-05",
+      "acceptance_id": "AC-RD-117B-14",
+      "state": "planned"
+    },
+    {
+      "id": "WC-15",
+      "phase": 3,
+      "task": "LC-RD-117B-P3-07",
+      "additional_tasks": [],
+      "followup_version": "1.2.7",
+      "followup_task": "LC-RD-127-P2-05",
+      "acceptance_id": "AC-RD-117B-15",
+      "state": "planned"
+    },
+    {
+      "id": "WC-16",
+      "phase": 3,
+      "task": "LC-RD-117B-P3-08",
+      "additional_tasks": [],
+      "followup_version": "1.2.7",
+      "followup_task": "LC-RD-127-P3-04",
+      "acceptance_id": "AC-RD-117B-16",
+      "state": "planned"
+    },
+    {
+      "id": "WC-17",
+      "phase": 1,
+      "task": "LC-RD-117B-P1-06",
+      "additional_tasks": [],
+      "followup_version": "1.2.4",
+      "followup_task": "LC-RD-124-P1-05",
+      "acceptance_id": "AC-RD-117B-17",
+      "state": "planned"
+    },
+    {
+      "id": "WC-18",
+      "phase": 1,
+      "task": "LC-RD-117B-P1-04",
+      "additional_tasks": [
+        "LC-RD-117B-P1-05"
+      ],
+      "followup_version": "1.2.8",
+      "followup_task": "LC-RD-128-P3-03",
+      "acceptance_id": "AC-RD-117B-18",
+      "state": "planned"
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 # 1.2.1 Phase 3 — 공통 탐색·설정·PWA 보호
 
+> 2026-09-23 순서 개정: [1.1.7b 통합](../1.1.7.b/README.md)과 1.2.0 인수가 선행한다. WC 후보의 최초 포팅은 b가 소유하며 이 문서의 같은 작업은 b 해결 SHA·회귀 인수와 남은 범위만 수행한다. 미완료 원격 코드를 완료로 간주하지 않는다.
+
 **상태: 계획 / 구현 미착수 (`planned`)**. [버전 범위](README.md) · [수용 기준](ACCEPTANCE.md) · [공통 gate](../QUALITY-GATES.md).
 
 ## 목표·진입
@@ -10,9 +12,9 @@
 
 ## 작업
 
-- [ ] `LC-RD-121-P3-01` 라임 metadata PATCH와 프롬프트 메모리 입력을 공통 상태에 등록한다. durable offline 초안을 영원히 미저장으로 묶지 않는다. **[WC-05](../BRANCH-COMPARISON-118-P4.md)**의 기존 수정·회귀를 먼저 선별 인수한다: owner namespace·legacy key 정리·동기 in-flight lock·응답 뒤 계속 입력 보존·ACK된 생성의 edit 전환을 한 묶음으로 검사한다. 자동 metadata 수집은 포함하지 않는다.
-- [ ] `LC-RD-121-P3-02` 프로필 닉네임/사진·표시 설정의 독립 저장 상태를 등록하고 부분 성공 시 남은 dirty 필드를 정확히 유지한다. **[WC-04](../BRANCH-COMPARISON-118-P4.md)**의 기존 수정·회귀를 먼저 선별 인수한다: 제출 snapshot만 ACK하고 대기 중 새 draft/default/theme preview를 유지한다. reset conflict retry는 DELETE 의미와 최신 rowVersion을 보존한다.
-- [ ] `LC-RD-121-P3-03` 로고·rail·탭·모바일 메뉴·back·앱 내부 이동과 logout을 같은 의사결정에 연결한다. 취소 시 focus/selection과 파일 미리보기를 복구한다. **[WC-03](../BRANCH-COMPARISON-118-P4.md)**의 기존 수정·회귀를 먼저 선별 인수한다: 동일 URL no-op·modified click·editor veto를 유지하며 await 뒤 pending 상태를 재확인한다. profile/PWA·back/reload와 page-local 링크까지 누락 경계를 마무리한다.
+- [ ] `LC-RD-121-P3-01` 라임 metadata PATCH와 프롬프트 메모리 입력을 공통 상태에 등록한다. durable offline 초안을 영원히 미저장으로 묶지 않는다. **[WC-05](../BRANCH-COMPARISON-118-P4.md)**의 b에 통합된 수정·회귀를 먼저 인수하고 미인수 잔여에만 추가 적용한다: owner namespace·legacy key 정리·동기 in-flight lock·응답 뒤 계속 입력 보존·ACK된 생성의 edit 전환을 한 묶음으로 검사한다. 자동 metadata 수집은 포함하지 않는다.
+- [ ] `LC-RD-121-P3-02` 프로필 닉네임/사진·표시 설정의 독립 저장 상태를 등록하고 부분 성공 시 남은 dirty 필드를 정확히 유지한다. **[WC-04](../BRANCH-COMPARISON-118-P4.md)**의 b에 통합된 수정·회귀를 먼저 인수하고 미인수 잔여에만 추가 적용한다: 제출 snapshot만 ACK하고 대기 중 새 draft/default/theme preview를 유지한다. reset conflict retry는 DELETE 의미와 최신 rowVersion을 보존한다.
+- [ ] `LC-RD-121-P3-03` 로고·rail·탭·모바일 메뉴·back·앱 내부 이동과 logout을 같은 의사결정에 연결한다. 취소 시 focus/selection과 파일 미리보기를 복구한다. **[WC-03](../BRANCH-COMPARISON-118-P4.md)**의 b에 통합된 수정·회귀를 먼저 인수하고 미인수 잔여에만 추가 적용한다: 동일 URL no-op·modified click·editor veto를 유지하며 await 뒤 pending 상태를 재확인한다. profile/PWA·back/reload와 page-local 링크까지 누락 경계를 마무리한다.
 - [ ] `LC-RD-121-P3-04` beforeunload·PWA controllerchange의 플랫폼 제약을 명시하고 volatile 입력이 있으면 자동 reload를 보류한다. 강제 종료 시 메모리 보존을 약속하지 않는다.
 - [ ] `LC-RD-121-P3-05` 빠른 추가 오류/복구 행동을 focus trap 안에 배치하고 aria 연결·중복 제출 방지·성공 후 focus 복귀를 같은 상태 계약으로 적용한다.
 

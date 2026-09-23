@@ -1,5 +1,7 @@
 # 1.2.8 수용 기준 — 구조 정리·품질 자동화·검증 공백 해소
 
+> 2026-09-23 순서 개정: [1.1.7b 통합](../1.1.7.b/README.md)과 1.2.0 인수가 선행한다. WC 후보의 최초 포팅은 b가 소유하며 이 문서의 같은 작업은 b 해결 SHA·회귀 인수와 남은 범위만 수행한다. 미완료 원격 코드를 완료로 간주하지 않는다.
+
 **계획 기준이며 아래 항목의 실행 결과는 모두 미확인이다.** 테스트 이름/명령은 실제 착수 시 현행 manifest와 대조해 정한다. 존재하지 않는 script가 이미 있다고 가정하지 않는다.
 
 [버전 계획](README.md) · [공통 gate](../QUALITY-GATES.md) · [추적표](../REVIEW-TRACEABILITY.md)
@@ -29,6 +31,6 @@
 
 아래 항목도 구현 완료 기준에 포함하며 현재는 모두 계획/미실행이다. 원격 PASS를 새 통합 SHA에 자동 승계하지 않는다.
 
-- **[WC-12 — Service Worker 다중 build·명시 업데이트](../BRANCH-COMPARISON-118-P4.md)**: 1.2.0 P1/P4에서 먼저 보존 gate로 인수한다. 구 탭 lazy chunk·unknown client/worker restart·탭별 승인·offline activation·private/no-store/Set-Cookie 배제·중복 fetch를 검사한다. 1.2.1 guard가 reload를 소비한다.
+- **[WC-12 — Service Worker 다중 build·명시 업데이트](../BRANCH-COMPARISON-118-P4.md)**: b P2/P4에서 먼저 인수하고 1.2.0은 전환 회귀로 확인한다. 구 탭 lazy chunk·unknown client/worker restart·탭별 승인·offline activation·private/no-store/Set-Cookie 배제·중복 fetch를 검사한다. b guard가 미전송 입력의 reload를 먼저 차단하며 1.2.1은 확장 계약과 잔여를 담당한다.
 
-- **[WC-18 — 엄격한 release tag gate·build 설정](../BRANCH-COMPARISON-118-P4.md)**: annotated release gate와 fileURLToPath 의도를 검토하되 windows-native needs/assertion·1.1.8 build ID와 분리한다. native 재개 없이 같은 정책 의미를 유지하고 1.2.0 P1 metadata/6 Phase 지원을 재사용한다.
+- **[WC-18 — 엄격한 release tag gate·build 설정](../BRANCH-COMPARISON-118-P4.md)**: annotated release gate와 fileURLToPath 의도를 검토하되 windows-native needs/assertion·1.1.8 build ID와 분리한다. native 재개 없이 같은 정책 의미를 유지하고 b P1에서 버전/경로·가변 Phase를 최초 지원하며 1.2.0 P1이 이를 인수한다.

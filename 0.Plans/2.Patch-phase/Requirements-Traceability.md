@@ -1,5 +1,7 @@
 # 사용자 요구사항 추적표
 
+> **2026-09-23 현재 순서:** [1.1.7b 웹 통합](../3.Redesign-phase/1.1.7.b/README.md) → 1.2.0 → 1.2.1~1.2.8. 이전 날짜의 직접 1.2.0 착수 안내는 이 순서로 대체하며 native 보류·완료 이력은 유지한다.
+
 > 2026-09-22 후속 추가: **1.2.0 → [1.2.1~1.2.8](../3.Redesign-phase/ROADMAP.md)**. [0922 추적](../3.Redesign-phase/REVIEW-TRACEABILITY.md)과 [1.1.8 P4 웹 안정화 비교](../3.Redesign-phase/BRANCH-COMPARISON-118-P4.md)를 반영한 계획이며 제품 미착수·native 보류는 유지한다.
 
 > 2026-09-22: 아래는 기존 요구의 배정/인수 이력이다. 1.1.8~1.1.14 후속 진행은 보류하며 새 리디자인 요구는 [1.2.0 수용표](../3.Redesign-phase/1.2.0/ACCEPTANCE.md)로 관리한다. 기존 B-1·기능 완료를 삭제하거나 미완료로 돌리지 않는다.
@@ -49,15 +51,15 @@
 | `NF-REQ-037` | light/dark 디자인 개편안 | [UX 설계](design/UX/README.md), [1.1.5](1.1.5/README.md), [1.1.6](1.1.6/README.md), [NF-REQ-048의 시안 계약](contracts/DESIGN-NATIVE.md) | 대안·토큰·접근성·승인 후 점진 적용 | UX B-1 승인, 1.1.5 완료; 1.1.6 P2~P5 양 theme flat surface, classic rollback, exact copy/export·저장 재진입·서비스 재시작과 최종 artifact/CI/동일 SHA 개발 인수 완료 |
 | `NF-REQ-038` | new_Mock-up·도구 필요 문서 | [UX 설계](design/UX/README.md) | 원본 목업 보존·새 화면/상태·skill/MCP 요구 | UX P1~P5 완료: old Mock-up 보존, B-1 18화면/상태/플랫폼/도구·승인 manifest 봉인 |
 | `NF-REQ-039` | UI/UX 동선 개선·개편 | [UX 설계](design/UX/README.md), [1.1.5](1.1.5/README.md), [1.1.6](1.1.6/README.md), [1.1.7](1.1.7/README.md) | 현행 과제 관찰·설계 비교·비파괴 전환 | UX B-1·1.1.5~1.1.6와 1.1.7 P1~P5 완료. P4 후보 `66f2f79`에서 reduced transparency·contrast/forced-colors fallback과 공개 reflow/4x CPU 저장·재시작을 인수했다. P5 후보 `b1a1e2c`에서 사용자/목업 탐색·플랫폼 공통/차이·29 migration 환경/license/release artifact를 봉인하고 Actions `34900342849`·`34900363577`, 네 signed dev image와 동일 SHA 공개 저장/복귀·접근성 fallback·서비스 재시작 영속을 PASS했다. 실제 native SDK/OS/기기·IME/AT/OS zoom/서명/스토어는 미실행 |
-| `NF-REQ-040` | Windows 네이티브 개발안 | [1.1.8](1.1.8/README.md), [1.1.9](1.1.9/README.md) | 기술/IME/protocol 승인→구현/서명/실기기 인수 | **보류 (2026-09-22)** — 계획됨; 기존 완료/승인 이력 보존, 다음은 [1.2.0](../3.Redesign-phase/1.2.0/README.md) |
-| `NF-REQ-041` | Android 네이티브 개발안 | [1.1.10](1.1.10/README.md), [1.1.11](1.1.11/README.md) | Kotlin 등 비교·IME/수명주기·서명/실기기 인수 | **보류 (2026-09-22)** — 계획됨; 기존 완료/승인 이력 보존, 다음은 [1.2.0](../3.Redesign-phase/1.2.0/README.md) |
+| `NF-REQ-040` | Windows 네이티브 개발안 | [1.1.8](1.1.8/README.md), [1.1.9](1.1.9/README.md) | 기술/IME/protocol 승인→구현/서명/실기기 인수 | **보류 (2026-09-22)** — 계획됨; 기존 완료/승인 이력 보존, 현재 다음은 [1.1.7b 통합](../3.Redesign-phase/1.1.7.b/README.md) 후 [1.2.0](../3.Redesign-phase/1.2.0/README.md) |
+| `NF-REQ-041` | Android 네이티브 개발안 | [1.1.10](1.1.10/README.md), [1.1.11](1.1.11/README.md) | Kotlin 등 비교·IME/수명주기·서명/실기기 인수 | **보류 (2026-09-22)** — 계획됨; 기존 완료/승인 이력 보존, 현재 다음은 [1.1.7b 통합](../3.Redesign-phase/1.1.7.b/README.md) 후 [1.2.0](../3.Redesign-phase/1.2.0/README.md) |
 
 | `NF-REQ-042` | 실제 여러 사용자 동시 보기·편집과 presence/cursor | [1.1.0](1.1.0/README.md)~[1.1.4](1.1.4/README.md) | 서로 다른 3계정·동시 한글 수렴·누가 어디 작업하는지·철회/재연결/구독 경계 | 1.1.0 다계정 read presence·철회/재연결 담당 완료, 편집/cursor 계획됨 |
 | `NF-REQ-043` | 라임 단어 NAVER 세 언어 사전 tooltip | [1.0.13](1.0.13/README.md) | 한국어/영어/일어·hover/keyboard/터치·오류/출처/권리·제공 조건 gate | P1 no-go, 공식 provider 계약 전 미완료 |
 | `NF-REQ-044` | 무료 웹폰트 추가·다국어 표시 | [1.0.14](1.0.14/README.md) | 나눔 등 폰트별 권리/고지·glyph·로딩/fallback·모바일 성능·실제 IME | 계획됨 |
-| `NF-REQ-045` | Linux 개발안 | [1.1.12](1.1.12/README.md) | SDK/패키징·X11/Wayland/IME·협업/사전/폰트 검증 뒤 조건부 구현 | **보류 (2026-09-22)** — 계획됨; 기존 완료/승인 이력 보존, 다음은 [1.2.0](../3.Redesign-phase/1.2.0/README.md) |
-| `NF-REQ-046` | macOS 개발안 | [1.1.13](1.1.13/README.md) | SDK/패키징·IME·Keychain·서명/notarization 검증 뒤 조건부 구현 | **보류 (2026-09-22)** — 계획됨; 기존 완료/승인 이력 보존, 다음은 [1.2.0](../3.Redesign-phase/1.2.0/README.md) |
-| `NF-REQ-047` | iOS 개발안과 PC/iOS/Android 목업 | [1.1.14](1.1.14/README.md), [UX](design/UX/README.md) | iPhone/iPad·수명주기·플랫폼별 목업·실기기·서명/스토어 gate | **보류 (2026-09-22)** — UX P3 PC 3종·iOS·Android 목업 완료, 실제 native 개발안/기기/서명은 1.1.14 예정; 기존 완료/승인 이력 보존, 다음은 [1.2.0](../3.Redesign-phase/1.2.0/README.md) |
+| `NF-REQ-045` | Linux 개발안 | [1.1.12](1.1.12/README.md) | SDK/패키징·X11/Wayland/IME·협업/사전/폰트 검증 뒤 조건부 구현 | **보류 (2026-09-22)** — 계획됨; 기존 완료/승인 이력 보존, 현재 다음은 [1.1.7b 통합](../3.Redesign-phase/1.1.7.b/README.md) 후 [1.2.0](../3.Redesign-phase/1.2.0/README.md) |
+| `NF-REQ-046` | macOS 개발안 | [1.1.13](1.1.13/README.md) | SDK/패키징·IME·Keychain·서명/notarization 검증 뒤 조건부 구현 | **보류 (2026-09-22)** — 계획됨; 기존 완료/승인 이력 보존, 현재 다음은 [1.1.7b 통합](../3.Redesign-phase/1.1.7.b/README.md) 후 [1.2.0](../3.Redesign-phase/1.2.0/README.md) |
+| `NF-REQ-047` | iOS 개발안과 PC/iOS/Android 목업 | [1.1.14](1.1.14/README.md), [UX](design/UX/README.md) | iPhone/iPad·수명주기·플랫폼별 목업·실기기·서명/스토어 gate | **보류 (2026-09-22)** — UX P3 PC 3종·iOS·Android 목업 완료, 실제 native 개발안/기기/서명은 1.1.14 예정; 기존 완료/승인 이력 보존, 현재 다음은 [1.1.7b 통합](../3.Redesign-phase/1.1.7.b/README.md) 후 [1.2.0](../3.Redesign-phase/1.2.0/README.md) |
 | `NF-REQ-048` | 약 5개 morphism·Liquid Glass 시안 선택 | [UX P2](design/UX/2phase.md)~[P5](design/UX/5phase.md), [1.1.5](1.1.5/README.md)~[1.1.7](1.1.7/README.md) | 출처·glass/blur/saturation/shadow/SVG/GSAP 후보·사용자 시안 선택→new_Mock-up·a11y/성능 | UX P2 B-1 선택·P3 목업·P4 검토·P5 승인 manifest 완료, 제품 적용 1.1.5~1.1.7 예정 |
 
 ## 범위 분할 기준

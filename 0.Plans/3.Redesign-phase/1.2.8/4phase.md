@@ -1,5 +1,7 @@
 # 1.2.8 Phase 4 — 경계 테스트·실기기·운영 공백
 
+> 2026-09-23 순서 개정: [1.1.7b 통합](../1.1.7.b/README.md)과 1.2.0 인수가 선행한다. WC 후보의 최초 포팅은 b가 소유하며 이 문서의 같은 작업은 b 해결 SHA·회귀 인수와 남은 범위만 수행한다. 미완료 원격 코드를 완료로 간주하지 않는다.
+
 **상태: 계획 / 구현 미착수 (`planned`)**. [버전 범위](README.md) · [수용 기준](ACCEPTANCE.md) · [공통 gate](../QUALITY-GATES.md).
 
 ## 목표·진입
@@ -10,7 +12,7 @@
 
 ## 작업
 
-- [ ] `LC-RD-128-P4-01` M-08의 다섯 실패 경로와 UI pagination을 실제 UI→CRDT→server/raw/store까지 연결하고 기존 회귀의 중복/누락만 보정한다. **[WC-12](../BRANCH-COMPARISON-118-P4.md)**의 기존 수정·회귀를 먼저 선별 인수한다: 1.2.0 P1/P4에서 먼저 보존 gate로 인수한다. 구 탭 lazy chunk·unknown client/worker restart·탭별 승인·offline activation·private/no-store/Set-Cookie 배제·중복 fetch를 검사한다. 1.2.1 guard가 reload를 소비한다.
+- [ ] `LC-RD-128-P4-01` M-08의 다섯 실패 경로와 UI pagination을 실제 UI→CRDT→server/raw/store까지 연결하고 기존 회귀의 중복/누락만 보정한다. **[WC-12](../BRANCH-COMPARISON-118-P4.md)**의 b에 통합된 수정·회귀를 먼저 인수하고 미인수 잔여에만 추가 적용한다: b P2/P4에서 먼저 인수하고 1.2.0은 전환 회귀로 확인한다. 구 탭 lazy chunk·unknown client/worker restart·탭별 승인·offline activation·private/no-store/Set-Cookie 배제·중복 fetch를 검사한다. b guard가 미전송 입력의 reload를 먼저 차단하며 1.2.1은 확장 계약과 잔여를 담당한다.
 - [ ] `LC-RD-128-P4-02` 실제 OS IME·모바일 키보드·AT·브라우저 조합을 현행 지원표대로 검사한다. unavailable은 미실행으로 남기고 필수 gate를 우회하지 않는다.
 - [ ] `LC-RD-128-P4-03` 긴 네트워크 분할·다중 replica·worker backlog/락·health 비용을 격리 부하에서 측정하고 기존 예산/복구 목표와 비교한다.
 - [ ] `LC-RD-128-P4-04` 실제 암호화 복원·populated schema migration/반복/rollback·RLS 재사용·프로필 decoder 경계를 선행 성공 SHA와 필요한 변경 범위에 맞춰 확인한다.

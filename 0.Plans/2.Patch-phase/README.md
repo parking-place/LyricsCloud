@@ -1,8 +1,10 @@
 # LyricsCloud 후속 패치 계획
 
+> **2026-09-23 현재 순서:** [1.1.7b 웹 통합](../3.Redesign-phase/1.1.7.b/README.md) → 1.2.0 → 1.2.1~1.2.8. 이전 날짜의 직접 1.2.0 착수 안내는 이 순서로 대체하며 native 보류·완료 이력은 유지한다.
+
 > 2026-09-22 후속 추가: **1.2.0 → [1.2.1~1.2.8](../3.Redesign-phase/ROADMAP.md)**. [0922 추적](../3.Redesign-phase/REVIEW-TRACEABILITY.md)과 [1.1.8 P4 웹 안정화 비교](../3.Redesign-phase/BRANCH-COMPARISON-118-P4.md)를 반영한 계획이며 제품 미착수·native 보류는 유지한다.
 
-문서 상태: **1.1.8~1.1.14 후속 진행 보류**, 2026-09-22. 다음 제품 계획은 [3.Redesign-phase의 1.2.0 — 코발트 블루 Chroma Dock](../3.Redesign-phase/1.2.0/README.md)이다. 기준은 `v1.1.7a`이며 보류된 플랫폼 작업을 선행조건으로 요구하지 않는다. [전환 결정](../3.Redesign-phase/PLAN-CHANGE.md)과 [계획 상태](STATUS.md)를 먼저 읽는다. 실제 실행 버전·Phase·완료 증거는 [실행 STATUS](<../1. Dev-phase/STATUS.md>) 한 곳을 따른다.
+문서 상태: **1.1.8~1.1.14 후속 진행 보류**, 2026-09-22. 다음 제품 계획은 [3.Redesign-phase의 1.1.7b 웹 통합](../3.Redesign-phase/1.1.7.b/README.md)이며 그 인수 SHA에서 1.2.0 코발트 디자인을 시작한다. 기준은 `v1.1.7a`이며 보류된 플랫폼 작업을 선행조건으로 요구하지 않는다. [전환 결정](../3.Redesign-phase/PLAN-CHANGE.md)과 [계획 상태](STATUS.md)를 먼저 읽는다. 실제 실행 버전·Phase·완료 증거는 [실행 STATUS](<../1. Dev-phase/STATUS.md>) 한 곳을 따른다.
 
 ## 읽는 순서
 
@@ -24,7 +26,7 @@ major는 사용자 명시 지시 전까지 **1 고정**이다. minor/patch는 �
 
 ## 구현과 외부 결정
 
-아래 P7~P10 설명은 2026-09-09 계획 패키지 당시의 인계 이력이다. 현재 다음 작업은 위 1.2.0 계획이며 실제 완료 여부는 실행 STATUS와 각 버전 증거를 따른다.
+아래 P7~P10 설명은 2026-09-09 계획 패키지 당시의 인계 이력이다. 현재 다음 작업은 위 1.1.7b 선행 통합 계획이며 실제 완료 여부는 실행 STATUS와 각 버전 증거를 따른다.
 
 NAVER 세 언어 사전 제공/권리·폰트별 라이선스/서브셋·Suno provider·후속 실제 OS/IME·UX 시안 선택·SDK/패키징은 해당 Phase gate로 남는다. P7에서 기존 제품 표식을 주 로고로 승인해 앱과 아이콘에 적용했고, P8은 새 계획 경로·가변 Phase·다자리 숫자와 dev/정식 Docker tag 분리를 구현했다. P9는 권한·동시성·복구 통합 인수를 완료했다. P10 정식 릴리스 전에는 이를 운영 완료로 안내하지 않는다.
 

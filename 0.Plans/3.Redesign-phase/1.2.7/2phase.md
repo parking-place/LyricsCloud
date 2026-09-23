@@ -1,5 +1,7 @@
 # 1.2.7 Phase 2 — 공유 발급·읽기/쓰기·게스트
 
+> 2026-09-23 순서 개정: [1.1.7b 통합](../1.1.7.b/README.md)과 1.2.0 인수가 선행한다. WC 후보의 최초 포팅은 b가 소유하며 이 문서의 같은 작업은 b 해결 SHA·회귀 인수와 남은 범위만 수행한다. 미완료 원격 코드를 완료로 간주하지 않는다.
+
 **상태: 계획 / 구현 미착수 (`planned`)**. [버전 범위](README.md) · [수용 기준](ACCEPTANCE.md) · [공통 gate](../QUALITY-GATES.md).
 
 ## 목표·진입
@@ -14,7 +16,7 @@
 - [ ] `LC-RD-127-P2-02` 발급 성공/복사 실패/응답 유실 replay URL 없음/명시 회전을 구분한다. 자동 회전 없이 안전한 복구 행동을 제공한다.
 - [ ] `LC-RD-127-P2-03` 첫 공유 진입·재연결·회수/만료·write→read 전환 상태를 1.2.1 readiness와 epoch에 연결하고 허용되지 않은 입력 도구를 정확히 제어한다.
 - [ ] `LC-RD-127-P2-04` guest tab/session/link 수명의 보관 한계를 안내하고 실패 원문 복사/내려받기와 authoredText 복구를 제공한다.
-- [ ] `LC-RD-127-P2-05` 권한 변화 중 작성/복사·stale ACK·삭제→복원에 대해 private projection 누출과 capability 부활이 없는지 확인한다. **[WC-15](../BRANCH-COMPARISON-118-P4.md)**의 기존 수정·회귀를 먼저 선별 인수한다: 회수/epoch-stale 시 서버 수용 body/cache로 복귀하고 작성 원문만 복구함에 둔다. 재연결·재허용 뒤 거절 입력 자동 재생이 없으며 ES-06 실패 보관과 충돌하지 않는지 실제 WS/DB로 인수한다.
+- [ ] `LC-RD-127-P2-05` 권한 변화 중 작성/복사·stale ACK·삭제→복원에 대해 private projection 누출과 capability 부활이 없는지 확인한다. **[WC-15](../BRANCH-COMPARISON-118-P4.md)**의 b에 통합된 수정·회귀를 먼저 인수하고 미인수 잔여에만 추가 적용한다: 회수/epoch-stale 시 서버 수용 body/cache로 복귀하고 작성 원문만 복구함에 둔다. 재연결·재허용 뒤 거절 입력 자동 재생이 없으며 ES-06 실패 보관과 충돌하지 않는지 실제 WS/DB로 인수한다.
 
 ## 산출물·검증
 

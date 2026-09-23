@@ -1,5 +1,7 @@
 # 1.2.1 Phase 2 — 실패 원문 보관·공유 편집 준비
 
+> 2026-09-23 순서 개정: [1.1.7b 통합](../1.1.7.b/README.md)과 1.2.0 인수가 선행한다. WC 후보의 최초 포팅은 b가 소유하며 이 문서의 같은 작업은 b 해결 SHA·회귀 인수와 남은 범위만 수행한다. 미완료 원격 코드를 완료로 간주하지 않는다.
+
 **상태: 계획 / 구현 미착수 (`planned`)**. [버전 범위](README.md) · [수용 기준](ACCEPTANCE.md) · [공통 gate](../QUALITY-GATES.md).
 
 ## 목표·진입
@@ -10,7 +12,7 @@
 
 ## 작업
 
-- [ ] `LC-RD-121-P2-01` selected writer의 persist 실패를 latch하고 실패 입력을 bounded 복구 큐로 보관한다. 후속 성공 snapshot만으로 과거 실패를 닫지 않는다. **[WC-01](../BRANCH-COMPARISON-118-P4.md)**의 기존 수정·회귀를 먼저 선별 인수한다: owner/kind/document/revision별 보관, offline 닫기→재진입·명시 복원·quota·계정 전환·다른 탭 revision/새 입력을 늦은 ACK가 지우지 않는지 확인한다.
+- [ ] `LC-RD-121-P2-01` selected writer의 persist 실패를 latch하고 실패 입력을 bounded 복구 큐로 보관한다. 후속 성공 snapshot만으로 과거 실패를 닫지 않는다. **[WC-01](../BRANCH-COMPARISON-118-P4.md)**의 b에 통합된 수정·회귀를 먼저 인수하고 미인수 잔여에만 추가 적용한다: owner/kind/document/revision별 보관, offline 닫기→재진입·명시 복원·quota·계정 전환·다른 탭 revision/새 입력을 늦은 ACK가 지우지 않는지 확인한다.
 - [ ] `LC-RD-121-P2-02` guest 경로에 같은 불변식을 적용하되 namespace·link/session 수명과 authoredText 복구 경계를 별도로 유지한다.
 - [ ] `LC-RD-121-P2-03` snapshot 적용과 callback/handle 설치를 마친 시점에만 acceptsLocalEdits를 연다. 캐시 기반 offline 준비와 최초 빈 bootstrap을 구별한다.
 - [ ] `LC-RD-121-P2-04` 재시도 시 권한 epoch 재확인→durable 기록→pump→ACK 순서를 지킨다. 논리 변경 중복 적용과 회수 후 무조건 재전송을 차단한다.
