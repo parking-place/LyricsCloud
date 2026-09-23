@@ -34,8 +34,17 @@ esac
 
 case "$channel:$ref_type" in
   dev:branch)
-    if [[ "$ref_name" =~ ^phase/([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a|1\.1\.7b)- ]]; then
+    if [[ "$ref_name" =~ ^phase/([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a|1\.1\.7b)-p([1-9][0-9]*)-[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
       ref_version=${BASH_REMATCH[1]}
+      ref_phase=${BASH_REMATCH[2]}
+      if { [ "$ref_version" = "1.1.7a" ] || [ "$ref_version" = "1.1.7b" ]; } && [ "$ref_phase" -gt 5 ]; then
+        printf 'Development phase exceeds the registered plan.\n' >&2
+        exit 6
+      fi
+      if [ "$ref_version" = "1.2.2" ] && [ "$ref_phase" -gt 6 ]; then
+        printf 'Development phase exceeds the registered plan.\n' >&2
+        exit 6
+      fi
     elif [[ "$ref_name" == phase/* ]]; then
       printf 'Development phase branch has an invalid version.\n' >&2
       exit 6

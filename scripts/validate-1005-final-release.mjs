@@ -81,7 +81,7 @@ const releaseTags = getImagePublication(publicationInput).tags;
 for (const tag of ["1.0.0", "Release", "latest", "Release-latest"]) assert(releaseTags.includes(tag), `release tag missing: ${tag}`);
 const candidateTags = getImagePublication({ ...publicationInput, refType: "branch", refName: "phase/1.0.0-p6-stabilization", release: false }).tags;
 for (const tag of ["1.0.0", "Release", "latest", "Dev", "Dev-latest"]) assert(!candidateTags.includes(tag), `P6 candidate moves protected tag: ${tag}`);
-assert(tagScript.includes("release:tag") && tagScript.includes("^v([0-9]+\\.[0-9]+\\.[0-9]+|1\\.1\\.7a)$"), "release tag guard missing");
+assert(tagScript.includes("release:tag") && tagScript.includes("^v([0-9]+\\.[0-9]+\\.[0-9]+|1\\.1\\.7a|1\\.1\\.7b)$"), "release tag guard missing");
 try {
   const phase6Plan = status.includes('current_phase: "1.0.0/6phase.md"') ? read("0.Plans/1. Dev-phase/1.0.0/6phase.md") : "";
   validateReleasePhase(status, { requireRelease, phase6Plan });

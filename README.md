@@ -15,7 +15,7 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 
 [1.1.7a release notes](./docs/releases/1.1.7a.md)와 [CHANGELOG.md](./CHANGELOG.md)에 사용자 변화·호환성·미실행 gate를 기록한다.
 
-> **다음 제품 계획 (2026-09-23):** [1.1.7b 웹 안정화 통합](0.Plans/3.Redesign-phase/1.1.7.b/README.md)을 먼저 완료한 뒤 그 SHA에서 [1.2.0 코발트 Chroma Dock](0.Plans/3.Redesign-phase/1.2.0/README.md)을 시작합니다. [후속 1.2.1~1.2.8](0.Plans/3.Redesign-phase/ROADMAP.md)과 native 보류를 유지합니다. 제품 코드 통합·버전 변경·배포는 아직 수행하지 않았습니다.
+> **현재 개발 (2026-09-23):** [1.1.7b 웹 안정화 통합](0.Plans/3.Redesign-phase/1.1.7.b/README.md)의 Phase 1 버전·도구 기반을 구현 중입니다. P1 원격 CI·동일 SHA 개발 인수와 P2~P5 통합이 남아 있습니다. 완료된 b SHA에서 [1.2.0 코발트 Chroma Dock](0.Plans/3.Redesign-phase/1.2.0/README.md)을 시작합니다. [후속 1.2.1~1.2.8](0.Plans/3.Redesign-phase/ROADMAP.md)과 native 보류를 유지합니다.
 
 ## 주요 기능
 
@@ -46,12 +46,11 @@ AI 생성·음원 업로드는 1.1.7a 범위가 아니다. 계정 사진 파일�
 
 | 항목 | 상태 |
 |---|---|
-| 소스·runtime version | `1.1.7a` 제품 버전; private npm package SemVer는 `1.1.7` 유지 |
-| 다음 계획 | [1.1.7b 웹 통합](./0.Plans/3.Redesign-phase/1.1.7.b/README.md) → 1.2.0 코발트 리디자인 → 1.2.1~1.2.8; 모두 제품 미착수, native 보류 |
-| 마지막 실행 Phase | [1.1.7a Phase 5 — 문서·최종 검증·릴리스 인계](<./0.Plans/2.Patch-phase/1.1.7.a/5phase.md>) |
+| 소스·runtime version | 개발 후보 `1.1.7b`; private npm package SemVer는 `1.1.7` 유지 |
+| 현재 Phase | [1.1.7b Phase 1 — 기준 동결·통합 계약](./0.Plans/3.Redesign-phase/1.1.7.b/1phase.md) 진행 중; P2~P5 미착수, native 보류 |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.1.7a`, tag/운영 `fc2463c`, Actions `35052520619`, exact signed digest 운영 배포·공개 인수 PASS |
-| 개발 인수 | 1.1.7a P1~P5 완료; 후보 `fd4d901`·merge `fc2463c`, Actions `35047546033`·`35050125353`, 동일 SHA 개발 공개 인수 PASS |
+| 개발 인수 | 1.1.7a P1~P5 완료; 1.1.7b P1 후보의 원격 CI·동일 SHA 개발 공개 인수 대기 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.

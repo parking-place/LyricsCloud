@@ -24,6 +24,11 @@ test('the approved 1.1.7a history and 1.1.7b contract keep dev and release tags 
   }
   assert.throws(() => getImagePublication({ ...b, refName: 'phase/1.1.7a-p1-invalid' }),
     /PUBLICATION_BRANCH_VERSION_MISMATCH/);
+  for (const refName of ['phase/1.1.7b-p6-over-limit', 'phase/1.1.7b-p1', 'phase/1.1.7b-p0-invalid']) {
+    assert.throws(() => getImagePublication({ ...b, refName }), /PUBLICATION_(?:PHASE|BRANCH_VERSION)_INVALID/);
+  }
+  assert.deepEqual(getImagePublication({ ...b, version: '1.2.2', refName: 'phase/1.2.2-p6-redesign' }).tags,
+    [sha, 'dev-1.2.2-p6', 'Dev', 'Dev-latest']);
   assert.throws(() => getImagePublication({ ...b, eventName: 'workflow_dispatch', refType: 'tag',
     refName: 'v1.1.7a', release: true }), /PUBLICATION_RELEASE_REF_REQUIRED/);
 });
@@ -47,6 +52,8 @@ test('shell publication guard enforces exact branch and tag without moving old v
   assert.equal(run('tag', 'v1.1.7b', 'release').stdout.trim(), '1.1.7b');
   assert.notEqual(run('tag', 'v1.1.7', 'release').status, 0);
   assert.notEqual(run('branch', 'phase/1.1.7a-p1-invalid', 'dev').status, 0);
+  assert.notEqual(run('branch', 'phase/1.1.7b-p6-over-limit', 'dev').status, 0);
+  assert.notEqual(run('branch', 'phase/1.1.7b-p1', 'dev').status, 0);
 });
 
 test('production browser fixture and health assertion use the b product version', () => {
