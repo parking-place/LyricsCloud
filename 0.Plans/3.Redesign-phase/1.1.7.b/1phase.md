@@ -1,6 +1,6 @@
 # 1.1.7b Phase 1 — 기준 동결·통합 계약·1.1.7b 실행 기반
 
-**상태: 계획 / 구현 미착수 (`planned`)**. [수용 기준](ACCEPTANCE.md) · [통합 맵](SOURCE-MAP.md) · [차단 목록](BLOCKERS.md).
+**상태: 진행 중 (`in_progress`)**. 로컬 후보는 통과했으며 원격 CI·signed dev image·동일 SHA 개발 인수 전에는 완료가 아니다. [수용 기준](ACCEPTANCE.md) · [통합 맵](SOURCE-MAP.md) · [차단 목록](BLOCKERS.md).
 
 ## 목표·진입
 
@@ -38,3 +38,12 @@ AC-RD-117B-17/18/19/20; b를 명시 거부하던 기존 회귀의 승인된 기�
 되돌림은 [수용표의 환경별 절차](ACCEPTANCE.md)를 따른다. native 1150 down/drop·기존 migration 재작성·초안/outbox 삭제·a 태그 이동은 금지한다. 제품 동작을 바꾸지 않은 문서 수정은 문서 검증으로 기록한다.
 
 다음: [P2](2phase.md).
+
+## 2026-09-23 P1 후보 진행 기록
+
+- 완료된 1.1.7a 릴리스 기록 `1db47751…`을 b 기준에 병합하고 제품 기준 `fc2463c…`, 계획 overlay `458030a…`, source head `c230c024…`/기능 `0375825…`를 분리 고정했다.
+- 제품 `1.1.7b` / 계획 `3.Redesign-phase/1.1.7.b` / private package `1.1.7` 계약과 b P5·1.2.2 P6 metadata를 공통 validator에 등록했다. a·숫자 이력은 유지하고 c/개행/경로·branch/tag 불일치는 거부한다.
+- dev 후보의 `productionAuthorized=false`와 명시적 `--require-release`를 분리했다. strict annotated tag gate는 웹 `verify`에 연결하고 windows-native job/needs는 가져오지 않았다.
+- WC-17 optional backup 안전 정수·공백, offset deadline UTC 정규화, import-safe helper와 회귀를 C3에서 선별했다. secret/keyring은 읽거나 회전하지 않았다.
+- 지원 Docker Node 24.20.0/pnpm 11.25.0에서 경계 Node 42 PASS, `pnpm check` PASS, production web image build PASS. 무 volume 격리 PostgreSQL 18에서 migration 2회와 Unit **393 PASS / 조건부 beta 5 skip**이다. 첫 경계 회귀의 6 FAIL은 branch parser가 `-pN-topic`까지 버전으로 잡은 시험 단계 결함이었고 정확한 숫자/a/b parser로 보정 후 42 PASS다.
+- 현재 미완료: 원격 필수 CI·네 signed dev image, 동일 SHA 개발 배포/공개 smoke. 이 증거 전에는 위 작업 checkbox와 Phase 상태를 완료로 바꾸지 않는다.

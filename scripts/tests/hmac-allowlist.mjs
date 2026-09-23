@@ -5,7 +5,19 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { digestEmail, migrateAllowlist, restoreAllowlist } from "../migrate-test-users-hmac.mjs";
+
+test("rotation deadline accepts an offset and emits the strict UTC runtime format", async () => {
+  const { normalizeRotationDeadline } = await import("../provision-auth-allowlist-keys.mjs");
+  const deadline = "2099-01-02T09:30:00+09:00";
+  const normalized = normalizeRotationDeadline(deadline);
+  assert.equal(normalized, "2099-01-02T00:30:00.000Z");
+  assert.equal(Date.parse(normalized), Date.parse(deadline));
+  for (const invalid of [undefined, "invalid", "2000-01-01T00:00:00Z"]) {
+    assert.throws(() => normalizeRotationDeadline(invalid), /ALLOWLIST_ROTATION_DEADLINE_INVALID/);
+  }
+});
 
 test("HMAC allowlist migration dry-runs, seals a rollback copy, swaps atomically, and restores explicitly", async () => {
   const work = await mkdtemp(join(tmpdir(), "lyricscloud-hmac-allowlist-"));
@@ -72,20 +84,20 @@ test("key provisioning keeps an unexpired active key and creates a bounded rotat
   const work = await mkdtemp(join(tmpdir(), "lyricscloud-hmac-provision-"));
   try {
     const keyring = join(work, "keyring"); const backupKey = join(work, "backup.key");
-    const script = new URL("../provision-auth-allowlist-keys.mjs", import.meta.url);
-    const initial = spawnSync(process.execPath, [script.pathname, "--keyring", keyring, "--backup-key", backupKey, "--kid", "old"],
+    const script = fileURLToPath(new URL("../provision-auth-allowlist-keys.mjs", import.meta.url));
+    const initial = spawnSync(process.execPath, [script, "--keyring", keyring, "--backup-key", backupKey, "--kid", "old"],
       { encoding: "utf8" });
     assert.equal(initial.status, 0, initial.stderr);
-    const deadline = new Date(Date.now() + 86_400_000).toISOString();
-    const rotated = spawnSync(process.execPath, [script.pathname, "--keyring", keyring, "--backup-key", backupKey,
+    const deadline = "2099-01-02T09:30:00+09:00";
+    const rotated = spawnSync(process.execPath, [script, "--keyring", keyring, "--backup-key", backupKey,
       "--kid", "new", "--rotate", "--old-not-after", deadline], { encoding: "utf8" });
     assert.equal(rotated.status, 0, rotated.stderr);
     const value = JSON.parse(await readFile(keyring, "utf8"));
     assert.equal(value.activeKid, "new");
     assert.equal(value.keys.length, 2);
-    assert.equal(value.keys.find((entry) => entry.kid === "old").notAfter, deadline);
+    assert.equal(value.keys.find((entry) => entry.kid === "old").notAfter, new Date(deadline).toISOString());
     assert.equal(value.keys.find((entry) => entry.kid === "new").notAfter, undefined);
-    const rejected = spawnSync(process.execPath, [script.pathname, "--keyring", keyring, "--backup-key", backupKey,
+    const rejected = spawnSync(process.execPath, [script, "--keyring", keyring, "--backup-key", backupKey,
       "--kid", "later", "--rotate", "--old-not-after", "2000-01-01T00:00:00.000Z"], { encoding: "utf8" });
     assert.notEqual(rejected.status, 0);
   } finally { await rm(work, { recursive: true, force: true }); }

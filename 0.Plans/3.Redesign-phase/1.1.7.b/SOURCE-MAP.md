@@ -36,6 +36,35 @@ WC-06의 범위 치환/IME와 checkpoint 변환은 b P2-03/P2-04, WC-10의 가�
 4. source commit을 참조한 작은 통합 commit으로 나눈다. C3는 66개 파일이 섞인 commit이므로 의존성 분리 없이 전체 cherry-pick하지 않는다. 자동 충돌 선택 ours/theirs로 동작을 잃지 않는다.
 5. 각 WC에 `planned → ported → verified` 진행과 새 SHA를 기록한다. 제외는 이유/동등 동작 근거/영향/결정자를 남긴다. 18개 중 하나라도 미판정이면 P5 인수를 닫지 않는다.
 
+## P1 source freeze와 최소 파일 묶음
+
+2026-09-23 P1에서 원격 `phase/1.1.8-p4-web-stabilization`을 다시 조회한 head는 `c230c024aeb0297b1c130e3f3e8b507a43a7e871`, 마지막 기능 commit은 `0375825fe004fc74869250eefa14add267c4b3ae`로 계획 작성 때와 같다. `0375825..c230c024`는 STATUS·P4 계획·Future intake·원격 runbook 네 문서뿐이며 추가 제품 diff가 없다. 제품 기준은 `v1.1.7a`가 가리키는 `fc2463cdb47d9fd7d0042779f602c6ddb7d734cf`, 완료 릴리스 기록 기준은 `release/1.1.7a`의 `1db47751c55f45bea34551d603b9e4f67aabd9cc`, b 계획 overlay 시작은 `458030ada5474a53223b33cfb4337fefbdbb1b71`로 분리한다.
+
+아래 묶음은 P2/P3에서 파일 전체를 복사하라는 뜻이 아니다. 각 행의 함수·호출자·시험을 함께 비교할 최소 탐색 범위다. C1=`cd87eb283ecaf5977a8bc9552f26bfa52f273f26`, C2=`a15271003e686995579ce3ddff26c4ac29c5dcbf`, C3=`0375825fe004fc74869250eefa14add267c4b3ae`다.
+
+| WC | source commit | 코드·호출자·시험 최소 묶음 | b 최초 담당 |
+|---|---|---|---|
+| WC-01 | C3 | `metadata-draft.ts/test`, `account-cache.ts/test`, lyric/prompt/rhyme editors, `historical-data-1.1.8.spec.ts` | P2-01 |
+| WC-02 | C1+C3 | editor `autosave`, `crdt`, `browser-sync`, lyric editor, public guest sync와 editor/sync E2E | P2-02 |
+| WC-03 | C1+C3 | app shell, `shortcut-runtime`, `page-auth`, song form, historical shortcut/page-auth/navigation 시험 | P2-05 |
+| WC-04 | C1+C3 | settings screen, lyric display settings, 두 save-race E2E와 historical UI 시험 | P2-06 |
+| WC-05 | C3 | Suno workspace panel, metadata draft/account cache, song dashboard와 historical data E2E | P2-07 |
+| WC-06 | C3 | prompt editor/list, editor `crdt`·`copy`와 단위/IME·historical editor 시험 | P2-03/04 |
+| WC-07 | C1+C3 | song/rhyme/prompt/search/favorites 목록, `list-response-races.test.ts`, historical UI E2E | P3-01 |
+| WC-08 | C3 | favorites, library order controls, song/rhyme/prompt 목록, rhymes DB와 historical data 시험 | P3-02 |
+| WC-09 | C3 | template screen과 historical UI/data E2E | P2-04 |
+| WC-10 | C1+C3 | song page/form/dashboard, lyric editor, metadata draft와 historical data/editor E2E | P2-08/P3-03 |
+| WC-11 | C1+C3 | `dialog-focus`, editor `copy`, editors·responsive toolbar·styles와 copy/UI 시험 | P3-04 |
+| WC-12 | C1+C2+C3 | `public/sw.js`, PWA manager, update safety, PWA/service-worker 단위·E2E | P2-09 |
+| WC-13 | C3 | auth service, page auth, beta access/signup, 관련 historical auth·DB 시험 | P3-05 |
+| WC-14 | C3 | collaboration server/store와 historical/integration store 시험 | P3-06 |
+| WC-15 | C1+C3 | editor browser/public-guest sync, lyric editor, collaboration server와 guest/sync E2E | P3-07 |
+| WC-16 | C1+C3 | export/lifecycle domain+DB, trash screen, export/lifecycle/trash 시험 | P3-08 |
+| WC-17 | C3 | environment validator, allowlist provisioner, environment/HMAC 회귀 | P1-06 |
+| WC-18 | C1+C3 | Next build tracing, CI strict tag gate, publication/final-release 회귀; windows-native 제외 | P1-04/05 |
+
+P1은 WC-17과 WC-18만 `ported → local_verified`다. WC-01~16은 위 묶음을 고정했을 뿐 아직 `planned`이며 P2/P3 통합 전 완료로 읽지 않는다. native 앱·17 native route·1150 파일·1.1.8 manifest/version/STATUS·Windows CI job은 묶음에서 제외한다.
+
 ## 충돌·제외 경계
 
 | 경계 | 통합 정책 | 검증 |

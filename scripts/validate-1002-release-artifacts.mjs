@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import { validateEnvironment } from "./check-environment-1002.mjs";
+import { getReleaseVersionContract } from "./release-version-contract.mjs";
 
 const read = async (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const json = async (path) => JSON.parse(await read(path));
@@ -11,12 +12,12 @@ const assertIncludes = (value, expected, message) => assert(value.includes(expec
 
 const version = (await read("VERSION")).trim();
 const formalVersion = version;
-const oneOff117a = version === "1.1.7a";
-assert(oneOff117a || /^[0-9]+\.[0-9]+\.[0-9]+$/u.test(version), "VERSION must be a stable current candidate source or the approved 1.1.7a exception");
+const requireRelease = process.argv.includes("--require-release");
+const versionContract = getReleaseVersionContract(version);
 const packages = ["package.json", "apps/web/package.json", "apps/collaboration/package.json", "apps/worker/package.json",
   "packages/auth/package.json", "packages/config/package.json", "packages/database/package.json", "packages/domain/package.json",
   "packages/editor/package.json", "packages/observability/package.json", "packages/ui/package.json"];
-for (const path of packages) assert((await json(path)).version === (oneOff117a ? "1.1.7" : version), `${path} version must match the approved product/package boundary`);
+for (const path of packages) assert((await json(path)).version === versionContract.packageVersion, `${path} version must match the approved product/package boundary`);
 
 const status = await read("0.Plans/1. Dev-phase/STATUS.md");
 assertIncludes(status, `current_version: "${version}"`, "STATUS current version does not match VERSION");
@@ -144,7 +145,7 @@ assert(formalEnvironment.properties.APP_VERSION.const === formalVersion && forma
   `${formalVersion} formal environment boundary invalid`);
 assert(formalMigrations.productVersion === formalVersion && formalMigrations.maximumCompatibleApplicationVersion === formalVersion,
   `${formalVersion} formal migration compatibility invalid`);
-assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === (oneOff117a ? "1151_profile_customization.sql" : "1140_sharing_stability.sql"),
+assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === (["1.1.7a", "1.1.7b"].includes(formalVersion) ? "1151_profile_customization.sql" : "1140_sharing_stability.sql"),
   `${formalVersion} sealed migration manifest is invalid`);
 for (const entry of formalMigrations.applyOrder) {
   assert(hash(await read(`packages/database/migrations/${entry.name}`)) === entry.sha256, `${entry.name} ${formalVersion} checksum changed`);
@@ -159,7 +160,8 @@ assert(formalLicenses.bundledAssets?.length === 1 && formalLicenses.bundledAsset
 const bundledFont = formalLicenses.bundledAssets[0];
 assert(await hashFile(bundledFont.fontPath) === bundledFont.fontSha256, `${formalVersion} bundled font checksum changed`);
 assert(await hashFile(bundledFont.licensePath) === bundledFont.licenseSha256, `${formalVersion} bundled font license checksum changed`);
-assert(formalManifest.releaseVersion === formalVersion && formalManifest.releaseChannel === "release" && formalManifest.productionAuthorized === true,
+assert(formalManifest.releaseVersion === formalVersion && formalManifest.releaseChannel === "release"
+  && formalManifest.productionAuthorized === requireRelease,
   `${formalVersion} formal release authorization invalid`);
 assert(formalManifest.source.commit === "$GIT_SHA" && formalManifest.source.lockfileSha256 === hash(lockfile),
   `${formalVersion} formal source placeholders invalid`);
@@ -171,4 +173,4 @@ for (const service of ["web", "collaboration", "worker", "migrate"]) {
   assert(formalManifest.images[service].digest === `$${service.toUpperCase()}_DIGEST`, `${service} ${formalVersion} digest placeholder invalid`);
 }
 
-console.log(`${formalVersion} approved release plus sealed historical contracts: ${packages.length} package versions, ${migrationFiles.length} migrations, 4 digest-only signed images verified`);
+console.log(`${formalVersion} ${requireRelease ? "approved release" : "development candidate"} plus sealed historical contracts: ${packages.length} package versions, ${migrationFiles.length} migrations, 4 digest-only signed images verified`);

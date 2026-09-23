@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readFile, writeFile } from "node:fs/promises";
+import { isProductVersion } from "./release-version-contract.mjs";
 
 const args = new Map();
 for (let index = 2; index < process.argv.length; index += 2) {
@@ -21,7 +22,7 @@ for (const service of ["web", "collaboration", "worker", "migrate"]) {
 }
 
 const version = (await readFile(new URL("../VERSION", import.meta.url), "utf8")).trim();
-if (!/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/.test(version)) fail("VERSION is invalid");
+if (!isProductVersion(version)) fail("VERSION is invalid");
 const manifest = JSON.parse(await readFile(new URL(`../config/release-manifest.${version}.json`, import.meta.url), "utf8"));
 if (manifest.releaseVersion !== version) fail("release template version does not match VERSION");
 manifest.source.commit = args.get("source-sha");

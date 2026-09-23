@@ -83,11 +83,15 @@ stage_runtime_auth_secrets
 environment_file=$(mktemp)
 trap 'unlink "$environment_file" 2>/dev/null || true' EXIT
 app_version=$(tr -d '\r\n' < VERSION)
-if [ "$app_version" != "1.1.7a" ] && [[ ! $app_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [ "$app_version" != "1.1.7a" ] && [ "$app_version" != "1.1.7b" ] && [[ ! $app_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   printf 'Invalid application VERSION; deployment stopped.\n' >&2
   exit 6
 fi
-if [[ $branch =~ ^phase/([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a)-p([1-9][0-9]*)- ]]; then
+if [[ $branch =~ ^phase/([0-9]+\.[0-9]+\.[0-9]+|1\.1\.7a|1\.1\.7b)-p([1-9][0-9]*)- ]]; then
+  if [ "${BASH_REMATCH[1]}" != "$app_version" ]; then
+    printf 'Development branch version does not match VERSION.\n' >&2
+    exit 6
+  fi
   app_phase=p${BASH_REMATCH[2]}
 elif [ "$branch" = main ]; then
   app_phase=

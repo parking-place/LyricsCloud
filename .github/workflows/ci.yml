@@ -44,12 +44,24 @@ jobs:
       NODE_ENV: test
       DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
       AUTH_DATABASE_INTEGRATION: "true"
-      APP_VERSION: 1.1.7a
+      APP_VERSION: 1.1.7b
       BUILD_ID: ${{ github.sha }}
       APP_CHANNEL: dev
-      APP_PHASE: p5
+      APP_PHASE: p1
+      APP_FINAL_PHASE: p5
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Only the explicit formal-release gate needs annotated tags and history.
+          fetch-depth: ${{ github.event_name == 'workflow_dispatch' && inputs.release == true && '0' || '1' }}
+      - name: Verify authorized annotated release tag
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.release == true }}
+        run: |
+          current_version="$(tr -d '\r\n' < VERSION)"
+          test "$GITHUB_REF_TYPE" = "tag"
+          test "$GITHUB_REF_NAME" = "v${current_version}"
+          node scripts/validate-1002-release-artifacts.mjs --require-release
+          node scripts/validate-1005-final-release.mjs --require-release
       - uses: pnpm/action-setup@v6
         with:
           version: 11.25.0
@@ -62,7 +74,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: P6 stabilization regression
         run: node --test scripts/tests/p6-*.mjs
-      - name: One-off 1.1.7a version boundary regression
+      - name: Approved suffix version boundary regression
         run: node --test scripts/tests/oneoff-117a-version.mjs
       - name: P6 whole-tree codebase inventory and syntax audit
         run: node scripts/audit-p6-codebase.mjs
@@ -166,7 +178,7 @@ jobs:
       - name: Verify 0.9.1 backup, restore and artifact contract
         run: pnpm test:release:0915
       - name: Verify final candidate and sealed release contracts
-        if: env.APP_PHASE == 'p5'
+        if: env.APP_PHASE == env.APP_FINAL_PHASE
         run: |
           current_version="$(tr -d '\r\n' < VERSION)"
           if [ -f "config/release-manifest.${current_version}.json" ]; then

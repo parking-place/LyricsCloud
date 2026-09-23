@@ -11,7 +11,7 @@ test("root routes to the public auth screen and exposes health semantics", async
   expect(live.status()).toBe(200);
   await expect(live.json()).resolves.toMatchObject({
     build: {
-      version: process.env.APP_VERSION ?? "1.1.7a",
+      version: process.env.APP_VERSION ?? "1.1.7b",
       id: "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
       channel: "dev",
       phase: expect.stringMatching(/^p\d+$/)
