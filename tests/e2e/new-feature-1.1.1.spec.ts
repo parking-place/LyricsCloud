@@ -107,6 +107,7 @@ test.describe("1.1.1 public-link lyric reading", () => {
   });
 
   test("keeps the last safe body offline, reconnects with the capability and rejects it after revoke", async ({ browser }, info) => {
+    test.setTimeout(60_000);
     test.skip(info.project.name !== "chromium-desktop", "one real offline/reconnect path stays within the public handshake budget");
     const ownerContext = await browser.newContext({ baseURL: origin, viewport: { width: 1440, height: 1000 } });
     const publicContext = await browser.newContext({ baseURL: origin, viewport: { width: 1440, height: 1000 } });
@@ -135,6 +136,13 @@ test.describe("1.1.1 public-link lyric reading", () => {
       await editor.fill("연결 후 공개 본문");
       await expect(publicPage.getByLabel("공유된 가사 본문")).toContainText("연결 전 공개 본문");
       await expect(publicPage.getByLabel("공유된 가사 본문")).not.toContainText("연결 후 공개 본문");
+      // Reconnect must start after the owner's update is durable; otherwise
+      // the test races the sender and cannot distinguish a stale snapshot.
+      await expect.poll(async () => {
+        const response = await ownerContext.request.get(`/api/lyrics/${lyricId}`, { headers });
+        expect(response.ok()).toBe(true);
+        return ((await response.json()) as { lyric: { body: string } }).lyric.body;
+      }, { timeout: 15_000 }).toBe("연결 후 공개 본문");
 
       await publicContext.setOffline(false);
       await expect(publicPage.getByRole("status")).toContainText("실시간으로 연결됨", { timeout: 15_000 });
