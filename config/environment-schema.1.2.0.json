@@ -32,7 +32,7 @@
     },
     "LC_UI_VARIANT": {
       "type": "string",
-      "enum": ["b1", "classic"],
+      "enum": ["chroma", "b1", "classic"],
       "default": "b1",
       "x-services": ["web"]
     },

@@ -2,7 +2,8 @@
 
 ## [1.2.0] - 개발 중
 
-- P1에서 1.1.7b 기능 SHA `acd2bd9`를 출발점으로 207개 목업 기능의 현행 route/컴포넌트 대응표와 코발트 토큰·입력 보존·b1/classic 복귀 계약을 작성하고 제품/runtime/private package 버전을 `1.2.0`으로 전환했다. 기능 SHA `84761ae`의 Unit/DB 509 PASS·Chromium 432 PASS·네 signed image 및 동일 SHA 개발 공개 live/ready·auth/CSS 인수를 완료했다. P2~P5 화면 구현·최종 통합은 아직 미완료다.
+- P1에서 1.1.7b 기능 SHA `acd2bd9`를 출발점으로 207개 목업 기능의 현행 route/컴포넌트 대응표와 코발트 토큰·입력 보존·b1/classic 복귀 계약을 작성하고 제품/runtime/private package 버전을 `1.2.0`으로 전환했다. 기능 SHA `84761ae`의 Unit/DB 509 PASS·Chromium 432 PASS·네 signed image 및 동일 SHA 개발 공개 live/ready·auth/CSS 인수를 완료했다. 당시 P2~P5 화면 구현·최종 통합은 미완료였다.
+- P2에서 `LC_UI_VARIANT=chroma`를 명시하면 코발트 light/dark 토큰, PC 도크·모바일 더보기, 실제 자료 홈, 곡·라임·프롬프트 목록과 검색의 새 화면을 사용한다. 기본 B1과 classic 복귀는 유지했다. 기능 SHA `f4c9588`의 Unit/DB 511 PASS·B1 Chromium 432 PASS·Chroma 집중 12 PASS, 필수 CI/네 signed 개발 image와 동일 SHA 공개 PC/mobile×두 테마 20개 경로 인수를 완료했다. 구 B1 높이 단언의 Chroma 선택 실패와 P4 상대 성능 비교는 별도 잔여이며 P3~P5는 미완료다.
 - 실제 물리 Windows/iOS/Android 기기·OS IME·AT는 사용자 보류/미실행이며 자동화 브라우저 대리를 실기기 PASS로 기록하지 않는다. `main`·정식 tag/image·릴리스 서버는 변경하지 않는다.
 
 ## [1.1.7b] - 개발 중

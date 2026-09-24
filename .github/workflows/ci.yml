@@ -47,7 +47,7 @@ jobs:
       APP_VERSION: 1.2.0
       BUILD_ID: ${{ github.sha }}
       APP_CHANNEL: dev
-      APP_PHASE: p1
+      APP_PHASE: p2
       APP_FINAL_PHASE: p5
     steps:
       - uses: actions/checkout@v7
@@ -224,6 +224,11 @@ jobs:
         env:
           E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
         run: pnpm test:e2e
+      - name: 1.2.0 Chroma Dock desktop and mobile regression
+        env:
+          E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
+          LC_UI_VARIANT: chroma
+        run: pnpm exec playwright test --config=playwright.config.ts tests/e2e/chroma-120.spec.ts
       - name: 1.1.0 selected-read sharing browser matrix
         env:
           E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test

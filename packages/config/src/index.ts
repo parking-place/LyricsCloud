@@ -9,7 +9,7 @@ export interface RuntimeConfig {
   readonly buildId: string;
   readonly appChannel: "dev" | "release";
   readonly appPhase: string | null;
-  readonly uiVariant: "classic" | "b1";
+  readonly uiVariant: "classic" | "b1" | "chroma";
 }
 
 export interface AuthConfig {
@@ -73,7 +73,7 @@ export function readRuntimeConfig(env: NodeJS.ProcessEnv): RuntimeConfig {
   if (env.BUILD_ID !== undefined && !isSafeIdentifier(env.BUILD_ID)) invalid.push("BUILD_ID");
   if (env.APP_CHANNEL !== undefined && env.APP_CHANNEL !== "dev" && env.APP_CHANNEL !== "release") invalid.push("APP_CHANNEL");
   if (env.APP_PHASE !== undefined && !/^p[1-9][0-9]*$/.test(env.APP_PHASE)) invalid.push("APP_PHASE");
-  if (env.LC_UI_VARIANT !== undefined && env.LC_UI_VARIANT !== "classic" && env.LC_UI_VARIANT !== "b1") invalid.push("LC_UI_VARIANT");
+  if (env.LC_UI_VARIANT !== undefined && env.LC_UI_VARIANT !== "classic" && env.LC_UI_VARIANT !== "b1" && env.LC_UI_VARIANT !== "chroma") invalid.push("LC_UI_VARIANT");
   if ((env.APP_CHANNEL ?? "release") === "release" && env.APP_PHASE !== undefined) invalid.push("APP_PHASE");
   if (runtime === "production" && env.APP_VERSION !== "1.2.0") invalid.push("APP_VERSION");
   if (runtime === "production" && !/^[0-9a-f]{40}$/.test(env.BUILD_ID ?? "")) invalid.push("BUILD_ID");
@@ -85,7 +85,7 @@ export function readRuntimeConfig(env: NodeJS.ProcessEnv): RuntimeConfig {
     buildId: env.BUILD_ID ?? "local",
     appChannel: env.APP_CHANNEL === "dev" ? "dev" : "release",
     appPhase: env.APP_CHANNEL === "dev" ? env.APP_PHASE ?? null : null,
-    uiVariant: env.LC_UI_VARIANT === "classic" ? "classic" : "b1"
+    uiVariant: env.LC_UI_VARIANT === "classic" || env.LC_UI_VARIANT === "chroma" ? env.LC_UI_VARIANT : "b1"
   };
 }
 

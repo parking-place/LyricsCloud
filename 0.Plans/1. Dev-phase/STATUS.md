@@ -2,17 +2,27 @@
 
 ```yaml
 current_version: "1.2.0"
-current_phase: "../3.Redesign-phase/1.2.0/1phase.md"
+current_phase: "../3.Redesign-phase/1.2.0/2phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
-updated_at: "2026-09-24"
+updated_at: "2026-09-25"
 next_planned_version: "1.2.0"
-next_planned_phase: "../3.Redesign-phase/1.2.0/2phase.md"
-next_action: "1.2.0 P2 공통 코발트 토큰·셸/홈/목록을 구현하고 실제 브라우저·CI·동일 SHA 개발 인수를 수행한다; 실제 기기/OS IME/AT는 사용자 지시로 후속 미실행"
+next_planned_phase: "../3.Redesign-phase/1.2.0/3phase.md"
+next_action: "1.2.0 P2의 정확한 SHA·CI·개발 공개 인수를 P3에 넘기고 편집·자료·설정·공유·복구의 Chroma 적용을 시작한다; 실제 기기/OS IME/AT는 사용자 지시로 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-25 — 1.2.0 P2 완료·P3 인계
+
+기능 SHA `f4c95883ca885a6769539d34a93df3ec6b29a1d6`의 [push Actions 36025310880](https://github.com/parking-place/LyricsCloud/actions/runs/36025310880)은 verify·네 signed dev image/provenance SUCCESS, [PR #159 Actions 36025367395](https://github.com/parking-place/LyricsCloud/actions/runs/36025367395)는 verify SUCCESS다. 원격 branch SHA 일치, 로컬 Unit/DB **511 PASS/8 조건부 skip**, B1 전체 Chromium **432 PASS/62 조건부 skip**, Chroma 집중 **12 PASS**, 장문 기존 예산 **2 PASS**다. P2는 코발트 opt-in 토큰·공통 도크/모바일 더보기·실제 소유자 자료 홈과 목록/검색 표현을 구현했고 DB/API/편집 저장 계약은 변경하지 않았다. 구 B1 상단바 74px 단언의 Chroma 선택 실행 **1 FAIL**과 P2 전 성능 상대 기준 미실측은 숨기지 않고 P4 분리 인수로 남겼다.
+
+같은 SHA의 개발 배포 뒤 첫 Chroma web 재생성은 health 단계 실패, B1 복귀 후 web 전용 `--no-deps` 재생성은 PASS했다. 현재 checkout/BUILD_ID/공개 live·ready는 `1.2.0/dev/p2`, schema 1152, 네 서비스 healthy·Chroma runtime이다. 공개 합성 계정 PC/mobile × light/dark의 홈·목록·검색 **4문맥/20 route**, 가로 넘침/브라우저 오류/HTTP 오류 0을 확인하고 합성 계정·session을 삭제했다. 최초 공개 검사 스크립트의 인벤토리 라벨·production 보안 쿠키 오용 실패는 최종 PASS에 합산하지 않는다. 기존 DB·볼륨·secret 보존. 실제 Windows/iOS/Android 기기·OS IME·AT는 사용자 지시로 후속 미실행, P3~P5 미완료이며 main·정식 tag/image·릴리스 서버 변경 없음.
+
+### 2026-09-24 — 1.2.0 P2 착수
+
+P1 문서 인수 `400416577490ee8e6a3bc64d6ce6688f0e9ce9b5`의 깨끗한 worktree에서 `phase/1.2.0-p2-chroma-shell-lists`를 분기했다. 담당 Codex, 작업 `LC-RD-120-P2-01~06`. 코발트 light/dark 토큰과 공통 PC 도크·모바일 탐색, 실제 데이터 홈·곡/라임/프롬프트 목록·검색/최근/즐겨찾기 등 P2 화면 스타일과 320~1440px/fallback 검증을 담당한다. P1 기능·계약 SHA `84761ae1ca25f1b5e5dd808e772d1a062066cd57`의 CI/동일 SHA 개발 인수를 기준으로 삼고 P2 CI·개발 인수 전에는 P2 완료/P3 착수로 기록하지 않는다. 편집기 저장·권한·DB/API 계약과 보호 목업·native 보류를 유지한다. 실제 물리 기기·OS IME·AT는 사용자 보류/미실행이며 main·정식 tag/image·릴리스 서버는 변경하지 않는다.
 
 ### 2026-09-24 — 1.2.0 P1 완료·P2 인계
 

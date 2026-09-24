@@ -8,6 +8,7 @@ import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 import { commandForKeyboardEvent, isEditableShortcutTarget, requestShortcutNavigation } from "../lib/shortcut-runtime.js";
 import { PROFILE_UPDATED_EVENT, profileChannelName, type ProfileView } from "../lib/profile-state.js";
 import { Brand, BrandMark } from "./auth-screen.js";
+import { ChromaHomeScreen, type ChromaHomeData } from "./chroma-home-screen.js";
 import { PwaManager } from "./pwa-manager.js";
 import { QuickAdd } from "./quick-add.js";
 import { ShortcutHelpDialog } from "./shortcut-help.js";
@@ -291,8 +292,10 @@ export function WorkspaceShell({
     </aside>
     <div className="main-shell" ref={mainShell}>
       <header className="topbar">
+        <a className="chroma-topbar-brand" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateWorkspace}><Brand /><span>CHROMA DOCK</span></a>
         <nav className="workspace-tabs" aria-label="창작 영역" onClick={navigateWorkspace}><a href="/songs" className={`workspace-tab${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}>곡 · 가사</a><a href="/rhymes" className={`workspace-tab${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}>라임 노트</a><a href="/prompts" className={`workspace-tab${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}>프롬프트</a><a href="/templates" className={`workspace-tab${active === "templates" ? " active" : ""}`} aria-current={active === "templates" ? "page" : undefined}>▦ 템플릿</a><a href="/favorites" className={`workspace-tab${active === "favorites" ? " active" : ""}`} aria-current={active === "favorites" ? "page" : undefined}>★ 즐겨찾기</a><a href="/recent" className={`workspace-tab${active === "recent" ? " active" : ""}`} aria-current={active === "recent" ? "page" : undefined}>↺ 최근</a><a href="/search" className={`workspace-tab${active === "search" ? " active" : ""}`} aria-current={active === "search" ? "page" : undefined}>⌕ 검색</a></nav>
         <div className="b1-topbar-context" role="group" aria-label="현재 작업 영역"><span>{contextGroup}</span><strong>{contextTitle}</strong></div>
+        <a className="chroma-profile" href="/settings" onClick={navigateWorkspace} aria-label={`${visibleProfile.displayName}님 프로필 설정`}><Avatar key={`${visibleProfile.userId}-${visibleProfile.rowVersion ?? 0}`} profile={visibleProfile} /><span>{visibleProfile.displayName}</span></a>
         <span className="topbar-spacer" /><button className="top-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`top-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정" onClick={navigateWorkspace}>⚙</a><span className="private-badge">개인 공간</span><button className="top-logout" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button><a className="top-home-mark" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateWorkspace}><BrandMark /></a>
       </header>
       <PwaManager ownerId={profile.userId} />
@@ -307,6 +310,7 @@ export function WorkspaceShell({
     </div>
     <header className="mobile-header"><a className="brand-home-link" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateWorkspace}><Brand /></a><span className="mobile-account"><button className="mobile-shortcut-help" type="button" aria-haspopup="dialog" aria-expanded={shortcutHelpOpen} onClick={() => setShortcutHelpOpen(true)} aria-label="단축키 도움말">?</button><a className={`mobile-settings${active === "settings" ? " active" : ""}`} href="/settings" aria-label="설정" onClick={navigateWorkspace}>⚙</a><Avatar key={`${visibleProfile.userId}-${visibleProfile.rowVersion ?? 0}`} profile={visibleProfile} /><strong className="mobile-profile-name" title={visibleProfile.displayName}>{visibleProfile.displayName}</strong><button className="mobile-logout" type="button" onClick={() => void logout()} disabled={loggingOut || accountPaused}>{loggingOut ? "종료 중" : "로그아웃"}</button></span><a className="mobile-home-icon" href="/workspace" aria-label="창작 홈으로 이동" onClick={navigateWorkspace}><BrandMark /></a></header>
     <nav className="mobile-bottom-nav" aria-label="모바일 주 메뉴" onClick={navigateWorkspace}>
+      <a href="/workspace" className={`mobile-nav-item chroma-home-item${active === "home" ? " active" : ""}`} aria-current={active === "home" ? "page" : undefined}><span aria-hidden="true">⌂</span><strong>홈</strong></a>
       <a href="/songs" className={`mobile-nav-item${active === "songs" ? " active" : ""}`} aria-current={active === "songs" ? "page" : undefined}><span aria-hidden="true">♪</span><strong>곡</strong></a>
       <a href="/rhymes" className={`mobile-nav-item${active === "rhymes" ? " active" : ""}`} aria-current={active === "rhymes" ? "page" : undefined}><span aria-hidden="true">≈</span><strong>라임</strong></a>
       <a href="/prompts" className={`mobile-nav-item${active === "prompts" ? " active" : ""}`} aria-current={active === "prompts" ? "page" : undefined}><span aria-hidden="true">◇</span><strong>프롬프트</strong></a>
@@ -322,6 +326,7 @@ export function WorkspaceShell({
         <div className="sheet-handle" aria-hidden="true" />
         <header><div><p className="eyebrow">Workspace</p><h2 id="mobile-more-title">더보기</h2></div><button type="button" onClick={closeMobileMore}>닫기</button></header>
         <nav aria-label="모바일 추가 메뉴" onClick={navigateWorkspace}>
+          <a className="chroma-more-item" href="/search" aria-current={active === "search" ? "page" : undefined}><span aria-hidden="true">⌕</span><span><strong>통합 검색</strong><small>곡·가사·자료를 한 곳에서 찾기</small></span></a>
           <a className="b1-more-item" href="/favorites" aria-current={active === "favorites" ? "page" : undefined}><span aria-hidden="true">★</span><span><strong>즐겨찾기</strong><small>고정한 곡과 자료 모아보기</small></span></a>
           <a href="/recent" aria-current={active === "recent" ? "page" : undefined}><span aria-hidden="true">↺</span><span><strong>최근 작업</strong><small>마지막 작업 위치로 돌아가기</small></span></a>
           <a href="/templates" aria-current={active === "templates" ? "page" : undefined}><span aria-hidden="true">▦</span><span><strong>템플릿</strong><small>가사 구조와 프롬프트 재사용</small></span></a>
@@ -335,14 +340,16 @@ export function WorkspaceShell({
   </main></CurrentProfile.Provider>;
 }
 
-export function AppShell({ profile, loginCompleted }: { profile: ShellProfile; loginCompleted: boolean }) {
+export function AppShell({ profile, loginCompleted, homeData }: { profile: ShellProfile; loginCompleted: boolean; homeData: ChromaHomeData | null }) {
   return <WorkspaceShell profile={profile} loginCompleted={loginCompleted} active="home">
+    {homeData ? <ChromaHomeScreen displayName={profile.displayName} data={homeData} /> : null}
+    {homeData ? null :
     <section className="workspace-content" aria-labelledby="workspace-title">
       <p className="eyebrow">Private beta workspace</p>
       <HomeGreeting fallback={profile} />
       <p>안전한 개인 작업 공간이 준비됐습니다.</p>
       <div className="empty-state"><span aria-hidden="true">✦</span><h2>첫 곡을 정리해볼까요?</h2><p>곡 목록에서 아이디어부터 완성까지 작업 상태를 관리할 수 있어요.</p><a className="primary-link" href="/songs">곡 목록 열기</a></div>
-    </section>
+    </section>}
   </WorkspaceShell>;
 }
 

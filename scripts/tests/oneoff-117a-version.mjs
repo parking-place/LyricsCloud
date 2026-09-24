@@ -74,7 +74,7 @@ test('production browser fixture and health assertion use the 1.2.0 product vers
   const healthSpec = readFileSync('tests/e2e/new-feature-1.1.5.spec.ts', 'utf8');
   const baselineSpec = readFileSync('tests/e2e/baseline.spec.ts', 'utf8');
   assert.match(browserConfig, /APP_VERSION: process\.env\.APP_VERSION \?\? "1\.2\.0"/);
-  assert.match(browserConfig, /APP_PHASE: process\.env\.APP_PHASE \?\? "p1"/);
+  assert.match(browserConfig, /APP_PHASE: process\.env\.APP_PHASE \?\? "p2"/);
   assert.match(healthSpec, /health\.build\.version\)\.toBe\(process\.env\.APP_VERSION \?\? "1\.2\.0"\)/);
   assert.match(baselineSpec, /version: process\.env\.APP_VERSION \?\? "1\.2\.0"/);
 });

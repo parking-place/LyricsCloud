@@ -77,7 +77,7 @@
   },
   "environment": {
     "schema": "config/environment-schema.1.2.0.json",
-    "schemaSha256": "7727dcd5d99784d656a883327d3a2c6348ec81d05f13286c78ac8b1a2604ddbc"
+    "schemaSha256": "767e804b11c49ae6560610dd29791224427fd004d9650be8c632b1814bb37f35"
   },
   "licenses": {
     "inventory": "config/licenses.1.2.0.json",
