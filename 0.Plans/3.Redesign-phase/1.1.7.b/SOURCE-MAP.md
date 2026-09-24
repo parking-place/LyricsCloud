@@ -78,6 +78,10 @@ P1은 WC-17과 WC-18을 기능 SHA `a04bbcb6358aa1682e57fb48491e53be3f87f5d1`에
 | draft/cache/outbox | owner/document/revision·guest 수명·구 build 보존 | 계정 전환/회수/rollback/종료 복구 |
 | a의 공용 image/tag·release 승인 | 기록 보존. b 정식 발행 권한으로 자동 승계하지 않음 | 새 후보의 dev/정식 채널 계약과 승인 상태 |
 
+## P5 최종 전수 봉인 — 2026-09-24
+
+위 18행의 `WC-01~18`은 모두 원본 C1/C2/C3 기능 SHA `0375825fe004fc74869250eefa14add267c4b3ae`의 최소 웹 코드·호출자·시험 범위를 P1 `a04bbcb`/P2 `3915a71`/P3 `1626c75`에 선택 인수하고 P4 `ddc1d7c`의 차단·DB·브라우저 재검증을 거쳤다. P5 최종 기능 SHA `acd2bd99876740debf426c401fe7157713f8b854`의 509 DB/Unit·432 Chromium 및 네 signed image/동일 SHA 개발 공개 인수를 [P5 최종 기록](5phase.md)으로 연결한다. 원격 C3의 문서 head, native/Windows route·job·1150 웹 이식, 1.1.8 runtime/STATUS와 코발트 외형은 전체 cherry-pick에서 제외한 채 각각 별도 계약으로 유지한다. WC-06 실제 OS IME/물리 기기·AT는 사용자 보류/미실행, UI-04/05/07 P2는 미해결 후속이다. 새 원문 손실·인가 확대·복구 불능 근거가 있으면 이 판정을 다시 연다.
+
 ## 통합 기록 양식
 
 ```text

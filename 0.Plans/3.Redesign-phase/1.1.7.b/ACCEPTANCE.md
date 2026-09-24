@@ -1,6 +1,6 @@
 # 1.1.7b 수용·DB 호환·되돌림
 
-**P1~P4의 코드·DB·회귀·개발 공개 수용은 기능 SHA `ddc1d7c50a64f8e8467b7aee64627f2dfe13da7d`에서 완료했고, b 전체 최종 봉인/P5는 미완료다.** 22개 원인의 필수 P0/P1은 적용 개발 경계에서 닫았으며 UI-04/05/07의 P2와 실제 기기·OS IME·AT 보류, 운영 경계 미검증은 그대로 기록한다. 원격 source의 시험 통과와 새 b SHA의 검증을 구별한다. [통합 맵](SOURCE-MAP.md) · [버전 계약](VERSION-CONTRACT.md) · [차단표](BLOCKERS.md).
+**P1~P5의 웹 코드·DB·회귀·동일 SHA 개발 공개 수용은 최종 기능 SHA `acd2bd99876740debf426c401fe7157713f8b854`에서 완료했다.** 22개 원인의 필수 P0/P1은 적용 개발 경계에서 닫았으며 UI-04/05/07의 P2와 실제 기기·OS IME·AT 보류, 운영 경계 미검증은 그대로 기록한다. 정식 tag·main·릴리스 서버는 미승인/미실행이다. 원격 source의 시험 통과와 새 b SHA의 검증을 구별한다. [통합 맵](SOURCE-MAP.md) · [버전 계약](VERSION-CONTRACT.md) · [차단표](BLOCKERS.md).
 
 2026-09-24 사용자 지시로 실제 Windows/iOS/Android 물리 기기·OS IME·AT 검증은 1.2.0 진행과 분리해 후속으로 보류한다. 해당 행은 **미실행/사용자 보류**로 기록하고 자동화 browser를 PASS 대체로 표시하지 않는다. 다른 원인·DB·rollback·CI·동일 SHA 개발 인수 조건은 면제되지 않는다.
 
@@ -34,6 +34,8 @@
 P2의 최초 통합 판정 근거는 기능 SHA `3915a71f5abd9116bdd097ee4cc45cc6c71eadf0`의 로컬 전체 Chromium 410 PASS/44 skip, 격리 DB 관련 19 PASS, [PR verify](https://github.com/parking-place/LyricsCloud/actions/runs/35866450768)와 [push verify·네 signed dev image](https://github.com/parking-place/LyricsCloud/actions/runs/35866445486) PASS, 같은 SHA 개발 서버·공개 PC/mobile 저장/재진입 smoke다. AC-10은 **가사 복제 부분만** P2 판정이며 곡 부분 저장은 P3이다. AC-20의 개발 DB migration 31건 지문/native 1150/profile 1151 보존은 P2 배포 후에도 동일하지만 세 환경 전체 수용은 아니다. AC-22의 실제 OS IME·물리 기기·AT와 AC-21 22개 원인 최종 판정은 P4/P5에 남는다. 자세한 입력·실패 이력·합성 계정 정리는 [P2 인수 기록](2phase.md)을 따른다.
 
 P3의 최초 통합 판정 근거는 기능 SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`의 전체 로컬·원격 Chromium **419 PASS/49 조건부 skip**, 원격 Unit/DB **494 PASS/8 조건부 skip**, [PR verify](https://github.com/parking-place/LyricsCloud/actions/runs/35876265426)와 [push verify·네 signed dev image](https://github.com/parking-place/LyricsCloud/actions/runs/35876233972) PASS, 같은 SHA 개발 서버·공개 PC/mobile 목록/즐겨찾기/export/trash smoke다. AC-10의 곡 부분 저장을 P3에서 인수했고 AC-15의 guest 경계는 기존 실제 WS/DB 브라우저 매트릭스와 새 브라우저-sync 회귀로 확인했다. 외부 OAuth provider 장애/복구, 실제 OS IME·기기/AT, 세 DB 유형·rollback 및 22개 원인의 최종 판정은 P4/P5에 남는다. [P3 인수 기록](3phase.md)을 따른다.
+
+P4는 기능 `ddc1d7c50a64f8e8467b7aee64627f2dfe13da7d`에서 세 DB 유형/1152·기존 a/native image application-first rollback, 22개 행별 판정·공개 edge 제한, CI·네 signed image와 동일 SHA 개발 공개 저장/재시작을 인수했다. P5 최종 기능 `acd2bd99876740debf426c401fe7157713f8b854`는 [push Actions 35997349571](https://github.com/parking-place/LyricsCloud/actions/runs/35997349571) 전체 verify·네 signed image, [PR Actions 35997369606](https://github.com/parking-place/LyricsCloud/actions/runs/35997369606) verify SUCCESS와 개발 checkout/BUILD_ID/공개 `1.1.7b/dev/p5`·1152 일치를 확인했다. 공개 합성 곡/가사/프롬프트·계정 격리·공유 회수·export/trash·PC/mobile·서비스 재시작 영속 PASS 후 합성 자료 0건으로 정리했다. 이는 `AC-RD-117B-19~24`의 개발 후보 인수이며 실제 기기·OS IME·AT는 사용자 보류/미실행, 정식 발행은 미승인이다. [P4](4phase.md)·[P5](5phase.md)·[1.2.0 인계](HANDOFF-TO-1.2.0.md)를 따른다.
 
 ## DB·환경 인수 행렬
 
