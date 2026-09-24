@@ -13,7 +13,7 @@ next_planned_version: "1.2.0"
 next_planned_phase: "1.2.0/5phase.md"
 selected_design: "Chroma Dock / Cobalt Blue (color study 04)"
 deferred_patch_versions: "1.1.8 through 1.1.14"
-implementation_state: "1.2.0 P1-P4 complete; P5 not_started"
+implementation_state: "1.2.0 P1-P4 complete; P5 in_progress"
 execution_authorized_by_this_file: false
 runtime_status_source: "0.Plans/1. Dev-phase/STATUS.md"
 ```
@@ -26,7 +26,7 @@ runtime_status_source: "0.Plans/1. Dev-phase/STATUS.md"
 | P2 | [색상 토큰·공통 셸·탐색과 목록](1.2.0/2phase.md) | complete | SHA `f4c9588`·Actions `36025310880`/`36025367395`·같은 SHA 공개 PC/mobile Chroma 인수 |
 | P3 | [편집·자료·설정·공유와 복구](1.2.0/3phase.md) | complete | SHA `a315c07`·Actions `36047345436`/`36047351494`·같은 SHA 공개 UTC/서울 52화면 인수 |
 | P4 | [교차 회귀·접근성·성능](1.2.0/4phase.md) | complete | SHA `c380a59`·Actions `36063583481`/`36063586810`·같은 SHA 공개 20회 빠른 전환 인수; 실기기 미실행 |
-| P5 | [문서·최종 통합·개발 인수](1.2.0/5phase.md) | planned / 미착수 | 없음 |
+| P5 | [문서·최종 통합·개발 인수](1.2.0/5phase.md) | in_progress | 필수 CI·동일 SHA 개발 인수 대기 |
 
 목업 자체의 실행 검증은 [목업 안내](1.2.0/mockup/README.md)에 기록한다. 위 제품 Phase의 완료 증거와 구분한다. 보류 재개와 이전 작업 보존 기준은 [전환 결정](PLAN-CHANGE.md)을 따른다.
 

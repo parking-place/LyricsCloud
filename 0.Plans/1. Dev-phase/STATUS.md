@@ -2,17 +2,21 @@
 
 ```yaml
 current_version: "1.2.0"
-current_phase: "../3.Redesign-phase/1.2.0/4phase.md"
-state: "complete"
+current_phase: "../3.Redesign-phase/1.2.0/5phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-25"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/5phase.md"
-next_action: "완료된 1.2.0 P4를 인수해 P5 최종 문서·CI·같은 SHA 개발 공개 인수를 시작한다; 실제 기기/OS IME/AT는 후속 미실행"
+next_action: "1.2.0 P5 최종 요구·문서·버전 계약을 봉인하고 필수 CI·네 signed image·같은 SHA 개발 공개 smoke를 완료한다; 실제 기기/OS IME/AT는 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-25 — 1.2.0 P5 착수
+
+P4 완료 문서 SHA `e1c0cd7275fabc2e5e526774eb5f1601a99698c9`의 깨끗한 worktree와 동일 원격 branch를 확인한 뒤 `phase/1.2.0-p5-final-handoff`를 분기했다. 담당 Codex, 작업 `LC-RD-120-P5-01~06`. P4 기능 SHA `c380a598ad4bd5ccd38b6aa3f3ceb77040cf1986`의 CI·같은 SHA 개발 인수를 기준으로 최종 추적·사용자/운영 문서·버전/manifest/CI 도구·회귀와 공개 인계를 봉인한다. P5 최종 CI·네 signed image·같은 SHA 개발 공개 인수 전에는 P5/1.2.0 완료로 기록하지 않는다. 실기기·OS IME·AT는 사용자 지시로 후속 미실행이며 main·정식 tag/image·릴리스 서버는 변경하지 않는다.
 
 ### 2026-09-25 — 1.2.0 P4 완료·P5 진입 대기
 

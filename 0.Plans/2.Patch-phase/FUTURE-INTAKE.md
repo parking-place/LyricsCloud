@@ -515,3 +515,7 @@ Git tracked와 hidden/untracked 공개 경로의 Future 관련 문서는 동일�
 ## 2026-09-25 — 1.2.0 P4 완료 문서 push 전 검수
 
 Git tracked·hidden/untracked 공개 경로에서 Future 관련 네 문서(`FUTURE-INTAKE.md`, `Future_Feature.md`, `future-idea-scope.md`, `mandatory-future-mapping.md`)를 확인했다. 현행 `Future_Feature.md`는 마지막 변경 commit `0df4c368076cda98e6d05fcb21c56e16e33bac63`의 blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 동일하며 고유 FF ID 129개, 신규·이동·삭제·본문·체크 변화가 없다. 원본·백업·ignored/private를 공개 후보로 추가하지 않고 기존 배정·보류를 유지한다. 이번 변경은 최종 P4 SHA `c380a598ad4bd5ccd38b6aa3f3ceb77040cf1986`의 CI·같은 SHA 공개 개발 인수와 실기기 미실행을 문서화한다. 제품 재배정이나 main·정식 릴리스 작업은 없다.
+
+## 2026-09-25 — 1.2.0 P5 최종 후보 push 전 검수
+
+Git tracked·hidden/untracked 공개 검색의 Future 관련 네 경로는 P4 완료와 동일하다. 현행 `Future_Feature.md`의 `0df4c368076cda98e6d05fcb21c56e16e33bac63`/blob `8f42d20b638e245eb775415ccfdabef56a96f694`, 고유 FF ID 129개와 경로·체크·본문은 변경되지 않았다. 재배정·중복 처리 없음; ignored/private 자료는 공개하지 않는다. 이번 후보는 1.2.0 P5 문서·CI Phase 정렬만 포함하고 `apps/windows`·보류 native·1.2.1 이후 계획·main·정식 tag/image·릴리스 서버는 변경하지 않는다. 전체 CI·네 signed dev image·동일 SHA 개발 인수 전에는 P5 완료로 표시하지 않는다.
