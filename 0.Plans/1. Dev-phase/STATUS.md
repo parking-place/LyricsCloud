@@ -24,6 +24,10 @@ Chroma 3엔진×양 테마×5너비 실제 route/본문/넘침, forced-colors/�
 
 B1 대비 5회 local p95는 입력 +5.7%, 집중 전환 -5.5%, 50ms long task 양쪽 0이지만 첫 화면 +10.6% 관찰 위험이 남는다. 사용자 보류 실기기·OS IME·AT는 미실행, public offline 특수 project 조건과 B1 이중-origin 편집은 별도 범위다. [P4 기록](../3.Redesign-phase/1.2.0/4phase.md)에 실패/skip·한계를 구분했다. 현재 P4 `in_progress`; 원격 SHA/CI·네 signed image·같은 SHA 개발 공개 인수 전 P5로 넘기지 않는다.
 
+### 2026-09-25 — 1.2.0 P4 첫 공개 SHA의 강제 색상 간헐 대비 결함
+
+`8fc53296aea5cf7f9e690fd70cfe88ce1bdedb4c`의 push/PR 전체 verify와 네 signed dev image/provenance, 같은 SHA 개발 checkout·BUILD_ID·공개 live/ready·schema 1152·네 healthy 및 공개 P2/P3 서울·UTC smoke는 PASS다. 그러나 추가 공개 P4 320px forced-colors 빠른 전환에서 `/trash`의 `.mobile-logout` 흰 글자/투명 배경 대비 위반을 반복 재현했다. 안정 화면 axe 3회 통과만으로 실패를 닫지 않는다. 시스템 버튼 배경/글자색을 지정한 CSS와 회귀 단언의 로컬 production build·집중 desktop/mobile 및 3회 반복 PASS 후 새 SHA CI/이미지/개발 공개 재검증을 기다린다. [상세](../3.Redesign-phase/1.2.0/4phase.md). 첫 SHA를 P4 완료로 소급하지 않으며 P5 미착수다. 공개 합성 계정은 삭제·부재 확인했다.
+
 ### 2026-09-25 — 1.2.0 P3 완료·P4 진입 대기
 
 최종 기능 SHA `a315c07599be0aa3f4c9a58ab8757c9363e1e351`는 원격 Phase 브랜치와 일치한다. [push Actions 36047345436](https://github.com/parking-place/LyricsCloud/actions/runs/36047345436)은 전체 verify·네 signed dev image/provenance SUCCESS, [PR #160 Actions 36047351494](https://github.com/parking-place/LyricsCloud/actions/runs/36047351494)는 verify SUCCESS다. 첫 SHA의 공개 비어 있지 않은 휴지통과 두 번째 후보의 곡 대시보드에서 발견한 React #418 시간대 hydration 결함을 UTC/서울 명시 날짜 표시와 실제 합성 자료 회귀로 닫았다. 실패 후보 `e445631`의 백업 lock·성능 CI 실패는 최종 성공으로 덮어쓰지 않고 [P3 기록](../3.Redesign-phase/1.2.0/3phase.md)에 구분했다.

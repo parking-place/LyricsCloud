@@ -35,6 +35,12 @@
 
 첫 원격 후보 `8762d58753087649ddba4a6dbabba4b90227dd5a`의 CI 설정을 점검해 기존 Chroma 전용 단계가 P2 시험만 선택하는 것을 확인했다. 로컬 P3/P4 증거를 원격 필수 단계에서도 실행하도록 세 시험 파일로 범위를 확장한 후 새 SHA를 재발행한다. 첫 SHA의 진행 중 검증/이미지는 최종 SHA의 PASS로 소급하지 않는다.
 
+## 2026-09-25 첫 공개 후보의 추가 대비 결함 — 재후보 필요
+
+기능 SHA `8fc53296aea5cf7f9e690fd70cfe88ce1bdedb4c`의 [push Actions 36057743456](https://github.com/parking-place/LyricsCloud/actions/runs/36057743456)은 verify **511 Unit/DB PASS·8 조건부 skip, 기본 Chromium 436 PASS/80 조건부 skip, Chroma P2/P3/P4 21 PASS/1 조건부 skip, 릴리스 5-project 10 PASS**와 네 signed dev image/provenance SUCCESS다. [PR Actions 36057750330](https://github.com/parking-place/LyricsCloud/actions/runs/36057750330) verify도 SUCCESS. 발행 digest는 web `314ddbd29ec6e6739fcece7288f80ea359b8bb72dc54ee9aa6020e0b48a3eb53`, collaboration `3561e9d27e518b8e51b178467519a01f3e1f2d9b6893c3ccaab5e03e220c3583`, worker `6ff6d8cb2dbe9899431270fe7dfdcf5840570da125c656f272b614139348ec98`, migrate `8da479264d6f6dfc7ac458c575db50e33e098a6219540281cb33c27f2210605c` (모두 `sha256:`)다.
+
+같은 SHA의 개발 배포/checkout/BUILD_ID/공개 live·ready `1.2.0/dev/p4`·schema 1152·네 healthy, 공개 P2 4문맥/20경로와 P3 서울/UTC 각각 4문맥/52경로/16자료 탭/원문 저장·오류/5xx/넘침 0을 확인했다. 그러나 공개 320px 강제 색상에서 `/trash`로 빠르게 전환한 axe의 `.mobile-logout` 글자 대비 위반을 반복 10회 중 1회 재현했다. 당시 계산값은 흰 글자·투명 배경·흰 경계였다. 안정 화면 3회 PASS는 이 실패를 지우지 않으며 첫 배포 SHA를 P4 최종 완료로 처리하지 않는다. P4 제품 CSS에 강제 색상 시스템 `ButtonFace/ButtonText`를 지정하고 투명 배경 금지 단언을 더한 로컬 production build·desktop/mobile 집중 2 PASS 및 desktop 3회 반복 PASS 상태다. 새 SHA의 CI·네 signed image·동일 SHA 개발 공개 빠른 전환 재검증이 남는다. 합성 공개 계정은 삭제·부재 검사를 완료했다.
+
 ## 완료 조건
 
 원문 유실·인가 우회·무음 저장 실패 등 출시 차단 결함이 없고, [AC-RD-120-01~10](ACCEPTANCE.md)의 근거가 연결되어야 한다. 필수 CI·같은 SHA 개발 인수와 잔여 위험을 기록하고 [P5](5phase.md)에 최종 후보·범위·기기 한계를 전달한다. 실제 gate가 남으면 `review`로 남기고 완료로 표시하지 않는다.

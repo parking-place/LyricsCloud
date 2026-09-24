@@ -90,6 +90,11 @@ test.describe("1.2.0 P4 Chroma cross-browser acceptance", () => {
     await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
     for (const path of ["/settings", "/trash"]) {
       await page.goto(path);
+      const logoutColors = await page.locator(".mobile-logout").evaluate((button) => ({
+        foreground: getComputedStyle(button).color, background: getComputedStyle(button).backgroundColor
+      }));
+      expect(logoutColors.background, `${path} forced-colors logout surface`).not.toBe("rgba(0, 0, 0, 0)");
+      expect(logoutColors.foreground, `${path} forced-colors logout text`).not.toBe(logoutColors.background);
       const audit = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
       expect(audit.violations.filter((violation) => violation.impact === "serious" || violation.impact === "critical"), path).toEqual([]);
     }

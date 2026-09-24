@@ -181,6 +181,7 @@ html[data-ui-variant="chroma"] .quick-add-notice { border-color: var(--line); bo
 }
 @media (forced-colors: active) {
   html[data-ui-variant="chroma"] :is(.primary-link, .primary-button) { border-color: ButtonText !important; background: ButtonFace !important; color: ButtonText !important; }
+  html[data-ui-variant="chroma"] :is(.mobile-logout, .top-logout) { border-color: ButtonText !important; background: ButtonFace !important; color: ButtonText !important; }
   html[data-ui-variant="chroma"] :is(.side-nav, .mobile-bottom-nav, .song-card, .rhyme-card, .prompt-card) { background: Canvas !important; border-color: CanvasText !important; box-shadow: none !important; backdrop-filter: none !important; }
   html[data-ui-variant="chroma"] :is(.nav-item.active, .mobile-nav-item.active, [aria-current="page"]) { border: 2px solid Highlight !important; color: Highlight !important; }
 }
