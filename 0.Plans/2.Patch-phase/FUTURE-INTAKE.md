@@ -503,3 +503,7 @@ Git tracked·hidden/untracked 공개 경로에서 Future 관련 파일은 직전
 ## 2026-09-25 — 1.2.0 P4 로컬 통합 후보 push 전 검수
 
 Git tracked 목록·hidden/untracked 공개 검색·staged/unstaged 이름을 대조했다. Future 관련 경로는 직전과 동일한 4개이고 신규·이동·삭제가 없다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`, 고유 FF ID 129개, 본문·체크 변화가 없으므로 재배정하지 않는다. 나머지 세 파일은 절차·기존 범위·이관표로 중복 후보가 아니다. 이번 P4 후보는 Chroma/B1 회귀·접근성·성능·rollback 시험과 발견된 표시 대비 결함 보정만 포함한다. 원격 CI·네 signed image·같은 SHA 개발 공개 인수 전에는 Phase 완료가 아니며 물리 기기·OS IME·AT는 사용자 보류/미실행이다. 비공개/ignored 자료와 기존 1.2.1 이후 배정·보호 목업·main·정식 tag/image·릴리스 서버는 변경하지 않는다.
+
+## 2026-09-25 — 1.2.0 P4 Chroma 필수 CI 범위 보정 push 전 검수
+
+첫 P4 원격 후보 `8762d58753087649ddba4a6dbabba4b90227dd5a` 뒤 Git tracked·hidden/untracked 공개 검색에서 Future 관련 경로는 동일한 4개, 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 고유 FF ID 129개가 동일하다. 신규·이동·삭제·본문·체크 변화가 없어 재배정하지 않는다. 이번 후속 push는 CI의 Chroma 단계에 P3/P4 교차 시험을 포함하고 그 이유를 P4 증거에 기록하는 범위다. 앞 SHA의 진행 중/취소된 검증을 새 SHA PASS로 승격하지 않으며 실제 기기와 릴리스 경계는 직전 기록대로 유지한다.
