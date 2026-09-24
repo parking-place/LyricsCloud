@@ -18,6 +18,10 @@ next_action: "1.2.0 P5 최종 요구·문서·버전 계약을 봉인하고 필�
 
 P4 완료 문서 SHA `e1c0cd7275fabc2e5e526774eb5f1601a99698c9`의 깨끗한 worktree와 동일 원격 branch를 확인한 뒤 `phase/1.2.0-p5-final-handoff`를 분기했다. 담당 Codex, 작업 `LC-RD-120-P5-01~06`. P4 기능 SHA `c380a598ad4bd5ccd38b6aa3f3ceb77040cf1986`의 CI·같은 SHA 개발 인수를 기준으로 최종 추적·사용자/운영 문서·버전/manifest/CI 도구·회귀와 공개 인계를 봉인한다. P5 최종 CI·네 signed image·같은 SHA 개발 공개 인수 전에는 P5/1.2.0 완료로 기록하지 않는다. 실기기·OS IME·AT는 사용자 지시로 후속 미실행이며 main·정식 tag/image·릴리스 서버는 변경하지 않는다.
 
+### 2026-09-25 — 1.2.0 P5 공유 DB 시험 교착 보정 후보
+
+P5 SHA `5b281201be61def42dde0ca3079e7b70bdd829bb`의 push Actions `36069343350`은 Unit **510 PASS/1 FAIL/8 조건부 skip**으로 중단됐다. `export-safety` 합성 pending projection과 별도 전역 retry 시험이 병렬로 같은 임시 DB를 사용하면서 PostgreSQL 교착이 발생했다. `AUTH_DATABASE_INTEGRATION=true`에서 Vitest 파일 간 실행만 순차화해 합성 fixture의 소유권을 분리했고, assertion·제품 코드·DB schema는 변경하지 않았다. Node 24/격리 DB 전체 **511 PASS/8 조건부 skip**(65.32초). 첫 실패는 PASS가 아니며 새 SHA의 전체 CI·네 signed image·동일 SHA 개발 공개 인수를 기다린다. 개발 서버는 깨끗한 P4 `c380a59`, 네 healthy 상태로 유지 중이다.
+
 ### 2026-09-25 — 1.2.0 P4 완료·P5 진입 대기
 
 최종 기능 SHA `c380a598ad4bd5ccd38b6aa3f3ceb77040cf1986`의 [push Actions 36063583481](https://github.com/parking-place/LyricsCloud/actions/runs/36063583481)은 전체 verify·네 signed dev image/provenance SUCCESS, [PR #161 Actions 36063586810](https://github.com/parking-place/LyricsCloud/actions/runs/36063586810)은 verify SUCCESS다. 격리 DB Unit **511 PASS/8 조건부 skip**, 전체 Chromium **436 PASS/80 조건부 skip**, Chroma P2/P3/P4 **21 PASS/1 조건부 skip**, 5-project release **10 PASS**. 같은 SHA 개발 checkout/BUILD_ID/공개 live·ready `1.2.0/dev/p4`·schema 1152·네 healthy와 P2 4문맥/20 route, P3 서울·UTC 각각 4문맥/52 route/16자료 탭·본문 저장을 확인했다. 첫 공개 후보에서 재현된 320px forced-colors 로그아웃 버튼 대비 오류는 불투명 시스템 버튼 색상으로 보정하고 최종 공개 `/settings`→`/trash` 빠른 전환 연속 20회 즉시 axe serious/critical 0·초점 복귀 PASS로 닫았다. 첫 실패는 [P4 기록](../3.Redesign-phase/1.2.0/4phase.md)에 남긴다.

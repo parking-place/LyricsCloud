@@ -17,6 +17,8 @@ P4 문서 SHA `e1c0cd7275fabc2e5e526774eb5f1601a99698c9`에서 분기했다. [�
 
 로컬 `validate-1001-final-gate`, `validate-1002-release-artifacts`, `validate-1004-documentation`, `validate-1005-final-release`, `validate-101-environment`, `validate-120-feature-map` PASS. `VERSION`·11 package version·31 migration·4 digest-only image 계약과 lockfile/migration/environment/license manifest의 sha256 일치를 확인했다. CI의 `APP_PHASE`와 `.env.example`을 현재 p5로 정렬했다. 이 결과는 P5 필수 전체 CI·네 signed image·동일 SHA 개발 공개 인수 전 완료 증거가 아니다. 실제 물리 기기·OS IME·AT는 사용자 지시로 후속 미실행, 첫 화면 성능 소표본 위험과 `OPS-100-001`은 유지한다.
 
+첫 최종 후보 `539733fa1ef94bec1c730fe66c94a9d350732d28`의 push/PR 실행은 수용 ID 설명을 명확히 하기 위한 후속 push로 취소되어 PASS가 아니다. 다음 후보 `5b281201be61def42dde0ca3079e7b70bdd829bb`의 [push Actions 36069343350](https://github.com/parking-place/LyricsCloud/actions/runs/36069343350)은 정적 검사·마이그레이션·의존성/secret 감사 뒤 Unit **510 PASS/1 FAIL/8 조건부 skip**으로 중단됐다. `export-safety.integration.test.ts`의 합성 pending projection을 다른 파일의 전역 retry 시험이 같은 임시 DB에서 병렬 소비해 `rhyme_notes`→`resources` trigger와 복구 transaction 사이 PostgreSQL 교착이 발생했다. 제품·DB schema 변경이 아니라 DB 공유 시험의 파일 간 격리 문제로, `AUTH_DATABASE_INTEGRATION=true`일 때 Vitest 파일 실행만 순차화했다. 테스트 assertion·수·자료·실제 동시성 시험 내부는 변경하지 않았다. 격리 `lyricscloud_test`의 Node 24 전체 Vitest 재검증 **511 PASS/8 조건부 skip/0 FAIL**(114파일, 65.32초), 실패 사례 자체도 PASS했다. 첫 CI 실패를 새 후보 PASS로 소급하지 않으며 새 SHA에서 전체 필수 CI·서명·개발 인수를 다시 기다린다.
+
 ## 완료와 배포 경계
 
 [Agent.md](../../../Agent.md)의 `로컬 인수 → commit → 원격 push/SHA 확인 → 필수 CI → 같은 SHA 개발 배포 → 공개 smoke → 상태 기록`을 따른다. 필요한 검증·실기기·배포가 미완료면 원인과 다음 행동을 기록하고 완료로 표시하지 않는다.
