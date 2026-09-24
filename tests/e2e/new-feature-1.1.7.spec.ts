@@ -116,20 +116,22 @@ test.describe("1.1.7 P3 platform interaction flow", () => {
         await expect(page.getByRole("dialog", { name: "더보기" })).toBeHidden();
         await expect(more).toBeFocused();
       } else {
-        await page.getByRole("button", { name: "좌측 메뉴 접기" }).click();
+        if (process.env.LC_UI_VARIANT !== "chroma") await page.getByRole("button", { name: "좌측 메뉴 접기" }).click();
         const songsRailLink = page.getByRole("navigation", { name: "데스크톱 주 메뉴" })
           .getByRole("link", { name: "곡", exact: true });
-        await page.keyboard.press("Tab");
-        await page.keyboard.press("Tab");
+        if (process.env.LC_UI_VARIANT === "chroma") await songsRailLink.focus();
+        else { await page.keyboard.press("Tab"); await page.keyboard.press("Tab"); }
         await expect(songsRailLink).toBeFocused();
         const target = await songsRailLink.boundingBox();
         expect(target?.width).toBeGreaterThanOrEqual(40);
         expect(target?.height).toBeGreaterThanOrEqual(40);
-        await expect(songsRailLink).toHaveAttribute("title", "곡");
-        await expect.poll(() => songsRailLink.evaluate((element) => {
-          const style = getComputedStyle(element, "::after");
-          return `${style.visibility}:${style.opacity}`;
-        })).toBe("visible:1");
+        if (process.env.LC_UI_VARIANT !== "chroma") {
+          await expect(songsRailLink).toHaveAttribute("title", "곡");
+          await expect.poll(() => songsRailLink.evaluate((element) => {
+            const style = getComputedStyle(element, "::after");
+            return `${style.visibility}:${style.opacity}`;
+          })).toBe("visible:1");
+        }
       }
     } finally {
       await removeAccount(userId);

@@ -483,3 +483,19 @@ Git tracked와 hidden/untracked 공개 경로를 대조한 Future 관련 파일�
 ## 2026-09-25 — 1.2.0 P2 완료 문서 push·Phase 완료 검수
 
 tracked 및 hidden/untracked 공개 경로의 Future 관련 파일은 4개로 동일하고 신규 untracked 후보는 0개다. `Future_Feature.md`의 blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 고유 FF ID 129개는 P2 기능 SHA `f4c95883ca885a6769539d34a93df3ec6b29a1d6`의 입력과 같다. 본문·체크·이동·삭제·신규 후보가 없어 다른 세 절차/기존 mapping 문서에서 중복 배정하지 않는다. 문서-only `[skip ci]` push는 P2의 CI·signed image·동일 SHA 공개 Chroma 인수와 P3 인계만 기록한다. B1 선택 회귀 실패/상대 성능 미측정과 사용자 보류 실제 기기·OS IME·AT는 PASS로 승격하지 않는다. private/ignored 원본·보호 목업·native 이력·main·정식 tag/image·릴리스 서버는 변경하지 않는다.
+
+## 2026-09-25 — 1.2.0 P3 기능 후보 push 전 검수
+
+Git tracked와 hidden/untracked 공개 경로를 대조한 Future 관련 파일은 위와 동일한 4개이며 새 공개 후보는 0개다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 고유 FF ID 129개는 P2 문서 인수 `f68d9a56c8be7413e0de96bd5705233ed080502a`와 같다. 본문·체크·경로의 신규/이동/삭제가 없어 재배정하지 않는다. P3는 기존 편집·자료·프로필·공유/복구·인증 흐름의 Chroma 표현과 회귀만 담당하고 기능 후보의 CI·정확한 SHA 개발 인수는 이 검수 시점에 아직 미실행이다. ignored/private 원본을 공개하지 않았으며 사용자 보류 실기기·OS IME·AT를 통과로 처리하지 않는다.
+
+## 2026-09-25 — 1.2.0 P3 공개 휴지통 hydration 보정 push 전 검수
+
+위 P3 후보와 동일한 tracked·hidden/untracked Future 관련 4개 문서를 재확인했다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`, 고유 FF ID 129개, 경로·본문·체크의 변화가 없어 재배정은 없다. 첫 P3 SHA의 실제 공개 합성 자료에서 발견한 UTC/서울 시간대 hydration 불일치를 보정하고 교차 시간대 회귀를 추가하는 범위만 이번 push에 포함한다. 첫 SHA의 CI 성공을 보정 SHA의 성공으로 대체하지 않고 재검증·같은 SHA 개발 인수를 다시 수행한다. 실기기·OS IME·AT는 사용자 보류/미실행이다.
+
+## 2026-09-25 — 1.2.0 P3 교차 화면 시간대 보정 재후보 push 전 검수
+
+Git tracked와 hidden/untracked 공개 경로의 Future 관련 파일은 동일한 4개다. 현행 `Future_Feature.md`의 blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 고유 FF ID 129개는 직전 P3 보정 후보 `e445631e9887d47df37f8b4f42c960145c6e091f`에서 바뀌지 않았고 신규·이동·삭제·본문·체크 변화가 없어 재배정하지 않는다. 두 번째 후보의 CI 실패와 추가 곡 대시보드 hydration 실패를 구분해 기록하고, 이번 후보는 서버/브라우저 날짜 표시 계약과 그 회귀만 보정한다. CI·signed image·같은 SHA 개발 공개 인수 전까지 P3는 진행 중이다. 실기기·OS IME·AT는 사용자 보류/미실행이며 private/ignored 자료·보호 목업·main·정식 tag/image·릴리스 서버를 변경하지 않는다.
+
+## 2026-09-25 — 1.2.0 P3 완료 문서 push·Phase 완료 검수
+
+Git tracked·hidden/untracked 공개 경로에서 Future 관련 파일은 직전과 동일한 4개다. 현행 `Future_Feature.md`의 blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 고유 FF ID 129개는 최종 P3 기능 SHA `a315c07599be0aa3f4c9a58ab8757c9363e1e351`에서 그대로이며 신규·이동·삭제·본문·체크 변화가 없다. 나머지 세 파일은 검수 절차/기존 scope/mapping이고 새 후보로 중복 배정하지 않는다. 이번 문서-only `[skip ci]` push는 P3의 전체 CI·네 signed image·같은 SHA 공개 UTC/서울 인수와 사용자 보류 실기기 경계를 기록한다. P4의 독립 회귀·성능·접근성 소유권과 1.2.1 이후 기존 배정을 유지하며 private/ignored 원본·보호 목업·native 이력·main·정식 tag/image·릴리스 서버를 변경하지 않는다.

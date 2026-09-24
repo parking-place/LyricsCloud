@@ -90,8 +90,7 @@ function statusLabel(item: RecentWorkItem): string | null {
 
 function groupItems(items: readonly RecentWorkItem[]): Array<{ key: string; label: string; items: RecentWorkItem[] }> {
   const today = dateKey(new Date());
-  const yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-  const yesterday = dateKey(yesterdayDate);
+  const yesterday = dateKey(new Date(Date.now() - 86_400_000));
   const groups = new Map<string, { key: string; label: string; items: RecentWorkItem[] }>();
   for (const item of items) {
     const key = dateKey(new Date(item.activityAt));

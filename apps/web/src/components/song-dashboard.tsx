@@ -389,7 +389,7 @@ function sortLyrics(values: readonly LyricRecord[]) {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+  return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
 function previewText(value: string) {

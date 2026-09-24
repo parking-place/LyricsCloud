@@ -75,7 +75,10 @@ test.describe("1.1.4 sharing storage and recovery UX", () => {
       await sharedContext.clearCookies();
       await sharedContext.addCookies([{ name: "lc_session", value: next.token, url: origin, httpOnly: true, sameSite: "Lax" }]);
       await page.goto("/workspace?login=success");
-      await expect(page.getByRole("complementary").getByText("전환 후 계정", { exact: true })).toBeVisible();
+      const currentProfile = process.env.LC_UI_VARIANT === "chroma"
+        ? page.locator(".chroma-profile").getByText("전환 후 계정", { exact: true })
+        : page.getByRole("complementary").getByText("전환 후 계정", { exact: true });
+      await expect(currentProfile).toBeVisible();
       await expect.poll(() => page.evaluate((name) => indexedDB.databases().then((items) => items.some((item) => item.name === name)), previousDatabase)).toBe(false);
       expect((await sharedContext.request.get(`/api/shared/lyrics/${lyricId}`)).status()).toBe(404);
       await expect(page.getByText("전환 전 로컬 원문")).toHaveCount(0);

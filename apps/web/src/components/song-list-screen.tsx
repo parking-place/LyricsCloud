@@ -436,5 +436,5 @@ function relativeDate(value: string): string {
   if (days === 0) return "오늘 수정";
   if (days === 1) return "어제 수정";
   if (days < 7) return `${days}일 전 수정`;
-  return new Intl.DateTimeFormat("ko-KR", { month: "short", day: "numeric" }).format(new Date(value));
+  return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "short", day: "numeric" }).format(new Date(value));
 }

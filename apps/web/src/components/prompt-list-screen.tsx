@@ -323,5 +323,5 @@ function makeParams(search: string, song: string, favorite: boolean, recent: boo
 function relativeDate(value: string): string {
   const days = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000));
   if (days === 0) return "오늘"; if (days === 1) return "어제"; if (days < 7) return `${days}일 전`;
-  return new Intl.DateTimeFormat("ko-KR", { month: "short", day: "numeric" }).format(new Date(value));
+  return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "short", day: "numeric" }).format(new Date(value));
 }

@@ -141,4 +141,4 @@ function DiffPane({ title, lines, className }: { title: string; lines: RevisionD
     </div>) : <p>빈 본문</p>}
   </div>{lastLine ? <p className="diff-ending">{lastLine.text.endsWith("\n") ? "끝줄 줄바꿈 있음" : "끝줄 줄바꿈 없음"}</p> : null}</section>;
 }
-function date(value: string) { return new Date(value).toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "medium" }); }
+function date(value: string) { return new Date(value).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "short", timeStyle: "medium" }); }

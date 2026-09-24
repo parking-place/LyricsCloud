@@ -144,7 +144,7 @@ export function SettingsScreen({ initialSettings, ownerId, initialProfile, googl
   }
 
   return <section className="settings-page" aria-labelledby="settings-title" data-pending-profile={dirty || busy ? "true" : undefined}>
-    <header className="settings-heading"><div><p className="eyebrow">Preferences · 1.1.7a</p><h1 id="settings-title">설정</h1><p>창작 화면의 표시 방식과 계정 프로필을 저장합니다.</p></div></header>
+    <header className="settings-heading"><div><p className="eyebrow">Preferences</p><h1 id="settings-title">설정</h1><p>창작 화면의 표시 방식과 계정 프로필을 저장합니다.</p></div></header>
     <div className="settings-layout">
       <nav className="settings-sections" aria-label="설정 항목">
         <a className="active" href="#display">화면 및 작성</a><a href="#account">계정</a><a href="#keyboard">키보드</a>

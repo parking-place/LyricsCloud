@@ -161,4 +161,4 @@ export function impactText(items: readonly TrashItem[], action?: Action): string
   return `${parts.join(" · ")}. 모든 변경은 한 트랜잭션으로 처리됩니다.`;
 }
 function keyOf(item: Pick<TrashItem, "kind" | "id">): string { return `${item.kind}:${item.id}`; }
-function formatDate(value: string): string { return new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
+function formatDate(value: string): string { return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
