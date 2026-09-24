@@ -1,6 +1,6 @@
 # 1.2.0 Phase 4 — 교차 회귀·접근성·성능 인수
 
-상태: **계획 / 제품 구현 미착수** (`planned`). [P3](3phase.md)의 실제 후보와 P1 기능 대응표를 인수한다. `RD-REQ-001~005`의 통합 보존 책임을 가진다.
+상태: **진행 중** (`in_progress`). [P3](3phase.md)의 기능 SHA `a315c07599be0aa3f4c9a58ab8757c9363e1e351`와 P1 기능 대응표를 인수한다. `RD-REQ-001~005`의 통합 보존 책임을 가진다.
 
 ## 작업
 
@@ -16,6 +16,22 @@
 [기존 품질 게이트](../../2.Patch-phase/QUALITY-GATES.md)의 Node/DB/Docker/브라우저 환경을 사용한다. 실제 구현 변경 후 관련 테스트 → check/production build → 필요한 DB/지원 브라우저 통합을 실행한다. 실패를 없애기 위해 assertion·성능 예산·접근성 기준을 낮추지 않는다. 시각 기준 변경은 의도와 실제 화면을 확인한 뒤 별도 리뷰한다.
 
 기록 단위는 수용 ID·source SHA·환경·명령·결과·실행/미실행 이유다. 미실행 실기기 항목을 자동화 PASS에 포함하지 않는다. 실제 사용자 자료를 fixture/log/screenshot에 사용하지 않는다.
+
+## 2026-09-25 로컬 통합 후보 — 원격/개발 인수 전
+
+기준 tree는 P3 문서 SHA `5269d79c7b2894f78208eedf6a17eda128663c58`에서 분기한 미커밋 P4 후보이며, 최종 기능 SHA는 push 후 기입한다. 이 절은 **로컬 증거**이지 Phase 완료 기록이 아니다. `FEATURE-MAP.md`의 207개 ID/대상 존재 검사는 PASS이나 207개 동작을 각각 자동화했다는 뜻은 아니다. 합성 자료만 쓰는 격리 `lyricscloud_test`, Linux Playwright 컨테이너와 Node 24 production build를 사용했다.
+
+| 수용 ID / 작업 | 로컬 실행·결과 | 한계·처리 |
+|---|---|---|
+| AC-01/02/08/09, P4-01/04 | `chroma-120-p4.spec.ts`: Chromium/Firefox/WebKit × light/dark × 320/390/768/1024/1440px에서 홈/곡/가사/설정/휴지통 실제 route·본문·넘침·pageerror 검사 PASS. 모바일 320px forced-colors/reduced-motion/200% 글꼴·더보기 초점 복귀 및 설정/휴지통 axe PASS. `accessibility-states.spec.ts` 15화면×양 테마 axe/랜드마크·키보드/실패/오프라인 3 PASS. | 전체 207개 ID의 개별 동작 PASS나 실제 OS 확대/AT를 뜻하지 않는다. Windows/iOS/Android 실기기는 사용자 보류/미실행. |
+| AC-03~05, P4-02 | Chroma 작성/자료·공통 편집/동기화/내구성/기록/PWA를 묶은 desktop 45건 첫 실행 **42 PASS/3 FAIL**. 실패 원인은 접근성 fixture 정리 누락으로 빈 홈 전제 오염 1, B1 전용 색상/variant 고정 시험 2. 동일 입력 수정 후 관련 12 PASS. 선택/undo/한글 합성 이벤트·두 탭·오프라인 재연결·ACK 유실·PWA 업데이트 1.2.0 tree 대리 회귀 PASS. | 합성 composition은 실제 OS IME 결과가 아니다. 기존 `pwa.spec.ts`의 로컬 standalone SW 경로 부재와 hydration 전 시험 이벤트 첫 재실행은 실패였고, 로컬/standalone 파일 선택·SW 등록 대기 후 2 PASS. |
+| AC-06/07, P4-03 | 인증/소유권 7 PASS, profile/사진·계정 전환과 공유 reader/writer/revoke/guest 분리 실행. 선택·공개 읽기/쓰기 묶음 desktop 7 PASS/2 조건부 skip, 별도 `PUBLIC_GUEST_WRITER_E2E=true` guest 1 PASS. | public offline 테스트는 이 local project 이름 조건으로 skip, 최종 CI의 별도 브라우저 matrix 대상. skip을 PASS에 포함하지 않는다. |
+| AC-10, P4-06 | 같은 격리 DB의 Chroma → B1 → Chroma에서 원문/설정 보존·동일 API 조회·B1 설정 화면·Chroma 재조회 및 합성 자료 영구 삭제 1 PASS. | 이중 origin 시험 harness의 B1 편집 WebSocket은 P3 협업 포트에 결합되어 B1 편집 가능 자체는 이 시험으로 판정하지 않았다. 기존 B1 편집 E2E와 최종 CI가 별도로 담당한다. |
+| AC-09, P4-05 | 같은 Linux runner·동일 200행 가사/곡/1440px의 B1/Chroma 각 5회, 첫 회 cold 포함·warm-up 없음. B1→Chroma p95: 입력 `25.08→26.51ms`(+5.7%), 집중 전환 `56.48→53.36ms`(-5.5%), 스크롤 두 frame `33.7→32.3ms`, long task 0→0. `side-nav`/모바일 dock blur를 정적 배경으로 낮춘 뒤 재측정. 장문 10,000행 editor 인스턴스/메모리 기존 예산 1 PASS. | 첫 화면 p95 `430.89→476.58ms`(+10.6%), 중앙값 `196.78→217.40ms`(+10.5%)는 개선 아님. 표본 5회와 첫 cold 혼합의 관찰 위험으로 P5에 전달한다. Playwright 동작 시간은 실제 기기 INP/scroll 성능이 아니다. |
+
+별도 Chroma 모바일 묶음 12 PASS/2 조건부 skip, `pnpm` 의존성 저장소 불일치 때문에 로컬 `pnpm check`는 시험 시작 전 중단됐으나 직접 아키텍처 검사·웹 TypeScript·production build PASS, 격리 DB Vitest **511 PASS/8 조건부 skip**, 207 대응표 검사 PASS다. production CSS의 강제 색상 버튼 대비와 light 상태 badge/prompt token 실제 axe 결함을 고쳤다. 증거 이미지 생성 시험이 덮어쓴 과거 문서 PNG는 제품 변경에 포함하지 않는다. 최초 실패·skip은 최종 PASS로 소급하지 않는다.
+
+남은 gate: P4 후보 commit/원격 SHA·필수 CI와 네 signed dev image, 같은 SHA 개발 서버·공개 기능 smoke, Future 계획 재검수·완료 문서. 이 gate 전에는 P4 체크박스와 상태를 완료로 바꾸지 않는다.
 
 ## 완료 조건
 

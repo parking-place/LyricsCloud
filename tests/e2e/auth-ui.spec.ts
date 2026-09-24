@@ -41,7 +41,9 @@ test("auth UI is responsive, reports failures, and links to real policy pages", 
   } else {
     expect(panel!.x).toBeGreaterThanOrEqual(story!.x + story!.width - 1);
   }
-  await page.screenshot({ path: `docs/runbooks/evidence/1.0.1-phase4-beta-signup-${testInfo.project.name}.png`, fullPage: true });
+  await page.screenshot({ path: process.env.LC_UI_VARIANT === "chroma"
+    ? testInfo.outputPath(`1.2.0-p4-beta-signup-${testInfo.project.name}.png`)
+    : `docs/runbooks/evidence/1.0.1-phase4-beta-signup-${testInfo.project.name}.png`, fullPage: true });
 
   await page.getByRole("link", { name: "이용 안내" }).click();
   await expect(page).toHaveURL(/\/terms$/);

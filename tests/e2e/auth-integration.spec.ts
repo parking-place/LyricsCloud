@@ -3,6 +3,9 @@ import { issueBetaCodes } from "@lyricscloud/database";
 import { fixtureTokens, fixtureUsers, hashToken, withE2eDatabase } from "./fixtures.js";
 
 const baseURL = "http://127.0.0.1:3000";
+const workspaceGreeting = (displayName: string) => process.env.LC_UI_VARIANT === "chroma"
+  ? `${displayName}님, 오늘은 어떤 이야기인가요?`
+  : `안녕하세요, ${displayName}님.`;
 
 test.describe("OIDC, session, and logout integration", () => {
   test.skip(!process.env.E2E_DATABASE_URL, "E2E_DATABASE_URL is required for auth integration");
@@ -16,7 +19,7 @@ test.describe("OIDC, session, and logout integration", () => {
     await loginAs(page, "허용 계정으로 계속");
     const callback = await callbackResponse;
     await expect(page).toHaveURL(/\/workspace\?auth=success$/);
-    await expect(page.getByRole("heading", { name: "안녕하세요, 통합 테스트 사용자님." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: workspaceGreeting("통합 테스트 사용자") })).toBeVisible();
     expect(callback.headers()["cache-control"]).toContain("no-store");
     const callbackCookies = await callback.headersArray();
     expect(callbackCookies.filter(({ name }) => name.toLowerCase() === "set-cookie").map(({ value }) => value).join("\n"))
@@ -51,9 +54,9 @@ test.describe("OIDC, session, and logout integration", () => {
     const restoredPage = await restored.newPage();
     await restoredPage.goto("/auth");
     await restoredPage.goto("/workspace");
-    await expect(restoredPage.getByRole("heading", { name: "안녕하세요, 통합 테스트 사용자님." })).toBeVisible();
+    await expect(restoredPage.getByRole("heading", { name: workspaceGreeting("통합 테스트 사용자") })).toBeVisible();
     await restoredPage.reload();
-    await expect(restoredPage.getByRole("heading", { name: "안녕하세요, 통합 테스트 사용자님." })).toBeVisible();
+    await expect(restoredPage.getByRole("heading", { name: workspaceGreeting("통합 테스트 사용자") })).toBeVisible();
     const restoredSession = await restoredPage.request.get("/api/auth/session");
     expect((await restoredSession.json()).user.id).toBe(firstUserId);
 
@@ -136,7 +139,7 @@ test.describe("OIDC, session, and logout integration", () => {
     await expect(page.getByRole("heading", { name: "OIDC 테스트 공급자" })).toBeVisible();
     await page.getByRole("link", { name: "신규 계정으로 계속", exact: true }).click();
     await expect(page).toHaveURL(/\/workspace\?auth=success$/);
-    await expect(page.getByRole("heading", { name: "안녕하세요, 신규 베타 사용자님." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: workspaceGreeting("신규 베타 사용자") })).toBeVisible();
     await withE2eDatabase(async (pool) => {
       const state = await pool.query(`select
         (select count(*)::int from beta_codes where consumed_at is not null) consumed,

@@ -2,17 +2,27 @@
 
 ```yaml
 current_version: "1.2.0"
-current_phase: "../3.Redesign-phase/1.2.0/3phase.md"
-state: "complete"
+current_phase: "../3.Redesign-phase/1.2.0/4phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-25"
 next_planned_version: "1.2.0"
-next_planned_phase: "../3.Redesign-phase/1.2.0/4phase.md"
-next_action: "1.2.0 P3 최종 기능 SHA a315c07의 CI·네 signed image·동일 SHA 개발 공개 인수를 바탕으로 P4 전용 브랜치에서 교차 회귀·접근성·성능을 검증한다; 실제 기기/OS IME/AT는 후속 미실행"
+next_planned_phase: "../3.Redesign-phase/1.2.0/5phase.md"
+next_action: "1.2.0 P4에서 Chroma/B1 교차 회귀·접근성·상대 성능·rollback을 검증하고 발견 결함을 보정한다; 실제 기기/OS IME/AT는 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-25 — 1.2.0 P4 착수
+
+P3 완료 문서 SHA `5269d79c7b2894f78208eedf6a17eda128663c58`의 깨끗한 worktree에서 `phase/1.2.0-p4-cross-regression`을 분기했다. 담당 Codex, 작업 `LC-RD-120-P4-01~06`. 제품 기능 기준은 P3 SHA `a315c07599be0aa3f4c9a58ab8757c9363e1e351`과 그 CI·동일 SHA 개발 공개 인수다. 이번 Phase는 207기능 대응표, 두 테마×5너비·Chromium/Firefox/WebKit 대리, 원문/저장/권한/복구·B1 복귀, forced-colors/키보드/axe와 B1 대비 성능을 독립 검증한다. 발견 결함의 재현과 같은 입력 재검사를 수행하되 P4 전체 CI·네 signed image·같은 SHA 개발 인수 전에는 완료/P5 착수로 기록하지 않는다. 실제 Windows/iOS/Android 기기·OS IME·AT는 사용자 지시로 미실행/후속 보류, `main`·정식 tag/image·릴리스 서버는 변경하지 않는다.
+
+### 2026-09-25 — 1.2.0 P4 로컬 후보
+
+Chroma 3엔진×양 테마×5너비 실제 route/본문/넘침, forced-colors/키보드·15화면 양 테마 axe, owner/writer/reader/guest·PWA/동기화·장문/복구·B1 복귀를 격리 합성 DB에서 확인했다. 광역 desktop 첫 실행 **42 PASS/3 FAIL**은 접근성 시험 합성 자료 누수와 구 B1 전용 스타일/variant 기대를 재현했고, 정리·두 UI별 정확한 기대값으로 고친 관련 12건은 PASS다. 별도 모바일 **12 PASS/2 조건부 skip**, 공유 desktop **7 PASS/2 조건부 skip**와 독립 guest **1 PASS**, B1 복귀 **1 PASS**, Vitest/DB **511 PASS/8 조건부 skip**, TypeScript·production build·207 대응표 구조 PASS. 8개의 과거 접근성 합성 자료는 해당 임시 DB에서 정확한 소유자/제목으로 제거했고 이후 시험은 자체 정리한다. 테스트 생성 PNG는 기존 문서 이미지에 섞지 않는다.
+
+B1 대비 5회 local p95는 입력 +5.7%, 집중 전환 -5.5%, 50ms long task 양쪽 0이지만 첫 화면 +10.6% 관찰 위험이 남는다. 사용자 보류 실기기·OS IME·AT는 미실행, public offline 특수 project 조건과 B1 이중-origin 편집은 별도 범위다. [P4 기록](../3.Redesign-phase/1.2.0/4phase.md)에 실패/skip·한계를 구분했다. 현재 P4 `in_progress`; 원격 SHA/CI·네 signed image·같은 SHA 개발 공개 인수 전 P5로 넘기지 않는다.
 
 ### 2026-09-25 — 1.2.0 P3 완료·P4 진입 대기
 

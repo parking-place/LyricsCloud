@@ -99,7 +99,9 @@ test.describe("1.1.6 P3 creation and connection flows", () => {
       await expect(lyricTitle).toHaveValue("테마를 바꿔도 남는 합성 제목");
       await expectSemanticBackground(lyricSurface, "--canvas");
       expect(await hasHorizontalOverflow(page)).toBe(false);
-      await page.screenshot({ path: `docs/user/images/1.1.6-p3-creation-${testInfo.project.name}.png`, fullPage: true });
+      await page.screenshot({ path: process.env.LC_UI_VARIANT === "chroma"
+        ? testInfo.outputPath(`1.2.0-p4-creation-${testInfo.project.name}.png`)
+        : `docs/user/images/1.1.6-p3-creation-${testInfo.project.name}.png`, fullPage: true });
 
       await page.emulateMedia({ colorScheme: "dark" });
       await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -142,7 +144,9 @@ test.describe("1.1.6 P3 creation and connection flows", () => {
       await loadError.getByRole("button", { name: "다시 시도" }).click();
       await expect(manager.getByText("아직 만든 프롬프트가 없습니다.")).toBeVisible();
       expect(await hasHorizontalOverflow(page)).toBe(false);
-      await page.screenshot({ path: `docs/user/images/1.1.6-p3-connection-${testInfo.project.name}.png` });
+      await page.screenshot({ path: process.env.LC_UI_VARIANT === "chroma"
+        ? testInfo.outputPath(`1.2.0-p4-connection-${testInfo.project.name}.png`)
+        : `docs/user/images/1.1.6-p3-connection-${testInfo.project.name}.png` });
 
       await page.keyboard.press("Escape");
       await expect(manager).toHaveCount(0);
@@ -164,7 +168,8 @@ test.describe("1.1.6 P4 design-independent recovery regression", () => {
       await installClipboardRecorder(page);
       const lyricId = await createLyric(context, body);
       await page.goto(`/lyrics/${lyricId}`);
-      await expect(page.locator("html")).toHaveAttribute("data-ui-variant", process.env.LC_UI_VARIANT === "classic" ? "classic" : "b1");
+      await expect(page.locator("html")).toHaveAttribute("data-ui-variant", process.env.LC_UI_VARIANT === "classic"
+        ? "classic" : process.env.LC_UI_VARIANT === "chroma" ? "chroma" : "b1");
       await expect(page.getByText("방금 저장됨", { exact: true })).toBeVisible({ timeout: 20_000 });
 
       await page.getByRole("button", { name: "전체 복사", exact: true }).click();
@@ -226,6 +231,11 @@ async function expectSemanticBackground(locator: import("@playwright/test").Loca
     document.body.append(probe);
     const expected = getComputedStyle(probe).backgroundColor;
     probe.remove();
+    if (document.documentElement.dataset.uiVariant === "chroma" && semanticVariable === "--canvas") {
+      const shell = element.closest(".workspace-shell");
+      return Boolean(shell) && getComputedStyle(shell).backgroundColor === expected &&
+        getComputedStyle(element).backgroundColor === "rgba(0, 0, 0, 0)";
+    }
     return getComputedStyle(element).backgroundColor === expected;
   }, variable)).toBe(true);
 }
