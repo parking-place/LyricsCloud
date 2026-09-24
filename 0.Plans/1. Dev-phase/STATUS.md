@@ -3,16 +3,22 @@
 ```yaml
 current_version: "1.2.0"
 current_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-24"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/2phase.md"
-next_action: "1.2.0 P1의 207 기능 대응·코발트 토큰/전환 계약·정확한 버전 도구를 인수하고 필수 CI·동일 SHA 개발 공개 검증을 수행한다; 실제 기기/OS IME/AT는 사용자 지시로 후속 미실행"
+next_action: "1.2.0 P2 공통 코발트 토큰·셸/홈/목록을 구현하고 실제 브라우저·CI·동일 SHA 개발 인수를 수행한다; 실제 기기/OS IME/AT는 사용자 지시로 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-24 — 1.2.0 P1 완료·P2 인계
+
+기능·계약 SHA `84761ae1ca25f1b5e5dd808e772d1a062066cd57`의 [push Actions 36004281225](https://github.com/parking-place/LyricsCloud/actions/runs/36004281225)는 verify·네 signed dev image/provenance PASS, [PR #158 Actions 36004313192](https://github.com/parking-place/LyricsCloud/actions/runs/36004313192)는 verify PASS다. Unit/DB **509 PASS/8 조건부 skip**, owner Chromium **432 PASS/54 조건부 skip**, release browser matrix **10 PASS**. 207개 목업 기능 ID의 route/기존 컴포넌트 매핑, 코발트 토큰/전환/복귀 계약과 실제 제품/runtime/private package `1.2.0` 전환을 인수했다. 최종 P5 릴리스 문서 validator 1005는 아직 미통과이며 P1 PASS로 대체하지 않는다.
+
+개발 서버의 배포 스크립트가 같은 SHA로 정상 종료했다. checkout/BUILD_ID/공개 live·ready `1.2.0/dev/p1`, schema 1152, 네 서비스 healthy, 공개 `/auth`·production CSS·build label PASS다. 첫 CSS 시험은 첫 asset만 검사하는 probe 문제로 FAIL이었고 전체 CSS를 대상으로 고친 재검사는 PASS했다. DB·volume·secret 및 기존 화면/저장/권한 계약을 변경하지 않았다. P2/P3의 코발트 실제 UI, P4 회귀/접근성/성능, P5 최종 인수는 아직 완료가 아니다. 실제 Windows/iOS/Android 기기·OS IME·AT는 사용자 보류/미실행이며 자동화 대리를 실기기 통과로 적지 않는다. main·정식 tag/image·릴리스 서버 변경 없음.
 
 ### 2026-09-24 — 1.2.0 P1 착수
 

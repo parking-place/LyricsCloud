@@ -2,7 +2,7 @@
 
 ## [1.2.0] - 개발 중
 
-- P1에서 1.1.7b 기능 SHA `acd2bd9`를 출발점으로 207개 목업 기능의 현행 route/컴포넌트 대응표와 코발트 토큰·입력 보존·b1/classic 복귀 계약을 작성하고 제품/runtime/private package 버전을 `1.2.0`으로 전환 중이다. P1 원격 CI·동일 SHA 개발 인수와 P2~P5 화면 구현·최종 통합은 아직 미완료다.
+- P1에서 1.1.7b 기능 SHA `acd2bd9`를 출발점으로 207개 목업 기능의 현행 route/컴포넌트 대응표와 코발트 토큰·입력 보존·b1/classic 복귀 계약을 작성하고 제품/runtime/private package 버전을 `1.2.0`으로 전환했다. 기능 SHA `84761ae`의 Unit/DB 509 PASS·Chromium 432 PASS·네 signed image 및 동일 SHA 개발 공개 live/ready·auth/CSS 인수를 완료했다. P2~P5 화면 구현·최종 통합은 아직 미완료다.
 - 실제 물리 Windows/iOS/Android 기기·OS IME·AT는 사용자 보류/미실행이며 자동화 브라우저 대리를 실기기 PASS로 기록하지 않는다. `main`·정식 tag/image·릴리스 서버는 변경하지 않는다.
 
 ## [1.1.7b] - 개발 중

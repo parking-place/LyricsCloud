@@ -13,16 +13,16 @@ next_planned_version: "1.2.0"
 next_planned_phase: "1.2.0/2phase.md"
 selected_design: "Chroma Dock / Cobalt Blue (color study 04)"
 deferred_patch_versions: "1.1.8 through 1.1.14"
-implementation_state: "1.2.0 P1 in_progress; P2-P5 not_started"
+implementation_state: "1.2.0 P1 complete; P2-P5 not_started"
 execution_authorized_by_this_file: false
 runtime_status_source: "0.Plans/1. Dev-phase/STATUS.md"
 ```
 
-1.1.7b 통합 5 Phase는 [실행 STATUS](<../1. Dev-phase/STATUS.md>)의 기능 SHA `acd2bd9`로 개발 인수 완료다. 1.2.0은 P1 계약·버전 전환 중이고 P2~P5 화면/회귀/최종 인수는 미착수다. 사용자 선택인 코발트 디자인과 native 보류는 유지한다. 다음 표의 진행 표시는 제품 완료 증거가 아니다.
+1.1.7b 통합 5 Phase는 [실행 STATUS](<../1. Dev-phase/STATUS.md>)의 기능 SHA `acd2bd9`로 개발 인수 완료다. 1.2.0 P1 계약·버전 전환은 `84761ae`의 CI·네 signed image·동일 SHA 개발 공개 인수로 완료됐고 P2~P5 화면/회귀/최종 인수는 미착수다. 사용자 선택인 코발트 디자인과 native 보류는 유지한다. 다음 표의 진행 표시는 제품 완료 증거가 아니다.
 
 | Phase | 계획 | 구현 상태 | 완료 증거 |
 |---|---|---|---|
-| P1 | [기준·기능 보존·전환 계약](1.2.0/1phase.md) | in_progress | 207 ID 대응표·버전 전환 로컬 검토 중; 원격 CI/개발 인수 없음 |
+| P1 | [기준·기능 보존·전환 계약](1.2.0/1phase.md) | complete | SHA `84761ae`·Actions `36004281225`/`36004313192`·동일 SHA 공개 개발 인수 |
 | P2 | [색상 토큰·공통 셸·탐색과 목록](1.2.0/2phase.md) | planned / 미착수 | 없음 |
 | P3 | [편집·자료·설정·공유와 복구](1.2.0/3phase.md) | planned / 미착수 | 없음 |
 | P4 | [교차 회귀·접근성·성능](1.2.0/4phase.md) | planned / 미착수 | 없음 |

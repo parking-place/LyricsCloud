@@ -15,7 +15,7 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 
 [1.1.7a release notes](./docs/releases/1.1.7a.md)와 [CHANGELOG.md](./CHANGELOG.md)에 사용자 변화·호환성·미실행 gate를 기록한다.
 
-> **현재 개발 (2026-09-24):** [1.1.7b Phase 5](0.Plans/3.Redesign-phase/1.1.7.b/5phase.md)의 기능 SHA `acd2bd9`는 CI·서명 image·동일 SHA 개발 공개 인수를 마쳤습니다. 그 인수에서 [1.2.0 Phase 1](0.Plans/3.Redesign-phase/1.2.0/1phase.md) 코발트 Chroma Dock 계약·버전 전환을 시작했습니다. 현재 1.2.0 화면 구현과 Phase 1 원격 CI/개발 인수는 아직 미완료입니다. 1.2.0 Phase 5 최종 통합·정식 발행은 별도 gate이며, 운영 릴리스는 여전히 `v1.1.7a`입니다. 실제 기기·OS IME·AT는 사용자 보류/미실행입니다.
+> **현재 개발 (2026-09-24):** [1.1.7b Phase 5](0.Plans/3.Redesign-phase/1.1.7.b/5phase.md)의 기능 SHA `acd2bd9`는 CI·서명 image·동일 SHA 개발 공개 인수를 마쳤습니다. 그 인수에서 [1.2.0 Phase 1](0.Plans/3.Redesign-phase/1.2.0/1phase.md) 코발트 Chroma Dock 계약·버전 전환을 시작했습니다. Phase 1은 기능 SHA `84761ae`의 CI·네 signed image·동일 SHA 개발 공개 인수를 완료했고, P2~P5 실제 코발트 화면·회귀·최종 인수는 아직 미완료입니다. 1.2.0 Phase 5 최종 통합·정식 발행은 별도 gate이며, 운영 릴리스는 여전히 `v1.1.7a`입니다. 실제 기기·OS IME·AT는 사용자 보류/미실행입니다.
 
 ## 주요 기능
 
