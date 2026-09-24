@@ -39,6 +39,14 @@ AC-RD-117B-19~24 및 WC별 기존 수용. 입력 손실·거짓 저장·인가 �
 
 다음: [P5](5phase.md).
 
+## 2026-09-24 추가 구현 후보·검증 경계
+
+- 사용자는 1.2.0까지 진행하고 **실제 기기 검증만 후속으로 보류**하도록 지시했다. Windows/iOS/Android 물리 기기·OS IME·AT는 미실행으로 남기고 자동화 브라우저를 대체 PASS로 기록하지 않는다. 다른 필수 gate는 그대로다.
+- `OPS-01`: 백업의 stale `mkdir` 잠금을 kernel `flock`으로 전환하고 영구 `.backup.lock` symlink로 구/신 실행을 상호 배제했다. legacy 잠금 디렉터리가 이미 존재하면 자동 제거 없이 fail closed·운영 사전 확인을 요구한다. SIGKILL/동시 시도/회복 및 백업 shell **22 PASS**, 이미지 안 `flock` 존재 확인. 실제 암호화 backup/restore와 운영 환경 전환은 미실행이다.
+- `ES-01`: raw Y.Array 동시 이동/이동-삭제의 first-occurrence projection을 화면·서버에서 공유하고 실제 PostgreSQL store ACK/projection 테스트를 추가했다. `ES-03`은 문장 조합 종료를 제목과 같이 기준 문자열+원격 queue의 delta 병합으로 변경했다. `ES-06/07`은 selected/guest 저장 실패 latch·메모리 복구 표시와 선택 공유 첫 snapshot 전 편집 불허 후보를 추가했다. 단위·DB 수렴은 통과했으나 실제 브라우저/재연결/권한 경쟁의 최종 수용 전이다.
+- `BE-02`: 쿠키를 발급할 수 없는 SSR page 조회가 세션 갱신을 소비하지 않도록 하고 갱신 가능한 API 순서를 단위 회귀로 고정했다. `BE-03`: 공개 링크의 요청 identity에서 매 시도 달라지는 절대 만료 시각을 분리하고 기존 receipt 호환·주소 원문 유실 안내를 추가했다. 실제 같은 HTTP POST 시간차 재시도는 테스트를 추가했으나 아직 실행하지 않았다. `UI-02`: 템플릿 형식별 draft 보존에 더해 유형/목록/새 작성/취소의 명시 폐기 확인을 추가했으며 브라우저 수용 전이다.
+- 현재 후보 전체 Docker Node 24.20.0/pnpm 11.25.0 `pnpm check` PASS, 일회용 `lyricscloud_test`의 전체 Vitest **505 PASS/8 조건부 skip**, 백업 shell **22 PASS**, `git diff --check` PASS. 조건부 skip은 beta 환경 검사이며 PASS로 합산하지 않는다. 실제 HTTP/UI/백업·세 DB 유형/rollback·22원인 행별 최종 판정·전체 원격 CI/네 signed image/동일 SHA 개발 공개 인수는 남았다. 따라서 P4 `review`, P5·1.2.0 미착수다.
+
 ## 2026-09-24 착수 기록
 
 - 담당 Codex, 작업 `LC-RD-117B-P4-01~08`. P3 문서 인수 SHA `cc4fc5646a395023f1e95b04985ec9da1759c74b`에서 `phase/1.1.7b-p4-regression-blockers`를 분기했고 tracked worktree는 깨끗했다. 기능 기준 SHA는 `1626c754d1ebc581f01c4d29873319827be0b6fd`다.

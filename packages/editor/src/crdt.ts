@@ -1,5 +1,5 @@
 import * as Y from "yjs";
-import { findPromptDuplicates, normalizePromptToken, projectUniquePromptTokens, serializePromptContent, serializePromptTokens,
+import { findPromptDuplicates, normalizePromptToken, projectFirstPromptOccurrences, projectUniquePromptTokens, serializePromptContent, serializePromptTokens,
   validatePromptSentenceText, type PromptDuplicate, type PromptMode, type PromptTokenValue } from "@lyricscloud/domain";
 
 const BODY_KEY = "body";
@@ -137,13 +137,18 @@ export function removePromptToken(document: Y.Doc, occurrenceId: string): void {
 
 export function movePromptToken(document: Y.Doc, occurrenceId: string, targetIndex: number): void {
   const sequence = promptTokenSequence(document);
-  if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= sequence.length) throw new RangeError("PROMPT_POSITION_OUT_OF_RANGE");
-  const items = sequence.toArray();
+  const items = projectFirstPromptOccurrences(sequence.toArray());
+  if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= items.length) throw new RangeError("PROMPT_POSITION_OUT_OF_RANGE");
   const currentIndex = items.findIndex((item) => item.occurrenceId === occurrenceId);
   if (currentIndex < 0 || currentIndex === targetIndex) return;
   const item = items[currentIndex]!;
-  sequence.delete(currentIndex, 1);
-  sequence.insert(targetIndex, [item]);
+  for (let index = sequence.length - 1; index >= 0; index -= 1) {
+    if (sequence.get(index)?.occurrenceId === occurrenceId) sequence.delete(index, 1);
+  }
+  const anchorId = projectFirstPromptOccurrences(sequence.toArray())[targetIndex]?.occurrenceId;
+  const insertAt = anchorId === undefined ? sequence.length
+    : sequence.toArray().findIndex((candidate) => candidate.occurrenceId === anchorId);
+  sequence.insert(insertAt, [item]);
 }
 
 export function encodePromptSnapshot(document: Y.Doc): Uint8Array {
@@ -155,12 +160,8 @@ export function applyPromptUpdate(document: Y.Doc, update: Uint8Array): void {
 }
 
 export function projectPrompt(document: Y.Doc): PromptProjection {
-  const occurrenceIds = new Set<string>();
-  const tokens = promptTokenSequence(document).toArray().filter((item) => {
-    if (occurrenceIds.has(item.occurrenceId)) return false;
-    occurrenceIds.add(item.occurrenceId);
-    return true;
-  }).map((item) => normalizePromptToken(item.displayValue));
+  const tokens = projectFirstPromptOccurrences(promptTokenSequence(document).toArray())
+    .map((item) => normalizePromptToken(item.displayValue));
   const readTokens = projectUniquePromptTokens(tokens);
   const mode = promptMode(document);
   const sentenceText = promptSentence(document).toString();

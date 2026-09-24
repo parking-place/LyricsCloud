@@ -1,7 +1,7 @@
 import * as Y from "yjs";
 import { describe, expect, it } from "vitest";
 import { applyComposedTextChanges } from "./browser-sync.js";
-import { applyLyricUpdate, applyPromptUpdate, createLyricDocument, createPromptDocument, createRhymeDocument, encodeLyricSnapshot, encodePromptSnapshot, encodeTextRelativePosition, insertPromptToken, lyricBody, movePromptToken, projectLyric, projectPrompt, projectRhyme, promptTitle, removePromptToken, replacePromptSentence, replacePromptTokens, resolveTextRelativePosition, rhymeBody, setPromptMode } from "./crdt.js";
+import { applyLyricUpdate, applyPromptUpdate, createLyricDocument, createPromptDocument, createRhymeDocument, encodeLyricSnapshot, encodePromptSnapshot, encodeTextRelativePosition, insertPromptToken, lyricBody, movePromptToken, projectLyric, projectPrompt, projectRhyme, promptTitle, promptTokenSequence, removePromptToken, replacePromptSentence, replacePromptTokens, resolveTextRelativePosition, rhymeBody, setPromptMode } from "./crdt.js";
 
 describe("lyric CRDT contract", () => {
   it("converges with reversed and duplicate delivery", () => {
@@ -84,6 +84,7 @@ it("converges concurrent moves and move-versus-delete without duplicate occurren
   const rightUpdate = Y.encodeStateAsUpdate(right, Y.encodeStateVector(baseline));
   applyPromptUpdate(left, rightUpdate); applyPromptUpdate(right, leftUpdate);
   expect(projectPrompt(left)).toEqual(projectPrompt(right));
+  expect(promptTokenSequence(left).toArray().filter((item) => item.occurrenceId === "two")).toHaveLength(2);
   expect(projectPrompt(left).tokens.filter(({ displayValue }) => displayValue === "two")).toHaveLength(1);
 
   const deleteSide = createPromptDocument(); const moveSide = createPromptDocument();
@@ -165,6 +166,21 @@ it("preserves queued remote prompt-title insertion when an IME replaces its own 
   expect(promptTitle(local).toString()).toBe("hello dear WORLD");
   applyPromptUpdate(remote, encodePromptSnapshot(local));
   expect(promptTitle(remote).toString()).toBe(promptTitle(local).toString());
+  seed.destroy(); local.destroy(); remote.destroy();
+});
+
+it("preserves a queued remote prompt-sentence prefix when a local IME commits", () => {
+  const seed = createPromptDocument("동시 문장", [], "sentence", "base ");
+  const local = createPromptDocument(); const remote = createPromptDocument();
+  applyPromptUpdate(local, encodePromptSnapshot(seed)); applyPromptUpdate(remote, encodePromptSnapshot(seed));
+  const beforeRemote = Y.encodeStateVector(local);
+  remote.getText("prompt-sentence").insert(0, "REMOTE ");
+  const queued = Y.encodeStateAsUpdate(remote, beforeRemote);
+  applyComposedTextChanges(local, local.getText("prompt-sentence"), [{ from: 5, to: 5, insert: "한" }],
+    [queued], Symbol("local-sentence"));
+  expect(projectPrompt(local).sentenceText).toBe("REMOTE base 한");
+  applyPromptUpdate(remote, encodePromptSnapshot(local));
+  expect(projectPrompt(remote).sentenceText).toBe(projectPrompt(local).sentenceText);
   seed.destroy(); local.destroy(); remote.destroy();
 });
 

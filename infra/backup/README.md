@@ -3,6 +3,7 @@
 [`ADR-0008`](../../docs/adr/ADR-0008-backup-restore.md)에 따라 `pg_dump --format=custom` stdout을 age recipient로 바로 암호화한다. 평문 dump는 파일로 만들지 않는다.
 
 - `backup.sh`: 일관된 논리 dump, age 암호화, ciphertext SHA-256 manifest, 원자 발행, 30일 멱등 정리
+- 동시 실행은 저장소의 `.backup.flock` 커널 잠금으로 배제한다. `.backup.lock`은 구 이미지의 `mkdir` 잠금과 겹쳐 실행되지 않게 하는 영구 symlink이며, 정상 종료 뒤에도 제거하지 않는다. 구형 잠금 디렉터리가 남아 있으면 자동 삭제하지 않고 실패로 닫는다.
 - `restore.sh`: ciphertext와 manifest 검증, 별도 빈 `_restore` DB 복원, schema·행·RLS·검색 index·CRDT 관계 검사
 - `check-rpo.sh`: 마지막 성공 백업의 24시간 RPO와 크기·checksum 상태를 내용 없는 metric으로 확인
 - `Dockerfile`: digest 고정 Go 1.26.8로 공식 age 1.3.2 source를 빌드해 PostgreSQL 18 client와 담은 non-root 실행 이미지

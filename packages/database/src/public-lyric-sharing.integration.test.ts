@@ -87,6 +87,30 @@ describe.runIf(enabled)("public lyric read links", () => {
     expect(await sharing!.revoke(owner, lyric.id, second!.link.id)).toBe(false);
     await expect(sharing!.readProjection("3".repeat(64))).resolves.toBeNull();
   });
+
+  it("replays the same logical HTTP request despite a later expiration calculation", async () => {
+    const song = (await songs!.createSong(owner, parseCreateSongInput({ title: "retry parent", requestId: randomUUID() }))).song;
+    const lyric = (await lyrics!.createLyric(owner, parseCreateLyricInput({ title: "retry lyric", body: "body",
+      requestId: randomUUID() }, song.id)))!.lyric;
+    const fields = { ownerDisplayName: false, status: false, updatedAt: false };
+    const first = { requestId: randomUUID(), tokenDigest: "a".repeat(64),
+      expiresInDays: 1 as const, expiresAt: new Date(Date.now() + 86_400_000), fields };
+    const issued = await sharing!.issue(owner, lyric.id, first);
+    const retry = await sharing!.issue(owner, lyric.id, { ...first, tokenDigest: "b".repeat(64),
+      expiresAt: new Date(first.expiresAt.getTime() + 5_000) });
+    expect(retry).toMatchObject({ replayed: true, link: { id: issued!.link.id } });
+    await expect(sharing!.issue(owner, lyric.id, { ...first, expiresInDays: 7,
+      expiresAt: new Date(Date.now() + 7 * 86_400_000) })).rejects.toBeInstanceOf(PublicLinkConflictError);
+
+    const legacy = { ...first, requestId: randomUUID(), tokenDigest: "c".repeat(64), expiresInDays: undefined };
+    const legacyIssued = await sharing!.issue(owner, lyric.id, legacy);
+    const legacyRetry = await sharing!.issue(owner, lyric.id, { ...first, requestId: legacy.requestId,
+      tokenDigest: "d".repeat(64), expiresAt: new Date(first.expiresAt.getTime() + 5_000) });
+    expect(legacyRetry).toMatchObject({ replayed: true, link: { id: legacyIssued!.link.id } });
+    await expect(sharing!.issue(owner, lyric.id, { ...first, requestId: legacy.requestId,
+      expiresInDays: 7, expiresAt: new Date(Date.now() + 7 * 86_400_000) }))
+      .rejects.toBeInstanceOf(PublicLinkConflictError);
+  });
 });
 
 afterAll(async () => {

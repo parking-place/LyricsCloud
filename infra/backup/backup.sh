@@ -12,8 +12,9 @@ failure_code=BACKUP_FAILED
 partial=""
 manifest_partial=""
 status_partial=""
-lock_dir=""
-lock_acquired=false
+lock_file=""
+legacy_lock=""
+lock_fd=""
 
 log_event() {
   local event=$1 outcome=$2 code=${3:-}
@@ -30,9 +31,9 @@ cleanup() {
   [[ -z "$partial" ]] || rm -f -- "$partial"
   [[ -z "$manifest_partial" ]] || rm -f -- "$manifest_partial"
   [[ -z "$status_partial" ]] || rm -f -- "$status_partial"
-  if [[ "$lock_acquired" == true ]]; then
-    rmdir -- "$lock_dir" 2>/dev/null || true
-    lock_acquired=false
+  if [[ -n "$lock_fd" ]]; then
+    exec {lock_fd}>&-
+    lock_fd=""
   fi
 }
 
@@ -58,9 +59,18 @@ failure_code=BACKUP_STORAGE_UNAVAILABLE
 [[ -d "$repository" && -w "$repository" ]]
 [[ -f "$repository/.lyricscloud-backup-storage-id" ]]
 [[ "$(tr -d '\r\n' < "$repository/.lyricscloud-backup-storage-id")" == "$storage_id" ]]
-lock_dir="$repository/.backup.lock"
-mkdir "$lock_dir"
-lock_acquired=true
+lock_file="$repository/.backup.flock"
+legacy_lock="$repository/.backup.lock"
+# Keep the old mkdir-based entrypoint excluded during mixed-image upgrades.
+# The symlink is a persistent fence: only the kernel flock is released on a crash.
+failure_code=BACKUP_LOCK_UNAVAILABLE
+[[ ! -L "$lock_file" && ( ! -e "$lock_file" || -f "$lock_file" ) ]]
+exec {lock_fd}>>"$lock_file"
+flock -n "$lock_fd"
+if [[ ! -e "$legacy_lock" && ! -L "$legacy_lock" ]]; then
+  ln -sT .backup.flock "$legacy_lock"
+fi
+[[ -L "$legacy_lock" && "$(readlink "$legacy_lock")" == .backup.flock ]]
 
 failure_code=BACKUP_SECRET_INVALID
 [[ -s "$recipient_file" && -s "$password_file" ]]
@@ -127,9 +137,6 @@ while IFS= read -r -d '' old_archive; do
   pruned=$((pruned + 1))
 done < <(find "$repository" -maxdepth 1 -type f -name 'lyricscloud-*.dump.age' -mtime "+$retention_days" -print0)
 
-rmdir "$lock_dir"
-lock_acquired=false
-lock_dir=""
 if [[ "$pruned" -gt 0 ]]; then
   printf '{"signal":"log","event":"backup_pruned","operation":"backup","outcome":"success","service":"backup","environment":"%s","version":"%s","buildId":"%s","count":%s,"timestamp":"%s"}\n' \
     "${NODE_ENV:-production}" "${APP_VERSION:-unknown}" "${BUILD_ID:-unknown}" "$pruned" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"

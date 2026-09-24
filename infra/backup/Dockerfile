@@ -6,6 +6,7 @@ FROM postgres:18-bookworm@sha256:a10c981235b4f635e65df0cfb66a5598064628128505dbc
 
 RUN apt-get update \
   && apt-get upgrade --yes \
+  && apt-get install --yes --no-install-recommends util-linux \
   && rm -rf /var/lib/apt/lists/*
 
 RUN rm -f /usr/local/bin/gosu

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, chmodSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readlinkSync, existsSync, rmSync, chmodSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
@@ -63,15 +63,44 @@ test('REVIEW-11: a losing backup must not remove another backup lock', t => {
 });
 test('an acquired lock is released after a later validation error', t => {
   const f = fixture(t); rmSync(f.recipient); failed(f.run('backup.sh'));
-  assert.equal(existsSync(join(f.repo, '.backup.lock')), false);
+  assert.equal(readlinkSync(join(f.repo, '.backup.lock')), '.backup.flock');
+  writeFileSync(f.recipient, `age1${'a'.repeat(55)}\n`);
+  ok(f.run('backup.sh'));
 });
 test('a completed backup releases its own lock and publishes a status with an archive', t => {
   const f = fixture(t); ok(f.run('backup.sh'));
-  assert.equal(existsSync(join(f.repo, '.backup.lock')), false);
+  assert.equal(readlinkSync(join(f.repo, '.backup.lock')), '.backup.flock');
   const status = JSON.parse(readFileSync(join(f.repo, 'last-success.json'), 'utf8'));
   assert.ok(existsSync(join(f.repo, status.encryptedFile)));
   assert.ok(status.encryptedSizeBytes > 0);
   ok(f.run('check-rpo.sh', { RPO_NOW_EPOCH: String(Math.floor(Date.now() / 1000)) }));
+});
+test('OPS-01: a killed backup releases the kernel lock without admitting a concurrent old or new backup', async t => {
+  const f = fixture(t);
+  const hold = join(f.repo, '..', 'psql-started');
+  f.stub('psql', `if [[ -n "\${P6_HOLD_PSQL:-}" ]]; then : > "$P6_HOLD_PSQL"; exec sleep 60; fi
+    printf '0802_lifecycle.sql\\n'`);
+  const active = spawn('bash', [join(root, 'infra/backup/backup.sh')], {
+    env: { ...f.env, P6_HOLD_PSQL: hold }, detached: true, stdio: 'ignore'
+  });
+  const closed = new Promise(resolve => active.once('close', resolve));
+  try {
+    for (let attempt = 0; attempt < 100 && !existsSync(hold); attempt += 1) {
+      await new Promise(resolve => setTimeout(resolve, 20));
+    }
+    assert.ok(existsSync(hold), 'first backup reached psql with the lock held');
+    assert.equal(readlinkSync(join(f.repo, '.backup.lock')), '.backup.flock');
+    failed(f.run('backup.sh'));
+    failed(spawnSync('mkdir', [join(f.repo, '.backup.lock')], { encoding: 'utf8' }));
+    assert.equal(readlinkSync(join(f.repo, '.backup.lock')), '.backup.flock');
+  } finally {
+    if (active.pid) process.kill(-active.pid, 'SIGKILL');
+    await closed;
+  }
+  ok(f.run('backup.sh'));
+  ok(f.run('backup.sh'));
+  failed(spawnSync('mkdir', [join(f.repo, '.backup.lock')], { encoding: 'utf8' }));
+  assert.equal(readlinkSync(join(f.repo, '.backup.lock')), '.backup.flock');
 });
 test('REVIEW-12: missing archive cannot count as a current verified backup', t => {
   const f = fixture(t); const file = archive(f); rmSync(file); failed(f.run('check-rpo.sh'));

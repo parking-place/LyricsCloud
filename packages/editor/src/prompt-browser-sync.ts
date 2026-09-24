@@ -1,12 +1,12 @@
 import { Dexie } from "dexie";
 import * as Y from "yjs";
 import {
-  normalizePromptToken, parsePublicErrorCode, PROMPT_LIMITS, type CheckpointReason, type LyricRevision, type PromptDuplicate,
+  normalizePromptToken, parsePublicErrorCode, projectFirstPromptOccurrences, PROMPT_LIMITS, type CheckpointReason, type LyricRevision, type PromptDuplicate,
   type PromptMode, type PromptTokenValue, type RestoreRevisionInput, type RevisionHistory
 } from "@lyricscloud/domain";
 import {
   createPromptDocument, insertPromptToken, projectPrompt, replacePromptSentence, replacePromptTokens, setPromptMode,
-  movePromptToken, promptTitle, promptTokenSequence, removePromptToken, type PromptSequenceItem
+  movePromptToken, promptSentence, promptTitle, promptTokenSequence, removePromptToken, type PromptSequenceItem
 } from "./crdt.js";
 import { applyComposedTextChanges, type LocalSyncState } from "./browser-sync.js";
 import { enqueueRemoteUpdate, SyncStorage, type QueuedUpdate } from "./sync-storage.js";
@@ -27,7 +27,7 @@ export interface BrowserPromptSync {
   setTitle(value: string, compositionBase?: string): void;
   setMode(mode: PromptMode, sentenceText?: string): void;
   replaceContent(mode: PromptMode, tokens: readonly string[], sentenceText: string): void;
-  setSentenceText(value: string): void;
+  setSentenceText(value: string, compositionBase?: string): void;
   insertTokens(values: readonly string[], index?: number): void;
   moveToken(occurrenceId: string, targetIndex: number): void;
   removeToken(occurrenceId: string): void;
@@ -96,7 +96,7 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
 
   function snapshot(): PromptEditorSnapshot {
     const projected = projectPrompt(document);
-    return { ...projected, items: promptTokenSequence(document).toArray() };
+    return { ...projected, items: projectFirstPromptOccurrences(promptTokenSequence(document).toArray()) };
   }
   function emit(next: LocalSyncState) {
     state = next;
@@ -310,8 +310,17 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
       if (!initialized || halted) return;
       document.transact(() => setPromptMode(document, mode, sentenceText), localOrigin);
     },
-    setSentenceText(value) {
+    setSentenceText(value, compositionBase) {
       if (!initialized || halted) return;
+      if (compositionBase !== undefined) {
+        const sentence = promptSentence(document);
+        if (sentence.toString() !== compositionBase) {
+          for (const update of remoteQueue.splice(0)) Y.applyUpdate(document, update, remoteOrigin);
+          return;
+        }
+        applyComposedTextChanges(document, sentence, [titleChange(compositionBase, value)], remoteQueue.splice(0), localOrigin);
+        return;
+      }
       document.transact(() => replacePromptSentence(document, value), localOrigin);
     },
     replaceContent(mode, tokens, sentenceText) {
@@ -327,7 +336,7 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
     insertTokens(values, index = promptTokenSequence(document).length) {
       if (!initialized || halted || !values.length) return;
       const normalized = values.map((value) => normalizePromptToken(value).displayValue);
-      if (promptTokenSequence(document).length + normalized.length > PROMPT_LIMITS.tokensPerPrompt) throw new RangeError("PROMPT_TOKEN_LIMIT");
+      if (projectFirstPromptOccurrences(promptTokenSequence(document).toArray()).length + normalized.length > PROMPT_LIMITS.tokensPerPrompt) throw new RangeError("PROMPT_TOKEN_LIMIT");
       document.transact(() => normalized.forEach((displayValue, offset) => insertPromptToken(document, index + offset, {
         occurrenceId: crypto.randomUUID(), displayValue
       })), localOrigin);
@@ -344,7 +353,7 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
       if (!initialized || halted) return;
       const seen = new Set<string>();
       const duplicateIds: string[] = [];
-      for (const item of promptTokenSequence(document).toArray()) {
+      for (const item of projectFirstPromptOccurrences(promptTokenSequence(document).toArray())) {
         const key = normalizePromptToken(item.displayValue).normalizedValue;
         if (seen.has(key)) duplicateIds.push(item.occurrenceId); else seen.add(key);
       }

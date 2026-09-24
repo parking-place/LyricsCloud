@@ -4,6 +4,7 @@ import { PostgresLyricSharingStore, PostgresLyricStore, PostgresPromptStore, Pos
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as Y from "yjs";
+import { projectFirstPromptOccurrences } from "@lyricscloud/domain";
 import { CollaborationStore, materialize } from "./store.js";
 
 const enabled = process.env.AUTH_DATABASE_INTEGRATION === "true";
@@ -178,6 +179,59 @@ describe.runIf(enabled)("durable owner-only collaboration state", () => {
       occurrenceId: "duplicate-female", displayValue: "Ｆｅｍａｌｅ  Vocal"
     });
     document.destroy(); restoredDocument.destroy();
+  });
+
+  it("accepts converged concurrent prompt moves and move-versus-remove with the same canonical server projection", async () => {
+    const owner = users[0]!;
+    const prompt = (await prompts!.createPrompt(owner, parseCreatePromptInput({
+      requestId: randomUUID(), title: "동시 이동 프롬프트", tokens: ["one", "two", "three"]
+    }))).prompt;
+    const mapping = (await sync!.ensureDocument(owner, prompt.id))!;
+    const loaded = (await sync!.loadDocument(owner, mapping.document_key))!;
+    const baseline = materialize(loaded.snapshot, loaded.updates);
+    const seed = Y.encodeStateAsUpdate(baseline);
+    const first = new Y.Doc(), second = new Y.Doc();
+    Y.applyUpdate(first, seed); Y.applyUpdate(second, seed);
+    const vector = Y.encodeStateVector(baseline);
+    const firstTokens = first.getArray<{ occurrenceId: string; displayValue: string }>("prompt-tokens");
+    const secondTokens = second.getArray<{ occurrenceId: string; displayValue: string }>("prompt-tokens");
+    const moved = firstTokens.get(1)!;
+    firstTokens.delete(1, 1); firstTokens.insert(0, [moved]);
+    secondTokens.delete(1, 1); secondTokens.insert(2, [moved]);
+    const firstUpdate = Y.encodeStateAsUpdate(first, vector);
+    const secondUpdate = Y.encodeStateAsUpdate(second, vector);
+    expect(await sync!.applyUpdate(owner, mapping.document_key, randomUUID(), firstUpdate)).toMatchObject({ duplicate: false });
+    expect(await sync!.applyUpdate(owner, mapping.document_key, randomUUID(), secondUpdate)).toMatchObject({ duplicate: false });
+    const merged = await sync!.loadDocument(owner, mapping.document_key);
+    const stored = materialize(merged!.snapshot, merged!.updates);
+    const raw = stored.getArray<{ occurrenceId: string; displayValue: string }>("prompt-tokens").toArray();
+    const canonical = projectFirstPromptOccurrences(raw);
+    expect(raw.filter((item) => item.occurrenceId === moved.occurrenceId)).toHaveLength(2);
+    expect(canonical).toHaveLength(3);
+    expect((await prompts!.getPrompt(owner, prompt.id))!.tokens.map((item) => item.displayValue))
+      .toEqual(canonical.map((item) => item.displayValue));
+
+    const removeSide = new Y.Doc(), moveSide = new Y.Doc();
+    const mergedSeed = Y.encodeStateAsUpdate(stored), mergedVector = Y.encodeStateVector(stored);
+    Y.applyUpdate(removeSide, mergedSeed); Y.applyUpdate(moveSide, mergedSeed);
+    const removeTokens = removeSide.getArray<{ occurrenceId: string; displayValue: string }>("prompt-tokens");
+    for (let index = removeTokens.length - 1; index >= 0; index -= 1) {
+      if (removeTokens.get(index)?.occurrenceId === moved.occurrenceId) removeTokens.delete(index, 1);
+    }
+    const moveTokens = moveSide.getArray<{ occurrenceId: string; displayValue: string }>("prompt-tokens");
+    for (let index = moveTokens.length - 1; index >= 0; index -= 1) {
+      if (moveTokens.get(index)?.occurrenceId === moved.occurrenceId) moveTokens.delete(index, 1);
+    }
+    moveTokens.insert(0, [moved]);
+    await sync!.applyUpdate(owner, mapping.document_key, randomUUID(), Y.encodeStateAsUpdate(removeSide, mergedVector));
+    await sync!.applyUpdate(owner, mapping.document_key, randomUUID(), Y.encodeStateAsUpdate(moveSide, mergedVector));
+    const final = (await sync!.loadDocument(owner, mapping.document_key))!;
+    const finalDocument = materialize(final.snapshot, final.updates);
+    const finalCanonical = projectFirstPromptOccurrences(finalDocument.getArray<typeof moved>("prompt-tokens").toArray());
+    expect(finalCanonical.filter((item) => item.occurrenceId === moved.occurrenceId)).toHaveLength(1);
+    expect((await prompts!.getPrompt(owner, prompt.id))!.tokens.map((item) => item.displayValue))
+      .toEqual(finalCanonical.map((item) => item.displayValue));
+    for (const document of [baseline, first, second, stored, removeSide, moveSide, finalDocument]) document.destroy();
   });
 
   it("requires the prompt mode capability and preserves sentence mode through projection and revision restore", async () => {

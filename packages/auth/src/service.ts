@@ -233,12 +233,14 @@ export class AuthService {
     );
   }
 
-  async resolveSession(sessionToken: string | null): Promise<{ userId: string; renewed: boolean; maxAge?: number }> {
+  async resolveSession(sessionToken: string | null, options: { renew?: boolean } = {}): Promise<{ userId: string; renewed: boolean; maxAge?: number }> {
     if (!sessionToken) throw new AuthError("AUTH_SESSION_EXPIRED");
     const now = this.#clock.now();
     const hashed = tokenHash(sessionToken);
     const session = await this.#store.readSession(hashed, now);
     if (!session) throw new AuthError("AUTH_SESSION_EXPIRED");
+    // Server components cannot attach a renewal cookie to their response.
+    if (options.renew === false) return { userId: session.userId, renewed: false };
     if (session.expiresAt.getTime() - now.getTime() > RENEW_WINDOW_MS) return { userId: session.userId, renewed: false };
     const nextExpiry = new Date(Math.min(now.getTime() + SESSION_IDLE_MS, session.absoluteExpiresAt.getTime()));
     if (nextExpiry <= now || !await this.#store.renewSession(hashed, nextExpiry, now)) {

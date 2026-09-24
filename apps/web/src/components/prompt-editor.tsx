@@ -57,6 +57,7 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
   const composing = useRef(false);
   const titleCompositionBase = useRef<string | null>(null);
   const sentenceComposing = useRef(false);
+  const sentenceCompositionBase = useRef<string | null>(null);
   const duplicateRequest = useRef<string | null>(null);
   const copyFeedback = useCopyFeedback();
   const router = useRouter();
@@ -182,9 +183,11 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
   function finishPromptSentence(sync = syncRef.current) {
     if (!sentenceComposing.current) return;
     const value = snapshotRef.current.sentenceText;
+    const base = sentenceCompositionBase.current;
+    sentenceCompositionBase.current = null;
     sentenceComposing.current = false;
     setComposingInput(composing.current);
-    sync?.setSentenceText(value);
+    sync?.setSentenceText(value, base ?? undefined);
     sync?.setComposing(composing.current);
   }
 
@@ -411,7 +414,7 @@ export function PromptEditor({ ownerId, initialPrompt, displaySettings, returnTo
         <label className="sr-only" htmlFor="prompt-sentence">문장형 프롬프트 원문</label><textarea id="prompt-sentence" rows={12} value={snapshot.sentenceText} disabled={!editable}
           aria-invalid={[...snapshot.sentenceText].length > PROMPT_LIMITS.serialized}
           onChange={(event) => changeSentence(event.target.value)}
-          onCompositionStart={() => { sentenceComposing.current = true; setComposingInput(true); syncRef.current?.setComposing(true); }}
+          onCompositionStart={() => { sentenceCompositionBase.current = snapshotRef.current.sentenceText; sentenceComposing.current = true; setComposingInput(true); syncRef.current?.setComposing(true); }}
           onCompositionEnd={() => finishPromptSentence()} />
         <div className="prompt-sentence-display" aria-label="마침표 기준 문장 표시">{sentenceSpans.length
           ? sentenceSpans.map((span) => <span className={span.terminated ? "sentence-span" : "sentence-span unfinished"} key={span.start}>{span.text}</span>)

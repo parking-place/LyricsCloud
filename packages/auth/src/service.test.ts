@@ -263,6 +263,27 @@ describe("OIDC login boundary", () => {
     await expect(expired.service.resolveSession(expiredResult.sessionToken))
       .rejects.toMatchObject({ code: "AUTH_SESSION_EXPIRED" });
   });
+
+  it("does not consume renewal during a cookie-less page read", async () => {
+    const flow = await login();
+    const result = await flow.service.completeLogin(flow.callback, flow.started.transaction);
+    const hash = tokenHash(result.sessionToken);
+    const session = flow.store.sessions.get(hash)!;
+    session.expiresAt = new Date(now.getTime() + 60_000);
+    const originalExpiry = session.expiresAt.getTime();
+
+    expect(await flow.service.resolveSession(result.sessionToken, { renew: false }))
+      .toEqual({ userId: result.userId, renewed: false });
+    expect(session.expiresAt.getTime()).toBe(originalExpiry);
+    const renewed = await flow.service.resolveSession(result.sessionToken);
+    expect(renewed).toMatchObject({ userId: result.userId, renewed: true });
+    expect(renewed.maxAge).toBeGreaterThan(60);
+    expect(session.expiresAt.getTime()).toBeGreaterThan(originalExpiry);
+
+    session.expiresAt = new Date(now.getTime() - 1);
+    await expect(flow.service.resolveSession(result.sessionToken, { renew: false }))
+      .rejects.toMatchObject({ code: "AUTH_SESSION_EXPIRED" });
+  });
 });
 
 describe("beta signup boundary", () => {

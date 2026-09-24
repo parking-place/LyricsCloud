@@ -65,3 +65,7 @@ P1 후보에서 22개 원인을 모두 **open-at-entry**로 등록한다. source
 - `BE-01`: 현재 b에서 첫 synthetic OIDC discovery 503 뒤 같은 adapter 재시도 실패를 재현했다. 실패 Promise 캐시 해제 후보의 집중 3 PASS이나 실제 Google 장애/복구·전체 CI·개발 인수 미실행이므로 최종 `resolved` 아님.
 - `BE-04`: 현재 b에서 생성 가능한 프롬프트 emoji 101자 제목의 삭제 확인 parser 거부를 재현했다. code-point 경계 보정 뒤 domain 4 PASS와 격리 DB/HTTP desktop/mobile 2 PASS이나 전체 CI·개발 인수 전 최종 `resolved` 아님.
 - `OPS-01`: 현재 backup shell의 임시 폴더/SIGKILL 재현에서 재시도 2회 exit 1과 잠금 잔존. 여전히 **open blocker**. 구/신 lock 상호 배제·TERM/KILL/재부팅·실제 backup/restore를 함께 검증해야 한다. 나머지 ID는 이 부분 기록으로 해결 판정하지 않는다.
+
+### 2026-09-24 P4 추가 후보 (최종 해결 판정 아님)
+
+OPS-01의 위 **수정 전 재현** 뒤 kernel `flock`+영구 구/신 fence 후보의 shell 22건은 PASS했다. 실제 암호화 backup/restore·운영 전환은 남아 있다. ES-01 raw 중복의 화면/서버 first-occurrence 수렴과 ES-03 문장 IME delta, ES-06/07 공유 저장 실패·초기 편집 차단, BE-02 SSR 세션 비갱신, BE-03 공개 링크 시간차 replay, UI-02 템플릿 이탈 확인 후보를 추가했다. 일회용 DB 전체 Unit/통합 505 PASS/8 조건부 skip과 check는 현재 코드의 부분 증거다. 실제 HTTP/브라우저·권한/재접속·DB/rollback·전체 CI/동일 SHA 개발 검증 전에는 각 ID를 `resolved`로 바꾸지 않는다. 사용자의 실기기 보류 지시는 실제 OS IME/AT·물리 기기만 후속 미실행으로 남기며 다른 원인을 면제하지 않는다.

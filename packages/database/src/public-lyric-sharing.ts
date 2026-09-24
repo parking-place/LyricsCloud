@@ -83,21 +83,30 @@ export class PostgresPublicLyricSharingStore {
   }
 
   issue(ownerId: string, resourceId: string, input: {
-    requestId: string; tokenDigest: string; expiresAt: Date; fields: PublicLinkFields;
+    requestId: string; tokenDigest: string; expiresAt: Date; expiresInDays?: 1 | 7 | 30; fields: PublicLinkFields;
   }): Promise<{ link: PublicLyricLink; replayed: boolean } | null> {
     validateUuid(resourceId); validateUuid(input.requestId); validateDigest(input.tokenDigest);
+    if (input.expiresInDays !== undefined && input.expiresInDays !== 1
+      && input.expiresInDays !== 7 && input.expiresInDays !== 30) throw new PublicLinkInputError();
     if (!Number.isFinite(input.expiresAt.getTime()) || input.expiresAt.getTime() <= Date.now()
       || input.expiresAt.getTime() > Date.now() + 31 * 86_400_000) throw new PublicLinkInputError();
-    const requestHash = createHash("sha256").update(JSON.stringify({ resourceId, expiresAt: input.expiresAt.toISOString(),
-      fields: input.fields })).digest("hex");
+    const requestHash = input.expiresInDays === undefined
+      ? legacyIssueHash(resourceId, input.expiresAt, input.fields)
+      : createHash("sha256").update(JSON.stringify({ version: 2, resourceId,
+        expiresInDays: input.expiresInDays, fields: input.fields })).digest("hex");
     return this.#withActor(ownerId, async (client) => {
       await client.query("select pg_advisory_xact_lock(hashtextextended($1,0))", [`public-link-request:${ownerId}:${input.requestId}`]);
       const replay = (await client.query<{ link_id: string; request_sha256: string }>(
         "select link_id,request_sha256 from lyric_public_link_requests where owner_id=$1 and request_id=$2",
         [ownerId, input.requestId])).rows[0];
       if (replay) {
-        if (replay.request_sha256 !== requestHash) throw new PublicLinkConflictError();
         const link = await selectLink(client, replay.link_id);
+        // Pre-v2 receipts contain the absolute expiration. Accept their original
+        // duration only; a different logical request must still conflict.
+        if (replay.request_sha256 !== requestHash && !(link && input.expiresInDays !== undefined
+          && replay.request_sha256 === legacyIssueHash(resourceId, new Date(link.expiresAt), input.fields)
+          && Math.abs((new Date(link.expiresAt).getTime() - new Date(link.createdAt).getTime()) / 86_400_000
+            - input.expiresInDays) < 0.25)) throw new PublicLinkConflictError();
         return link ? { link, replayed: true } : null;
       }
       if (!await ownsActiveLyric(client, resourceId)) return null;
@@ -233,6 +242,10 @@ export class PostgresPublicLyricSharingStore {
       await client.query("rollback").catch(() => undefined); throw error;
     } finally { client.release(); }
   }
+}
+
+function legacyIssueHash(resourceId: string, expiresAt: Date, fields: PublicLinkFields): string {
+  return createHash("sha256").update(JSON.stringify({ resourceId, expiresAt: expiresAt.toISOString(), fields })).digest("hex");
 }
 
 async function ownsActiveLyric(client: PoolClient, resourceId: string): Promise<boolean> {

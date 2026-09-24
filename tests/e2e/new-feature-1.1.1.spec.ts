@@ -34,7 +34,13 @@ test.describe("1.1.1 public-link lyric reading", () => {
       await dialog.getByLabel("내 표시 이름").check();
       const issued = ownerPage.waitForResponse((response) => response.url().endsWith(`/api/lyrics/${lyricId}/public-link`) && response.request().method() === "POST");
       await dialog.getByRole("button", { name: "확인하고 공개" }).click();
-      const issuePayload = await (await issued).json() as { url: string; link: { id: string } };
+      const issuedResponse = await issued;
+      const issuePayload = await issuedResponse.json() as { url: string; link: { id: string } };
+      const retryInput = issuedResponse.request().postDataJSON() as Record<string, unknown>;
+      const replayResponse = await ownerContext.request.post(`/api/lyrics/${lyricId}/public-link`, { headers, data: retryInput });
+      expect(replayResponse.status()).toBe(200);
+      expect(await replayResponse.json()).toMatchObject({ replayed: true, url: null,
+        recoveryAction: "rotate-after-confirmation", link: { id: issuePayload.link.id } });
       await expect(dialog).toContainText("링크 공개 중");
       await expect(dialog).toContainText("지금 한 번만 링크를 복사할 수 있습니다");
       await expect(dialog).not.toContainText("절대 공개하지 않는 메모");

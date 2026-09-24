@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
 import * as Y from "yjs";
 import {
-  normalizePromptToken, projectUniquePromptTokens, REVISION_POLICY, serializePromptTokens, validatePromptSentenceText,
+  normalizePromptToken, projectFirstPromptOccurrences, projectUniquePromptTokens, REVISION_POLICY, serializePromptTokens, validatePromptSentenceText,
   type CheckpointReason, type PromptMode, type PromptTokenValue, type RestoreRevisionInput
 } from "@lyricscloud/domain";
 import { bodyHash, captureRevision, pruneRevisions, summarize, type RevisionRow } from "./revisions.js";
@@ -542,15 +542,14 @@ function documentContent(document: Y.Doc, resourceType: EditableResourceType): s
 
 function readPromptState(document: Y.Doc): { title: string; mode: PromptMode; items: Array<{ occurrenceId: string; displayValue: string }>;
   tokens: PromptTokenValue[]; sentenceText: string } {
-  const seen = new Set<string>();
-  const items = document.getArray<unknown>("prompt-tokens").toArray().map((value) => {
+  const rawItems = document.getArray<unknown>("prompt-tokens").toArray().map((value) => {
     if (!value || typeof value !== "object") throw new Error("SYNC_PROMPT_INVALID");
     const candidate = value as { occurrenceId?: unknown; displayValue?: unknown };
     if (typeof candidate.occurrenceId !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(candidate.occurrenceId)
-      || seen.has(candidate.occurrenceId) || typeof candidate.displayValue !== "string") throw new Error("SYNC_PROMPT_INVALID");
-    seen.add(candidate.occurrenceId);
+      || typeof candidate.displayValue !== "string") throw new Error("SYNC_PROMPT_INVALID");
     return { occurrenceId: candidate.occurrenceId, displayValue: normalizePromptToken(candidate.displayValue).displayValue };
   });
+  const items = projectFirstPromptOccurrences(rawItems);
   const modeValue = document.getMap<unknown>("prompt-mode").get("value");
   if (modeValue !== undefined && modeValue !== "tags" && modeValue !== "sentence") throw new Error("SYNC_PROMPT_INVALID");
   const mode: PromptMode = modeValue === "sentence" ? "sentence" : "tags";

@@ -6,7 +6,7 @@ import { createBrowserPublicSharedLyricSync, type BrowserPublicSharedLyricSync }
 import { createLyricDocument, lyricBody } from "./crdt.js";
 import type { LocalDocument, QueuedUpdate, RejectedWriterDraft } from "./sync-storage.js";
 
-const memory = vi.hoisted(() => ({ stores: new Map<string, any>() }));
+const memory = vi.hoisted(() => ({ stores: new Map<string, any>(), failures: 0 }));
 
 // Isolate only IndexedDB and WebSocket. Persistence/rejection methods and Yjs
 // updates run unchanged, including the cache's merge-on-persist behavior.
@@ -39,7 +39,10 @@ vi.mock("./sync-storage.js", async (importOriginal) => {
       if (memory.stores.has(name)) return memory.stores.get(name);
       memory.stores.set(name, this);
     }
-    async transaction(...args: unknown[]) { return (args.at(-1) as () => Promise<unknown>)(); }
+    async transaction(...args: unknown[]) {
+      if (memory.failures > 0) { memory.failures -= 1; throw new Error("QuotaExceededError"); }
+      return (args.at(-1) as () => Promise<unknown>)();
+    }
     persist = actual.SyncStorage.prototype.persist;
     rejectWriterEpoch = actual.SyncStorage.prototype.rejectWriterEpoch;
     close() {}
@@ -73,7 +76,7 @@ const encode = (document: Y.Doc) => Buffer.from(Y.encodeStateAsUpdate(document))
 let active: BrowserPublicSharedLyricSync | undefined;
 
 beforeEach(() => {
-  memory.stores.clear(); Socket.instances = [];
+  memory.stores.clear(); memory.failures = 0; Socket.instances = [];
   vi.stubGlobal("WebSocket", Socket);
   vi.stubGlobal("window", new EventTarget());
   vi.stubGlobal("navigator", { onLine: true });
@@ -82,6 +85,37 @@ beforeEach(() => {
 afterEach(async () => { await active?.destroy(); active = undefined; vi.unstubAllGlobals(); });
 
 describe("public guest live write revocation", () => {
+  it("latches a failed guest local write until the same session requeues it", async () => {
+    const server = createLyricDocument("base");
+    let state = "";
+    let drafts: readonly RejectedWriterDraft[] = [];
+    let storageFailed = false;
+    try {
+      active = await createBrowserPublicSharedLyricSync({ token: "synthetic-link", linkId, guestSession: guest,
+        onBody() {}, onStateChange(value) { state = value; }, onAccessChange() {}, onPresenceChange() {},
+        onDurabilityChange(value) { storageFailed = value; }, onRejectedDrafts(value) { drafts = value; } });
+      const socket = Socket.instances.at(-1)!; socket.open();
+      socket.receive({ type: "snapshot", payload: encode(server), access: "public-write",
+        permissionEpoch: 1, writeEpoch: 1, guestSessionId: guest.id });
+      await vi.waitFor(() => expect(state).toBe("live"));
+      memory.failures = 1;
+      active.applyLocalTransaction({ origin: "user", composing: false,
+        changes: [{ from: 4, to: 4, insert: " LOCAL" }] });
+      await vi.waitFor(() => expect(storageFailed).toBe(true));
+      expect(state).toBe("error");
+      await vi.waitFor(() => expect(drafts.map((draft) => draft.authoredText)).toEqual([" LOCAL"]));
+      expect(drafts[0]?.reason).toBe("storage-failed");
+      expect(socket.sent.filter((message) => message.type === "update")).toHaveLength(0);
+      active.retry();
+      await vi.waitFor(() => expect(storageFailed).toBe(false));
+      await vi.waitFor(() => expect(socket.sent.filter((message) => message.type === "update")).toHaveLength(1));
+      const update = socket.sent.find((message) => message.type === "update")!;
+      Y.applyUpdate(server, Buffer.from(update.payload, "base64"));
+      expect(lyricBody(server).toString()).toBe("base LOCAL");
+      expect(drafts).toHaveLength(0);
+    } finally { server.destroy(); }
+  });
+
   it.each([
     { base: "ABCD", change: { from: 1, to: 3, insert: "한" }, at: 2, remote: "원격", merged: "A한원격D" },
     { base: "기준", change: { from: 0, to: 2, insert: "확정" }, at: 2, remote: "\n원격", merged: "확정\n원격" }

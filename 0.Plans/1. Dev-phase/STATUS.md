@@ -9,10 +9,14 @@ started_at: "2026-09-23"
 updated_at: "2026-09-24"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "1.1.7b P4 OPS-01·나머지 필수 차단, 세 DB 유형·rollback 및 실제 OS IME/기기/AT 증거를 확보한다; 그전 P5 금지"
+next_action: "1.1.7b P4 나머지 필수 차단·HTTP/브라우저·세 DB 유형·rollback·CI/동일 SHA 개발 인수를 완료한다; 실제 기기/OS IME/AT는 사용자 지시로 별도 후속 검증에 보류하며 PASS로 기록하지 않는다"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-24 — 1.2.0까지 진행 지시·1.1.7b P4 추가 후보
+
+사용자가 1.2.0까지 진행하되 실제 기기 검증은 나중으로 미루라고 명시했다. 이 예외는 물리 기기·실제 OS IME·AT의 **미실행 보류**이지 대리 자동화 PASS가 아니다. 다른 P4/P5 원인·DB/rollback·브라우저·CI/동일 SHA 개발 인수는 면제되지 않으므로 현재 `review`와 P5/1.2.0 미착수를 유지한다. 현재 브랜치의 미확정 후보로 OPS-01 kernel flock+구/신 잠금 fence, ES-01 raw prompt 동시 이동 store 수렴, ES-03 문장 조합 delta, ES-06/07 공유 편집 내구성·준비 상태, BE-02 SSR 읽기 전용 세션 조회, BE-03 안정된 공개 링크 요청 hash/재시도 안내, UI-02 템플릿 내부 이탈 확인을 보정했다. Docker Node 24/pnpm 11.25 전체 check, 일회용 PostgreSQL `lyricscloud_test` 전체 Unit/DB **505 PASS/8 조건부 skip**, OPS-01 shell **22 PASS**. 실제 HTTP/브라우저, 실제 암호화 backup/restore, 세 DB 유형·rollback, 22원인 최종 판정, 전체 CI·signed image·동일 SHA 개발 인수는 미완료다. 정식 제품 버전·개발 서버 P3 SHA·main·릴리스 서버는 변경하지 않았다.
 
 ### 2026-09-24 — 1.1.7b P4 착수
 
