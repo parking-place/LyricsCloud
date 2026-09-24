@@ -447,3 +447,7 @@ Git tracked·hidden/untracked 공개 탐색에서 Future 관련 문서는 동일
 ## 2026-09-24 — 1.1.7b P4 동시 탭·PWA guard 중간 push 전 검수
 
 Git tracked와 hidden/untracked 공개 경로에서 Future 관련 문서는 기존 4개뿐이다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`은 직전 P4 SHA `7da5235012264c5a72afea96a72108a72515f5a3`와 같고 129개 FF ID·체크·본문에 변경·이동·삭제가 없다. 다른 세 문서는 검수 절차·scope·mapping이며 이 문단 외에 신규 후보 변경이 없다. 새 배정 없이 현재 P4의 동시 탭 ACK 상태·PWA 휘발 입력·연결 관리 및 합성 browser 교차만 검증했다. 실제 기기/OS IME/AT는 사용자 보류로 미실행, 나머지 P4 필수 gate도 `review`로 남긴다. private/ignored 원본 자동 공개, 보호 계획·native·main·정식 tag/image·릴리스 서버 변경은 없다. 동일 Future 입력은 직전 기록을 재참조한다.
+
+## 2026-09-24 — 1.1.7b P4 복원 DB 순방향 보정 후보 push 전 검수
+
+Git tracked 목록과 hidden/untracked 공개 탐색에서 Future 관련 문서는 같은 4개다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694` 및 129개 FF ID는 직전 중간 SHA `048a32f374b9adc7ca67b1d3ef03f9c550a5d3db`와 동일하다. 신규·이동·삭제·체크/본문 변경이 없고, 나머지 세 문서는 이 기록을 제외하면 후보 범위 변화가 없다. 새 Future 배정 없이 P4의 백업 복원 후 계정 삭제 차단을 1152 순방향 migration 후보로 검증한다. 실제 기기/OS IME/AT는 사용자 보류·미실행, CI·같은 SHA 개발 인수와 다른 필수 gate는 계속 `review`다. private/ignored 자료를 공개하거나 보호 계획·native 이력·main·정식 tag/image·릴리스 서버를 변경하지 않는다.

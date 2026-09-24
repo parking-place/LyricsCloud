@@ -74,6 +74,9 @@ OPS-01의 위 **수정 전 재현** 뒤 kernel `flock`+영구 구/신 fence 후�
 
 ### 2026-09-24 UI/세션 추가 판정 — 최종 resolved 아님
 
+- `AC-RD-117B-20/23` 신규 복원 차단: native 포함 일회용 DB를 `pg_dump`/복원하면 `0500`의 prompt dictionary `RESTRICT` FK 생성 순서로 합성 계정 삭제가 실패했다. 기존 이행 DB에서는 같은 입력이 성공했다. 데이터와 과거 checksum을 변경하지 않는 `1152` forward migration의 `NO ACTION DEFERRABLE` 뒤 복원 DB 전체 DB Vitest 509 PASS/8 조건부 skip·합성 계정 0건, 단독 dictionary 삭제 23503이다. 같은 DB에서 b image가 만든 프롬프트를 이전 a image가 원문 그대로 조회·export했으며 합성 자료 0건으로 정리했다. 이는 원래 22개 리뷰 ID에 새 번호를 끼워 넣은 것이 아니라 DB/rollback gate의 별도 발견이며, native 포함 이전 image rollback·개발 DB 공개 인수 전까지 `review`다.
+- 1152 일회용 웹 DB의 전체 production Chromium 회귀는 **432 PASS/54 조건부 skip/0 FAIL**(486건)이다. 원래 22개 각 행의 인수·실제 공개 proxy/개발 서버·CI를 일괄 해결로 간주하지 않는다.
+
 - 최신 추가 후보: 프롬프트 두 탭에서 서버 원문은 정확히 저장됐지만 두 번째 탭이 ACK로 비워진 공동 outbox를 알지 못해 `동기화 중`에 남는 간헐 상태를 재현했다. ACK 삭제 BroadcastChannel 통지와 오래된 상태 조회 폐기 뒤 집중 40회와 전체 Chromium 430 PASS/54 조건부 skip/0 FAIL이다. 이는 `ES-03` 원문·저장 표시 수용의 추가 근거이며 최종 SHA/CI/개발 인수 전에는 resolved가 아니다.
 - `ES-05` 추가: 지연된 라임 metadata 저장과 프롬프트 로컬 quota 실패에서 PWA 적용·unload 차단, 메모리 원문 및 서버 미반영을 PC/mobile 2 PASS로 확인했다. 첫 2 FAIL은 GET에 소모된 일회성 test route fixture를 보정한 결과와 구분한다.
 - `UI-03`/합성 IME 교차: 연결 관리 역순 HTTP와 문장·제목 조합 회귀를 포함한 5-project 20 PASS. 첫 Firefox 2 FAIL은 `fill()`의 자동 조합 종료로 시험 전제 위반을 이벤트 로그로 확인한 뒤 조합 유지 입력 이벤트로 수정했다. 실제 Firefox/OS IME 입력이나 물리 기기 검증은 아니다. 나머지 22행 최종 판정 및 실제 proxy/CI/개발 인수는 계속 남는다.

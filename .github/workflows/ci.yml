@@ -47,7 +47,7 @@ jobs:
       APP_VERSION: 1.1.7b
       BUILD_ID: ${{ github.sha }}
       APP_CHANNEL: dev
-      APP_PHASE: p2
+      APP_PHASE: p4
       APP_FINAL_PHASE: p5
     steps:
       - uses: actions/checkout@v7
@@ -139,6 +139,8 @@ jobs:
         run: pnpm test:migration:1140
       - name: Verify 1.1.7a populated profile upgrade and recovery
         run: pnpm test:migration:1151
+      - name: Verify 1.1.7b restored prompt cascade recovery
+        run: pnpm test:migration:1152
       - name: Verify 0.7.0 fresh and 0.6.0 upgrade release paths
         run: pnpm test:migration:0700-release
       - name: Measure 0.7.0 navigation release baseline

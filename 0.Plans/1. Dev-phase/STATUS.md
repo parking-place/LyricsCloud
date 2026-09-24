@@ -20,6 +20,12 @@ next_action: "1.1.7b P4 나머지 필수 차단·HTTP/브라우저·세 DB 유�
 
 최신 제품 후보의 Docker 전체 DB Vitest **509 PASS/8 조건부 skip**, `pnpm check`·production web build PASS. 새 시험 파일의 타입 검사와 최종 전체 CI는 별도 확인한다. 22개 원인 행별 최종 판정, 환경별 실제 proxy·세 DB의 전면 수용·서비스/PWA/rollback 교차, 필수 CI·네 signed image·동일 SHA 개발 공개 인수가 남아 있다. 따라서 P4 `review`, P5·1.2.0 미착수이며 개발 서버는 P3 SHA에 그대로 있다.
 
+### 2026-09-24 — 백업 복원 DB의 계정 삭제 차단 발견·1152 순방향 보정 후보
+
+native 1150+1151 일회용 DB를 `pg_dump`/복원한 독립 컨테이너에서 전체 시험 본문 **509 PASS**였으나, 기존 `0500`의 prompt dictionary `ON DELETE RESTRICT`가 복원된 외래키 생성 순서에서 합성 계정 cascade 삭제를 막아 5개 suite가 정리 실패했다. 같은 합성 계정/프롬프트 토큰으로 원본 이행 DB는 삭제 성공, 복원 DB는 실패를 재현했다. 기존 migration 수정·테이블/자료 삭제 없이 `1152_prompt_dictionary_cascade.sql`이 해당 FK를 `NO ACTION DEFERRABLE INITIALLY DEFERRED`로 바꾸도록 했다. 참조 중인 dictionary 단독 삭제는 계속 거부하고 계정 cascade는 허용한다. 별도 migration 회귀 **PASS**, native 이력 복원 DB에 1152 적용·반복 **PASS**, native 1150 테이블 2개와 32개 migration 보존, 그 DB의 전체 Vitest **509 PASS/8 조건부 skip/0 FAIL**, 합성 사용자·토큰·dictionary 0건이다. 첫 DB 이름 가드 실패와 ACL 생략 복제 실패, 수정 전 정리 실패는 최종 PASS에 포함하지 않는다.
+
+현재 웹 기준 schema는 후보 `1152`이며 이전 P1~P3 개발 서버의 `1151` 기록은 당시 사실로 유지한다. 새 웹 DB에도 1152 적용·반복 PASS, `pnpm check`·production web build·개발 후보 manifest validator 1002 PASS. validator 1005는 실행했으나 P5 최종 추적 문서 부재로 ENOENT 실패했으며 P5 완료 검증이 아니다. 복원 DB에서는 새 b 웹 image가 만든 합성 프롬프트를 이전 a 웹 image가 동일 원문으로 조회하고 ZIP JSON export하여 application-first rollback PASS; 합성 사용자·세션·자료 0건 확인 후 일회용 웹/DB 컨테이너와 임시 export를 정리했다. 첫 웹 시작은 `OIDC_TEST_FIXTURE` 누락으로 인증 API 503이었고 올바른 시험 설정 뒤 결과만 PASS다. 1152 적용 일회용 웹 DB에서 전체 production Chromium E2E **432 PASS/54 조건부 skip/0 FAIL**(486건, 14.8분)을 완료했다. 실제 개발 migration/배포·최종 CI 전에는 P4 `review`다.
+
 ### 2026-09-24 — 공유 첫 진입·저장소 실패 주입과 rollback 추가 증거
 
 UI-03 연결 관리의 실제 지연 HTTP를 주입해 라임 요청 중 프롬프트 전환 시 오래된 응답이 목록·결과 수·오류를 덮지 않음을 PC/mobile production Chromium **2 PASS**로 확인했다. `7da5235012264c5a72afea96a72108a72515f5a3` 중간 `[skip ci]` commit은 P4 원격 브랜치 SHA 일치를 확인했으며 필수 CI는 미실행이다.

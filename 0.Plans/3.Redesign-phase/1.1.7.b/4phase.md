@@ -41,6 +41,11 @@ AC-RD-117B-19~24 및 WC별 기존 수용. 입력 손실·거짓 저장·인가 �
 
 ## 2026-09-24 최신 로컬 회귀·잔여 (최종 인수 아님)
 
+- `AC-RD-117B-20/23` 복원 안전성: native 1150+1151 이력이 있는 일회용 DB를 `pg_dump`/복원하자 기존 `0500`의 prompt-token→dictionary `ON DELETE RESTRICT DEFERRABLE` 외래키가 sibling account cascade보다 먼저 검사되어, 프롬프트 토큰이 남은 합성 계정 삭제가 실패했다. 원본 이행 DB의 같은 합성 입력은 삭제 성공했으며 복원 DB의 전체 Vitest는 본문 509 PASS이나 5개 suite 정리 실패여서 전체 FAIL이다. 첫 DB 이름 가드 거부와 ACL 누락 복제의 권한 실패도 fixture 실패로 별도 보존한다.
+- 기존 `0500` 파일/checksum을 고치지 않고 forward `1152_prompt_dictionary_cascade.sql`에서 참조 제약을 `NO ACTION DEFERRABLE INITIALLY DEFERRED`로 재생성한다. 참조 중 dictionary 단독 삭제는 계속 23503, 계정 삭제 시 토큰·dictionary의 함께 cascade는 성공했다. populated 1151→1152·반복 migration 회귀 PASS, 복원 native DB의 migrator 2회 PASS, native 1150 테이블 2개·migration 32건 보존 및 전체 DB Vitest **509 PASS/8 조건부 skip/0 FAIL**; 합성 사용자·토큰·dictionary는 0건이다. 새 웹 DB도 1152 적용·반복 PASS. 같은 복원 DB에서 새 b 웹 image가 만든 프롬프트를 이전 a 웹 image가 원문 그대로 조회·ZIP JSON export해 application-first rollback PASS했고 합성 계정·session·자료 0건으로 정리했다. 첫 웹 시작의 OIDC 시험 설정 누락 503은 PASS 아님. native 포함 PC 이전 image의 **1152 적용 후** rollback·실제 개발 DB migration은 아직 미실행이다.
+- 현재 후보의 readiness/latest manifest는 1152로 올렸고 b dev 후보 validator 1002·check·production web build PASS. 1005 최종 validator는 P5 추적 문서 부재로 ENOENT 실패했으므로 P4 PASS로 쓰지 않는다. 이전 P1~P3 1151 공개 결과는 당시 이력으로 유지하고 새 후보의 CI·signed image·동일 SHA 개발 인수 전에 현재 개발 DB를 변경하지 않는다.
+- 1152를 적용한 일회용 웹 DB와 production web image의 전체 Chromium E2E는 **432 PASS/54 조건부 skip/0 FAIL**(486건, 14.8분)이다. 합성 브라우저/DB 결과이며 실제 공개 proxy·OS IME/기기/AT·동일 SHA 개발 서버 인수를 대체하지 않는다.
+
 - `ES-03`/동시 탭 상태: 서버의 정확한 문장 원문 반영 뒤에도 다른 탭이 공유 IndexedDB outbox 삭제를 통지받지 못해 `동기화 중`에 머무는 간헐 실패를 재현했다. prompt 문서 채널의 ACK 삭제 통지와 비동기 `report()` 세대 검사를 추가한 뒤 desktop/mobile 집중 40회 PASS. 최신 제품 코드의 전체 production Chromium은 **430 PASS/54 조건부 skip/0 FAIL**(484건)이다.
 - `ES-05`: 가로챈 라임 metadata PATCH가 완료될 때까지 업데이트 적용·beforeunload를 막고 회복 뒤 재허용, 프롬프트 IndexedDB quota 오류 뒤 메모리 원문/실패 표시·업데이트 적용·beforeunload 차단·서버 원문 불변을 PC/mobile **2 PASS**로 확인했다. 첫 실행 2 FAIL은 `times: 1` 가로채기가 GET에 소모된 시험 fixture 오류이며 제품 FAIL로 판정하지 않는다.
 - `UI-03` 연결 관리 지연 HTTP와 위 두 회귀를 포함한 Chromium/Firefox/WebKit PC·모바일 대리 **5-project 20 PASS**. 첫 매트릭스의 Firefox 합성 조합 2 FAIL은 Playwright `fill()`이 `compositionend`를 자동 발생시켜 조합 유지 조건이 깨진 것으로 이벤트 로그에서 확인했다. 원격 조합 경쟁을 유지하는 input 이벤트 fixture로 바꿔 동일 기대값 20 PASS했다. 물리 기기·실제 OS IME·AT PASS가 아니다.

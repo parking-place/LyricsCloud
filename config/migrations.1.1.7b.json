@@ -4,7 +4,7 @@
   "databaseEngine": "PostgreSQL 18",
   "minimumCompatibleApplicationVersion": "0.9.0",
   "maximumCompatibleApplicationVersion": "1.1.7b",
-  "latestSchema": "1151_profile_customization.sql",
+  "latestSchema": "1152_prompt_dictionary_cascade.sql",
   "applyOrder": [
     {
       "name": "0000_baseline.sql",
@@ -125,6 +125,10 @@
     {
       "name": "1151_profile_customization.sql",
       "sha256": "a00348c0282ea4857348a098f8e3c1562b9f3554c40f44a27e1c68eabc9adf03"
+    },
+    {
+      "name": "1152_prompt_dictionary_cascade.sql",
+      "sha256": "3843d17948f4587de7a335c3ba6ba0cacaa34b41df11be31899eb3bbb2f39eaf"
     }
   ],
   "rollback": {

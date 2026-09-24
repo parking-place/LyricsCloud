@@ -66,14 +66,14 @@
   },
   "database": {
     "manifest": "config/migrations.1.1.7b.json",
-    "manifestSha256": "74b929e595d895ed14d8ddcb4f3f3a1891203cced0c62f07d432f44ceaf97a8b",
+    "manifestSha256": "9b0cfa1bb216fd3c7b0e4a28ed9bc6e20dab98be4f307e486a4984c6b180b654",
     "applyOrder": [
       "migrate",
       "collaboration",
       "worker",
       "web"
     ],
-    "requiredLatestSchema": "1151_profile_customization.sql"
+    "requiredLatestSchema": "1152_prompt_dictionary_cascade.sql"
   },
   "environment": {
     "schema": "config/environment-schema.1.1.7b.json",
