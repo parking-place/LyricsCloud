@@ -30,7 +30,7 @@ for (const file of markdownFiles) {
     let destination = match[1];
     if (destination.startsWith("<") && destination.endsWith(">")) destination = destination.slice(1, -1);
     if (/^(?:https?:|mailto:|data:)/i.test(destination) || destination.startsWith("#") || destination.startsWith("/")) continue;
-    const encodedPath = destination.split("#", 1)[0];
+    const encodedPath = destination.split(/[?#]/u, 1)[0];
     if (!encodedPath) continue;
     let decodedPath;
     try {
@@ -82,7 +82,7 @@ for (const marker of ["target: migrate", "target: collaboration", "target: worke
   assert(selfHostCompose.includes(marker), `compose.selfhost.yaml missing runtime contract: ${marker}`);
 }
 
-assert(new RegExp(`^## \\[${currentVersion.replaceAll(".", "\\.")}\\] - \\d{4}-\\d{2}-\\d{2}$`, "mu").test(changelog),
+assert(new RegExp(`^## \\[${currentVersion.replaceAll(".", "\\.")}\\] - (?:\\d{4}-\\d{2}-\\d{2}${currentVersion === "1.1.7b" ? "|개발 중" : ""})$`, "mu").test(changelog),
   `CHANGELOG current version heading missing: ${currentVersion}`);
 
 for (const [document, markers] of [

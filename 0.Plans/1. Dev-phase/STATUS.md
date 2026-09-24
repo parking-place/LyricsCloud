@@ -2,17 +2,21 @@
 
 ```yaml
 current_version: "1.1.7b"
-current_phase: "../3.Redesign-phase/1.1.7.b/4phase.md"
-state: "complete"
+current_phase: "../3.Redesign-phase/1.1.7.b/5phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-24"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "P4 문서 인수 후 1.1.7b P5를 전용 브랜치에서 착수한다; 실제 기기/OS IME/AT는 사용자 지시로 후속 미실행을 유지한다"
+next_action: "1.1.7b P5의 18 WC·22 원인·24 수용 증거와 최종 문서/manifest/CI·signed image·동일 SHA 개발 인수를 봉인한다; 실제 기기/OS IME/AT는 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-24 — 1.1.7b P5 착수
+
+P4 문서 인수 `53ed14f45f063919d87cc59e8e4213863222c7e4`의 깨끗한 worktree에서 `phase/1.1.7b-p5-final-handoff`를 분기했다. 담당 Codex, 작업 `LC-RD-117B-P5-01~08`. P4 기능 SHA `ddc1d7c50a64f8e8467b7aee64627f2dfe13da7d`와 개발 배포를 기준으로 18 WC·22 원인·24 수용의 최종 증거, dev 후보/정식 미승인, release 문서·manifest와 1.2.0 인계를 검토한다. P5 코드/문서·필수 CI/서명 image·동일 SHA 개발 인수 전에는 b 완료 또는 1.2.0 착수로 표시하지 않는다. 사용자 보류 실제 기기/OS IME/AT와 `main`·정식 tag/image·릴리스 서버 비변경을 유지한다.
 
 ### 2026-09-24 — 1.1.7b P4 완료·P5 인계
 

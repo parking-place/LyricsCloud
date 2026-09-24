@@ -1,6 +1,6 @@
 # 1.1.7b Phase 5 — 최종 증거·동일 SHA 개발 인수·1.2.0 인계
 
-**상태: 계획 / 구현 미착수 (`planned`)**. [수용 기준](ACCEPTANCE.md) · [통합 맵](SOURCE-MAP.md) · [차단 목록](BLOCKERS.md).
+**상태: 진행 중 (`in_progress`)**. P4 문서 인수 `53ed14f45f063919d87cc59e8e4213863222c7e4`에서 전용 브랜치를 시작했다. [수용 기준](ACCEPTANCE.md) · [통합 맵](SOURCE-MAP.md) · [차단 목록](BLOCKERS.md).
 
 ## 목표·진입
 

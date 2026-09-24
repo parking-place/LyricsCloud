@@ -13,6 +13,7 @@ const assert = (condition, message) => { if (!condition) failures.push(message);
 const requireRelease = process.argv.includes("--require-release");
 const currentVersion = read("VERSION").trim();
 const oneOff117a = currentVersion === "1.1.7a";
+const oneOff117b = currentVersion === "1.1.7b";
 const currentContract = getReleaseVersionContract(currentVersion);
 const releasedVersion = "1.0.1";
 
@@ -113,17 +114,23 @@ for (const tag of [currentVersion, "1.0.2", releasedVersion, "Release", "latest"
 for (const marker of [`APP_VERSION: ${currentVersion}`, `APP_FINAL_PHASE: p${currentContract.phaseCount}`, "test:migration:1002", "test:environment:101"]) {
   assert(workflow.includes(marker), `P5 CI marker missing: ${marker}`);
 }
-for (const marker of oneOff117a
+const traceabilityMarkers = oneOff117a
   ? ["AC-117A-01", "AC-117A-02", "AC-117A-03", "AC-117A-04", "AC-117A-05", "CodeMirror", "P0/P1", "OPS-100-001", "1151_profile_customization.sql", "release/1.1.7a"]
-  : ["NF-REQ-037", "NF-REQ-039", `AC-${currentVersion}-01`, `AC-${currentVersion}-04`, "B-1", "CodeMirror", "deep link", "P0/P1", "OPS-100-001", "1140_sharing_stability.sql"]) {
+  : oneOff117b
+    ? ["AC-RD-117B-01", "AC-RD-117B-24", "WC-01", "WC-18", "P0/P1", "OPS-100-001", "1152_prompt_dictionary_cascade.sql", "native 1150"]
+    : ["NF-REQ-037", "NF-REQ-039", `AC-${currentVersion}-01`, `AC-${currentVersion}-04`, "B-1", "CodeMirror", "deep link", "P0/P1", "OPS-100-001", "1140_sharing_stability.sql"];
+for (const marker of traceabilityMarkers) {
   assert(candidateTraceability.includes(marker), `${currentVersion} traceability marker missing: ${marker}`);
 }
 for (const marker of ["P5", "P0/P1", "OPS-100-001", "동일 SHA 개발 인수"]) {
   assert(formalTraceability.includes(marker), `${currentVersion} traceability marker missing: ${marker}`);
 }
-for (const marker of oneOff117a
+const releaseNoteMarkers = oneOff117a
   ? ["닉네임", "사진", "Google", "실제 Windows", "알려진 제한", "OPS-100-001"]
-  : ["B-1", "CodeMirror", "더보기", "실제 OS", "알려진 제한", "OPS-100-001"]) {
+  : oneOff117b
+    ? ["원문", "공유", "1152_prompt_dictionary_cascade.sql", "실제 Windows", "OS IME", "알려진 제한", "OPS-100-001"]
+    : ["B-1", "CodeMirror", "더보기", "실제 OS", "알려진 제한", "OPS-100-001"];
+for (const marker of releaseNoteMarkers) {
   assert(formalReleaseNotes.includes(marker), `${currentVersion} release notes marker missing: ${marker}`);
 }
 for (const marker of [`annotated \`v${currentVersion}\``, "publish=true", "release=true", "Release-latest", "application-first rollback"]) {

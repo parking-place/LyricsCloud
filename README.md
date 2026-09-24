@@ -15,7 +15,7 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 
 [1.1.7a release notes](./docs/releases/1.1.7a.md)와 [CHANGELOG.md](./CHANGELOG.md)에 사용자 변화·호환성·미실행 gate를 기록한다.
 
-> **현재 개발 (2026-09-23):** [1.1.7b 웹 안정화 통합](0.Plans/3.Redesign-phase/1.1.7.b/README.md)의 Phase 1 버전·도구 기반을 구현 중입니다. P1 원격 CI·동일 SHA 개발 인수와 P2~P5 통합이 남아 있습니다. 완료된 b SHA에서 [1.2.0 코발트 Chroma Dock](0.Plans/3.Redesign-phase/1.2.0/README.md)을 시작합니다. [후속 1.2.1~1.2.8](0.Plans/3.Redesign-phase/ROADMAP.md)과 native 보류를 유지합니다.
+> **현재 개발 (2026-09-24):** [1.1.7b Phase 5](0.Plans/3.Redesign-phase/1.1.7.b/5phase.md)의 최종 증거·개발 인계를 진행 중입니다. P1~P4 기능 SHA의 CI·서명 image·개발 공개 인수는 완료했고, P5의 새 SHA 인수 전에는 b 전체 완료가 아닙니다. 정식 운영 릴리스는 여전히 `1.1.7a`입니다. [1.1.7b release notes 초안](./docs/releases/1.1.7b.md)·[CHANGELOG.md](./CHANGELOG.md)에서 미실행 경계를 확인할 수 있습니다. 완료된 b SHA에서 [1.2.0 코발트 Chroma Dock](0.Plans/3.Redesign-phase/1.2.0/README.md)을 시작하며 [후속 1.2.1~1.2.8](0.Plans/3.Redesign-phase/ROADMAP.md)과 native 보류를 유지합니다.
 
 ## 주요 기능
 
