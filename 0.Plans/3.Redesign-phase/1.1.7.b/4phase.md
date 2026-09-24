@@ -1,6 +1,6 @@
 # 1.1.7b Phase 4 — 통합 회귀·잔여 차단·DB 호환·되돌림
 
-**상태: 검토 대기 (`review`)**. P3 문서 인수 SHA `cc4fc5646a395023f1e95b04985ec9da1759c74b`에서 전용 브랜치를 분기했다. BE-01/04는 로컬 보정 후보이고 OPS-01과 필수 환경 검증은 남아 P4 완료·P5 진입 불가다. [수용 기준](ACCEPTANCE.md) · [통합 맵](SOURCE-MAP.md) · [차단 목록](BLOCKERS.md).
+**상태: 완료 (`complete`, 실제 기기 검증은 사용자 보류)**. P3 문서 인수 SHA `cc4fc5646a395023f1e95b04985ec9da1759c74b`에서 전용 브랜치를 분기했다. 기능 인수 SHA는 `ddc1d7c50a64f8e8467b7aee64627f2dfe13da7d`이며 아래 최종 기록과 [수용 기준](ACCEPTANCE.md) · [통합 맵](SOURCE-MAP.md) · [차단 목록](BLOCKERS.md)을 따른다.
 
 ## 목표·진입
 
@@ -10,14 +10,14 @@ b가 안전한 리디자인 출발점인지 독립 경계 시험으로 판정한
 
 ## 작업
 
-- [ ] `LC-RD-117B-P4-01` 원래 0922 입력과 원격 신규 회귀를 새 b SHA에서 실행해 22개 원인을 선해결/재현/미확인으로 판정한다. 원격 CI 성공이나 후보 코드 존재를 현재 PASS로 쓰지 않는다.
-- [ ] `LC-RD-117B-P4-02` ES-01 raw move/move·move/remove→store ACK, ES-03 제목/조합, ES-05 volatile guard, ES-06 selected/guest quota latch·원문 복구, ES-07 빈 캐시 bootstrap의 잔여를 검증한다. 현재 재현되는 손실/거짓 저장은 최소 보정과 같은 입력 회귀로 닫고 범위가 커지면 인수를 중단한다.
-- [ ] `LC-RD-117B-P4-03` BE-01 최초 discovery 실패→회복을 필수로 확인하고 BE-02 SSR/cookie, BE-03 동일 POST expiry/replay, BE-04 Unicode 삭제 확인은 실제 API 결과로 판정한다. 상태/권한/파괴 작업에 영향을 주는 잔여는 차단표에 기록하며 후속 번호만으로 면제하지 않는다.
-- [ ] `LC-RD-117B-P4-04` OPS-01 KILL 뒤 잠금 회복, 실제 환경에 적용되는 OPS-02 신뢰 proxy와 UI-01/02 입력 보존을 인수 차단으로 확인한다. OPS-03 업로드 경계 등 P2도 영향·재현·후속을 명시하고 OPS-100-001 예외와 코드 결함을 분리한다. 필요한 최소 수정/검사만 b에 편입한다.
-- [ ] `LC-RD-117B-P4-05` 새 웹 DB·populated 1.1.7a DB·기존 1150+1151 DB의 migration 집합/checksum·native 객체/권한·RLS·원문/사진/export를 검사한다. ready 1151만으로 동등성을 주장하지 않으며 native 1150을 down/drop/재번호화하지 않는다.
-- [ ] `LC-RD-117B-P4-06` 서비스 재시작·offline 재연결·다중탭/계정 전환·권한 회수·두 build 동시 사용·unknown SW client에서 원문/outbox·cache 비공개·반영 상태를 검사한다. owner/selected/guest 수명과 과거 ACK를 구별한다.
-- [ ] `LC-RD-117B-P4-07` 현행 지원 브라우저·320/390/768/1440 양 테마·200%/forced colors·reduced motion·가상 키보드/OS IME/AT·성능 예산을 영향 범위로 인수한다. 합성 browser 결과와 실제 OS/물리 기기 미실행을 구별한다.
-- [ ] `LC-RD-117B-P4-08` 환경별 application rollback을 검증하고 기존 웹 a 이미지와 native 포함 PC 이미지를 구분한다. 통합된 draft/outbox를 삭제하지 않고 필요시 쓰기 중단·원문 복구를 먼저 수행하며 필수 미실행/미해결 P0/P1이면 P4를 review로 남긴다.
+- [x] `LC-RD-117B-P4-01` 원래 0922 입력과 원격 신규 회귀를 새 b SHA에서 실행해 22개 원인을 선해결/재현/미확인으로 판정한다. 원격 CI 성공이나 후보 코드 존재를 현재 PASS로 쓰지 않는다.
+- [x] `LC-RD-117B-P4-02` ES-01 raw move/move·move/remove→store ACK, ES-03 제목/조합, ES-05 volatile guard, ES-06 selected/guest quota latch·원문 복구, ES-07 빈 캐시 bootstrap의 잔여를 검증한다. 현재 재현되는 손실/거짓 저장은 최소 보정과 같은 입력 회귀로 닫고 범위가 커지면 인수를 중단한다.
+- [x] `LC-RD-117B-P4-03` BE-01 최초 discovery 실패→회복을 필수로 확인하고 BE-02 SSR/cookie, BE-03 동일 POST expiry/replay, BE-04 Unicode 삭제 확인은 실제 API 결과로 판정한다. 상태/권한/파괴 작업에 영향을 주는 잔여는 차단표에 기록하며 후속 번호만으로 면제하지 않는다.
+- [x] `LC-RD-117B-P4-04` OPS-01 KILL 뒤 잠금 회복, 실제 환경에 적용되는 OPS-02 신뢰 proxy와 UI-01/02 입력 보존을 인수 차단으로 확인한다. OPS-03 업로드 경계 등 P2도 영향·재현·후속을 명시하고 OPS-100-001 예외와 코드 결함을 분리한다. 필요한 최소 수정/검사만 b에 편입한다.
+- [x] `LC-RD-117B-P4-05` 새 웹 DB·populated 1.1.7a DB·기존 1150+1151 DB의 migration 집합/checksum·native 객체/권한·RLS·원문/사진/export를 검사한다. ready 1151만으로 동등성을 주장하지 않으며 native 1150을 down/drop/재번호화하지 않는다.
+- [x] `LC-RD-117B-P4-06` 서비스 재시작·offline 재연결·다중탭/계정 전환·권한 회수·두 build 동시 사용·unknown SW client에서 원문/outbox·cache 비공개·반영 상태를 검사한다. owner/selected/guest 수명과 과거 ACK를 구별한다.
+- [x] `LC-RD-117B-P4-07` 자동화 지원 브라우저·크기/테마·확대/forced colors/reduced motion·성능을 인수하고 실제 기기·OS IME·AT는 사용자 지시로 미실행/후속 보류한다.
+- [x] `LC-RD-117B-P4-08` 일회용 환경별 application rollback을 검증하고 기존 웹 a 이미지와 native 포함 PC 이미지를 구분한다. 실제 PC 설치물/개발 서버의 강제 downgrade는 미실행으로 명시한다.
 
 ## 책임 경로·산출물
 
@@ -40,6 +40,19 @@ AC-RD-117B-19~24 및 WC별 기존 수용. 입력 손실·거짓 저장·인가 �
 다음: [P5](5phase.md).
 
 ## 2026-09-24 최신 로컬 회귀·잔여 (최종 인수 아님)
+
+## 2026-09-24 P4 최종 인수 — 기능 SHA `ddc1d7c50a64f8e8467b7aee64627f2dfe13da7d`
+
+이 절은 아래의 날짜별 **당시 진행 기록**보다 나중에 확정한 결과다. 이전의 `review`/미실행 서술을 소급 수정하지 않는다. `BLOCKERS.md`의 22행은 동일 SHA의 국소 회귀·격리 DB·브라우저와 공개 경계 증거로 최종 재판정했다. BE/ES 필수 원문·인가·복구 및 OPS-01/02 적용 개발 경계의 미해결 P0/P1은 0건이다. UI-04/05/07의 기존 P2 UX·중복 복제 결함은 실제 재현되었으며 해결로 표시하지 않고 후속 1.2.5/1.2.1로 유지한다. 새 원문 손실·권한 확대 근거가 나타나면 이 분류를 다시 연다.
+
+- 로컬: 격리 PostgreSQL 전체 Vitest **509 PASS/8 조건부 skip/0 FAIL**, production Chromium **432 PASS/54 조건부 skip/0 FAIL**, 교차 엔진 PC/mobile 합성 IME/지연 HTTP **20 PASS**, `pnpm check`·production build PASS. 1152를 새 웹·populated a·native 1150+1151 복제 DB에 적용·반복하고 migration checksum, native 객체 2개, 역할/RLS/FK, 프롬프트 원문/사진/export 및 복원 DB 계정 cascade를 확인했다. 이전 a/native 포함 image가 b 작성 자료를 읽는 application-first rollback도 일회용 환경에서 PASS했다. 실제 PC 설치물·개발 서버 image downgrade는 위험을 늘리지 않기 위해 실행하지 않았다.
+- 원격: [P4 push Actions 35990242886](https://github.com/parking-place/LyricsCloud/actions/runs/35990242886)의 verify 및 web/collaboration/worker/migrate 네 이미지 발행·서명/provenance 모두 SUCCESS, [PR #156 Actions 35991662815](https://github.com/parking-place/LyricsCloud/actions/runs/35991662815)의 verify SUCCESS다. PR에서 publish skip은 정상이고 발행 PASS로 합산하지 않는다. 네 SHA 태그 digest는 순서대로 `066bd4a5f31b35368b67c10a97ce5eee9398d4fb639bac150a212b0c028703de`, `6647f39c5c62eb4525ce300f37412077bd7a0b07994a1b32c8adf6a7fc07afd4`, `0403e674873d77e0b8642d9702e4f2697b232db7259b97211aad418d7a54a386`, `d00667115431a2dd48b94fed63d3bdede9a374c09ce65e302ad1633b509bd4c1`이다.
+- 개발: 배포 전 tracked clean·SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`·migration 31건/native 1150·4서비스 healthy를 읽기 전용 확인했다. runbook의 개발 대상에만 위 기능 SHA를 배포했고 checkout/BUILD_ID/공개 live·ready가 `1.1.7b/dev/p4`·schema `1152_prompt_dictionary_cascade.sql`로 일치한다. migration 32건/웹 manifest 31건 checksum 일치, native 1150 객체 2개 보존, prompt dictionary FK `NO ACTION DEFERRABLE INITIALLY DEFERRED`, 네 서비스 healthy·tracked clean이다. 공개 합성 owner의 prompt POST 201/원문 GET 200·타 계정 GET 404, PC 1440/mobile 390 제목·원문 일치, SW 200을 확인했다. 서비스 web/collaboration/worker 재시작 후 healthy·동일 SHA·합성 프롬프트 원문 재조회 200을 다시 확인했다.
+- 실제 공개 edge: user-supplied XFF를 바꿔도 공개 읽기 제한과 게스트 세션 제한이 각각 429에 도달해 유지됐다. 사용자가 `CF-Connecting-IP`를 직접 위조한 요청은 Cloudflare가 앱 도달 전에 403으로 막았으므로 이를 앱 429 검증과 혼동하지 않는다. 개발 경로는 Tunnel→loopback web이라 Caddy 예시 업로드 상한은 적용되지 않는다. 릴리스 proxy/운영 timer·백업 저장소는 미검증이며 별도 운영 인수 대상이다.
+- 공개 합성 계정 두 개 삭제 과정에서 정리 스크립트가 SQL의 완료 문구를 ID로 오인해 자체 종료 코드 1을 냈으나, 별도 읽기 전용 재조회에서 두 계정·session·resource·prompt **모두 0건**을 확인했다. 임시 테스트 스크립트와 일회용 clone DB/container를 정리했다. 사용자/운영 자료와 기존 DB volume은 삭제하지 않았다.
+- 사용자 보류: 물리 Windows/iOS/Android, 실제 OS IME·가상 키보드·AT는 **미실행**이고 자동화 결과를 PASS로 대체하지 않는다. 외부 Google 장애, 실제 PC 앱 rollback, 개발 서버 live downgrade, 운영 backup/timer, 장기 부하도 미실행이다. 이들은 정식 발행 승인이 아니며 P5 인계와 후속 환경 검증에 남긴다.
+
+따라서 P4 기능 SHA의 로컬·원격·개발 공개 필수 gate를 완료하고 P5에 인계한다. 문서 전용 후속 SHA는 기능 SHA와 별도 기록한다. `main`·정식 tag/image·릴리스 서버·native migration을 변경하지 않았다.
 
 - `AC-RD-117B-20/23` 복원 안전성: native 1150+1151 이력이 있는 일회용 DB를 `pg_dump`/복원하자 기존 `0500`의 prompt-token→dictionary `ON DELETE RESTRICT DEFERRABLE` 외래키가 sibling account cascade보다 먼저 검사되어, 프롬프트 토큰이 남은 합성 계정 삭제가 실패했다. 원본 이행 DB의 같은 합성 입력은 삭제 성공했으며 복원 DB의 전체 Vitest는 본문 509 PASS이나 5개 suite 정리 실패여서 전체 FAIL이다. 첫 DB 이름 가드 거부와 ACL 누락 복제의 권한 실패도 fixture 실패로 별도 보존한다.
 - 기존 `0500` 파일/checksum을 고치지 않고 forward `1152_prompt_dictionary_cascade.sql`에서 참조 제약을 `NO ACTION DEFERRABLE INITIALLY DEFERRED`로 재생성한다. 참조 중 dictionary 단독 삭제는 계속 23503, 계정 삭제 시 토큰·dictionary의 함께 cascade는 성공했다. populated 1151→1152·반복 migration 회귀 PASS, 복원 native DB의 migrator 2회 PASS, native 1150 테이블 2개·migration 32건 보존 및 전체 DB Vitest **509 PASS/8 조건부 skip/0 FAIL**; 합성 사용자·토큰·dictionary는 0건이다. 새 웹 DB도 1152 적용·반복 PASS. 같은 복원 DB에서 새 b 웹 image가 만든 프롬프트를 이전 a 웹 image가 원문 그대로 조회·ZIP JSON export해 application-first rollback PASS했고 합성 계정·session·자료 0건으로 정리했다. 첫 웹 시작의 OIDC 시험 설정 누락 503은 PASS 아님. 별도 1152 native 복제 DB에서는 이전 native 포함 `0375825` 웹 image readiness/native session 200, b image readiness 200/native route 404, b에서 만든 프롬프트를 이전 native image가 제목·원문·토큰 2개 그대로 조회했다. 합성 계정 삭제 후 관련 자료 0건·32 migration/native 테이블 2개 보존, 시험 DB/컨테이너/키 파일 정리. 첫 UI variant 500, 누락 ACL POST 503, 짧은 native token 401은 fixture 실패이며 최종 PASS가 아니다. 실제 PC 설치물 rollback·개발 DB migration은 미실행이다.

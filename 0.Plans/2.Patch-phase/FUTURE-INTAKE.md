@@ -455,3 +455,7 @@ Git tracked 목록과 hidden/untracked 공개 탐색에서 Future 관련 문서�
 ## 2026-09-24 — 1.1.7b P4 행별 판정·CI 후보 push 전 검수
 
 Git tracked 및 hidden/untracked 공개 경로의 Future 관련 문서는 여전히 4개다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 129개 FF ID는 직전 P4 후보 SHA `69949611b2b7189630fd116f92e4c6dc57ea7705`와 같고 이동·삭제·체크·본문 변경이 없다. 나머지 세 문서의 후보 범위도 이 검수 기록 외에는 불변이다. 새 Future 배정 없이 1152 native 이전 image rollback과 원래 리뷰 22개 행별 중간 판정을 기록한다. UI-04/05는 실제 복제 응답 유실에서 P2 잔여로 재현됐으며 1.2.5 배정을 유지하되 b 해결로 쓰지 않는다. 실제 기기/OS IME/AT는 사용자 보류·미실행이고 실제 proxy·최종 CI·동일 SHA 개발 인수 전 P4 `review`다. private/ignored 파일은 공개하지 않고 보호 계획·native 원본·main·정식 tag/image·릴리스 서버를 변경하지 않는다.
+
+## 2026-09-24 — 1.1.7b P4 완료 문서 push·Phase 완료 검수
+
+Git tracked와 hidden/untracked 공개 경로에서 Future 관련 문서는 동일한 4개다. `Future_Feature.md`의 현행 blob `8f42d20b638e245eb775415ccfdabef56a96f694`·고유 FF ID 129개는 직전 P4 기능 SHA `ddc1d7c50a64f8e8467b7aee64627f2dfe13da7d`와 같고 본문·체크·이동·삭제·신규 후보가 없다. 나머지 세 문서는 이 검수 절차와 기존 scope/mapping이며 후보로 중복 배정하지 않는다. 이번 문서-only `[skip ci]` push는 P4 기능 SHA의 CI·서명 image·동일 SHA 개발 공개 인수와 사용자 보류 실기기 경계를 기록할 뿐 Future 작업을 재선정하지 않는다. UI-04/05/07 P2 배정, 1.2.0 코발트 계획과 native 보류를 유지한다. private/ignored 자료를 공개하거나 보호 계획·main·정식 tag/image·릴리스 서버를 변경하지 않는다.
