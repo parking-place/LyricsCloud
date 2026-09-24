@@ -1,6 +1,7 @@
 import "@lyricscloud/ui/tokens.css";
 import "./styles.css";
 import "./chroma.css";
+import "./chroma-workflows.css";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import type { CSSProperties, ReactNode } from "react";

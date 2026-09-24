@@ -165,7 +165,7 @@ test.describe("1.1.7a P4 profile and home cross-boundary regression", () => {
       await homeTarget(page).focus();
       await page.keyboard.press("Enter");
       await expect(page).toHaveURL(/\/workspace$/);
-      await expect(page.getByRole("heading", { name: "안녕하세요, P4 합성 매트릭스님." })).toBeVisible();
+      await expect(workspaceGreeting(page)).toBeVisible();
       const resources = await createResourceSet(page);
       for (const path of ["/songs", `/songs/${resources.songId}`, `/lyrics/${resources.lyricId}`,
         "/recent", "/rhymes", `/rhymes/${resources.rhymeId}`,
@@ -175,7 +175,7 @@ test.describe("1.1.7a P4 profile and home cross-boundary regression", () => {
         if (mobile) await homeTarget(page).tap();
         else await homeTarget(page).click();
         await expect(page).toHaveURL(/\/workspace$/);
-        await expect(page.getByRole("heading", { name: "안녕하세요, P4 합성 매트릭스님." })).toBeVisible();
+        await expect(workspaceGreeting(page)).toBeVisible();
       }
       await page.goto("/songs/new");
       const title = page.getByRole("textbox", { name: "곡 제목" });
@@ -196,7 +196,13 @@ test.describe("1.1.7a P4 profile and home cross-boundary regression", () => {
 });
 
 function homeTarget(page: Page) {
-  return page.locator(test.info().project.name.includes("mobile") ? ".mobile-home-icon" : ".top-home-mark");
+  const mobile = test.info().project.name.includes("mobile");
+  return page.locator(mobile ? ".mobile-home-icon" : process.env.LC_UI_VARIANT === "chroma" ? ".chroma-topbar-brand" : ".top-home-mark");
+}
+
+function workspaceGreeting(page: Page) {
+  return page.getByRole("heading", { name: process.env.LC_UI_VARIANT === "chroma"
+    ? "P4 합성 매트릭스님, 오늘은 어떤 이야기인가요?" : "안녕하세요, P4 합성 매트릭스님." });
 }
 
 async function createOwner(context: BrowserContext, label: string): Promise<string> {

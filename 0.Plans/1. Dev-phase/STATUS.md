@@ -2,17 +2,21 @@
 
 ```yaml
 current_version: "1.2.0"
-current_phase: "../3.Redesign-phase/1.2.0/2phase.md"
-state: "complete"
+current_phase: "../3.Redesign-phase/1.2.0/3phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-25"
 next_planned_version: "1.2.0"
-next_planned_phase: "../3.Redesign-phase/1.2.0/3phase.md"
-next_action: "1.2.0 P2의 정확한 SHA·CI·개발 공개 인수를 P3에 넘기고 편집·자료·설정·공유·복구의 Chroma 적용을 시작한다; 실제 기기/OS IME/AT는 사용자 지시로 후속 미실행"
+next_planned_phase: "../3.Redesign-phase/1.2.0/4phase.md"
+next_action: "1.2.0 P3 편집·자료 4탭·설정·공유·복구 화면에 Chroma를 적용하고 기존 원문/저장/권한을 자동·공개 브라우저에서 검증한다; 실제 기기/OS IME/AT는 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-25 — 1.2.0 P3 착수
+
+P2 완료 문서 인수 `f68d9a56c8be7413e0de96bd5705233ed080502a`의 깨끗한 worktree에서 `phase/1.2.0-p3-editor-resources`를 분기했다. 담당 Codex, 작업 `LC-RD-120-P3-01~06`. 책임 경로는 기존 가사/라임/프롬프트 편집·자료 4탭·곡 대시보드/새 항목·설정/프로필·공유/기록/복구 컴포넌트의 Chroma 표현, `apps/web/src/app/chroma.css`와 관련 PC/mobile E2E다. CodeMirror/Yjs·원문/IME·draft/outbox·owner/role/capability·DB/API 계약은 유지한다. P3의 CI·signed image·정확한 SHA 개발 공개 인수 전에는 완료/P4 착수로 기록하지 않는다. 실제 기기·OS IME·AT는 사용자 지시로 미실행/후속 보류, main·정식 tag/image·릴리스 서버는 변경하지 않는다.
 
 ### 2026-09-25 — 1.2.0 P2 완료·P3 인계
 

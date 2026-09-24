@@ -1,6 +1,6 @@
 # 1.2.0 Phase 3 — 편집·자료·설정·공유와 복구
 
-상태: **계획 / 제품 구현 미착수** (`planned`). [P1](1phase.md) 계약과 [P2](2phase.md) 공통 셸 실제 인수 뒤 `RD-REQ-003/004/005`를 구현한다.
+상태: **진행 중** (`in_progress`). [P1](1phase.md) 계약과 [P2](2phase.md) 공통 셸의 기능 SHA `f4c95883ca885a6769539d34a93df3ec6b29a1d6`/문서 SHA `f68d9a56c8be7413e0de96bd5705233ed080502a` 실제 인수 뒤 `RD-REQ-003/004/005`를 구현한다.
 
 ## 목표
 
@@ -22,3 +22,9 @@
 ## 인수와 중단 조건
 
 [AC-RD-120-03~08](ACCEPTANCE.md)을 관련 실제 API·저장·권한 fixture와 함께 확인한다. 원문 유실·IME 중간값 확정·selection/undo 초기화·공유 권한 오류·거짓 저장 완료가 생기면 먼저 재현/수정한다. 시각 스냅샷 통과만으로 이 Phase를 닫지 않는다. 필수 CI와 같은 SHA 개발 공개 smoke, 원본 보존 rollback을 기록한 뒤 [P4](4phase.md)로 인계한다.
+
+## 2026-09-25 기능 후보 로컬 검증
+
+`chroma-workflows.css`로 기존 편집·자료 패널·작성 폼·설정·공유/공개 viewer·복구·인증 노드를 유지한 채 코발트 표면/반응형/모달 계층을 적용했다. CodeMirror/Yjs·draft/outbox·API/DB schema 및 권한 분기는 변경하지 않았다. `chroma-120-p3.spec.ts`는 합성 소유자/자료로 두 테마·320/390/768/1024/1440px의 편집 인스턴스/4자료 탭/본문 저장·주요 화면·새 항목/로그인을 확인한다. 공개 목업이 아니라 실제 Next 앱과 격리 DB에서 실행했다.
+
+Node 24 production build·TypeScript, 기능 대응표 207 ID 및 현행 문서 검증, 전체 Vitest/DB 통합 **511 PASS/가입 전용 조건부 8 skip**. 최종 desktop/mobile Chromium 묶음 **84 PASS/조건부 6 skip**(P3 신규 6건, 기존 편집/자료·공유/권한/프로필/복구 사례 포함). 모바일 집중 전환 시 스크롤 66px 이동과 프롬프트 기록 모달이 헤더 아래로 들어가는 두 실패는 원인을 CSS 높이/stacking으로 확인해 수정하고 동일 입력과 최종 묶음으로 재검증했다. 과거 B1 전용 레일/프로필/홈 문구 단언은 Chroma의 실제 탐색 경로를 검사하도록 분기했으며 B1 경로는 유지한다. 필수 CI·signed dev image·같은 SHA 개발 공개 smoke는 완료 전 별도 갱신한다. 실제 물리 기기·OS IME·AT는 사용자 지시로 보류/미실행이며 PASS에 합산하지 않는다.
