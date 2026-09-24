@@ -3,16 +3,22 @@
 ```yaml
 current_version: "1.2.0"
 current_phase: "../3.Redesign-phase/1.2.0/4phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-25"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/5phase.md"
-next_action: "1.2.0 P4에서 Chroma/B1 교차 회귀·접근성·상대 성능·rollback을 검증하고 발견 결함을 보정한다; 실제 기기/OS IME/AT는 후속 미실행"
+next_action: "완료된 1.2.0 P4를 인수해 P5 최종 문서·CI·같은 SHA 개발 공개 인수를 시작한다; 실제 기기/OS IME/AT는 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-25 — 1.2.0 P4 완료·P5 진입 대기
+
+최종 기능 SHA `c380a598ad4bd5ccd38b6aa3f3ceb77040cf1986`의 [push Actions 36063583481](https://github.com/parking-place/LyricsCloud/actions/runs/36063583481)은 전체 verify·네 signed dev image/provenance SUCCESS, [PR #161 Actions 36063586810](https://github.com/parking-place/LyricsCloud/actions/runs/36063586810)은 verify SUCCESS다. 격리 DB Unit **511 PASS/8 조건부 skip**, 전체 Chromium **436 PASS/80 조건부 skip**, Chroma P2/P3/P4 **21 PASS/1 조건부 skip**, 5-project release **10 PASS**. 같은 SHA 개발 checkout/BUILD_ID/공개 live·ready `1.2.0/dev/p4`·schema 1152·네 healthy와 P2 4문맥/20 route, P3 서울·UTC 각각 4문맥/52 route/16자료 탭·본문 저장을 확인했다. 첫 공개 후보에서 재현된 320px forced-colors 로그아웃 버튼 대비 오류는 불투명 시스템 버튼 색상으로 보정하고 최종 공개 `/settings`→`/trash` 빠른 전환 연속 20회 즉시 axe serious/critical 0·초점 복귀 PASS로 닫았다. 첫 실패는 [P4 기록](../3.Redesign-phase/1.2.0/4phase.md)에 남긴다.
+
+207 ID는 대응표 무결성 PASS이지 개별 동작 전수 PASS가 아니고, 첫 화면 B1 대비 p95 +10.6% 소표본 위험과 이중-origin B1 편집 WebSocket 한계는 P5에 전달한다. 실제 Windows/iOS/Android 기기·OS IME·AT는 사용자 요청으로 미실행/후속 보류다. `main`·정식 tag/image·릴리스 서버는 변경하지 않았다.
 
 ### 2026-09-25 — 1.2.0 P4 착수
 
