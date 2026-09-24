@@ -2,17 +2,37 @@
 
 ```yaml
 current_version: "1.2.0"
-current_phase: "../3.Redesign-phase/1.2.0/3phase.md"
+current_phase: "../3.Redesign-phase/1.2.0/4phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-25"
 next_planned_version: "1.2.0"
-next_planned_phase: "../3.Redesign-phase/1.2.0/4phase.md"
-next_action: "1.2.0 P3 최종 기능 SHA a315c07의 CI·네 signed image·동일 SHA 개발 공개 인수를 바탕으로 P4 전용 브랜치에서 교차 회귀·접근성·성능을 검증한다; 실제 기기/OS IME/AT는 후속 미실행"
+next_planned_phase: "../3.Redesign-phase/1.2.0/5phase.md"
+next_action: "완료된 1.2.0 P4를 인수해 P5 최종 문서·CI·같은 SHA 개발 공개 인수를 시작한다; 실제 기기/OS IME/AT는 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-25 — 1.2.0 P4 완료·P5 진입 대기
+
+최종 기능 SHA `c380a598ad4bd5ccd38b6aa3f3ceb77040cf1986`의 [push Actions 36063583481](https://github.com/parking-place/LyricsCloud/actions/runs/36063583481)은 전체 verify·네 signed dev image/provenance SUCCESS, [PR #161 Actions 36063586810](https://github.com/parking-place/LyricsCloud/actions/runs/36063586810)은 verify SUCCESS다. 격리 DB Unit **511 PASS/8 조건부 skip**, 전체 Chromium **436 PASS/80 조건부 skip**, Chroma P2/P3/P4 **21 PASS/1 조건부 skip**, 5-project release **10 PASS**. 같은 SHA 개발 checkout/BUILD_ID/공개 live·ready `1.2.0/dev/p4`·schema 1152·네 healthy와 P2 4문맥/20 route, P3 서울·UTC 각각 4문맥/52 route/16자료 탭·본문 저장을 확인했다. 첫 공개 후보에서 재현된 320px forced-colors 로그아웃 버튼 대비 오류는 불투명 시스템 버튼 색상으로 보정하고 최종 공개 `/settings`→`/trash` 빠른 전환 연속 20회 즉시 axe serious/critical 0·초점 복귀 PASS로 닫았다. 첫 실패는 [P4 기록](../3.Redesign-phase/1.2.0/4phase.md)에 남긴다.
+
+207 ID는 대응표 무결성 PASS이지 개별 동작 전수 PASS가 아니고, 첫 화면 B1 대비 p95 +10.6% 소표본 위험과 이중-origin B1 편집 WebSocket 한계는 P5에 전달한다. 실제 Windows/iOS/Android 기기·OS IME·AT는 사용자 요청으로 미실행/후속 보류다. `main`·정식 tag/image·릴리스 서버는 변경하지 않았다.
+
+### 2026-09-25 — 1.2.0 P4 착수
+
+P3 완료 문서 SHA `5269d79c7b2894f78208eedf6a17eda128663c58`의 깨끗한 worktree에서 `phase/1.2.0-p4-cross-regression`을 분기했다. 담당 Codex, 작업 `LC-RD-120-P4-01~06`. 제품 기능 기준은 P3 SHA `a315c07599be0aa3f4c9a58ab8757c9363e1e351`과 그 CI·동일 SHA 개발 공개 인수다. 이번 Phase는 207기능 대응표, 두 테마×5너비·Chromium/Firefox/WebKit 대리, 원문/저장/권한/복구·B1 복귀, forced-colors/키보드/axe와 B1 대비 성능을 독립 검증한다. 발견 결함의 재현과 같은 입력 재검사를 수행하되 P4 전체 CI·네 signed image·같은 SHA 개발 인수 전에는 완료/P5 착수로 기록하지 않는다. 실제 Windows/iOS/Android 기기·OS IME·AT는 사용자 지시로 미실행/후속 보류, `main`·정식 tag/image·릴리스 서버는 변경하지 않는다.
+
+### 2026-09-25 — 1.2.0 P4 로컬 후보
+
+Chroma 3엔진×양 테마×5너비 실제 route/본문/넘침, forced-colors/키보드·15화면 양 테마 axe, owner/writer/reader/guest·PWA/동기화·장문/복구·B1 복귀를 격리 합성 DB에서 확인했다. 광역 desktop 첫 실행 **42 PASS/3 FAIL**은 접근성 시험 합성 자료 누수와 구 B1 전용 스타일/variant 기대를 재현했고, 정리·두 UI별 정확한 기대값으로 고친 관련 12건은 PASS다. 별도 모바일 **12 PASS/2 조건부 skip**, 공유 desktop **7 PASS/2 조건부 skip**와 독립 guest **1 PASS**, B1 복귀 **1 PASS**, Vitest/DB **511 PASS/8 조건부 skip**, TypeScript·production build·207 대응표 구조 PASS. 8개의 과거 접근성 합성 자료는 해당 임시 DB에서 정확한 소유자/제목으로 제거했고 이후 시험은 자체 정리한다. 테스트 생성 PNG는 기존 문서 이미지에 섞지 않는다.
+
+B1 대비 5회 local p95는 입력 +5.7%, 집중 전환 -5.5%, 50ms long task 양쪽 0이지만 첫 화면 +10.6% 관찰 위험이 남는다. 사용자 보류 실기기·OS IME·AT는 미실행, public offline 특수 project 조건과 B1 이중-origin 편집은 별도 범위다. [P4 기록](../3.Redesign-phase/1.2.0/4phase.md)에 실패/skip·한계를 구분했다. 현재 P4 `in_progress`; 원격 SHA/CI·네 signed image·같은 SHA 개발 공개 인수 전 P5로 넘기지 않는다.
+
+### 2026-09-25 — 1.2.0 P4 첫 공개 SHA의 강제 색상 간헐 대비 결함
+
+`8fc53296aea5cf7f9e690fd70cfe88ce1bdedb4c`의 push/PR 전체 verify와 네 signed dev image/provenance, 같은 SHA 개발 checkout·BUILD_ID·공개 live/ready·schema 1152·네 healthy 및 공개 P2/P3 서울·UTC smoke는 PASS다. 그러나 추가 공개 P4 320px forced-colors 빠른 전환에서 `/trash`의 `.mobile-logout` 흰 글자/투명 배경 대비 위반을 반복 재현했다. 안정 화면 axe 3회 통과만으로 실패를 닫지 않는다. 시스템 버튼 배경/글자색을 지정한 CSS와 회귀 단언의 로컬 production build·집중 desktop/mobile 및 3회 반복 PASS 후 새 SHA CI/이미지/개발 공개 재검증을 기다린다. [상세](../3.Redesign-phase/1.2.0/4phase.md). 첫 SHA를 P4 완료로 소급하지 않으며 P5 미착수다. 공개 합성 계정은 삭제·부재 확인했다.
 
 ### 2026-09-25 — 1.2.0 P3 완료·P4 진입 대기
 

@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { readFile, writeFile } from "node:fs/promises";
+import { access, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { expect, test, type APIRequestContext, type BrowserContext } from "@playwright/test";
 import { hashToken, withE2eDatabase } from "./fixtures.js";
@@ -7,6 +7,9 @@ import { hashToken, withE2eDatabase } from "./fixtures.js";
 const origin = "http://127.0.0.1:3000";
 const mutationHeaders = { Origin: origin };
 const fontAsset = "/fonts/NotoSansKR-Regular.69975a0a.otf";
+const greeting = process.env.LC_UI_VARIANT === "chroma"
+  ? "PWA 합성 사용자님, 오늘은 어떤 이야기인가요?"
+  : "안녕하세요, PWA 합성 사용자님.";
 
 test.describe("0.9.0 installable online-first PWA", () => {
   test.skip(!process.env.E2E_DATABASE_URL, "requires the isolated E2E database");
@@ -17,7 +20,9 @@ test.describe("0.9.0 installable online-first PWA", () => {
     const context = await browser.newContext({ baseURL: origin, serviceWorkers: "allow", viewport: { width: 390, height: 844 } });
     const account = await createAccount(context);
     const databaseName = `lyricscloud-draft-${createHash("sha256").update(account.userId).digest("hex")}-sync-v2`;
-    const builtWorker = path.join(process.cwd(), "apps/web/.next/standalone/apps/web/public/sw.js");
+    const standaloneWorker = path.join(process.cwd(), "apps/web/.next/standalone/apps/web/public/sw.js");
+    const builtWorker = await access(standaloneWorker).then(() => standaloneWorker,
+      () => path.join(process.cwd(), "apps/web/public/sw.js"));
     const originalWorker = await readFile(builtWorker, "utf8");
     const privateText = `PWA 비공개 합성 제목 ${randomUUID()}`;
     let lyricId: string | undefined;
@@ -48,6 +53,7 @@ test.describe("0.9.0 installable online-first PWA", () => {
       }, { databaseName });
 
       await page.goto("/workspace");
+      await expect.poll(() => page.evaluate(async () => Boolean(await navigator.serviceWorker.getRegistration("/")))).toBe(true);
       await page.evaluate(() => {
         const prompt = new Event("beforeinstallprompt", { cancelable: true });
         Object.defineProperty(prompt, "prompt", { value: async () => { (window as Window & { __pwaPrompted?: boolean }).__pwaPrompted = true; } });
@@ -156,7 +162,7 @@ test.describe("0.9.0 installable online-first PWA", () => {
       await expect(updateButton).toBeEnabled({ timeout: 10_000 });
       await updateButton.click();
       await page.waitForLoadState("domcontentloaded");
-      await expect(page.getByRole("heading", { name: /안녕하세요/ })).toBeVisible();
+      await expect(page.getByRole("heading", { name: greeting })).toBeVisible();
 
       const songId = await createSong(context.request, "PWA 오프라인 곡");
       lyricId = await createLyric(context.request, songId);
@@ -186,7 +192,7 @@ test.describe("0.9.0 installable online-first PWA", () => {
     try {
       const page = await context.newPage();
       await page.goto("/workspace");
-      await expect(page.getByRole("heading", { name: /안녕하세요/ })).toBeVisible();
+      await expect(page.getByRole("heading", { name: greeting })).toBeVisible();
       await page.evaluate(async ({ userId }) => {
         localStorage.setItem(`lc:${userId}:pwa-private`, "private-local-value");
         const cache = await caches.open(`lyricscloud-private-${userId}`);

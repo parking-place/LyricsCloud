@@ -228,7 +228,7 @@ jobs:
         env:
           E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
           LC_UI_VARIANT: chroma
-        run: pnpm exec playwright test --config=playwright.config.ts tests/e2e/chroma-120.spec.ts
+        run: pnpm exec playwright test --config=playwright.config.ts tests/e2e/chroma-120.spec.ts tests/e2e/chroma-120-p3.spec.ts tests/e2e/chroma-120-p4.spec.ts
       - name: 1.1.0 selected-read sharing browser matrix
         env:
           E2E_DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test

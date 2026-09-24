@@ -13,6 +13,7 @@ test.describe("0.9.0 accessibility and state contract", () => {
     test.setTimeout(180_000);
     await addSession(context);
     const fixture = await seedFixture(page);
+    try {
     const failures: string[] = [];
     const screens = [
       ["01-auth", "/auth?error=AUTH_PROVIDER_UNAVAILABLE", ".auth-layout"],
@@ -52,11 +53,16 @@ test.describe("0.9.0 accessibility and state contract", () => {
       }
     }
     expect(failures, failures.join("\n\n")).toEqual([]);
+    } finally {
+      await addSession(context);
+      await cleanupFixture(page, fixture);
+    }
   });
 
   test("traps dialog focus, closes with Escape, and restores the trigger", async ({ context, page }) => {
     await addSession(context);
     const fixture = await seedFixture(page);
+    try {
     await page.goto(`/songs/${fixture.songId}`);
     await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 20_000 });
 
@@ -84,6 +90,9 @@ test.describe("0.9.0 accessibility and state contract", () => {
     await page.keyboard.press("Escape");
     await expect(quickAddDialog).toBeHidden();
     await expect(quickAddTrigger).toBeFocused();
+    } finally {
+      await cleanupFixture(page, fixture);
+    }
   });
 
   test("separates empty, server error, offline, and permission states without horizontal loss", async ({ context, page }) => {
@@ -160,7 +169,23 @@ async function seedFixture(page: Page) {
   expect(prompt.status()).toBe(201);
   const promptId = (await prompt.json()).prompt.id as string;
 
-  return { songId, lyricId, rhymeId, promptId };
+  return { songId, lyricId, rhymeId, promptId, titles: {
+    song: `접근성 감사 곡 ${suffix}`, rhyme: `접근성 감사 라임 ${suffix}`, prompt: `접근성 감사 프롬프트 ${suffix}`
+  } };
+}
+
+async function cleanupFixture(page: Page, fixture: Awaited<ReturnType<typeof seedFixture>>) {
+  for (const [kind, id, title] of [
+    ["songs", fixture.songId, fixture.titles.song],
+    ["rhymes", fixture.rhymeId, fixture.titles.rhyme],
+    ["prompts", fixture.promptId, fixture.titles.prompt]
+  ] as const) {
+    expect((await page.request.delete(`/api/${kind}/${id}`, { headers: requestHeaders })).status()).toBe(200);
+    const purged = await page.request.post("/api/trash/permanent", { headers: requestHeaders, data: {
+      items: [{ kind: "resource", id }], confirmedTitles: [{ kind: "resource", id, title }]
+    } });
+    expect(purged.status()).toBe(200);
+  }
 }
 
 async function waitForStableScreen(page: Page, id: string) {
