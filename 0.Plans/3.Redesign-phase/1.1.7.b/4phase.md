@@ -47,6 +47,14 @@ AC-RD-117B-19~24 및 WC별 기존 수용. 입력 손실·거짓 저장·인가 �
 - `BE-02`: 쿠키를 발급할 수 없는 SSR page 조회가 세션 갱신을 소비하지 않도록 하고 갱신 가능한 API 순서를 단위 회귀로 고정했다. `BE-03`: 공개 링크의 요청 identity에서 매 시도 달라지는 절대 만료 시각을 분리하고 기존 receipt 호환·주소 원문 유실 안내를 추가했다. 실제 같은 HTTP POST 시간차 재시도는 테스트를 추가했으나 아직 실행하지 않았다. `UI-02`: 템플릿 형식별 draft 보존에 더해 유형/목록/새 작성/취소의 명시 폐기 확인을 추가했으며 브라우저 수용 전이다.
 - 현재 후보 전체 Docker Node 24.20.0/pnpm 11.25.0 `pnpm check` PASS, 일회용 `lyricscloud_test`의 전체 Vitest **505 PASS/8 조건부 skip**, 백업 shell **22 PASS**, `git diff --check` PASS. 조건부 skip은 beta 환경 검사이며 PASS로 합산하지 않는다. 실제 HTTP/UI/백업·세 DB 유형/rollback·22원인 행별 최종 판정·전체 원격 CI/네 signed image/동일 SHA 개발 공개 인수는 남았다. 따라서 P4 `review`, P5·1.2.0 미착수다.
 
+## 2026-09-24 추가 격리 HTTP·브라우저·백업·proxy 결과
+
+- 중간 보존 SHA `e3d38d25b4b65f775dc4086a53f07d589e749c99`를 `[skip ci]`로 P4 원격 브랜치에 push하고 원격 SHA 일치를 확인했다. 이는 P4 최종 CI가 아니다. 동일 코드의 production web build PASS.
+- 일회용 PostgreSQL `lyricscloud_test`와 격리 Chromium에서 공개 링크 동일 POST 재시도 PC/mobile **4 PASS/2 조건부 skip**(replay URL null·이전 link ID 유지), 템플릿 mode/취소/유형 전환 입력 보존 **2 PASS**, selected/guest 기존 권한·복구 **2 PASS/2 조건부 skip**, prompt editor **16 PASS**, profile/홈 경계 **6 PASS**. 합계 **30 PASS/4 조건부 skip**이며 새 공유 저장 실패·첫 snapshot 지연 주입과 실제 OS IME는 별도 미실행이다. 첫 브라우저 실행은 시험 채널 변수 누락으로 서버가 시작하지 못했고 설정 보정 후 위 결과를 얻었다.
+- `OPS-01`: 일회용 source/restore DB·합성 자료·age key를 사용한 암호화 backup/restore script가 최종 **PASS**: 예약 backup 2개, 보존/RPO, 저장소·용량·손상·잘못된 key 실패, owner 격리·검색·CRDT 지문·제품 smoke. 첫 두 시도는 짧은 이미지 별칭 `BUILD_ID`가 production runtime의 40자리 SHA 규칙에 맞지 않아 readiness 503이었고, 동일 image를 실제 commit SHA로 태그한 최종 재실행에서 PASS했다. 실제 운영 저장소/timer/재부팅은 검증하지 않았다.
+- `OPS-02/03`: Caddy 예시는 호출자 제공 `CF-Connecting-IP`·`X-Real-IP`를 upstream에서 제거하고 Caddy 정규화 `X-Forwarded-For`를 사용하도록 보정했다. 일반 2MB와 avatar PATCH 2,200,000-byte 상한을 분리했고 Caddy 2.10.2 `adapt --validate` PASS. 실제 개발/릴리스 proxy 설정과 공개 위조 헤더 요청은 확인하지 않았으므로 OPS-02 실제 적용성·OPS-03 운영 동작은 미판정이다.
+- populated 1140→1151 반복, legacy/provider 분리·사진 RLS·application-first rollback/recovery를 일회용 DB에서 PASS했다. 로컬 기본 DB는 읽기 전용으로 migration 20개·최대 1000임을 확인했고 1150/1151 DB가 아니므로 변경하지 않았다. 기존 native 1150+1151 환경과 세 DB 유형 전체 비교는 남았다.
+
 ## 2026-09-24 착수 기록
 
 - 담당 Codex, 작업 `LC-RD-117B-P4-01~08`. P3 문서 인수 SHA `cc4fc5646a395023f1e95b04985ec9da1759c74b`에서 `phase/1.1.7b-p4-regression-blockers`를 분기했고 tracked worktree는 깨끗했다. 기능 기준 SHA는 `1626c754d1ebc581f01c4d29873319827be0b6fd`다.

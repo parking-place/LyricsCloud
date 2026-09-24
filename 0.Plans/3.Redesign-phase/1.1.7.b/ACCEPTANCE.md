@@ -2,6 +2,8 @@
 
 **24개 수용 기준 중 P1 담당 계약·첫 환경 검증, P2 담당 AC-01~06/09/10(가사)/12, P3 담당 AC-07/08/10(곡)/11/13~16의 최초 통합 인수를 완료했고, 전체 b 최종 수용은 미완료다.** P4/P5의 22개 원인·실기기·DB·rollback 심화·교차 검증이 남아 있다. 원격 source의 시험 통과와 새 b SHA의 검증을 구별한다. [통합 맵](SOURCE-MAP.md) · [버전 계약](VERSION-CONTRACT.md) · [차단표](BLOCKERS.md).
 
+2026-09-24 사용자 지시로 실제 Windows/iOS/Android 물리 기기·OS IME·AT 검증은 1.2.0 진행과 분리해 후속으로 보류한다. 해당 행은 **미실행/사용자 보류**로 기록하고 자동화 browser를 PASS 대체로 표시하지 않는다. 다른 원인·DB·rollback·CI·동일 SHA 개발 인수 조건은 면제되지 않는다.
+
 | 수용 ID | 대상 | 통과 기준 | 담당 |
 |---|---|---|---|
 | `AC-RD-117B-01` | metadata 초안·늦은 ACK·계정별 복구 | owner/kind/document/revision별 보관, offline 닫기→재진입·명시 복원·quota·계정 전환·다른 탭 revision/새 입력을 늦은 ACK가 지우지 않는지 확인한다. | P2 / P4 |
