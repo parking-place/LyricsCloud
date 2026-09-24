@@ -523,3 +523,7 @@ Git tracked·hidden/untracked 공개 검색의 Future 관련 네 경로는 P4 �
 같은 날 P5 추적표의 레거시 validator `AC-1.2.0-01/04` 표기가 실제 별도 수용 사례로 오인되지 않도록 현행 `AC-RD-120-01/04` 대응을 명시한 후 재후보 push 직전 검수했다. tracked·hidden/untracked 네 Future 경로와 기준 blob `8f42d20b638e245eb775415ccfdabef56a96f694`·고유 FF ID 129개는 변함없다. 새 범위·체크·배정은 없고 첫 후보의 진행 중 CI를 새 SHA 완료 근거로 소급하지 않는다.
 
 같은 날 P5 Unit CI의 공유 임시 DB 파일 간 교착 보정 재후보 push 전 검수도 수행했다. 네 Future 관련 공개 경로, 현행 `Future_Feature.md`의 마지막 변경 `0df4c368076cda98e6d05fcb21c56e16e33bac63`/blob `8f42d20b638e245eb775415ccfdabef56a96f694`, 129개 고유 FF ID와 체크/본문은 동일하다. 이번 변경은 `AUTH_DATABASE_INTEGRATION=true` 시험 파일의 순차 실행과 실패/재검증 기록뿐이고 후보 재배정·ignored/private 자료 공개·보호 계획 변경은 없다. 첫 실패한 CI를 새 SHA의 PASS로 기록하지 않는다.
+
+## 2026-09-25 — 1.2.0 P5 완료 문서 push 전·Phase 완료 검수
+
+Git tracked와 hidden/untracked 공개 경로를 재검색해 Future 관련 네 문서(`FUTURE-INTAKE.md`, `Future_Feature.md`, `future-idea-scope.md`, `mandatory-future-mapping.md`)만 확인했다. staged/unstaged·untracked 이름·이동/삭제를 대조했으며 Future 관련 변경은 이 인수 기록뿐이다. 현행 `Future_Feature.md`의 마지막 변경 commit `0df4c368076cda98e6d05fcb21c56e16e33bac63`/blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 현재 blob이 같고 고유 FF ID는 129개, 체크·본문·경로 변경은 없다. 원본/백업과 ignored/private는 공개 입력으로 추가하지 않고 기존 필수 이관·선택 보류를 유지한다. 이번 문서-only push는 기능 SHA `125ab029ef09cee724ef8005139bdff11569d29e`의 필수 CI·네 signed Dev image·같은 SHA 공개 개발 인수를 기록하는 것이며 새 아이디어 배정, 1.2.1 구현, main·정식 tag/image·릴리스 서버 변경은 없다. 완료 시에도 같은 무변경 blob을 재확인하고 이 기록을 참조한다.

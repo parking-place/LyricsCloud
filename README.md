@@ -15,7 +15,7 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 
 [1.1.7a release notes](./docs/releases/1.1.7a.md)와 [CHANGELOG.md](./CHANGELOG.md)에 사용자 변화·호환성·미실행 gate를 기록한다.
 
-> **현재 개발 (2026-09-25):** [1.2.0 Phase 5](0.Plans/3.Redesign-phase/1.2.0/5phase.md) 최종 인수 진행 중입니다. P1~P4 코발트 Chroma Dock 화면·교차 회귀는 기능 SHA `c380a59`까지 필수 CI·네 signed dev image·동일 SHA 개발 공개 인수를 마쳤습니다. P5 최종 CI·같은 SHA 개발 인수와 정식 발행은 별도 gate입니다. 운영 정식판은 여전히 `v1.1.7a`이며 실제 기기·OS IME·AT는 사용자 지시로 후속 미실행입니다. [1.2.0 release notes](./docs/releases/1.2.0.md)와 [CHANGELOG.md](./CHANGELOG.md)에 현재 범위와 제한을 구분합니다.
+> **현재 개발 (2026-09-25):** [1.2.0 Phase 5](0.Plans/3.Redesign-phase/1.2.0/5phase.md)까지 코발트 Chroma Dock의 필수 CI·네 signed Dev image·동일 기능 SHA `125ab02` 개발 공개 인수를 완료했습니다. 운영 정식판은 여전히 `v1.1.7a`이고 `main`·정식 tag/image·릴리스 서버는 변경하지 않았습니다. 실제 기기·OS IME·AT는 사용자 지시로 후속 미실행입니다. [1.2.0 release notes](./docs/releases/1.2.0.md)와 [CHANGELOG.md](./CHANGELOG.md)에 개발 완료와 정식 발행 경계를 구분합니다.
 
 ## 주요 기능
 
@@ -47,10 +47,10 @@ AI 생성·음원 업로드는 1.1.7a 범위가 아니다. 계정 사진 파일�
 | 항목 | 상태 |
 |---|---|
 | 소스·runtime version | 개발 후보 `1.2.0`; private npm package SemVer도 `1.2.0` |
-| 현재 Phase | [1.2.0 Phase 5 — 문서·최종 통합·개발 인수](./0.Plans/3.Redesign-phase/1.2.0/5phase.md) 진행 중; P1~P4 완료, native 보류 |
+| 현재 Phase | [1.2.0 Phase 5 — 문서·최종 통합·개발 인수](./0.Plans/3.Redesign-phase/1.2.0/5phase.md)까지 개발 인수 완료; native 보류 |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.1.7a`, tag/운영 `fc2463c`, Actions `35052520619`, exact signed digest 운영 배포·공개 인수 PASS |
-| 개발 인수 | 1.1.7b와 1.2.0 P1~P4 완료; P5 최종 CI·동일 SHA 개발 공개 인수 대기 |
+| 개발 인수 | 1.1.7b와 1.2.0 P1~P5 완료; 기능 SHA `125ab02`의 CI·서명·동일 SHA 개발 공개 인수 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.

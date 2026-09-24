@@ -3,16 +3,24 @@
 ```yaml
 current_version: "1.2.0"
 current_phase: "../3.Redesign-phase/1.2.0/5phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-25"
-next_planned_version: "1.2.0"
-next_planned_phase: "../3.Redesign-phase/1.2.0/5phase.md"
-next_action: "1.2.0 P5 최종 요구·문서·버전 계약을 봉인하고 필수 CI·네 signed image·같은 SHA 개발 공개 smoke를 완료한다; 실제 기기/OS IME/AT는 후속 미실행"
+next_planned_version: "1.2.1"
+next_planned_phase: "../3.Redesign-phase/1.2.1/1phase.md"
+next_action: "1.2.0 개발 후보 P1~P5 완료; 1.2.1은 사용자 지시 전 미착수, 정식 main/tag/image/릴리스 서버는 별도 승인 대기; 실제 기기/OS IME/AT 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-25 — 1.2.0 P5·개발 후보 완료
+
+최종 기능 SHA `125ab029ef09cee724ef8005139bdff11569d29e`의 원격 `phase/1.2.0-p5-final-handoff`와 [push Actions 36070155034](https://github.com/parking-place/LyricsCloud/actions/runs/36070155034) verify·네 signed Dev image/provenance SUCCESS, [PR #162 Actions 36070158441](https://github.com/parking-place/LyricsCloud/actions/runs/36070158441) verify SUCCESS를 확인했다. 격리 DB Unit **511 PASS/8 조건부 skip**, Chromium **436 PASS/80 조건부 skip**, Chroma **21 PASS/1 조건부 skip**, release browser matrix **10 PASS**, 보안·license·production build·migration·backup/rollback·최종 validator PASS. 첫 `5b28120` CI의 1 FAIL은 독립 실패로 남기고 공유 DB 시험 순차화 뒤 새 SHA에서 전체 검증했다.
+
+같은 SHA 개발 서버의 checkout/BUILD_ID/공개 live·ready `1.2.0/dev/p5`·schema `1152_prompt_dictionary_cascade.sql`과 네 서비스 healthy를 확인했다. 공개 합성 계정으로 PC/mobile×light/dark 20 route·52 route/16 자료 탭, 본문 저장·삭제 복원·public read link·회수, 320px forced-colors axe serious 0·초점 복귀 PASS, pageerror/5xx/가로 넘침 0을 확인하고 합성 계정의 사후 부재를 검증했다. 첫 두 공개 도구 실행은 모듈 경로 문제로 검사 전 중단되어 PASS로 합산하지 않았다. [P5 최종 기록](../3.Redesign-phase/1.2.0/5phase.md)에 네 image digest와 잔여 위험을 연결한다.
+
+1.2.0 P1~P5의 **개발 후보 인수만** 완료했다. 실기기 Windows/iOS/Android·OS IME/가상 키보드·AT는 사용자 요청으로 후속 **미실행**이며 첫 화면 성능 소표본·`OPS-100-001` 예외를 유지한다. `main`·정식 tag/Release/latest·릴리스 서버는 변경하지 않았다. 1.2.1 구현 및 정식 발행은 별도 요청·승인 전 착수하지 않는다.
 
 ### 2026-09-25 — 1.2.0 P5 착수
 
