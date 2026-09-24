@@ -2086,6 +2086,8 @@ html[data-ui-variant="b1"][data-theme="light"] .prompt-tokens li { border-color:
   html[data-ui-variant="b1"] .mobile-header,
   html[data-ui-variant="b1"] .mobile-bottom-nav { background: var(--panel); }
   html[data-ui-variant="b1"] .mobile-bottom-nav { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  /* Keep the floating action centered over the nav's fourth (reserved) cell. */
+  html[data-ui-variant="b1"] .quick-add { left: 58.333333%; width: clamp(2.75rem, calc((100vw - 2rem) / 6), 3.45rem); }
   html[data-ui-variant="b1"] .mobile-favorites-direct { display: none; }
   html[data-ui-variant="b1"] .mobile-more-sheet .b1-more-item { display: grid; }
   html[data-ui-variant="b1"] :is(.songs-page, .rhymes-page, .prompts-page, .favorites-page, .recent-page, .search-page, .dashboard-page) { padding-bottom: calc(1.5rem + var(--lc-safe-bottom)); }

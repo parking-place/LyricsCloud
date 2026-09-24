@@ -71,3 +71,10 @@ P1 후보에서 22개 원인을 모두 **open-at-entry**로 등록한다. source
 OPS-01의 위 **수정 전 재현** 뒤 kernel `flock`+영구 구/신 fence 후보의 shell 22건은 PASS했다. 실제 암호화 backup/restore·운영 전환은 남아 있다. ES-01 raw 중복의 화면/서버 first-occurrence 수렴과 ES-03 문장 IME delta, ES-06/07 공유 저장 실패·초기 편집 차단, BE-02 SSR 세션 비갱신, BE-03 공개 링크 시간차 replay, UI-02 템플릿 이탈 확인 후보를 추가했다. 일회용 DB 전체 Unit/통합 505 PASS/8 조건부 skip과 check는 현재 코드의 부분 증거다. 실제 HTTP/브라우저·권한/재접속·DB/rollback·전체 CI/동일 SHA 개발 검증 전에는 각 ID를 `resolved`로 바꾸지 않는다. 사용자의 실기기 보류 지시는 실제 OS IME/AT·물리 기기만 후속 미실행으로 남기며 다른 원인을 면제하지 않는다.
 
 후속 격리 실행에서 공개 링크 POST replay PC/mobile 4 PASS/2 조건부 skip, 템플릿 입력 보존 2 PASS, selected/guest 기존 수명 2 PASS/2 조건부 skip, prompt 편집 16 PASS, profile/홈 6 PASS다. OPS-01 실제 합성 암호화 backup/restore·RPO·손상/key 거부·제품 smoke 최종 PASS(첫 두 시도는 짧은 `BUILD_ID` 설정 실패)이나 실제 운영 전환은 미실행이다. OPS-02/03의 Caddy 예시 헤더 제거·avatar 전용 상한은 adapter 검증 PASS, 실제 배포 proxy 적용성은 미확인이다. populated 1140→1151·반복·application rollback은 일회용 DB에서 PASS했고 native 1150+1151 실제 환경은 남았다. 이 결과로 P4 전체 원인 해결을 선언하지 않는다.
+
+### 2026-09-24 UI/세션 추가 판정 — 최종 resolved 아님
+
+- `BE-02`: 실제 SSR `/songs` 조회에서 renewal cookie와 DB 만료 갱신이 없고, 뒤이은 `/api/songs`에서 cookie·DB 만료가 함께 갱신됨을 격리 HTTP/DB desktop 1 PASS로 확인했다. 전체 후보 브라우저와 최종 CI/개발 인수 전까지 확정 아님.
+- `UI-03`: 기존 네 목록의 세대 회귀 외에 남았던 연결 관리의 유형/필터/검색 debounce 경합을 최소 보정하고 컴포넌트 단위 3 PASS. 연결 관리 실브라우저 HTTP 역순 주입과 최종 CI는 남는다.
+- `UI-08`: 현재 B-1 여섯 칸의 네 번째 예약 위치에 FAB를 맞춘 뒤 production Chromium 모바일 320/360/390/430px×양 테마에서 최하단 scroll·겹침 면적 0·프롬프트 오른쪽 hit-test 8조합 PASS. nav를 viewport 고정으로 바꾸는 코발트 설계가 아니며 실제 OS/키보드/safe-area는 사용자 보류·미실행이다.
+- `UI-04/05`: 원래의 목록 복제 표시/네트워크 실패 문제는 b의 해결로 보지 않는다. 1.2.5 배정과 P2 영향 판정을 유지한다. 실제 중복·입력 손실 등 필수 차단으로 악화되면 이 배정만으로 면제하지 않는다.

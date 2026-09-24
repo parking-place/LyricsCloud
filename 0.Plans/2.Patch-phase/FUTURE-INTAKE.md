@@ -435,3 +435,7 @@ tracked 목록과 hidden/untracked 공개 탐색에서 Future 관련 문서는 �
 ## 2026-09-24 — 1.1.7b P4 격리 브라우저·backup·proxy 후보 push 전 검수
 
 tracked·hidden/untracked 공개 경로의 Future 관련 4개 문서는 직전 구현 후보 검수와 동일하다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`가 P4 중간 SHA `e3d38d25b4b65f775dc4086a53f07d589e749c99`와 같고 129개 FF ID·체크·본문, 신규·이동·삭제가 없다. 다른 세 문서의 후보 범위도 변경하지 않았다. 새 배정 없이 기존 P4의 격리 브라우저·암호화 backup/restore·Caddy 예시 계약을 추가 검증했으며 실제 배포 proxy·native 1150 환경·실기기는 검증하지 않았다. ignored/private 자료 자동 공개, 보호 계획·native·main·정식 tag/image·릴리스 서버 변경은 없다. 동일 Future 입력은 직전 기록을 재참조한다.
+
+## 2026-09-24 — 1.1.7b P4 전체 회귀·UI 경계 중간 push 전 검수
+
+Git tracked와 hidden/untracked 공개 탐색에서 Future 관련 문서는 같은 4개다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694` 및 129개 FF ID는 직전 P4 SHA `d17bb1be5dfe226f9c227152f827e3e4ad0389df`와 같고 새 문서·이동·삭제·체크/본문 변경은 없다. 다른 세 파일도 이 검수 기록 이외에는 변경하지 않았다. 새 배정 없이 현재 P4의 UI-03/08·BE-02 회귀와 기존 테스트 계약만 보정하고 UI-04/05의 1.2.5 배정은 유지한다. private/ignored 원본을 자동 공개하지 않으며 보호 계획·native·main·정식 tag/image·릴리스 서버는 변경하지 않는다. 동일 Future 입력은 직전 인수 기록을 재참조한다.

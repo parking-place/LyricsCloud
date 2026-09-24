@@ -55,6 +55,14 @@ AC-RD-117B-19~24 및 WC별 기존 수용. 입력 손실·거짓 저장·인가 �
 - `OPS-02/03`: Caddy 예시는 호출자 제공 `CF-Connecting-IP`·`X-Real-IP`를 upstream에서 제거하고 Caddy 정규화 `X-Forwarded-For`를 사용하도록 보정했다. 일반 2MB와 avatar PATCH 2,200,000-byte 상한을 분리했고 Caddy 2.10.2 `adapt --validate` PASS. 실제 개발/릴리스 proxy 설정과 공개 위조 헤더 요청은 확인하지 않았으므로 OPS-02 실제 적용성·OPS-03 운영 동작은 미판정이다.
 - populated 1140→1151 반복, legacy/provider 분리·사진 RLS·application-first rollback/recovery를 일회용 DB에서 PASS했다. 로컬 기본 DB는 읽기 전용으로 migration 20개·최대 1000임을 확인했고 1150/1151 DB가 아니므로 변경하지 않았다. 기존 native 1150+1151 환경과 세 DB 유형 전체 비교는 남았다.
 
+## 2026-09-24 전체 브라우저 재검사·UI 잔여 최소 보정
+
+- 일회용 `lyricscloud_test`의 첫 전체 Chromium은 **421 PASS/49 조건부 skip/2 FAIL**이었다. 실패 두 건은 기존 PWA 회귀가 UI-02의 새 템플릿 취소 확인창을 승인하지 않아 PC·모바일에서 이전 기대를 적용한 것이다. 확인창을 명시적으로 승인하도록 검사 입력을 갱신했고 같은 PC·모바일 집중 **2 PASS**했다. 첫 실패를 PASS로 소급하지 않는다.
+- UI-03의 남은 `song-link-manager`에 query 세대 검사·전환 중 추가 로드 잠금과 오래된 성공/오류 무시를 추가했다. 유형/필터/검색 debounce 역순 응답의 실제 컴포넌트 단위 **3 PASS**. 아직 해당 연결 관리의 실제 HTTP 지연 주입 브라우저 수용은 별도다.
+- UI-08의 현재 B-1 모바일 6칸 nav에서 고정 FAB가 잘못된 프롬프트 칸을 가로채는 조건을 최소 CSS로 보정했다. 실제 production 브라우저에서 문서 하단 scroll 후 320/360/390/430px×light/dark **8조합의 겹침 0·프롬프트 끝 hit-test PASS**(mobile 프로젝트 1 PASS/desktop 조건부 1 skip). 이는 실제 iOS/Android·OS 확대/가상 키보드 검증을 대체하지 않는다.
+- 수정 후보의 전체 Chromium은 **424 PASS/50 조건부 skip/0 FAIL**(474개)이다. 이 build 뒤 UI-03 effect unmount 세대 정리 1줄을 추가했으므로 완전히 같은 최종 tree의 전체 CI 인수는 아직 남았다. 최신 코드의 격리 DB 포함 전체 Vitest는 **508 PASS/8 조건부 skip**, `pnpm check`·production web build PASS다. SSR page→API 세션 쿠키/DB 갱신 순서 집중 HTTP는 desktop **1 PASS/mobile 조건부 1 skip**이다.
+- UI-04/05의 템플릿 복제 표시·네트워크 reject는 별도 1.2.5 범위로 유지하며 b 완료로 기록하지 않는다. OPS-02/03의 실제 배포 proxy, 기존 1150+1151 DB와 환경별 rollback, 공유 저장 실패·재연결 최종 주입, 22개 행별 판정, 최종 CI·네 signed image·동일 SHA 개발 인수는 남아 P4 `review`다.
+
 ## 2026-09-24 착수 기록
 
 - 담당 Codex, 작업 `LC-RD-117B-P4-01~08`. P3 문서 인수 SHA `cc4fc5646a395023f1e95b04985ec9da1759c74b`에서 `phase/1.1.7b-p4-regression-blockers`를 분기했고 tracked worktree는 깨끗했다. 기능 기준 SHA는 `1626c754d1ebc581f01c4d29873319827be0b6fd`다.
