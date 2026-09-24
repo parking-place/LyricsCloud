@@ -495,3 +495,7 @@ Git tracked와 hidden/untracked 공개 경로를 대조한 Future 관련 파일�
 ## 2026-09-25 — 1.2.0 P3 교차 화면 시간대 보정 재후보 push 전 검수
 
 Git tracked와 hidden/untracked 공개 경로의 Future 관련 파일은 동일한 4개다. 현행 `Future_Feature.md`의 blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 고유 FF ID 129개는 직전 P3 보정 후보 `e445631e9887d47df37f8b4f42c960145c6e091f`에서 바뀌지 않았고 신규·이동·삭제·본문·체크 변화가 없어 재배정하지 않는다. 두 번째 후보의 CI 실패와 추가 곡 대시보드 hydration 실패를 구분해 기록하고, 이번 후보는 서버/브라우저 날짜 표시 계약과 그 회귀만 보정한다. CI·signed image·같은 SHA 개발 공개 인수 전까지 P3는 진행 중이다. 실기기·OS IME·AT는 사용자 보류/미실행이며 private/ignored 자료·보호 목업·main·정식 tag/image·릴리스 서버를 변경하지 않는다.
+
+## 2026-09-25 — 1.2.0 P3 완료 문서 push·Phase 완료 검수
+
+Git tracked·hidden/untracked 공개 경로에서 Future 관련 파일은 직전과 동일한 4개다. 현행 `Future_Feature.md`의 blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 고유 FF ID 129개는 최종 P3 기능 SHA `a315c07599be0aa3f4c9a58ab8757c9363e1e351`에서 그대로이며 신규·이동·삭제·본문·체크 변화가 없다. 나머지 세 파일은 검수 절차/기존 scope/mapping이고 새 후보로 중복 배정하지 않는다. 이번 문서-only `[skip ci]` push는 P3의 전체 CI·네 signed image·같은 SHA 공개 UTC/서울 인수와 사용자 보류 실기기 경계를 기록한다. P4의 독립 회귀·성능·접근성 소유권과 1.2.1 이후 기존 배정을 유지하며 private/ignored 원본·보호 목업·native 이력·main·정식 tag/image·릴리스 서버를 변경하지 않는다.

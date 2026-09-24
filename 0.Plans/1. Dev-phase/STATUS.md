@@ -3,16 +3,22 @@
 ```yaml
 current_version: "1.2.0"
 current_phase: "../3.Redesign-phase/1.2.0/3phase.md"
-state: "in_progress"
+state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-25"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/4phase.md"
-next_action: "1.2.0 P3 편집·자료 4탭·설정·공유·복구 화면에 Chroma를 적용하고 기존 원문/저장/권한을 자동·공개 브라우저에서 검증한다; 실제 기기/OS IME/AT는 후속 미실행"
+next_action: "1.2.0 P3 최종 기능 SHA a315c07의 CI·네 signed image·동일 SHA 개발 공개 인수를 바탕으로 P4 전용 브랜치에서 교차 회귀·접근성·성능을 검증한다; 실제 기기/OS IME/AT는 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-25 — 1.2.0 P3 완료·P4 진입 대기
+
+최종 기능 SHA `a315c07599be0aa3f4c9a58ab8757c9363e1e351`는 원격 Phase 브랜치와 일치한다. [push Actions 36047345436](https://github.com/parking-place/LyricsCloud/actions/runs/36047345436)은 전체 verify·네 signed dev image/provenance SUCCESS, [PR #160 Actions 36047351494](https://github.com/parking-place/LyricsCloud/actions/runs/36047351494)는 verify SUCCESS다. 첫 SHA의 공개 비어 있지 않은 휴지통과 두 번째 후보의 곡 대시보드에서 발견한 React #418 시간대 hydration 결함을 UTC/서울 명시 날짜 표시와 실제 합성 자료 회귀로 닫았다. 실패 후보 `e445631`의 백업 lock·성능 CI 실패는 최종 성공으로 덮어쓰지 않고 [P3 기록](../3.Redesign-phase/1.2.0/3phase.md)에 구분했다.
+
+같은 SHA 개발 배포 스크립트 정상 종료, 서버 checkout/BUILD_ID/공개 live·ready `1.2.0/dev/p3`·schema 1152·네 서비스 healthy다. 공개 P2 4문맥/20 route와 P3 서울·UTC 각각 4문맥/52 route·16자료 탭, 실제 본문 저장, pageerror/HTTP 5xx/가로 넘침 0을 확인하고 합성 계정·자료를 제거했다. 로컬 production build/typecheck·207 기능 대응표·P3 집중 브라우저 30 PASS/2 조건부 skip 및 최종 CI 전체 범위를 인수했다. P4의 독립 교차 회귀·B1 상대 성능·실제 사용자 환경은 P3 PASS에 포함하지 않는다. 실제 물리 기기·OS IME·AT는 사용자 지시로 미실행/후속 보류이고 `main`·정식 tag/image·릴리스 서버는 변경하지 않았다.
 
 ### 2026-09-25 — 1.2.0 P3 착수
 
