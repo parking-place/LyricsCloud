@@ -61,3 +61,48 @@ html[data-ui-variant="b1"][data-theme="light"] {
   --lc-b1-focus: #365eea;
   --lc-b1-shadow-raised: 0 18px 50px rgb(23 33 43 / 18%);
 }
+
+/* 1.2.0 Chroma Dock. Keep classic/B-1 values intact for application-first rollback. */
+html[data-ui-variant="chroma"] {
+  --lc-chroma-cobalt: #568df0;
+  --lc-chroma-mint: #91cbb3;
+  --lc-chroma-apricot: #eaaf88;
+  --lc-chroma-canvas: #142238;
+  --lc-chroma-panel: #1c3049;
+  --lc-chroma-surface: #223953;
+  --lc-chroma-raised: #2a4360;
+  --lc-chroma-ink: #edf4ff;
+  --lc-chroma-muted: #acc1dd;
+  --lc-chroma-line: #617d9b;
+  --lc-chroma-action: #99bdf9;
+  --lc-chroma-action-hover: #bed5ff;
+  --lc-chroma-action-ink: #142238;
+  --lc-chroma-danger: #ffc3ca;
+  --lc-chroma-danger-bg: #562c3b;
+  --lc-chroma-focus: #d6e7ff;
+  --lc-chroma-success: #a8e6c9;
+  --lc-chroma-shadow: 0 22px 58px rgb(3 13 31 / 27%);
+  --lc-bg: var(--lc-chroma-canvas);
+  --lc-surface: var(--lc-chroma-panel);
+  --lc-text: var(--lc-chroma-ink);
+  --lc-muted: var(--lc-chroma-muted);
+  --lc-accent: var(--lc-chroma-action);
+}
+
+html[data-ui-variant="chroma"][data-theme="light"] {
+  --lc-chroma-canvas: #eff4fc;
+  --lc-chroma-panel: #ffffff;
+  --lc-chroma-surface: #f5f9ff;
+  --lc-chroma-raised: #e7f0ff;
+  --lc-chroma-ink: #203751;
+  --lc-chroma-muted: #4b627b;
+  --lc-chroma-line: #748ba7;
+  --lc-chroma-action: #285cb0;
+  --lc-chroma-action-hover: #1c4a95;
+  --lc-chroma-action-ink: #ffffff;
+  --lc-chroma-danger: #982d35;
+  --lc-chroma-danger-bg: #fff0f1;
+  --lc-chroma-focus: #1c4a95;
+  --lc-chroma-success: #215b46;
+  --lc-chroma-shadow: 0 20px 50px rgb(48 72 115 / 14%);
+}

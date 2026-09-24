@@ -39,11 +39,12 @@ describe("runtime configuration", () => {
     expect(() => readRuntimeConfig({ ...base, APP_CHANNEL: "release", APP_PHASE: "p7" })).toThrow("APP_PHASE");
   });
 
-  it("accepts only the approved UI variants and defaults to B-1", () => {
+  it("accepts only the approved UI variants and defaults to Chroma", () => {
     const base = { NODE_ENV: "test", DATABASE_URL: "postgresql://user:test@db/app" };
     expect(readRuntimeConfig(base).uiVariant).toBe("b1");
     expect(readRuntimeConfig({ ...base, LC_UI_VARIANT: "classic" }).uiVariant).toBe("classic");
     expect(readRuntimeConfig({ ...base, LC_UI_VARIANT: "b1" }).uiVariant).toBe("b1");
+    expect(readRuntimeConfig({ ...base, LC_UI_VARIANT: "chroma" }).uiVariant).toBe("chroma");
     expect(() => readRuntimeConfig({ ...base, LC_UI_VARIANT: "glass" })).toThrow("LC_UI_VARIANT");
   });
 });

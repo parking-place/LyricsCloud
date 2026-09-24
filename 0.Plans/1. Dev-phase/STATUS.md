@@ -2,17 +2,21 @@
 
 ```yaml
 current_version: "1.2.0"
-current_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-state: "complete"
+current_phase: "../3.Redesign-phase/1.2.0/2phase.md"
+state: "in_progress"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-24"
 next_planned_version: "1.2.0"
-next_planned_phase: "../3.Redesign-phase/1.2.0/2phase.md"
+next_planned_phase: "../3.Redesign-phase/1.2.0/3phase.md"
 next_action: "1.2.0 P2 공통 코발트 토큰·셸/홈/목록을 구현하고 실제 브라우저·CI·동일 SHA 개발 인수를 수행한다; 실제 기기/OS IME/AT는 사용자 지시로 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-24 — 1.2.0 P2 착수
+
+P1 문서 인수 `400416577490ee8e6a3bc64d6ce6688f0e9ce9b5`의 깨끗한 worktree에서 `phase/1.2.0-p2-chroma-shell-lists`를 분기했다. 담당 Codex, 작업 `LC-RD-120-P2-01~06`. 코발트 light/dark 토큰과 공통 PC 도크·모바일 탐색, 실제 데이터 홈·곡/라임/프롬프트 목록·검색/최근/즐겨찾기 등 P2 화면 스타일과 320~1440px/fallback 검증을 담당한다. P1 기능·계약 SHA `84761ae1ca25f1b5e5dd808e772d1a062066cd57`의 CI/동일 SHA 개발 인수를 기준으로 삼고 P2 CI·개발 인수 전에는 P2 완료/P3 착수로 기록하지 않는다. 편집기 저장·권한·DB/API 계약과 보호 목업·native 보류를 유지한다. 실제 물리 기기·OS IME·AT는 사용자 보류/미실행이며 main·정식 tag/image·릴리스 서버는 변경하지 않는다.
 
 ### 2026-09-24 — 1.2.0 P1 완료·P2 인계
 

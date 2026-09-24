@@ -475,3 +475,7 @@ Git tracked와 hidden/untracked 공개 탐색에서 Future 관련 파일은 동�
 ## 2026-09-24 — 1.2.0 P1 완료 문서 push·Phase 완료 검수
 
 tracked·hidden/untracked 공개 목록의 Future 관련 파일은 동일한 4개다. `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 129개 고유 FF ID는 P1 기능·계약 SHA `84761ae1ca25f1b5e5dd808e772d1a062066cd57`의 입력과 같고 새 내용·체크·이동·삭제가 없다. 나머지 세 파일은 절차/기존 mapping이며 신규 배정하지 않는다. 이번 문서-only `[skip ci]` push는 P1의 CI·네 signed image·동일 SHA 공개 개발 인수와 P2 미착수·사용자 보류 실제 기기 경계를 기록한다. 보호 목업·native 이력·private/ignored 원본·main·정식 tag/image·릴리스 서버는 변경하지 않는다.
+
+## 2026-09-25 — 1.2.0 P2 코발트 후보 push 전 검수
+
+Git tracked와 hidden/untracked 공개 경로를 대조한 Future 관련 파일은 동일한 4개다. 현행 `Future_Feature.md`의 blob `8f42d20b638e245eb775415ccfdabef56a96f694`는 P1 문서 인수 `400416577490ee8e6a3bc64d6ce6688f0e9ce9b5`의 입력과 같으며 후보 129개 ID·체크·본문·경로의 신규/이동/삭제가 없다. 나머지 세 파일은 이 검수 절차와 기존 scope/mapping이며 재배정하지 않는다. P2는 기존 route/저장 계약을 유지한 Chroma opt-in 토큰·셸·실데이터 홈·목록 표현과 회귀 검사만 담당한다. ignored/private 자료를 자동 공개하지 않았고 보호 목업·native 이력·main·정식 tag/image·릴리스 서버를 변경하지 않는다. 실제 기기·OS IME·AT는 사용자 지시대로 후속 미실행이며 자동화 결과에 합산하지 않는다.
