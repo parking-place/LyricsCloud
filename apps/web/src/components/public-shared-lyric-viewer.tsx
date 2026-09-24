@@ -44,6 +44,7 @@ export function PublicSharedLyricViewer() {
   const [state, setState] = useState<SharedLyricSyncState>("connecting");
   const [participants, setParticipants] = useState<readonly SharingParticipant[]>([]);
   const [rejectedDrafts, setRejectedDrafts] = useState<readonly RejectedWriterDraft[]>([]);
+  const [storageFailed, setStorageFailed] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [sessionNotice, setSessionNotice] = useState("");
   const copy = useCopyFeedback();
@@ -123,6 +124,7 @@ export function PublicSharedLyricViewer() {
     let active = true;
     let syncReady = false;
     let syncHasDocument = false;
+    let storageFailed = false;
     let syncState: SharedLyricSyncState = "connecting";
     const parent = editorParent.current;
     const textEditor = parent ? createCodeMirrorTextEditor({ parent, initialValue: bodyRef.current,
@@ -135,7 +137,7 @@ export function PublicSharedLyricViewer() {
     }) : null;
     function updateEditable() {
       textEditor?.setEditable(syncReady && syncHasDocument && accessRef.current.mode === "write"
-        && syncState !== "connecting" && syncState !== "limited" && syncState !== "revoked");
+        && !storageFailed && syncState !== "connecting" && syncState !== "limited" && syncState !== "revoked");
     }
     editor.current = textEditor;
     void createBrowserPublicSharedLyricSync({ ...connection,
@@ -160,6 +162,7 @@ export function PublicSharedLyricViewer() {
         }
       },
       onAccessChange(value) { if (active) { accessRef.current = value; setAccess(value); updateEditable(); } },
+      onDurabilityChange(value) { if (active) { storageFailed = value; setStorageFailed(value); updateEditable(); } },
       onPresenceChange(value) { if (active) setParticipants(value); },
       onRejectedDrafts(value) { if (active) setRejectedDrafts(value); }
     }).then((value) => {
@@ -172,9 +175,9 @@ export function PublicSharedLyricViewer() {
 
   const recovery = rejectedDrafts.length ? <section className="shared-writer-recovery" aria-labelledby="public-recovery-title">
     <div><p className="eyebrow">LOCAL RECOVERY</p><h2 id="public-recovery-title">전송되지 않은 내 작성 내용</h2></div>
-    <p>서버에 반영되지 않은 이 게스트 세션의 입력만 보관했습니다. 다른 사람의 가사나 작업 공간 정보는 포함하지 않습니다.</p>
+    <p>서버에 반영되지 않은 이 게스트 세션의 입력입니다. 로컬 저장 실패 항목은 이 탭의 메모리에만 남으므로 먼저 복사해 주세요.</p>
     <p>복구함은 현재 탭의 게스트 세션에만 연결됩니다. 항목별 제거 또는 브라우저의 사이트 데이터 삭제로 정리할 수 있으며, 탭을 닫으면 다시 열 수 없습니다.</p>
-    <ul>{rejectedDrafts.map((draft) => <li key={draft.updateId}><pre>{draft.authoredText || "(전송되지 않은 삭제 동작)"}</pre><div>{draft.authoredText ? <><button type="button" onClick={() => void copy.copyText(draft.authoredText, "미전송 게스트 입력", "미전송 입력을 복사했습니다")}>내용 복사</button><button type="button" onClick={() => downloadDraft(draft)}>텍스트 파일 저장</button></> : null}<button type="button" className="danger-text" onClick={() => void sync.current?.removeRejectedDraft(draft.updateId)}>보관함에서 제거</button></div></li>)}</ul>
+    <ul>{rejectedDrafts.map((draft) => <li key={draft.updateId}><pre>{draft.authoredText || "(전송되지 않은 삭제 동작)"}</pre><div>{draft.authoredText ? <><button type="button" onClick={() => void copy.copyText(draft.authoredText, "미전송 게스트 입력", "미전송 입력을 복사했습니다")}>내용 복사</button><button type="button" onClick={() => downloadDraft(draft)}>텍스트 파일 저장</button></> : null}{draft.reason !== "storage-failed" ? <button type="button" className="danger-text" onClick={() => void sync.current?.removeRejectedDraft(draft.updateId)}>보관함에서 제거</button> : null}</div></li>)}</ul>
   </section> : null;
 
   if (unavailable) return <section className="public-share-card public-share-unavailable" aria-labelledby="public-share-unavailable-title">
@@ -202,7 +205,7 @@ export function PublicSharedLyricViewer() {
         : state === "syncing" ? "서버에 변경을 저장하는 중…"
         : state === "offline" ? (writable ? "오프라인 · 입력은 이 게스트 세션에만 보관됩니다" : "오프라인 · 마지막으로 받은 내용을 표시 중")
         : state === "limited" ? "쓰기 제한에 도달했습니다 · 미전송 입력은 아래에서 복구할 수 있습니다"
-        : state === "error" ? "실시간 연결을 확인하지 못했습니다" : "최신 내용과 권한을 확인하는 중…"}
+        : state === "error" ? storageFailed ? "이 기기에 입력을 저장하지 못했습니다 · 내용을 복사하거나 다시 시도하세요" : "실시간 연결을 확인하지 못했습니다" : "최신 내용과 권한을 확인하는 중…"}
       {state === "error" || state === "limited" ? <button type="button" onClick={() => sync.current?.retry()}>다시 연결</button> : null}</div>
     <SharingStorageGuide audience="public-guest" writable={writable} />
     <section className={`shared-lyric-document ${writable ? "is-writable" : "is-readonly"}`}><div ref={editorParent} className="shared-lyric-editor" /></section>

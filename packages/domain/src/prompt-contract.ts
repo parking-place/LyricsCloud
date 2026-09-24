@@ -223,6 +223,16 @@ export function projectUniquePromptTokens(tokens: readonly PromptTokenValue[]): 
   return result;
 }
 
+/** Y.Array merges can retain two physical entries for one moved occurrence. All readers choose the first in converged array order. */
+export function projectFirstPromptOccurrences<T extends { readonly occurrenceId: string }>(items: readonly T[]): T[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    if (seen.has(item.occurrenceId)) return false;
+    seen.add(item.occurrenceId);
+    return true;
+  });
+}
+
 export function parseCreatePromptInput(value: unknown): CreatePromptInput {
   const input = object(value);
   if (!isResourceId(input.requestId)) fail("requestId", "uuid_required");

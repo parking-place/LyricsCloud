@@ -24,6 +24,8 @@
 
 검증된 정확한 checkout에서 다음을 실행한다.
 
+`1.1.7b` 잠금 전환 시 먼저 timer와 실행 중인 구 backup container/process를 확인한다. 저장소에 구형 `.backup.lock` **디렉터리**가 있으면 새 스크립트는 실패로 닫는다. 구 프로세스가 종료됐고 해당 디렉터리가 비어 있음을 운영자가 확인한 뒤에만 그 디렉터리를 제거하고 새 backup을 시작한다. 새 버전은 `.backup.flock`의 커널 잠금을 쓰고 `.backup.lock`을 구 이미지 차단용 symlink로 영구 유지한다. KILL/재부팅 후 symlink를 지우지 않고 다시 실행한다. 구 이미지로 되돌려야 한다면 새 backup/timer가 완전히 멈춘 것을 확인한 유지보수 구간에만 symlink를 제거한다. 두 잠금 형식을 혼용해 동시 실행하지 않으며 저장소의 archive·manifest·`last-success.json`은 이 전환에서 삭제하지 않는다.
+
 ```bash
 docker compose --env-file .env -f compose.yaml -f compose.backup.yaml --profile backup run --rm backup
 docker compose --env-file .env -f compose.yaml -f compose.backup.yaml --profile backup run --rm --entrypoint /usr/local/bin/lyricscloud-check-rpo backup

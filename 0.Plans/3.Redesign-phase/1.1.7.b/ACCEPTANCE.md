@@ -1,6 +1,8 @@
 # 1.1.7b 수용·DB 호환·되돌림
 
-**24개 수용 기준 중 P1 담당 계약·첫 환경 검증, P2 담당 AC-01~06/09/10(가사)/12, P3 담당 AC-07/08/10(곡)/11/13~16의 최초 통합 인수를 완료했고, 전체 b 최종 수용은 미완료다.** P4/P5의 22개 원인·실기기·DB·rollback 심화·교차 검증이 남아 있다. 원격 source의 시험 통과와 새 b SHA의 검증을 구별한다. [통합 맵](SOURCE-MAP.md) · [버전 계약](VERSION-CONTRACT.md) · [차단표](BLOCKERS.md).
+**P1~P4의 코드·DB·회귀·개발 공개 수용은 기능 SHA `ddc1d7c50a64f8e8467b7aee64627f2dfe13da7d`에서 완료했고, b 전체 최종 봉인/P5는 미완료다.** 22개 원인의 필수 P0/P1은 적용 개발 경계에서 닫았으며 UI-04/05/07의 P2와 실제 기기·OS IME·AT 보류, 운영 경계 미검증은 그대로 기록한다. 원격 source의 시험 통과와 새 b SHA의 검증을 구별한다. [통합 맵](SOURCE-MAP.md) · [버전 계약](VERSION-CONTRACT.md) · [차단표](BLOCKERS.md).
+
+2026-09-24 사용자 지시로 실제 Windows/iOS/Android 물리 기기·OS IME·AT 검증은 1.2.0 진행과 분리해 후속으로 보류한다. 해당 행은 **미실행/사용자 보류**로 기록하고 자동화 browser를 PASS 대체로 표시하지 않는다. 다른 원인·DB·rollback·CI·동일 SHA 개발 인수 조건은 면제되지 않는다.
 
 | 수용 ID | 대상 | 통과 기준 | 담당 |
 |---|---|---|---|
@@ -35,13 +37,15 @@ P3의 최초 통합 판정 근거는 기능 SHA `1626c754d1ebc581f01c4d298733198
 
 ## DB·환경 인수 행렬
 
+P4에서 백업 복원 후 계정 삭제가 실패하는 추가 gate를 재현해 기존 0500을 재작성하지 않는 순방향 1152 후보를 추가했다. 아래 1151 출발 환경은 그대로 보존하되 **현재 b 후보의 최종 required schema는 `1152_prompt_dictionary_cascade.sql`**이다. 새 웹·populated a·native 1150+1151 출발 DB 모두 1152 적용/반복과 prompt dictionary 참조 보호·계정 cascade·복원 뒤 검사, a/native 이전 image의 application-first rollback을 확인해야 한다. 과거 P1~P3의 개발 공개 ready 1151은 당시 증거이며 1152 완료 증거가 아니다.
+
 | 출발 환경 | 예상 이력·주의 | 필수 확인 | 중단 조건 |
 |---|---|---|---|
 | 새 웹 DB | 웹 기준 migration 적용, native 1150 없음 | 빈 설치/반복·1151 profile·RLS·native API 없음 | 예상 밖 native 파일/route가 통합됨 |
 | 기존 v1.1.7a 웹 DB | populated 자료·1151, 1150 없음 | b 앱 업데이트/재시작·원문/사진/공유/revision/export·a 앱 rollback | 기존 checksum 수정·누락/권한 확대 |
 | 기존 PC/개발 DB | native 1150+1151이 이미 존재할 수 있음 | 실제 schema_migrations 집합/hash·native 객체/FK/role 보존·b 웹 계약·별도 native 기능 미지원 기록 | 알 수 없는 이력·객체 충돌·자동 down/drop 필요 |
 
-현재 migrator는 디스크에 있는 migration 파일을 검사하며 DB에만 있는 1150을 자동 거부/삭제하지 않는다. readiness는 1151 존재 확인이므로 **ready 1151만으로 세 환경이 동일하다고 판정하지 않는다.** P1 개발 배포 전후 migration 31건의 비밀 없는 지문 `42111a6b819fdb3a9a3282fefc566d409be9722342b8e8c5a0762c0fed02914a`와 native 1150 두 테이블은 보존됐다. 이는 개발 DB 한 종류의 read-only 지문/배포 확인이며 populated a DB 및 권한·자료·rollback 전체 PASS가 아니다. 이미 적용된 1150은 보존하고 새 웹 코드에 native API를 추가하지 않는다. 호환 수정이 필요하면 별도 계약과 비파괴 순방향 migration을 설계한다. 기존 1150/1151의 재작성은 금지한다.
+현재 migrator는 디스크에 있는 migration 파일을 검사하며 DB에만 있는 1150을 자동 거부/삭제하지 않는다. 현재 b 후보의 readiness는 1152 존재 확인이므로 **ready 1152만으로 세 환경이 동일하다고 판정하지 않는다.** P1 개발 배포 전후 migration 31건의 비밀 없는 지문 `42111a6b819fdb3a9a3282fefc566d409be9722342b8e8c5a0762c0fed02914a`와 native 1150 두 테이블은 보존됐다. 이는 당시 개발 DB 한 종류의 read-only 지문/배포 확인이며 새 1152 개발 적용이나 populated a DB 및 권한·자료·rollback 전체 PASS가 아니다. 이미 적용된 1150은 보존하고 새 웹 코드에 native API를 추가하지 않는다. 호환 수정이 필요하면 별도 계약과 비파괴 순방향 migration을 설계한다. 기존 1150/1151의 재작성은 금지한다.
 
 기존 PC의 native 클라이언트가 b 웹 API 범위를 초과하면 해당 기능을 활성화하지 않고 영향을 인계한다. 이번 요청은 PC 자동 갱신/릴리스 서버 변경을 포함하지 않는다. 개발 대상도 실제 인수 시 환경별 권한과 runbook을 확인해 선정한다.
 

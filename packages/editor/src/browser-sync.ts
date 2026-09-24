@@ -520,6 +520,7 @@ export async function createBrowserSharedLyricSync(options: {
   onBody: (body: string, changes?: readonly EditorTextChange[]) => void;
   onStateChange: (state: SharedLyricSyncState) => void;
   onAccessChange: (access: SharedLyricAccess) => void;
+  onReadinessChange: (ready: boolean) => void;
   onPresenceChange: (participants: readonly SharingParticipant[]) => void;
   onRejectedDrafts: (drafts: readonly RejectedWriterDraft[]) => void;
 }): Promise<BrowserSharedLyricSync> {
@@ -545,6 +546,9 @@ export async function createBrowserSharedLyricSync(options: {
   let pumpAgain = false;
   let pendingWrites = 0;
   let inFlight: string | undefined;
+  let durabilityFailure = false;
+  let retryingDurability = false;
+  const volatileUpdates: QueuedUpdate[] = [];
   let access = options.initialAccess;
   let awarenessIdleTimer: ReturnType<typeof setTimeout> | undefined;
   let lastSelection: { readonly anchor: number; readonly head: number } | undefined;
@@ -555,9 +559,19 @@ export async function createBrowserSharedLyricSync(options: {
   const sharingSelections = new Map<string, SharingParticipant["selection"]>();
 
   function state(value: SharedLyricSyncState) { if (!destroyed) options.onStateChange(value); }
-  function clearPrivateView() { options.onPresenceChange([]); options.onBody(""); }
+  function clearPrivateView() { options.onReadinessChange(false); options.onPresenceChange([]); options.onBody(""); }
   async function listRejectedDrafts() {
-    return storage.rejected.where("resourceId").equals(options.resourceId).reverse().sortBy("rejectedAt");
+    const stored = await storage.rejected.where("resourceId").equals(options.resourceId).reverse().sortBy("rejectedAt")
+      .catch(() => [] as RejectedWriterDraft[]);
+    const volatile: RejectedWriterDraft[] = volatileUpdates.map((item) => ({
+      updateId: item.updateId, resourceId: options.resourceId, documentKey: item.documentKey,
+      grantId: item.grantId!, permissionEpoch: item.permissionEpoch!, writeEpoch: item.writeEpoch!,
+      authoredText: item.authoredText ?? "", rejectedAt: new Date().toISOString(),
+      reason: access.mode !== "write" ? "write-revoked"
+        : item.grantId !== access.grantId || item.permissionEpoch !== access.permissionEpoch
+          || item.writeEpoch !== access.writeEpoch ? "epoch-stale" : "storage-failed"
+    }));
+    return [...volatile, ...stored];
   }
   async function publishRejectedDrafts() { if (!destroyed) options.onRejectedDrafts(await listRejectedDrafts()); }
   function publishSharingParticipants(next?: readonly SharingParticipant[]) {
@@ -600,10 +614,12 @@ export async function createBrowserSharedLyricSync(options: {
     }
     access = next;
     options.onAccessChange(next);
+    if (volatileUpdates.length) await publishRejectedDrafts();
   }
   async function report() {
     if (destroyed) return;
     if (!initialized) return state("connecting");
+    if (durabilityFailure) return state("error");
     if (pendingWrites) return state("saving-local");
     if (!navigator.onLine) return state("offline");
     if (!connected) return state("connecting");
@@ -617,11 +633,21 @@ export async function createBrowserSharedLyricSync(options: {
       grantId: access.grantId, permissionEpoch: access.permissionEpoch, writeEpoch: access.writeEpoch,
       authoredText: origin?.authoredText ?? ""
     } : undefined;
+    if (durabilityFailure) {
+      if (queued) { volatileUpdates.push(queued); void publishRejectedDrafts(); }
+      return state("error");
+    }
     pendingWrites++;
     state("saving-local");
     writes = writes.then(() => storage.persist({ resourceId: options.resourceId, documentKey,
       snapshot: Y.encodeStateAsUpdate(document) }, queued, inFlight))
-      .catch(() => state("error"))
+      .catch(() => {
+        durabilityFailure = true;
+        if (queued) volatileUpdates.push(queued);
+        options.onReadinessChange(false);
+        state("error");
+        void publishRejectedDrafts();
+      })
       .finally(() => { pendingWrites--; });
     void writes.then(() => pump()).catch(() => state("error"));
   }
@@ -648,6 +674,7 @@ export async function createBrowserSharedLyricSync(options: {
   async function resetToServerSnapshot(update: Uint8Array) {
     await writes;
     initialized = false;
+    options.onReadinessChange(false);
     composing = false;
     reconcilingComposition = false;
     remoteQueue.splice(0);
@@ -664,13 +691,14 @@ export async function createBrowserSharedLyricSync(options: {
     await storage.documents.delete(options.resourceId);
     await storage.persist({ resourceId: options.resourceId, documentKey,
       snapshot: Y.encodeStateAsUpdate(document) });
+    options.onReadinessChange(true);
   }
   function applyRemote(update: Uint8Array) {
     if (composing) enqueueRemoteUpdate(remoteQueue, update);
     else Y.applyUpdate(document, update, remoteOrigin);
   }
   async function pump() {
-    if (destroyed) return;
+    if (destroyed || durabilityFailure) return;
     if (pumping) { pumpAgain = true; return; }
     pumping = true;
     try {
@@ -705,6 +733,8 @@ export async function createBrowserSharedLyricSync(options: {
         initialized = true;
         options.onBody(text.toString());
         persist();
+        await writes;
+        if (!destroyed && !durabilityFailure) options.onReadinessChange(true);
       } else applyRemote(decode(message.payload));
       connected = true;
       retryDelay = 500;
@@ -804,6 +834,31 @@ export async function createBrowserSharedLyricSync(options: {
     } finally { connecting = false; }
   }
   function online() { retryDelay = 500; clearTimeout(retryTimer); retryTimer = undefined; void connect(); }
+  async function retryDurability() {
+    if (retryingDurability) return;
+    retryingDurability = true;
+    try {
+      await writes;
+      if (destroyed || !durabilityFailure) return;
+      if (volatileUpdates.some((item) => access.mode !== "write" || item.grantId !== access.grantId
+        || item.permissionEpoch !== access.permissionEpoch || item.writeEpoch !== access.writeEpoch)) {
+        await publishRejectedDrafts();
+        return state("error");
+      }
+      const snapshot = { resourceId: options.resourceId, documentKey, snapshot: Y.encodeStateAsUpdate(document) };
+      if (volatileUpdates.length) {
+        for (const item of volatileUpdates) await storage.persist(snapshot, item, inFlight);
+      } else await storage.persist(snapshot);
+      await storage.persist({ ...snapshot, snapshot: Y.encodeStateAsUpdate(document) });
+      volatileUpdates.length = 0;
+      durabilityFailure = false;
+      options.onReadinessChange(true);
+      await publishRejectedDrafts();
+      void pump();
+      online();
+    } catch { state("error"); }
+    finally { retryingDurability = false; }
+  }
   function offline() { connected = false; socket?.close(); state("offline"); }
   async function destroy() {
     if (destroyed) return;
@@ -833,6 +888,7 @@ export async function createBrowserSharedLyricSync(options: {
       Y.applyUpdate(document, cached.snapshot, remoteOrigin);
       initialized = true;
       options.onBody(text.toString());
+      options.onReadinessChange(true);
     }
     await publishRejectedDrafts();
     options.onAccessChange(access);
@@ -860,11 +916,13 @@ export async function createBrowserSharedLyricSync(options: {
     },
     listRejectedDrafts,
     async removeRejectedDraft(updateId) {
+      const volatileIndex = volatileUpdates.findIndex((item) => item.updateId === updateId);
+      if (volatileIndex >= 0) volatileUpdates.splice(volatileIndex, 1);
       await storage.rejected.where("updateId").equals(updateId).delete();
       await publishRejectedDrafts();
     },
     destroy,
-    retry: online
+    retry() { if (durabilityFailure) void retryDurability(); else online(); }
   };
 }
 
@@ -875,6 +933,7 @@ export async function createBrowserPublicSharedLyricSync(options: {
   onBody: (body: string, changes?: readonly EditorTextChange[]) => void;
   onStateChange: (state: SharedLyricSyncState) => void;
   onAccessChange: (access: PublicSharedLyricAccess) => void;
+  onDurabilityChange?: (failed: boolean) => void;
   onPresenceChange: (participants: readonly SharingParticipant[]) => void;
   onRejectedDrafts: (drafts: readonly RejectedWriterDraft[]) => void;
 }): Promise<BrowserPublicSharedLyricSync> {
@@ -897,6 +956,9 @@ export async function createBrowserPublicSharedLyricSync(options: {
   let pumpAgain = false;
   let pendingWrites = 0;
   let inFlight: string | undefined;
+  let durabilityFailure = false;
+  let retryingDurability = false;
+  const volatileUpdates: QueuedUpdate[] = [];
   let rateLimited = false;
   let access: PublicSharedLyricAccess = options.guestSession
     ? { mode: "write", permissionEpoch: options.guestSession.permissionEpoch,
@@ -913,7 +975,17 @@ export async function createBrowserPublicSharedLyricSync(options: {
 
   function state(value: SharedLyricSyncState) { if (!destroyed) options.onStateChange(value); }
   async function listRejectedDrafts() {
-    return storage ? storage.rejected.where("resourceId").equals(options.linkId).reverse().sortBy("rejectedAt") : [];
+    const stored = storage ? await storage.rejected.where("resourceId").equals(options.linkId).reverse().sortBy("rejectedAt")
+      .catch(() => [] as RejectedWriterDraft[]) : [];
+    const volatile: RejectedWriterDraft[] = volatileUpdates.map((item) => ({
+      updateId: item.updateId, resourceId: options.linkId, documentKey: options.linkId,
+      grantId: item.grantId!, permissionEpoch: item.permissionEpoch!, writeEpoch: item.writeEpoch!,
+      authoredText: item.authoredText ?? "", rejectedAt: new Date().toISOString(),
+      reason: access.mode !== "write" ? "write-revoked"
+        : item.grantId !== access.guestSessionId || item.permissionEpoch !== access.permissionEpoch
+          || item.writeEpoch !== access.writeEpoch ? "epoch-stale" : "storage-failed"
+    }));
+    return [...volatile, ...stored];
   }
   async function publishRejectedDrafts() { if (!destroyed) options.onRejectedDrafts(await listRejectedDrafts()); }
   function publishParticipants(next?: readonly SharingParticipant[]) {
@@ -946,6 +1018,7 @@ export async function createBrowserPublicSharedLyricSync(options: {
   async function report() {
     if (destroyed || rateLimited) return;
     if (!initialized) return state("connecting");
+    if (durabilityFailure) return state("error");
     if (pendingWrites) return state("saving-local");
     if (!navigator.onLine) return state("offline");
     if (!connected) return state("connecting");
@@ -959,9 +1032,19 @@ export async function createBrowserPublicSharedLyricSync(options: {
       grantId: options.guestSession.id, permissionEpoch: options.guestSession.permissionEpoch,
       writeEpoch: options.guestSession.writeEpoch, authoredText: origin?.authoredText ?? ""
     } : undefined;
+    if (durabilityFailure) {
+      if (queued) { volatileUpdates.push(queued); void publishRejectedDrafts(); }
+      return state("error");
+    }
     pendingWrites++; state("saving-local");
     writes = writes.then(() => storage.persist({ resourceId: options.linkId, documentKey: options.linkId,
-      snapshot: Y.encodeStateAsUpdate(document) }, queued, inFlight)).catch(() => state("error"))
+      snapshot: Y.encodeStateAsUpdate(document) }, queued, inFlight)).catch(() => {
+      durabilityFailure = true;
+      if (queued) volatileUpdates.push(queued);
+      options.onDurabilityChange?.(true);
+      state("error");
+      void publishRejectedDrafts();
+    })
       .finally(() => { pendingWrites--; });
     void writes.then(() => pump()).catch(() => state("error"));
   }
@@ -1003,7 +1086,7 @@ export async function createBrowserPublicSharedLyricSync(options: {
     }
   }
   async function pump() {
-    if (destroyed || rateLimited || access.mode !== "write" || !storage) return;
+    if (destroyed || rateLimited || durabilityFailure || access.mode !== "write" || !storage) return;
     if (pumping) { pumpAgain = true; return; }
     pumping = true;
     try {
@@ -1028,6 +1111,7 @@ export async function createBrowserPublicSharedLyricSync(options: {
     }
     access = next; options.onAccessChange(next);
     if (rejectedWrite) try { await rejectGuest("write-revoked"); } catch { state("error"); }
+    if (volatileUpdates.length) await publishRejectedDrafts();
   }
   async function revoke() {
     options.onPresenceChange([]); options.onBody(""); state("revoked");
@@ -1114,6 +1198,31 @@ export async function createBrowserPublicSharedLyricSync(options: {
     finally { connecting = false; }
   }
   function online() { rateLimited = false; retryDelay = 500; clearTimeout(retryTimer); retryTimer = undefined; void connect(); }
+  async function retryDurability() {
+    if (retryingDurability) return;
+    retryingDurability = true;
+    try {
+      await writes;
+      if (destroyed || !durabilityFailure || !storage || !options.guestSession) return;
+      if (volatileUpdates.some((item) => access.mode !== "write" || item.grantId !== access.guestSessionId
+        || item.permissionEpoch !== access.permissionEpoch || item.writeEpoch !== access.writeEpoch)) {
+        await publishRejectedDrafts();
+        return state("error");
+      }
+      const snapshot = { resourceId: options.linkId, documentKey: options.linkId, snapshot: Y.encodeStateAsUpdate(document) };
+      if (volatileUpdates.length) {
+        for (const item of volatileUpdates) await storage.persist(snapshot, item, inFlight);
+      } else await storage.persist(snapshot);
+      await storage.persist({ ...snapshot, snapshot: Y.encodeStateAsUpdate(document) });
+      volatileUpdates.length = 0;
+      durabilityFailure = false;
+      options.onDurabilityChange?.(false);
+      await publishRejectedDrafts();
+      void pump();
+      online();
+    } catch { state("error"); }
+    finally { retryingDurability = false; }
+  }
   function offline() { connected = false; socket?.close(); state("offline"); }
   async function destroy() {
     if (destroyed) return;
@@ -1144,10 +1253,12 @@ export async function createBrowserPublicSharedLyricSync(options: {
     updateSelection(selection) { if (access.mode === "write" && !rateLimited) updateAwareness(selection); },
     listRejectedDrafts,
     async removeRejectedDraft(updateId) {
+      const volatileIndex = volatileUpdates.findIndex((item) => item.updateId === updateId);
+      if (volatileIndex >= 0) volatileUpdates.splice(volatileIndex, 1);
       await storage?.rejected.where("updateId").equals(updateId).delete(); await publishRejectedDrafts();
     },
     destroy,
-    retry: online
+    retry() { if (durabilityFailure) void retryDurability(); else online(); }
   };
 }
 

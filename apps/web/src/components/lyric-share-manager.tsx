@@ -1,7 +1,7 @@
 "use client";
 
 import type { LyricRecord } from "@lyricscloud/domain";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DialogFocusBoundary } from "../lib/dialog-focus.js";
 import { CopyFeedback, useCopyFeedback } from "./copy-feedback.js";
 import { SharingStorageGuide } from "./sharing-storage-guide.js";
@@ -45,6 +45,7 @@ export function LyricShareManager({ lyric, participants }: { lyric: LyricRecord;
   const [confirmingPublic, setConfirmingPublic] = useState(false);
   const [confirmingPublicWrite, setConfirmingPublicWrite] = useState<string | null>(null);
   const [oneTimePublicUrl, setOneTimePublicUrl] = useState<string | null>(null);
+  const pendingPublicRequest = useRef<{ requestId: string; expiresInDays: number; fields: typeof publicFields } | null>(null);
   const copy = useCopyFeedback();
 
   useEffect(() => {
@@ -118,19 +119,31 @@ export function LyricShareManager({ lyric, participants }: { lyric: LyricRecord;
   async function issuePublicLink() {
     if (busy) return;
     setBusy(true); setNotice(""); setOneTimePublicUrl(null);
+    const input = pendingPublicRequest.current ?? { requestId: crypto.randomUUID(),
+      expiresInDays: Number(publicDuration), fields: { ...publicFields } };
+    pendingPublicRequest.current = input;
     try {
       const response = await fetch(`/api/lyrics/${lyric.id}/public-link`, { method: "POST",
-        headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestId: crypto.randomUUID(),
-          expiresInDays: Number(publicDuration), fields: publicFields }) });
-      const result = await response.json().catch(() => ({})) as { link?: PublicLyricLink; url?: string | null; error?: { code?: string } };
-      if (!response.ok || !result.link || typeof result.url !== "string") throw new Error(result.error?.code ?? "PUBLIC_LINK_FAILED");
+        headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
+      const result = await response.json().catch(() => ({})) as { link?: PublicLyricLink; url?: string | null;
+        replayed?: boolean; error?: { code?: string } };
+      if (!response.ok || !result.link) {
+        if (response.status === 400 || response.status === 409) pendingPublicRequest.current = null;
+        throw new Error(result.error?.code ?? "PUBLIC_LINK_FAILED");
+      }
       setPublicItems((current) => [result.link!, ...current.map((item) => item.state === "active" ? { ...item, state: "revoked" as const } : item)]);
-      setOneTimePublicUrl(result.url); setConfirmingPublic(false);
-      setNotice("공개 읽기 링크를 만들었습니다. 이 화면을 닫으면 링크 원문을 다시 볼 수 없습니다.");
+      pendingPublicRequest.current = null;
+      setConfirmingPublic(false);
+      if (result.replayed || typeof result.url !== "string") {
+        setNotice("링크 생성은 완료됐지만 주소 원문은 다시 볼 수 없습니다. 주소가 필요하면 새 링크로 교체하세요. 그러면 이전 링크는 무효화됩니다.");
+      } else {
+        setOneTimePublicUrl(result.url);
+        setNotice("공개 읽기 링크를 만들었습니다. 이 화면을 닫으면 링크 원문을 다시 볼 수 없습니다.");
+      }
     } catch (error) {
       setNotice(error instanceof Error && error.message === "RATE_LIMITED"
         ? "링크를 너무 자주 만들었습니다. 잠시 후 다시 시도해 주세요."
-        : "공개 링크를 만들지 못했습니다. 기존 공개 상태는 변경되지 않았습니다.");
+        : "응답을 확인하지 못했습니다. 같은 요청으로 다시 확인할 수 있습니다. 기존 공개 상태를 단정할 수 없습니다.");
     } finally { setBusy(false); }
   }
 
@@ -208,8 +221,8 @@ export function LyricShareManager({ lyric, participants }: { lyric: LyricRecord;
             {oneTimePublicUrl ? <div className="sharing-public-once" role="status"><strong>지금 한 번만 링크를 복사할 수 있습니다</strong><p>주소에는 비밀 키가 포함됩니다. 신뢰하는 사람에게만 전달하세요.</p><button type="button" onClick={() => void copy.copyText(oneTimePublicUrl, "공개 읽기 링크", "공개 읽기 링크를 복사했습니다")}>공개 링크 복사</button></div> : null}
             {!confirmingPublic ? <button type="button" className="primary-link" disabled={busy} onClick={() => { setConfirmingPublic(true); setOneTimePublicUrl(null); }}>{activePublic ? "새 링크로 교체" : "공개 링크 만들기"}</button>
               : <div className="sharing-public-confirm" role="group" aria-labelledby="sharing-public-confirm-title"><strong id="sharing-public-confirm-title">공개 범위를 확인해 주세요</strong>
-                <label><span>링크 유효 기간</span><select value={publicDuration} onChange={(event) => setPublicDuration(event.target.value as "1" | "7" | "30")}><option value="1">1일</option><option value="7">7일</option><option value="30">30일</option></select></label>
-                <fieldset><legend>제목·본문 외 공개할 정보</legend><label><input type="checkbox" checked={publicFields.status} onChange={(event) => setPublicFields((value) => ({ ...value, status: event.target.checked }))} />가사 상태</label><label><input type="checkbox" checked={publicFields.ownerDisplayName} onChange={(event) => setPublicFields((value) => ({ ...value, ownerDisplayName: event.target.checked }))} />내 표시 이름</label><label><input type="checkbox" checked={publicFields.updatedAt} onChange={(event) => setPublicFields((value) => ({ ...value, updatedAt: event.target.checked }))} />마지막 수정 시각</label></fieldset>
+                <label><span>링크 유효 기간</span><select value={publicDuration} disabled={busy || Boolean(pendingPublicRequest.current)} onChange={(event) => setPublicDuration(event.target.value as "1" | "7" | "30")}><option value="1">1일</option><option value="7">7일</option><option value="30">30일</option></select></label>
+                <fieldset><legend>제목·본문 외 공개할 정보</legend><label><input type="checkbox" checked={publicFields.status} disabled={busy || Boolean(pendingPublicRequest.current)} onChange={(event) => setPublicFields((value) => ({ ...value, status: event.target.checked }))} />가사 상태</label><label><input type="checkbox" checked={publicFields.ownerDisplayName} disabled={busy || Boolean(pendingPublicRequest.current)} onChange={(event) => setPublicFields((value) => ({ ...value, ownerDisplayName: event.target.checked }))} />내 표시 이름</label><label><input type="checkbox" checked={publicFields.updatedAt} disabled={busy || Boolean(pendingPublicRequest.current)} onChange={(event) => setPublicFields((value) => ({ ...value, updatedAt: event.target.checked }))} />마지막 수정 시각</label></fieldset>
                 <p>{activePublic ? "확인하면 현재 링크는 즉시 무효화되고 새 링크로 교체됩니다." : "확인하면 링크를 가진 누구나 선택한 기간 동안 제목과 본문을 읽을 수 있습니다."}</p>
                 <div><button type="button" disabled={busy} onClick={() => setConfirmingPublic(false)}>취소</button><button type="button" className="primary-link" disabled={busy} onClick={() => void issuePublicLink()}>{busy ? "처리 중…" : "확인하고 공개"}</button></div>
               </div>}

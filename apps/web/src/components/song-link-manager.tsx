@@ -45,6 +45,7 @@ export function SongLinkManager({ songId, songTitle, kind, onKindChange, onClose
   const [reloadKey, setReloadKey] = useState(0);
   const searchRef = useRef<HTMLInputElement>(null);
   const applyRef = useRef<HTMLButtonElement>(null);
+  const queryGeneration = useRef(0);
 
   const label = kind === "rhyme_note" ? "라임 노트" : "프롬프트";
   const pending = [...changes.values()].filter((change) => change.original !== change.desired);
@@ -58,7 +59,9 @@ export function SongLinkManager({ songId, songTitle, kind, onKindChange, onClose
 
   useEffect(() => {
     const controller = new AbortController();
+    const generation = ++queryGeneration.current;
     setLoading(true);
+    setLoadingMore(false);
     setLoadError("");
     const query = new URLSearchParams({ type: kind, state, limit: "20" });
     if (search) query.set("search", search);
@@ -68,17 +71,19 @@ export function SongLinkManager({ songId, songTitle, kind, onKindChange, onClose
         return response.json() as Promise<{ items: SongLinkItem[]; totalCount: number; nextCursor: string | null }>;
       })
       .then((result) => {
+        if (controller.signal.aborted || generation !== queryGeneration.current) return;
         setItems(result.items);
         setTotalCount(result.totalCount);
         setNextCursor(result.nextCursor);
       })
-      .catch((cause) => { if ((cause as Error).name !== "AbortError") setLoadError(`${label} 후보를 불러오지 못했습니다.`); })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
-    return () => controller.abort();
+      .catch((cause) => { if (!controller.signal.aborted && generation === queryGeneration.current && (cause as Error).name !== "AbortError") setLoadError(`${label} 후보를 불러오지 못했습니다.`); })
+      .finally(() => { if (!controller.signal.aborted && generation === queryGeneration.current) setLoading(false); });
+    return () => { controller.abort(); if (queryGeneration.current === generation) queryGeneration.current++; };
   }, [kind, label, reloadKey, search, songId, state]);
 
   async function loadMore() {
-    if (!nextCursor || loadingMore) return;
+    if (!nextCursor || loadingMore || searchInput.trim() !== search) return;
+    const generation = queryGeneration.current;
     setLoadingMore(true);
     setLoadError("");
     const query = new URLSearchParams({ type: kind, state, limit: "20", cursor: nextCursor });
@@ -87,15 +92,17 @@ export function SongLinkManager({ songId, songTitle, kind, onKindChange, onClose
       const response = await fetch(`/api/songs/${songId}/links?${query}`, { cache: "no-store" });
       if (!response.ok) throw new Error();
       const result = await response.json() as { items: SongLinkItem[]; totalCount: number; nextCursor: string | null };
+      if (generation !== queryGeneration.current) return;
       setItems((current) => [...current, ...result.items.filter((item) => !current.some(({ id }) => id === item.id))]);
       setTotalCount(result.totalCount);
       setNextCursor(result.nextCursor);
-    } catch { setLoadError("후보를 더 불러오지 못했습니다. 다시 시도해 주세요."); }
-    finally { setLoadingMore(false); }
+    } catch { if (generation === queryGeneration.current) setLoadError("후보를 더 불러오지 못했습니다. 다시 시도해 주세요."); }
+    finally { if (generation === queryGeneration.current) setLoadingMore(false); }
   }
 
   function selectKind(value: SongLinkKind) {
     if (value === kind) return;
+    queryGeneration.current++;
     setChanges(new Map());
     setSearchInput("");
     setSearch("");
@@ -150,8 +157,8 @@ export function SongLinkManager({ songId, songTitle, kind, onKindChange, onClose
         <button type="button" role="tab" aria-selected={kind === "prompt"} onClick={() => selectKind("prompt")}>프롬프트</button>
       </div>
       <div className="song-link-toolbar">
-        <label><span>{label} 검색</span><input ref={searchRef} value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder={kind === "rhyme_note" ? "제목 또는 본문 검색" : "제목 또는 토큰 검색"} /></label>
-        <div role="group" aria-label="연결 상태 필터">{(["all", "linked", "unlinked"] as const).map((value) => <button key={value} type="button" aria-pressed={state === value} onClick={() => setState(value)}>{value === "all" ? "전체" : value === "linked" ? "연결됨" : "미연결"}</button>)}</div>
+        <label><span>{label} 검색</span><input ref={searchRef} value={searchInput} onChange={(event) => { const value = event.target.value; queryGeneration.current++; setSearchInput(value); setLoadingMore(false); if (value.trim() === search && value !== searchInput) setReloadKey((current) => current + 1); }} placeholder={kind === "rhyme_note" ? "제목 또는 본문 검색" : "제목 또는 토큰 검색"} /></label>
+        <div role="group" aria-label="연결 상태 필터">{(["all", "linked", "unlinked"] as const).map((value) => <button key={value} type="button" aria-pressed={state === value} onClick={() => { if (state !== value) { queryGeneration.current++; setState(value); } }}>{value === "all" ? "전체" : value === "linked" ? "연결됨" : "미연결"}</button>)}</div>
       </div>
       <div className="song-link-summary"><span>결과 {totalCount.toLocaleString("ko-KR")}개</span><strong>{pending.length ? `변경 ${pending.length}개` : "변경 없음"}</strong></div>
       {loadError ? <div className="song-link-error" role="alert"><p>{loadError}</p><button type="button" onClick={() => setReloadKey((value) => value + 1)}>다시 시도</button></div> : null}
@@ -166,7 +173,7 @@ export function SongLinkManager({ songId, songTitle, kind, onKindChange, onClose
               <em>{checked ? "연결" : "미연결"}</em>
             </label>;
           }) : <EmptyResult kind={kind} state={state} search={search} />}
-        {nextCursor && !loading ? <button className="song-link-more" type="button" disabled={loadingMore} onClick={loadMore}>{loadingMore ? "불러오는 중…" : "더 불러오기"}</button> : null}
+        {nextCursor && !loading ? <button className="song-link-more" type="button" disabled={loadingMore || searchInput.trim() !== search} onClick={loadMore}>{loadingMore ? "불러오는 중…" : "더 불러오기"}</button> : null}
       </div>
       <footer><button className="secondary-button" type="button" disabled={saving} onClick={onClose}>취소</button><button ref={applyRef} className="primary-button" type="button" disabled={!pending.length || saving} onClick={() => void applyChanges()}>{saving ? "적용 중…" : `변경 ${pending.length}개 적용`}</button></footer>
       {confirming ? <div className="song-unlink-confirm" role="alertdialog" aria-modal="true" aria-labelledby="song-unlink-title" aria-describedby="song-unlink-description">

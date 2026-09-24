@@ -25,7 +25,7 @@ test("R02 preserves remote sentence edits during IME and cancels a conversion ch
     for (const tab of [page, second]) await expect(tab.getByText("방금 저장됨", { exact: true })).toBeVisible();
     const sentence = page.getByRole("textbox", { name: "문장형 프롬프트 원문" });
     await sentence.dispatchEvent("compositionstart");
-    await sentence.fill("ambient, quiet한");
+    await enterComposingValue(sentence, "ambient, quiet한");
     await second.getByRole("textbox", { name: "문장형 프롬프트 원문" }).fill("bright, ambient, quiet");
     await expect.poll(async () => (await (await page.request.get(`/api/prompts/${id}`)).json()).prompt.sentenceText)
       .toBe("bright, ambient, quiet");
@@ -33,6 +33,10 @@ test("R02 preserves remote sentence edits during IME and cancels a conversion ch
     await sentence.dispatchEvent("compositionend", { data: "한" });
     for (const tab of [page, second]) {
       await expect(tab.getByRole("textbox", { name: "문장형 프롬프트 원문" })).toHaveValue("bright, ambient, quiet한");
+    }
+    await expect.poll(async () => (await (await page.request.get(`/api/prompts/${id}`)).json()).prompt.sentenceText,
+      { timeout: 15_000 }).toBe("bright, ambient, quiet한");
+    for (const tab of [page, second]) {
       await expect(tab.getByText("방금 저장됨", { exact: true })).toBeVisible();
     }
     let reached!: () => void;
@@ -81,7 +85,7 @@ test("ES-03 keeps a remote title insertion while local IME replaces a different 
     for (const tab of [page, second]) await expect(tab.getByText("방금 저장됨", { exact: true })).toBeVisible();
     const title = page.getByRole("textbox", { name: "프롬프트 제목" });
     await title.dispatchEvent("compositionstart");
-    await title.fill("hello WORLD");
+    await enterComposingValue(title, "hello WORLD");
     await second.getByRole("textbox", { name: "프롬프트 제목" }).fill("hello dear world");
     await expect.poll(async () => (await (await page.request.get(`/api/prompts/${id}`)).json()).prompt.title).toBe("hello dear world");
     await expect(title).toHaveValue("hello WORLD");
@@ -94,3 +98,11 @@ test("ES-03 keeps a remote title insertion while local IME replaces a different 
     await withE2eDatabase(async (pool) => { await pool.query("delete from app_users where id=$1", [userId]); });
   }
 });
+
+async function enterComposingValue(locator: import("@playwright/test").Locator, value: string) {
+  await locator.evaluate((element, next) => {
+    const prototype = element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(prototype, "value")!.set!.call(element, next);
+    element.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertCompositionText", data: next, isComposing: true }));
+  }, value);
+}

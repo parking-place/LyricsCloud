@@ -187,6 +187,7 @@ test.describe("P6 creation preservation", () => {
     await page.getByRole("button", { name: "새 템플릿" }).click();
     await page.getByLabel("템플릿 제목").fill("memory-only-template");
     await expect(update).toBeDisabled();
+    page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "취소", exact: true }).click();
     await expect(update).toBeEnabled();
   });

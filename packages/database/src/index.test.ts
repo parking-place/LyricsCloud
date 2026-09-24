@@ -3,7 +3,7 @@ import { classifyDatabaseError, CURRENT_SCHEMA_VERSION, DatabaseHealthError } fr
 
 describe("database health diagnostics", () => {
   it("requires the 1.1.7a profile customization migration", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("1151_profile_customization.sql");
+    expect(CURRENT_SCHEMA_VERSION).toBe("1152_prompt_dictionary_cascade.sql");
   });
 
   it.each([

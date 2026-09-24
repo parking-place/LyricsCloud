@@ -423,3 +423,39 @@ Git tracked 목록과 hidden/untracked 공개 탐색에서 Future 관련 4문서
 ## 2026-09-24 — 1.1.7b P3 완료 기록 push 전·Phase 완료 검수
 
 tracked 목록과 hidden/untracked 공개 경로에서 Future 관련 4문서를 다시 확인했다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`는 직전 P3 기능 후보 인수와 동일하고 129개 FF ID·체크·본문, 신규·이동·삭제는 없다. 나머지 세 문서는 절차와 기존 scope/mapping이며 새 후보가 아니다. staged/unstaged Future 변경은 이 완료 검수 문단 외에 없다. 원격 source head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`와 P3 기능 브랜치 SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`가 유지된다. 새 배정 없이 P3 원격 CI·네 signed image·동일 SHA 공개 개발 인수를 기록하고 P4/P5 잔여를 유지한다. ignored/private 원본·보호 계획·native·main·정식 tag/image·릴리스 서버는 변경하거나 자동 공개하지 않았다. 직전 P3 검수의 동일 입력을 재참조하며 재선정하지 않는다.
+
+## 2026-09-24 — 1.1.7b P4 중간 보존 push 전 검수
+
+Git tracked 목록과 hidden/untracked 공개 탐색에서 Future 관련 문서는 동일한 4개다. 현행 `0.Plans/2.Patch-phase/Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`는 P3 문서 인수 SHA `cc4fc5646a395023f1e95b04985ec9da1759c74b`와 동일하다. 129개 FF ID·체크·본문 및 나머지 세 문서의 후보 범위에 신규·이동·삭제·수정은 없고, 현재 변경은 이 검수 기록과 P4 부분 보정·상태 기록뿐이다. 원격 source head `c230c024aeb0297b1c130e3f3e8b507a43a7e871`도 동일하다. 새 후보를 배정하지 않고 P4 BE-01/04의 로컬 후보와 OPS-01 미해결·실기기 미제공을 `review`로 보존하며 P5/1.2.x를 선소비하지 않는다. ignored/private 원본은 자동 공개하지 않고 보호 계획·native·main·정식 tag/image·릴리스 서버를 변경하지 않는다. 직전 P3 완료 검수의 동일 입력을 재참조하며 재선정하지 않는다.
+
+## 2026-09-24 — 1.1.7b P4 추가 구현 후보 push 전 검수
+
+tracked 목록과 hidden/untracked 공개 탐색에서 Future 관련 문서는 기존 4개뿐이다. 현행 `0.Plans/2.Patch-phase/Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`는 직전 P4 중간 보존 commit `4d3b6289d8305db1f604cc361601dfa3b74ed164`와 동일하며 129개 FF ID·체크·본문의 새 내용·이동·삭제가 없다. 나머지 세 파일은 기존 검수 절차·scope·mapping이며 이 기록 이외의 변경이 없다. 새 후보 배정 없이 현재 P4의 잠금·동시 편집·저장 상태·세션·공개 링크·템플릿 최소 보정만 `review` 후보로 기록한다. 실제 기기/OS IME/AT는 사용자 지시로 후속 미실행이며 PASS가 아니다. ignored/private 자료는 자동 공개하지 않고 보호 계획·native·main·정식 tag/image·릴리스 서버를 변경하지 않는다. 직전 검수의 동일 입력을 재참조한다.
+
+## 2026-09-24 — 1.1.7b P4 격리 브라우저·backup·proxy 후보 push 전 검수
+
+tracked·hidden/untracked 공개 경로의 Future 관련 4개 문서는 직전 구현 후보 검수와 동일하다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`가 P4 중간 SHA `e3d38d25b4b65f775dc4086a53f07d589e749c99`와 같고 129개 FF ID·체크·본문, 신규·이동·삭제가 없다. 다른 세 문서의 후보 범위도 변경하지 않았다. 새 배정 없이 기존 P4의 격리 브라우저·암호화 backup/restore·Caddy 예시 계약을 추가 검증했으며 실제 배포 proxy·native 1150 환경·실기기는 검증하지 않았다. ignored/private 자료 자동 공개, 보호 계획·native·main·정식 tag/image·릴리스 서버 변경은 없다. 동일 Future 입력은 직전 기록을 재참조한다.
+
+## 2026-09-24 — 1.1.7b P4 전체 회귀·UI 경계 중간 push 전 검수
+
+Git tracked와 hidden/untracked 공개 탐색에서 Future 관련 문서는 같은 4개다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694` 및 129개 FF ID는 직전 P4 SHA `d17bb1be5dfe226f9c227152f827e3e4ad0389df`와 같고 새 문서·이동·삭제·체크/본문 변경은 없다. 다른 세 파일도 이 검수 기록 이외에는 변경하지 않았다. 새 배정 없이 현재 P4의 UI-03/08·BE-02 회귀와 기존 테스트 계약만 보정하고 UI-04/05의 1.2.5 배정은 유지한다. private/ignored 원본을 자동 공개하지 않으며 보호 계획·native·main·정식 tag/image·릴리스 서버는 변경하지 않는다. 동일 Future 입력은 직전 인수 기록을 재참조한다.
+
+## 2026-09-24 — 1.1.7b P4 공유 선진입·proxy 경계 중간 push 전 검수
+
+Git tracked·hidden/untracked 공개 탐색에서 Future 관련 문서는 동일 4개다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`은 직전 P4 SHA `2d6e2599b8fc4a9b397d9481de405d648af079fe`와 같고 129개 FF ID·체크·본문, 신규·이동·삭제가 없다. 다른 세 문서는 이 검수 기록 외 후보 범위 변경이 없다. 새 후보 재배정 없이 P4의 공유 선진입·저장소 실패·공개 API 신뢰 proxy 경계와 격리 rollback 결과만 `review`로 기록하며 P5/1.2.0을 선소비하지 않는다. private/ignored 자료 자동 공개, 보호 계획·native·main·정식 tag/image·릴리스 서버 변경은 없다. 직전 검수의 동일 입력을 재참조한다.
+
+## 2026-09-24 — 1.1.7b P4 동시 탭·PWA guard 중간 push 전 검수
+
+Git tracked와 hidden/untracked 공개 경로에서 Future 관련 문서는 기존 4개뿐이다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`은 직전 P4 SHA `7da5235012264c5a72afea96a72108a72515f5a3`와 같고 129개 FF ID·체크·본문에 변경·이동·삭제가 없다. 다른 세 문서는 검수 절차·scope·mapping이며 이 문단 외에 신규 후보 변경이 없다. 새 배정 없이 현재 P4의 동시 탭 ACK 상태·PWA 휘발 입력·연결 관리 및 합성 browser 교차만 검증했다. 실제 기기/OS IME/AT는 사용자 보류로 미실행, 나머지 P4 필수 gate도 `review`로 남긴다. private/ignored 원본 자동 공개, 보호 계획·native·main·정식 tag/image·릴리스 서버 변경은 없다. 동일 Future 입력은 직전 기록을 재참조한다.
+
+## 2026-09-24 — 1.1.7b P4 복원 DB 순방향 보정 후보 push 전 검수
+
+Git tracked 목록과 hidden/untracked 공개 탐색에서 Future 관련 문서는 같은 4개다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694` 및 129개 FF ID는 직전 중간 SHA `048a32f374b9adc7ca67b1d3ef03f9c550a5d3db`와 동일하다. 신규·이동·삭제·체크/본문 변경이 없고, 나머지 세 문서는 이 기록을 제외하면 후보 범위 변화가 없다. 새 Future 배정 없이 P4의 백업 복원 후 계정 삭제 차단을 1152 순방향 migration 후보로 검증한다. 실제 기기/OS IME/AT는 사용자 보류·미실행, CI·같은 SHA 개발 인수와 다른 필수 gate는 계속 `review`다. private/ignored 자료를 공개하거나 보호 계획·native 이력·main·정식 tag/image·릴리스 서버를 변경하지 않는다.
+
+## 2026-09-24 — 1.1.7b P4 행별 판정·CI 후보 push 전 검수
+
+Git tracked 및 hidden/untracked 공개 경로의 Future 관련 문서는 여전히 4개다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 129개 FF ID는 직전 P4 후보 SHA `69949611b2b7189630fd116f92e4c6dc57ea7705`와 같고 이동·삭제·체크·본문 변경이 없다. 나머지 세 문서의 후보 범위도 이 검수 기록 외에는 불변이다. 새 Future 배정 없이 1152 native 이전 image rollback과 원래 리뷰 22개 행별 중간 판정을 기록한다. UI-04/05는 실제 복제 응답 유실에서 P2 잔여로 재현됐으며 1.2.5 배정을 유지하되 b 해결로 쓰지 않는다. 실제 기기/OS IME/AT는 사용자 보류·미실행이고 실제 proxy·최종 CI·동일 SHA 개발 인수 전 P4 `review`다. private/ignored 파일은 공개하지 않고 보호 계획·native 원본·main·정식 tag/image·릴리스 서버를 변경하지 않는다.
+
+## 2026-09-24 — 1.1.7b P4 완료 문서 push·Phase 완료 검수
+
+Git tracked와 hidden/untracked 공개 경로에서 Future 관련 문서는 동일한 4개다. `Future_Feature.md`의 현행 blob `8f42d20b638e245eb775415ccfdabef56a96f694`·고유 FF ID 129개는 직전 P4 기능 SHA `ddc1d7c50a64f8e8467b7aee64627f2dfe13da7d`와 같고 본문·체크·이동·삭제·신규 후보가 없다. 나머지 세 문서는 이 검수 절차와 기존 scope/mapping이며 후보로 중복 배정하지 않는다. 이번 문서-only `[skip ci]` push는 P4 기능 SHA의 CI·서명 image·동일 SHA 개발 공개 인수와 사용자 보류 실기기 경계를 기록할 뿐 Future 작업을 재선정하지 않는다. UI-04/05/07 P2 배정, 1.2.0 코발트 계획과 native 보류를 유지한다. private/ignored 자료를 공개하거나 보호 계획·main·정식 tag/image·릴리스 서버를 변경하지 않는다.

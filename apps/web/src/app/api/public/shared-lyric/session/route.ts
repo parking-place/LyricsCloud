@@ -4,6 +4,7 @@ import { errorResponse } from "../../../../../lib/http-response.js";
 import { parsePublicGuestSessionInput, publicSharingApiError, publicSharingResponseHeaders,
   readBoundedPublicBody, withinPublicRateLimit } from "../../../../../lib/public-sharing-api.js";
 import { mutationOriginAllowed } from "../../../../../lib/song-api.js";
+import { requestClientKey } from "../../../../../lib/request-security.js";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -13,9 +14,8 @@ export async function POST(request: Request): Promise<Response> {
     if (!mutationOriginAllowed(request)) return withPublicHeaders(errorResponse("FORBIDDEN", 403));
     const input = parsePublicGuestSessionInput(await readBoundedPublicBody(request));
     const linkDigest = publicShareTokenDigest(input.token);
-    const forwarded = request.headers.get("x-forwarded-for")?.split(",", 1)[0]?.trim().slice(0, 128)
-      ?? request.headers.get("x-real-ip")?.slice(0, 128) ?? "unknown";
-    if (!withinPublicRateLimit(`guest-session-ip:${forwarded}`, 20)
+    const clientKey = requestClientKey(request).slice(0, 128);
+    if (!withinPublicRateLimit(`guest-session-ip:${clientKey}`, 20)
       || !withinPublicRateLimit(`guest-session-link:${linkDigest}`, 60)) {
       return withPublicHeaders(errorResponse("RATE_LIMITED", 429));
     }

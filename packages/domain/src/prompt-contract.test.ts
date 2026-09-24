@@ -2,11 +2,17 @@ import { describe, expect, it } from "vitest";
 import {
   buildPromptCopyPayload, findPromptDuplicates, normalizePromptToken, parseCreatePromptInput, parsePromptText,
   parsePromptListInput, parsePromptSongSearchInput, parsePromptSuggestionInput, parseUpdatePromptInput,
-  projectUniquePromptTokens, PROMPT_COPY_WARNING_LIMIT, PROMPT_LIMITS, PromptValidationError, serializePromptContent,
+  projectFirstPromptOccurrences, projectUniquePromptTokens, PROMPT_COPY_WARNING_LIMIT, PROMPT_LIMITS, PromptValidationError, serializePromptContent,
   serializePromptTokens, splitPromptSentenceDisplay, validatePromptSentenceText
 } from "./prompt-contract.js";
 
 describe("prompt comma contract", () => {
+  it("chooses the first physical occurrence of a concurrently moved token", () => {
+    expect(projectFirstPromptOccurrences([
+      { occurrenceId: "two", displayValue: "first" }, { occurrenceId: "one", displayValue: "one" },
+      { occurrenceId: "two", displayValue: "second" }
+    ])).toEqual([{ occurrenceId: "two", displayValue: "first" }, { occurrenceId: "one", displayValue: "one" }]);
+  });
   it("parses Korean, Latin, numbers, emoji, extra space, consecutive commas and empty fields", () => {
     const tokens = parsePromptText("  몽환적  , HyperPop, 808 bass,🙂 bright  synth,, ,끝,");
     expect(tokens).toEqual([

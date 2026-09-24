@@ -248,6 +248,8 @@ check_http() {
       'fetch(process.argv[1]).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))' "$url" >/dev/null 2>&1; then return; fi
     sleep 1
   done
+  docker exec "$container" /nodejs/bin/node -e \
+    'fetch(process.argv[1]).then(async r=>console.error("backup smoke readiness",r.status,JSON.stringify(await r.json().catch(()=>({}))))).catch(()=>console.error("backup smoke readiness request failed"))' "$url" >&2 || true
   return 1
 }
 check_http "$name-collaboration" http://127.0.0.1:3001/health/ready

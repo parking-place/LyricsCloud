@@ -76,6 +76,35 @@ test.describe("0.8.0 lyric and prompt templates", () => {
       await expect(page.getByText("Warm pop, Emotional vocal, Clean production", { exact: true })).toBeVisible();
     } finally { await deleteAccounts([account.userId]); }
   });
+
+  test("keeps a prompt template draft across modes and rejected navigation", async ({ context, page }) => {
+    const account = await createAccount(context, "템플릿 입력 보존");
+    try {
+      await page.goto("/templates?type=prompt&source=all&sort=favorite_first");
+      await page.getByRole("button", { name: "새 템플릿" }).click();
+      await page.getByLabel("템플릿 제목").fill("보존할 제목");
+      await page.getByRole("radio", { name: "문장형" }).check();
+      await page.getByLabel("프롬프트 문장 원문").fill("합성 문장 원문 한글");
+      await page.getByRole("radio", { name: "태그형" }).check();
+      await page.getByLabel("쉼표로 구분한 프롬프트 태그").fill("Synth, Voice");
+      await page.getByRole("radio", { name: "문장형" }).check();
+      await expect(page.getByLabel("프롬프트 문장 원문")).toHaveValue("합성 문장 원문 한글");
+
+      page.once("dialog", (dialog) => dialog.dismiss());
+      await page.getByRole("button", { name: "가사 구조", exact: true }).click();
+      await expect(page.getByLabel("템플릿 제목")).toHaveValue("보존할 제목");
+      await expect(page.getByLabel("프롬프트 문장 원문")).toHaveValue("합성 문장 원문 한글");
+      await expect(page.getByRole("radio", { name: "문장형" })).toBeChecked();
+
+      page.once("dialog", (dialog) => dialog.dismiss());
+      await page.getByRole("button", { name: "취소", exact: true }).click();
+      await expect(page.getByLabel("프롬프트 문장 원문")).toHaveValue("합성 문장 원문 한글");
+
+      page.once("dialog", (dialog) => dialog.accept());
+      await page.getByRole("button", { name: "취소", exact: true }).click();
+      await expect(page.getByLabel("템플릿 제목")).toHaveCount(0);
+    } finally { await deleteAccounts([account.userId]); }
+  });
 });
 
 async function createAccount(context: BrowserContext, displayName: string) {

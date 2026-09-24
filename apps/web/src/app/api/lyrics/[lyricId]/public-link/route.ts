@@ -27,10 +27,12 @@ export async function POST(request: Request, context: { params: Promise<{ lyricI
     const token = createPublicShareToken();
     const result = await getAuthContext().publicLyricSharing.issue(auth.userId, lyricId, {
       requestId: input.requestId, tokenDigest: publicShareTokenDigest(token), fields: input.fields,
+      expiresInDays: input.expiresInDays,
       expiresAt: new Date(Date.now() + input.expiresInDays * 86_400_000)
     });
     if (!result) return errorResponse("NOT_FOUND", 404);
     return Response.json({ link: result.link, replayed: result.replayed,
+      recoveryAction: result.replayed ? "rotate-after-confirmation" : null,
       url: result.replayed ? null : `${getAuthContext().config.appOrigin}/shared/public#${token}` }, {
       status: result.replayed ? 200 : 201, headers: { ...publicSharingResponseHeaders,
         ...(auth.renewalCookie ? { "Set-Cookie": auth.renewalCookie } : {}) }

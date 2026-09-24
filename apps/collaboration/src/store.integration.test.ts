@@ -4,6 +4,7 @@ import { PostgresLyricSharingStore, PostgresLyricStore, PostgresPromptStore, Pos
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as Y from "yjs";
+import { projectFirstPromptOccurrences } from "@lyricscloud/domain";
 import { CollaborationStore, materialize } from "./store.js";
 
 const enabled = process.env.AUTH_DATABASE_INTEGRATION === "true";
@@ -180,6 +181,59 @@ describe.runIf(enabled)("durable owner-only collaboration state", () => {
     document.destroy(); restoredDocument.destroy();
   });
 
+  it("accepts converged concurrent prompt moves and move-versus-remove with the same canonical server projection", async () => {
+    const owner = users[0]!;
+    const prompt = (await prompts!.createPrompt(owner, parseCreatePromptInput({
+      requestId: randomUUID(), title: "동시 이동 프롬프트", tokens: ["one", "two", "three"]
+    }))).prompt;
+    const mapping = (await sync!.ensureDocument(owner, prompt.id))!;
+    const loaded = (await sync!.loadDocument(owner, mapping.document_key))!;
+    const baseline = materialize(loaded.snapshot, loaded.updates);
+    const seed = Y.encodeStateAsUpdate(baseline);
+    const first = new Y.Doc(), second = new Y.Doc();
+    Y.applyUpdate(first, seed); Y.applyUpdate(second, seed);
+    const vector = Y.encodeStateVector(baseline);
+    const firstTokens = first.getArray<{ occurrenceId: string; displayValue: string }>("prompt-tokens");
+    const secondTokens = second.getArray<{ occurrenceId: string; displayValue: string }>("prompt-tokens");
+    const moved = firstTokens.get(1)!;
+    firstTokens.delete(1, 1); firstTokens.insert(0, [moved]);
+    secondTokens.delete(1, 1); secondTokens.insert(2, [moved]);
+    const firstUpdate = Y.encodeStateAsUpdate(first, vector);
+    const secondUpdate = Y.encodeStateAsUpdate(second, vector);
+    expect(await sync!.applyUpdate(owner, mapping.document_key, randomUUID(), firstUpdate)).toMatchObject({ duplicate: false });
+    expect(await sync!.applyUpdate(owner, mapping.document_key, randomUUID(), secondUpdate)).toMatchObject({ duplicate: false });
+    const merged = await sync!.loadDocument(owner, mapping.document_key);
+    const stored = materialize(merged!.snapshot, merged!.updates);
+    const raw = stored.getArray<{ occurrenceId: string; displayValue: string }>("prompt-tokens").toArray();
+    const canonical = projectFirstPromptOccurrences(raw);
+    expect(raw.filter((item) => item.occurrenceId === moved.occurrenceId)).toHaveLength(2);
+    expect(canonical).toHaveLength(3);
+    expect((await prompts!.getPrompt(owner, prompt.id))!.tokens.map((item) => item.displayValue))
+      .toEqual(canonical.map((item) => item.displayValue));
+
+    const removeSide = new Y.Doc(), moveSide = new Y.Doc();
+    const mergedSeed = Y.encodeStateAsUpdate(stored), mergedVector = Y.encodeStateVector(stored);
+    Y.applyUpdate(removeSide, mergedSeed); Y.applyUpdate(moveSide, mergedSeed);
+    const removeTokens = removeSide.getArray<{ occurrenceId: string; displayValue: string }>("prompt-tokens");
+    for (let index = removeTokens.length - 1; index >= 0; index -= 1) {
+      if (removeTokens.get(index)?.occurrenceId === moved.occurrenceId) removeTokens.delete(index, 1);
+    }
+    const moveTokens = moveSide.getArray<{ occurrenceId: string; displayValue: string }>("prompt-tokens");
+    for (let index = moveTokens.length - 1; index >= 0; index -= 1) {
+      if (moveTokens.get(index)?.occurrenceId === moved.occurrenceId) moveTokens.delete(index, 1);
+    }
+    moveTokens.insert(0, [moved]);
+    await sync!.applyUpdate(owner, mapping.document_key, randomUUID(), Y.encodeStateAsUpdate(removeSide, mergedVector));
+    await sync!.applyUpdate(owner, mapping.document_key, randomUUID(), Y.encodeStateAsUpdate(moveSide, mergedVector));
+    const final = (await sync!.loadDocument(owner, mapping.document_key))!;
+    const finalDocument = materialize(final.snapshot, final.updates);
+    const finalCanonical = projectFirstPromptOccurrences(finalDocument.getArray<typeof moved>("prompt-tokens").toArray());
+    expect(finalCanonical.filter((item) => item.occurrenceId === moved.occurrenceId)).toHaveLength(1);
+    expect((await prompts!.getPrompt(owner, prompt.id))!.tokens.map((item) => item.displayValue))
+      .toEqual(finalCanonical.map((item) => item.displayValue));
+    for (const document of [baseline, first, second, stored, removeSide, moveSide, finalDocument]) document.destroy();
+  });
+
   it("requires the prompt mode capability and preserves sentence mode through projection and revision restore", async () => {
     const alice = users[0]!;
     const raw = "  cinematic, not tags.\r\n문장  원문 🙂  ";
@@ -256,6 +310,27 @@ describe.runIf(enabled)("durable owner-only collaboration state", () => {
     expect((await lyrics!.getLyric(owner, lyric.id))!.body).toBe("처음\n공동 작성\n다시 허용");
     refreshedDoc.destroy();
     writerDoc.destroy();
+  });
+
+  it("bootstraps an authorized shared lyric before its owner opens the editor", async () => {
+    const [owner, reader] = users as [string, string];
+    const sharingId = (await pool!.query<{ sharing_id: string }>(
+      "select sharing_id from user_profiles where owner_id=$1", [reader])).rows[0]!.sharing_id;
+    const song = (await songs!.createSong(owner, parseCreateSongInput({ title: "선진입 곡", requestId: randomUUID() }))).song;
+    const lyric = (await lyrics!.createLyric(owner, parseCreateLyricInput({ title: "선진입 가사", body: "서버 원문", requestId: randomUUID() }, song.id)))!.lyric;
+    expect(await sync!.findSharedDocument(reader, lyric.id)).toBeNull();
+    expect((await pool!.query("select count(*)::int count from sync_documents where resource_id=$1", [lyric.id])).rows[0]!.count).toBe(0);
+
+    const grant = (await sharing!.grantRead(owner, lyric.id, sharingId, randomUUID()))!.grant;
+    const discovered = (await sync!.findSharedDocument(reader, lyric.id))!;
+    expect(discovered.access).toMatchObject({ ownerId: owner, actorId: reader, accessMode: "read", grantId: grant.id });
+    const snapshot = materialize(discovered.snapshot, discovered.updates);
+    expect(snapshot.getText("body").toString()).toBe("서버 원문");
+    snapshot.destroy();
+    expect((await sync!.ensureDocument(owner, lyric.id))!.document_key).toBe(discovered.documentKey);
+    expect(await sharing!.revokeRead(owner, lyric.id, grant.id)).toBe(true);
+    expect(await sync!.findSharedDocument(reader, lyric.id)).toBeNull();
+    expect(await sync!.loadDocumentForActor(reader, discovered.documentKey)).toBeNull();
   });
 });
 

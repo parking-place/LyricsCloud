@@ -2,17 +2,73 @@
 
 ```yaml
 current_version: "1.1.7b"
-current_phase: "../3.Redesign-phase/1.1.7.b/3phase.md"
+current_phase: "../3.Redesign-phase/1.1.7.b/4phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-24"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "1.1.7b P3 문서 인수 SHA에서 P4 전용 브랜치를 열고 22개 원인·DB 호환·rollback을 검증한다"
+next_action: "P4 문서 인수 후 1.1.7b P5를 전용 브랜치에서 착수한다; 실제 기기/OS IME/AT는 사용자 지시로 후속 미실행을 유지한다"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-24 — 1.1.7b P4 완료·P5 인계
+
+기능 SHA `ddc1d7c50a64f8e8467b7aee64627f2dfe13da7d`의 로컬 격리 DB Vitest **509 PASS/8 조건부 skip**, production Chromium **432 PASS/54 조건부 skip**, 교차 엔진 **20 PASS**, `pnpm check`·production build PASS다. [push Actions 35990242886](https://github.com/parking-place/LyricsCloud/actions/runs/35990242886)는 verify·web/collaboration/worker/migrate signed image/provenance 전부 SUCCESS, [PR #156 Actions 35991662815](https://github.com/parking-place/LyricsCloud/actions/runs/35991662815)는 verify SUCCESS다. 네 image digest와 시험/실패 구분은 [P4 최종 인수](../3.Redesign-phase/1.1.7.b/4phase.md)에 기록했다.
+
+같은 SHA를 개발 서버에 배포해 checkout/BUILD_ID/공개 live·ready `1.1.7b/dev/p4` 및 schema `1152_prompt_dictionary_cascade.sql`, migration 32건/웹 manifest checksum·native 1150 객체 2개·FK를 확인했다. 네 서비스 healthy, 공개 합성 owner prompt 저장/재조회·다른 계정 404·PC/mobile 화면 일치, 서비스 재시작 뒤 같은 원문 재조회 PASS다. 공개 edge에서 XFF 변경 중에도 읽기/게스트 429 제한이 적용됐고 임의 CF-IP 헤더는 Cloudflare 403으로 앱 도달 전에 거부됐다. 합성 계정 두 개와 관련 session/resource/prompt가 전부 0건임을 별도 읽기 전용 확인했다. 정리 스크립트의 반환 코드 1은 삭제 후 SQL 완료 문구를 오인한 검사 오류이며 데이터 잔존은 아니다.
+
+22원인 최종 판정에서 적용 개발 경계의 필수 P0/P1 미해결 0건, UI-04/05/07의 기존 P2는 미해결/후속이다. 실제 Windows/iOS/Android·OS IME·AT는 사용자 지시로 **미실행/후속 보류**이고 외부 Google 장애·운영 backup/timer·릴리스 proxy·실제 PC 설치물/개발 image 강제 rollback도 PASS가 아니다. `main`·정식 tag/image·릴리스 서버는 변경하지 않았다. P5는 문서 봉인과 최종 계약/공개 smoke를 새 Phase에서 진행한다.
+
+### 2026-09-24 — P4 최신 로컬 통합·교차 엔진 후보
+
+프롬프트 두 탭의 원격 문장 병합 뒤 두 번째 탭이 공동 IndexedDB outbox의 ACK 삭제를 통지받지 못해 `동기화 중`에 머무는 간헐 오류를 재현했다. ACK 뒤 문서별 BroadcastChannel 알림과 오래된 비동기 상태 조회 결과 폐기를 보정했다. 서버의 정확한 원문 저장을 확인한 뒤 두 탭 모두 `방금 저장됨`이 되는 집중 desktop/mobile 40회 PASS, 같은 제품 코드의 전체 production Chromium **430 PASS/54 조건부 skip/0 FAIL**(484건)이다. 그 뒤 추가한 테스트 전용 PWA 휘발 입력 guard의 첫 실행은 GET이 일회성 요청 가로채기를 소비한 fixture 오류로 2 FAIL; 조건 수정 뒤 desktop/mobile **2 PASS**다. Firefox의 합성 IME 첫 매트릭스는 `fill()`이 조합 종료 이벤트를 자동 발생시켜 2 FAIL/18 PASS였고, 조합을 유지하는 입력 이벤트 fixture로 수정한 동일 5-project 매트릭스는 **20 PASS**다. 실제 OS IME/기기는 사용자 지시로 미실행이다.
+
+최신 제품 후보의 Docker 전체 DB Vitest **509 PASS/8 조건부 skip**, `pnpm check`·production web build PASS. 새 시험 파일의 타입 검사와 최종 전체 CI는 별도 확인한다. 22개 원인 행별 최종 판정, 환경별 실제 proxy·세 DB의 전면 수용·서비스/PWA/rollback 교차, 필수 CI·네 signed image·동일 SHA 개발 공개 인수가 남아 있다. 따라서 P4 `review`, P5·1.2.0 미착수이며 개발 서버는 P3 SHA에 그대로 있다.
+
+### 2026-09-24 — 백업 복원 DB의 계정 삭제 차단 발견·1152 순방향 보정 후보
+
+native 1150+1151 일회용 DB를 `pg_dump`/복원한 독립 컨테이너에서 전체 시험 본문 **509 PASS**였으나, 기존 `0500`의 prompt dictionary `ON DELETE RESTRICT`가 복원된 외래키 생성 순서에서 합성 계정 cascade 삭제를 막아 5개 suite가 정리 실패했다. 같은 합성 계정/프롬프트 토큰으로 원본 이행 DB는 삭제 성공, 복원 DB는 실패를 재현했다. 기존 migration 수정·테이블/자료 삭제 없이 `1152_prompt_dictionary_cascade.sql`이 해당 FK를 `NO ACTION DEFERRABLE INITIALLY DEFERRED`로 바꾸도록 했다. 참조 중인 dictionary 단독 삭제는 계속 거부하고 계정 cascade는 허용한다. 별도 migration 회귀 **PASS**, native 이력 복원 DB에 1152 적용·반복 **PASS**, native 1150 테이블 2개와 32개 migration 보존, 그 DB의 전체 Vitest **509 PASS/8 조건부 skip/0 FAIL**, 합성 사용자·토큰·dictionary 0건이다. 첫 DB 이름 가드 실패와 ACL 생략 복제 실패, 수정 전 정리 실패는 최종 PASS에 포함하지 않는다.
+
+현재 웹 기준 schema는 후보 `1152`이며 이전 P1~P3 개발 서버의 `1151` 기록은 당시 사실로 유지한다. 새 웹 DB에도 1152 적용·반복 PASS, `pnpm check`·production web build·개발 후보 manifest validator 1002 PASS. validator 1005는 실행했으나 P5 최종 추적 문서 부재로 ENOENT 실패했으며 P5 완료 검증이 아니다. 복원 DB에서는 새 b 웹 image가 만든 합성 프롬프트를 이전 a 웹 image가 동일 원문으로 조회하고 ZIP JSON export하여 application-first rollback PASS; 합성 사용자·세션·자료 0건 확인 후 일회용 웹/DB 컨테이너와 임시 export를 정리했다. 첫 웹 시작은 `OIDC_TEST_FIXTURE` 누락으로 인증 API 503이었고 올바른 시험 설정 뒤 결과만 PASS다. 1152 적용 일회용 웹 DB에서 전체 production Chromium E2E **432 PASS/54 조건부 skip/0 FAIL**(486건, 14.8분)을 완료했다. 실제 개발 migration/배포·최종 CI 전에는 P4 `review`다.
+
+같은 날 별도 native 1150+1151 일회용 DB를 다시 복제해 1152 적용 후 이전 native 포함 `0375825` 웹 image와 새 b 웹 image를 병행했다. 두 readiness 200, 이전 native session 200/새 b native route 404, b가 만든 합성 프롬프트의 이전 native `GET` 200·제목/원문/토큰 2개 일치, 32 migration·native 테이블 2개 보존을 확인했다. 합성 계정 삭제 뒤 웹/native session·prompt·token·dictionary·resource 모두 0건이었고 시험 컨테이너·복제 DB·임시 synthetic key 파일을 제거했다. 첫 컨테이너의 잘못된 UI variant 500, ACL을 생략한 DB 복제의 POST 503, 짧은 native token 401은 fixture 실패로 별도 기록하며 최종 PASS에 포함하지 않는다. 실제 PC 설치물·개발 서버 이전 image 전환은 미실행이다.
+
+22개 원인 행별 P4 중간 판정을 BLOCKERS에 기록했다. 별도 production Chromium/일회용 DB 진단에서 UI-04/05는 `source=user` 템플릿 복제 성공 응답 유실 후 재클릭 시 서버 복제본이 2개 생기고 화면에는 원본만 남는 결함으로 재현됐다(진단 1건; 제품 PASS 아님). 원문·권한은 바뀌지 않아 기존 P2/1.2.5 후속 배정을 유지하며, 필수 복구/인가 위반이 확인되면 P4 차단으로 승격한다. 진단용 합성 계정·템플릿 0건 및 임시 시험 파일 제거를 확인했다. 실제 proxy·서비스/PWA 교차·최종 CI·동일 SHA 개발 인수 전에는 P4 `review`다.
+
+### 2026-09-24 — 공유 첫 진입·저장소 실패 주입과 rollback 추가 증거
+
+UI-03 연결 관리의 실제 지연 HTTP를 주입해 라임 요청 중 프롬프트 전환 시 오래된 응답이 목록·결과 수·오류를 덮지 않음을 PC/mobile production Chromium **2 PASS**로 확인했다. `7da5235012264c5a72afea96a72108a72515f5a3` 중간 `[skip ci]` commit은 P4 원격 브랜치 SHA 일치를 확인했으며 필수 CI는 미실행이다.
+
+native 1150+profile 1151을 포함한 별도 일회용 DB에 1.1.8 C3 migration 31건을 적용하고 현행 b migrator 반복을 PASS했다. 같은 DB에서 b 웹 image `7da5235`가 만든 합성 가사를 이전 native 포함 1.1.8 웹 image `0375825`가 원문 그대로 읽고 export했으며, native 읽기 세션 200과 b의 native API 404를 확인했다. b가 저장한 synthetic 프로필 사진도 이전 image에서 소유자 200/타 계정 404·프로필 참조 유지로 PASS했다. 합성 사용자·세션·사진은 cascade 후 0건이고 시험용 웹 컨테이너 2개를 중지했다. 최초 두 시도는 시험 환경의 beta key 파일 누락으로 API 503, 이어 시험용 토큰 해시 인코딩 오류로 401이었으며 설정/fixture를 바로잡은 최종 검사가 PASS다. 이 일회용 DB 검사는 실제 PC 앱 업데이트나 기존 개발 DB 배포가 아니다.
+
+공개 공유 읽기·게스트 세션의 IP 속도 제한은 기존에 `X-Forwarded-For` 첫 값을 `CF-Connecting-IP`보다 먼저 사용했다. 개발 경로가 Caddy 없이 Cloudflare Tunnel→loopback 앱임을 읽기 전용으로 확인하고, 두 API를 기존 공통 클라이언트 키 함수의 Cloudflare 우선순위에 맞췄다. 임의로 바뀌는 전달 체인과 고정된 Cloudflare IP를 넣은 격리 HTTP에서 읽기 30회·게스트 세션 20회 다음 요청이 429인 **1 PASS/모바일 조건부 1 skip**, production web build·`pnpm check` PASS다. 이는 애플리케이션 헤더 선택 검사이며 공개 edge의 실제 헤더 정규화·운영 proxy 구성 PASS는 아니다. [Cloudflare의 헤더 설명](https://developers.cloudflare.com/fundamentals/reference/http-headers/)에 따라 실제 edge→origin 경계의 별도 확인을 남긴다.
+
+P4의 선택 공동 작성자 선진입에서, 소유자가 편집기를 먼저 열지 않아 `sync_documents`가 아직 없는 경우 공유 화면이 편집 가능 상태로 진입하지 못하는 결함을 실제 브라우저로 재현했다. 활성 grant·가사 존재를 actor RLS로 검사한 뒤 owner 문서를 생성하고, 생성 후 actor 권한을 다시 확인하도록 보정했다. grant 전·회수 후 비공개와 최초 본문 snapshot을 일회용 PostgreSQL 통합 **1 PASS**, 작성자 선진입 PC/mobile **2 PASS**로 확인했다. 별도로 IndexedDB quota 실패를 PC/mobile 선택 작성자 **2 PASS**, 공개 게스트 **2 PASS**로 주입해 입력 복구 표시·읽기 전용 전환·서버 미반영·저장소 복원 후 재시도 반영을 확인했다. 첫 게스트 검사 2건은 선택 작성자용 상태 문구를 잘못 기대해 실패했고, 게스트 화면의 실제 실패 안내 문구로 수정한 동일 입력이 2 PASS다. 실기기·OS IME/AT 결과는 아니다.
+
+추가로 Docker Node 24의 첫 검사용 이미지에서 `pnpm check` PASS, 전체 DB Vitest **506 PASS/8 조건부 skip**을 확인했다. 이 이미지에는 최근 연결 관리 단위 검사 3건이 없어 전체 원본을 다시 이미지로 만들고 `pnpm check`와 전체 DB Vitest **509 PASS/8 조건부 skip**을 확인했다. 그 뒤 공개 API IP 우선순위 2파일은 별도 check·production build·집중 HTTP PASS이며 최종 tree의 전체 CI는 아직 필요하다. 로컬 일회용 b→a application rollback은 b가 만든 합성 가사를 기존 a 웹 image가 같은 DB에서 읽고 export함을 확인하고 합성 자료를 제거했다. native 포함 이전 웹 image 검사는 위 추가 결과와 같고 실제 PC 설치물 rollback은 미실행이다. 개발 DB는 읽기 전용으로 31 migration·native 1150/프로필 1151 객체·RLS/역할을 확인했으나 세 유형의 전체 앱 수용과 실제 proxy 위조 헤더 검사는 남았다. 따라서 P4 `review`, P5·1.2.0 미착수다.
+
+### 2026-09-24 — P4 전체 브라우저·DB 재검사와 남은 gate
+
+`1.1.7b` P4의 일회용 PostgreSQL/production Chromium 전체 검사는 첫 **421 PASS/49 조건부 skip/2 FAIL**(새 템플릿 취소 확인을 기존 테스트가 승인하지 않음) 후 현재 계약에 맞는 PC·모바일 집중 2 PASS, 수정 후보 전체 **424 PASS/50 조건부 skip/0 FAIL**로 확인했다. UI-03 남은 연결 관리의 역순 응답 단위 3 PASS, UI-08 모바일 320/360/390/430px×양 테마 하단 nav/FAB 실제 브라우저 겹침·hit-test 8조합 PASS, BE-02 SSR page→API 세션 갱신 HTTP/DB 1 PASS다. 최신 worktree의 격리 DB 전체 Vitest **508 PASS/8 조건부 skip**, `pnpm check`·production web build PASS. 전체 브라우저 build 뒤 UI-03 unmount 정리 1줄이 추가됐으므로 최종 동일 tree CI/이미지 인수를 대체하지 않는다. 기존 native 1150+1151 DB·실제 proxy·공유 실패 주입·22원인 최종 판정·rollback·최종 CI/네 signed image/동일 SHA 개발 인수가 남아 `review`, P5·1.2.0 미착수다. 물리 기기/OS IME/AT는 사용자 보류의 미실행이다. `main`·릴리스 서버·개발 P3 배포는 유지한다. [P4 기록](../3.Redesign-phase/1.1.7.b/4phase.md)을 따른다.
+
+### 2026-09-24 — 1.2.0까지 진행 지시·1.1.7b P4 추가 후보
+
+사용자가 1.2.0까지 진행하되 실제 기기 검증은 나중으로 미루라고 명시했다. 이 예외는 물리 기기·실제 OS IME·AT의 **미실행 보류**이지 대리 자동화 PASS가 아니다. 다른 P4/P5 원인·DB/rollback·브라우저·CI/동일 SHA 개발 인수는 면제되지 않으므로 현재 `review`와 P5/1.2.0 미착수를 유지한다. 현재 브랜치의 미확정 후보로 OPS-01 kernel flock+구/신 잠금 fence, ES-01 raw prompt 동시 이동 store 수렴, ES-03 문장 조합 delta, ES-06/07 공유 편집 내구성·준비 상태, BE-02 SSR 읽기 전용 세션 조회, BE-03 안정된 공개 링크 요청 hash/재시도 안내, UI-02 템플릿 내부 이탈 확인을 보정했다. Docker Node 24/pnpm 11.25 전체 check, 일회용 PostgreSQL `lyricscloud_test` 전체 Unit/DB **505 PASS/8 조건부 skip**, OPS-01 shell **22 PASS**. 실제 HTTP/브라우저, 실제 암호화 backup/restore, 세 DB 유형·rollback, 22원인 최종 판정, 전체 CI·signed image·동일 SHA 개발 인수는 미완료다. 정식 제품 버전·개발 서버 P3 SHA·main·릴리스 서버는 변경하지 않았다.
+
+같은 후보의 후속 격리 실행에서 production web build PASS, 공개 링크 동일 POST 재시도 desktop/mobile **4 PASS/2 조건부 skip**, 템플릿 draft desktop/mobile **2 PASS**, 공유 selected/guest 기존 수명 **2 PASS/2 조건부 skip**, prompt editor **16 PASS**, profile/홈 경계 **6 PASS**를 확인했다. Caddy 예시는 `CF-Connecting-IP`/`X-Real-IP` 제거와 avatar PATCH 전용 2,200,000-byte 제한으로 보정하고 Caddy 2.10.2 adapter 검증 PASS; 실제 배포 proxy의 헤더 신뢰 경계는 미확인이다. 일회용 DB에서 1151 populated 1140→1151 반복·application-first rollback/recovery PASS. 전체 암호화 backup→손상/잘못된 키 거부→restore→제품 smoke는 **최종 PASS**다. 첫 두 backup smoke 시도는 짧은 이미지 별칭을 production `BUILD_ID`로 전달해 readiness 503이었고, 40자리 동일 commit SHA로 이미지 태그를 바로잡은 뒤 PASS했다. 로컬 기본 DB는 읽기 전용 조회에서 migration 20개·최대 1000이며 1150/1151 환경이 아니므로 변경하지 않았다. 기존 native 1150+1151 실제 환경·세 유형 전체 동등성, 나머지 22원인, 원격 CI/개발 인수는 여전히 미완료다.
+
+### 2026-09-24 — 1.1.7b P4 착수
+
+P3 문서 인수 SHA `cc4fc5646a395023f1e95b04985ec9da1759c74b`의 깨끗한 worktree에서 `phase/1.1.7b-p4-regression-blockers`를 분기했다. 담당 Codex, 작업 `LC-RD-117B-P4-01~08`; 현재 b 기능 기준은 P3 SHA `1626c754d1ebc581f01c4d29873319827be0b6fd`, 원래 0922 review 입력과 BLOCKERS 22개를 독립 재판정한다. P4 코드·DB 환경 행렬·rollback·필수 CI·이미지·개발 인수는 아직 미완료다. 사용자는 실제 Windows/iOS/Android 기기·OS IME·AT 자료를 현재 제공하기 어렵다고 답했다. 자동화 대리 결과를 실기기 PASS로 쓰지 않으며 필수 gate가 남으면 P4 `review`에서 멈춘다.
+
+### 2026-09-24 — 1.1.7b P4 부분 보정·review
+
+BE-01 최초 OIDC discovery 503 뒤 같은 adapter의 재시도 실패, BE-04 생성 가능한 이모지 101자 프롬프트의 삭제 확인 거부를 현재 b tree의 신규 회귀에서 각각 수정 전 FAIL로 재현했다. 실패 Promise만 캐시에서 해제하고 동시 요청/성공 캐시는 유지하는 최소 수정, 삭제 확인 제목을 생성 정책과 같은 code-point 길이로 검사하는 최소 수정을 적용했다. 수정 후 집중 Unit 7 PASS, Docker `pnpm check`·production web build PASS, 일반 Unit **376 PASS/128 DB 조건부 skip**, BE-04 실제 격리 DB HTTP desktop/mobile **2 PASS**다. 최초 HTTP 시험은 원인 대상이 아닌 곡 제목 101자 fixture가 생성 400으로 거부된 것이며, 원래 리뷰 대상인 프롬프트로 정정한 실행만 PASS다. 실제 외부 Google 장애/복구는 미실행이다.
+
+OPS-01은 현재 backup shell의 격리 SIGKILL 재현에서 뒤이은 실행 두 번 모두 실패하고 잠금이 남아 **여전히 재현**된다. 구/신 잠금 혼용·실행 중 백업 보호를 해결하지 않은 단순 파일 잠금 교체는 적용하지 않았다. 나머지 원인별 최종 판정, 세 DB 환경·rollback, 실제 OS IME/물리 기기/AT(사용자 현재 제공 어려움), 전체 P4 CI·signed image·동일 SHA 개발 인수는 미완료다. 따라서 P4는 `review`, P5와 1.2.0은 시작하지 않는다. [P4 부분 증거](../3.Redesign-phase/1.1.7.b/4phase.md)를 따른다. 기존 P3 개발 배포·DB·`main`·정식 tag/image·릴리스 서버는 유지했다.
 
 ### 2026-09-24 — 1.1.7b P3 완료·P4 진입 대기
 
@@ -264,13 +320,15 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.7a P4 | complete | 후보 `7621e8e`, 첫 CI `35043201011` performance CV FAIL 기록, 동일 SHA 재실행 `35043634916` Unit 393/E2E 393/release 10·네 signed dev image PASS·동일 SHA 공개 재시작/새 session·두 owner 격리·홈 guard 인수 완료. 실제 OS/기기·AT 미실행 |
 | 1.1.7b P1 | complete | 기능 `a04bbcb`, PR `35849543496` verify·push `35849536417` attempt 2 verify/네 signed dev image PASS, 동일 SHA 개발 공개 live/ready·auth/CSS·네 health와 native 1150/1151 DB 지문 보존. P2~P5 작업은 미완료 |
 | 1.1.7b P2 | complete | 기능 `3915a71`, PR `35866450768` verify·push `35866445486` verify/네 signed dev image PASS, 동일 SHA 개발 공개 live/ready·PC/mobile 가사/Suno/PWA smoke와 합성 계정 정리 완료. P3 착수 전 사용자 요청으로 일시 중단 |
-| 1.1.7b P3 | in_progress | P2 문서 인수 `dcfa2b8`에서 전용 브랜치 분기; WC-07/08/10(곡)/11/13~16의 코드·검증·개발 인수 미완료 |
+| 1.1.7b P3 | complete | 기능 `1626c75`, PR/push Actions `35876265426`/`35876233972` verify·네 signed image PASS, 동일 SHA 개발 공개 PC/mobile·DB 1151 인수 |
+| 1.1.7b P4 | complete | 기능 `ddc1d7c`, PR/push Actions `35991662815`/`35990242886` verify·네 signed image PASS, 1152/rollback·같은 SHA 개발 공개 저장/격리/재시작 인수; 실기기 사용자 보류 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
-| Codex | 1.1.7b/P3 | LC-RD-117B-P3-01~09 | apps/collaboration, packages/auth/database/domain/editor copy, web list/search/song/trash/dialog/style와 대응 시험 | P2 인수 `dcfa2b8`, source head `c230c02`/기능 `0375825`; 보호 계획·native·운영 환경 불변 | 2026-09-23 | in_progress |
+| Codex | 1.1.7b/P4 | LC-RD-117B-P4-01~08 | 회귀·차단·1152 DB 호환·application rollback·공개 개발 인수 | P3 문서 `cc4fc56`, 기능 `ddc1d7c`/Actions `35990242886`·`35991662815`; 실기기 사용자 보류 | 2026-09-24 | complete |
+| Codex | 1.1.7b/P3 | LC-RD-117B-P3-01~09 | apps/collaboration, packages/auth/database/domain/editor copy, web list/search/song/trash/dialog/style와 대응 시험 | P2 인수 `dcfa2b8`, source head `c230c02`/기능 `0375825`; 기능 `1626c75` 동일 SHA 개발 인수 | 2026-09-23 | complete |
 | Codex | 1.1.7b/P2 | LC-RD-117B-P2-01~09 | 편집·저장·탐색·PWA 코드/호출자/시험 통합 | P1 기능 `a04bbcb`, source `c230c02`/기능 `0375825`, 완료 기능 `3915a71`·동일 SHA 개발 공개 인수; 보호 계획 문서 불변 | 2026-09-23 | complete; P3 전 사용자 요청 일시 중단 |
 | Codex | 1.1.7b/P1 | LC-RD-117B-P1-01~08 | 버전/source freeze·release/image/deploy validator·환경 경계·DB matrix·CI/개발 인수 | 기능 `a04bbcb`, PR/push Actions `35849543496`/`35849536417`와 동일 SHA 공개 개발 인수 완료 | 2026-09-23 | complete |
 | Codex | 1.1.7b 선행 통합 계획 (구현 Phase 아님) | PLAN-RD-117B | 3.Redesign-phase/1.1.7.b, 후속 순서·후보 소유권·버전 정책·실행 STATUS의 다음 계획 | 사용자 1.1.8 웹 안정화 선행 통합 지시; source c230c02/기능0375825 | 2026-09-23T12:18+09:00 | documented (5 Phase·42작업·24수용 기준·18 WC 상세 계획 및 문서 검증; 제품 미착수) |

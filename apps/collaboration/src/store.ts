@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
 import * as Y from "yjs";
 import {
-  normalizePromptToken, projectUniquePromptTokens, REVISION_POLICY, serializePromptTokens, validatePromptSentenceText,
+  normalizePromptToken, projectFirstPromptOccurrences, projectUniquePromptTokens, REVISION_POLICY, serializePromptTokens, validatePromptSentenceText,
   type CheckpointReason, type PromptMode, type PromptTokenValue, type RestoreRevisionInput
 } from "@lyricscloud/domain";
 import { bodyHash, captureRevision, pruneRevisions, summarize, type RevisionRow } from "./revisions.js";
@@ -139,13 +139,21 @@ export class CollaborationStore {
   }
 
   async findSharedDocument(actorId: string, resourceId: string) {
-    return this.#owned(actorId, async (client) => {
-      const row = (await client.query<{ document_key: string }>(`select d.document_key
-        from sync_documents d join lyric_read_grants g on g.resource_id=d.resource_id and g.owner_id=d.owner_id
-        where d.resource_id=$1 and g.grantee_id=$2 and g.state='active'
-          and (g.expires_at is null or g.expires_at>statement_timestamp())`, [resourceId, actorId])).rows[0];
-      return row ? this.loadDocumentForActor(actorId, row.document_key) : null;
+    const ownerId = await this.#owned(actorId, async (client) => {
+      const row = (await client.query<{ owner_id: string }>(`select g.owner_id
+        from lyric_read_grants g join resources r on r.id=g.resource_id and r.owner_id=g.owner_id
+        join lyrics l on l.resource_id=r.id and l.owner_id=r.owner_id
+        where g.resource_id=$1 and g.grantee_id=$2 and g.state='active'
+          and (g.expires_at is null or g.expires_at>statement_timestamp())
+          and r.type='lyrics' and r.deleted_at is null`, [resourceId, actorId])).rows[0];
+      return row?.owner_id ?? null;
     });
+    if (!ownerId) return null;
+    // A recipient may open the share before the owner ever opens the editor.
+    // Creating the owner document is safe only after an active grant is found;
+    // loadDocumentForActor rechecks that grant after creation, including revocation races.
+    const document = await this.ensureDocument(ownerId, resourceId);
+    return document ? this.loadDocumentForActor(actorId, document.document_key) : null;
   }
 
   async loadPublicDocument(tokenDigest: string, linkId: string): Promise<PublicDocumentAccess | null> {
@@ -542,15 +550,14 @@ function documentContent(document: Y.Doc, resourceType: EditableResourceType): s
 
 function readPromptState(document: Y.Doc): { title: string; mode: PromptMode; items: Array<{ occurrenceId: string; displayValue: string }>;
   tokens: PromptTokenValue[]; sentenceText: string } {
-  const seen = new Set<string>();
-  const items = document.getArray<unknown>("prompt-tokens").toArray().map((value) => {
+  const rawItems = document.getArray<unknown>("prompt-tokens").toArray().map((value) => {
     if (!value || typeof value !== "object") throw new Error("SYNC_PROMPT_INVALID");
     const candidate = value as { occurrenceId?: unknown; displayValue?: unknown };
     if (typeof candidate.occurrenceId !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(candidate.occurrenceId)
-      || seen.has(candidate.occurrenceId) || typeof candidate.displayValue !== "string") throw new Error("SYNC_PROMPT_INVALID");
-    seen.add(candidate.occurrenceId);
+      || typeof candidate.displayValue !== "string") throw new Error("SYNC_PROMPT_INVALID");
     return { occurrenceId: candidate.occurrenceId, displayValue: normalizePromptToken(candidate.displayValue).displayValue };
   });
+  const items = projectFirstPromptOccurrences(rawItems);
   const modeValue = document.getMap<unknown>("prompt-mode").get("value");
   if (modeValue !== undefined && modeValue !== "tags" && modeValue !== "sentence") throw new Error("SYNC_PROMPT_INVALID");
   const mode: PromptMode = modeValue === "sentence" ? "sentence" : "tags";

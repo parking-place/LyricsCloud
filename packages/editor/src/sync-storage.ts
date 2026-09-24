@@ -59,7 +59,7 @@ export interface RejectedWriterDraft {
   permissionEpoch: number;
   writeEpoch: number;
   authoredText: string;
-  reason: "write-revoked" | "read-revoked" | "epoch-stale" | "rate-limited";
+  reason: "write-revoked" | "read-revoked" | "epoch-stale" | "rate-limited" | "storage-failed";
   rejectedAt: string;
 }
 

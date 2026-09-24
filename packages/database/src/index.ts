@@ -1,6 +1,6 @@
 import { createDatabasePool } from "./pool.js";
 
-export const CURRENT_SCHEMA_VERSION = "1151_profile_customization.sql";
+export const CURRENT_SCHEMA_VERSION = "1152_prompt_dictionary_cascade.sql";
 
 export * from "./auth.js";
 export * from "./beta-access.js";

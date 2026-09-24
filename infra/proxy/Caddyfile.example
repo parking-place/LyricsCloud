@@ -4,12 +4,40 @@
 
 lyrics.example.invalid {
   encode zstd gzip
-  request_body { max_size 2MB }
+
+  @avatarUpload {
+    method PATCH
+    path /api/profile/avatar
+  }
+  handle @avatarUpload {
+    # The app accepts 2 MiB plus 50 KiB for the multipart envelope.
+    request_body {
+      max_size 2200000
+    }
+    reverse_proxy web:3000 {
+      header_up -CF-Connecting-IP
+      header_up -X-Real-IP
+    }
+  }
 
   handle_path /collaboration/* {
-    reverse_proxy collaboration:3001
+    request_body {
+      max_size 2MB
+    }
+    reverse_proxy collaboration:3001 {
+      header_up -CF-Connecting-IP
+      header_up -X-Real-IP
+    }
   }
-  reverse_proxy web:3000
+  handle {
+    request_body {
+      max_size 2MB
+    }
+    reverse_proxy web:3000 {
+      header_up -CF-Connecting-IP
+      header_up -X-Real-IP
+    }
+  }
 
   header {
     Strict-Transport-Security "max-age=31536000; includeSubDomains"

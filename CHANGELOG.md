@@ -7,6 +7,7 @@
 - P2에서 가사·라임·프롬프트 초안/IME/자동 저장, 안전한 화면 이동, 표시 설정의 늦은 저장 응답, Suno 수동 모델 초안, 가사 복제, 템플릿 원문과 PWA 다중 build/업데이트 보호를 통합했다. 프로필 미저장 상태에서 강제 PWA 갱신을 막는다.
 - P2 기능 SHA `3915a71`의 전체 로컬 Chromium 410 PASS/44 skip, PR/push 필수 CI·네 signed dev image와 동일 SHA 개발 공개 PC/mobile 가사·Suno·PWA 재진입 smoke를 완료했다. 합성 계정은 삭제했고 기존 DB native 1150/profile 1151 이력은 보존했다. P3~P5의 나머지 통합·심화 검증과 정식 출시는 아직 미완료이며 사용자 요청으로 P3 전 일시 중단했다.
 - P3에서 목록 응답 경쟁·순서/즐겨찾기, 곡 부분 저장, dialog/복사, 인증 만료, 협업 projection, guest 회수, export/trash 복구를 통합했다. 기능 SHA `1626c754`의 전체 Chromium 419 PASS/49 조건부 skip, 원격 Unit/DB 494 PASS/8 조건부 skip, PR/push CI·네 signed dev image와 동일 SHA 개발 공개 목록·export·휴지통 smoke를 완료했다. P4/P5의 최종 차단 해소·실기기·rollback 및 정식 출시는 아직 미완료다.
+- P4 로컬 검토 후보에서 일시적인 OIDC discovery 실패 뒤 같은 프로세스의 재시도를 허용하고, 생성 가능한 Unicode 프롬프트 제목의 완전 삭제 확인 길이 단위를 맞췄다. 현재는 로컬 집중·격리 HTTP 검증만 완료했으며 백업 잠금과 실기기 등 필수 차단, 원격 CI·개발 인수가 남아 개발 배포/릴리스에 적용하지 않았다.
 
 ## [1.1.7a] - 2026-09-16
 
