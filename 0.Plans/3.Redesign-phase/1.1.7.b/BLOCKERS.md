@@ -74,7 +74,7 @@ OPS-01의 위 **수정 전 재현** 뒤 kernel `flock`+영구 구/신 fence 후�
 
 ### 2026-09-24 UI/세션 추가 판정 — 최종 resolved 아님
 
-- `AC-RD-117B-20/23` 신규 복원 차단: native 포함 일회용 DB를 `pg_dump`/복원하면 `0500`의 prompt dictionary `RESTRICT` FK 생성 순서로 합성 계정 삭제가 실패했다. 기존 이행 DB에서는 같은 입력이 성공했다. 데이터와 과거 checksum을 변경하지 않는 `1152` forward migration의 `NO ACTION DEFERRABLE` 뒤 복원 DB 전체 DB Vitest 509 PASS/8 조건부 skip·합성 계정 0건, 단독 dictionary 삭제 23503이다. 같은 DB에서 b image가 만든 프롬프트를 이전 a image가 원문 그대로 조회·export했으며 합성 자료 0건으로 정리했다. 이는 원래 22개 리뷰 ID에 새 번호를 끼워 넣은 것이 아니라 DB/rollback gate의 별도 발견이며, native 포함 이전 image rollback·개발 DB 공개 인수 전까지 `review`다.
+- `AC-RD-117B-20/23` 신규 복원 차단: native 포함 일회용 DB를 `pg_dump`/복원하면 `0500`의 prompt dictionary `RESTRICT` FK 생성 순서로 합성 계정 삭제가 실패했다. 기존 이행 DB에서는 같은 입력이 성공했다. 데이터와 과거 checksum을 변경하지 않는 `1152` forward migration의 `NO ACTION DEFERRABLE` 뒤 복원 DB 전체 DB Vitest 509 PASS/8 조건부 skip·합성 계정 0건, 단독 dictionary 삭제 23503이다. 같은 DB에서 b image가 만든 프롬프트를 이전 a image가 원문 그대로 조회·export했으며 합성 자료 0건으로 정리했다. 별도 1152 native 복제 DB에서는 이전 native 포함 `0375825` image가 b 작성 프롬프트를 native session/API로 원문·토큰 일치 조회했고 b image의 native route는 404였다. 32 migration/native 테이블 2개 보존, 합성 사용자·세션·자료 0건 정리. 첫 UI variant/ACL/token fixture 실패는 PASS가 아니다. 이는 원래 22개 리뷰 ID에 새 번호를 끼워 넣은 것이 아니라 DB/rollback gate의 별도 발견이며, 실제 PC 설치물·개발 DB 공개 인수 전까지 `review`다.
 - 1152 일회용 웹 DB의 전체 production Chromium 회귀는 **432 PASS/54 조건부 skip/0 FAIL**(486건)이다. 원래 22개 각 행의 인수·실제 공개 proxy/개발 서버·CI를 일괄 해결로 간주하지 않는다.
 
 - 최신 추가 후보: 프롬프트 두 탭에서 서버 원문은 정확히 저장됐지만 두 번째 탭이 ACK로 비워진 공동 outbox를 알지 못해 `동기화 중`에 남는 간헐 상태를 재현했다. ACK 삭제 BroadcastChannel 통지와 오래된 상태 조회 폐기 뒤 집중 40회와 전체 Chromium 430 PASS/54 조건부 skip/0 FAIL이다. 이는 `ES-03` 원문·저장 표시 수용의 추가 근거이며 최종 SHA/CI/개발 인수 전에는 resolved가 아니다.
@@ -92,3 +92,34 @@ OPS-01의 위 **수정 전 재현** 뒤 kernel `flock`+영구 구/신 fence 후�
 - `UI-03`: 기존 네 목록의 세대 회귀 외에 남았던 연결 관리의 유형/필터/검색 debounce 경합을 최소 보정하고 컴포넌트 단위 3 PASS. 연결 관리 실브라우저 HTTP 역순 주입과 최종 CI는 남는다.
 - `UI-08`: 현재 B-1 여섯 칸의 네 번째 예약 위치에 FAB를 맞춘 뒤 production Chromium 모바일 320/360/390/430px×양 테마에서 최하단 scroll·겹침 면적 0·프롬프트 오른쪽 hit-test 8조합 PASS. nav를 viewport 고정으로 바꾸는 코발트 설계가 아니며 실제 OS/키보드/safe-area는 사용자 보류·미실행이다.
 - `UI-04/05`: 원래의 목록 복제 표시/네트워크 실패 문제는 b의 해결로 보지 않는다. 1.2.5 배정과 P2 영향 판정을 유지한다. 실제 중복·입력 손실 등 필수 차단으로 악화되면 이 배정만으로 면제하지 않는다.
+
+### 2026-09-24 P4 행별 중간 판정 — 후보 `6994961`, 최종 봉인 아님
+
+아래 `국소 통과`는 각 행의 명시한 대역·DB·브라우저 수준에만 해당한다. 22행 전체의 최종 CI·같은 SHA 개발 공개 인수 및 사용자 보류 실기기 검증을 뜻하지 않는다. `후속 P2`는 현재 원인이 남아 있음을 뜻하며 resolved 표기가 아니다.
+
+| 원인 | 현재 동일 입력·영향 판정 | 남은 인수 |
+|---|---|---|
+| BE-01 | 첫 OIDC discovery 503→회복 재현 뒤 캐시 보정, adapter 3 PASS | 실제 Google 장애는 미실행; 최종 CI/공개 인수 |
+| BE-02 | SSR의 세션 갱신 미소비→cookie 가능한 API 갱신을 HTTP/DB 1 PASS | 최종 CI/공개 인수 |
+| BE-03 | 공개 링크 동일 POST 시간차 replay를 PC/mobile 4 PASS, URL 재발급·중복 생성 없음 | 최종 CI/공개 인수 |
+| BE-04 | Unicode 제목 정확 일치 삭제를 실제 HTTP/DB PC/mobile 2 PASS | 최종 CI/공개 인수 |
+| ES-01 | 동시 raw 이동/삭제의 first-occurrence 화면·서버 투영 및 DB store/ACK 국소 통과 | 실제 장기 네트워크 경쟁·최종 CI |
+| ES-02 | 부분 치환·emoji·undo의 채택된 CRDT 회귀와 전체 브라우저 정상 통과 | 겹침 전 범위·실제 OS IME는 별도 |
+| ES-03 | 제목/문장 합성 조합과 remote 삽입 5-project 20 PASS; 프롬프트 두 탭 ACK 표시 40회 PASS | 실제 OS IME 사용자 보류; 최종 CI/공개 인수 |
+| ES-04 | checkpoint 후 변환 재검사와 기존 historical-sync 브라우저 회귀 통과 | 모든 변환/권한 회수 경쟁은 별도 |
+| ES-05 | 라임 PATCH 지연·프롬프트 quota 메모리 입력의 PWA/unload 차단 PC/mobile 2 PASS | 서비스 업데이트 실제 공개 인수 |
+| ES-06 | selected/guest 각각 PC/mobile quota 실패·복구·재시도 2+2 PASS | 실제 기기 저장소 실패 사용자 보류 |
+| ES-07 | 신규 공유 가사 작성자 선진입 정지 재현→DB 1·PC/mobile 2 PASS | 공개 재연결·최종 CI |
+| UI-01 | 프로필 이탈/홈 guard와 미저장 입력의 전체 브라우저 회귀 통과 | 실제 OS back/reload/PWA는 사용자 보류 또는 공개 재검증 |
+| UI-02 | 템플릿 형식별 draft와 유형/목록/취소 이탈 확인 브라우저 2 PASS | 최종 CI/공개 인수 |
+| UI-03 | 4목록과 song-link-manager query 세대, 지연 HTTP PC/mobile 2 PASS | 실제 공개 지연·후속 확대 UX |
+| UI-04 | `source=user`에서 복제 뒤 새 ID가 목록에 나타나지 않고 원본 미리보기가 유지되는 production Chromium 결함 재현 1건. 원문 변경은 없음 | 1.2.5 P3; 신규 자료 선택·focus·정렬 보정 |
+| UI-05 | 복제 성공 응답만 브라우저에서 끊은 뒤 재클릭하면 서로 다른 requestId로 서버 복제본이 2개 생성되며, 실패 안내 없이 화면 목록은 원본 1개뿐인 production Chromium 결함 재현 1건 | 1.2.5 P3; 동일 키 재시도·결과 조정·mutation 오류 표시 |
+| UI-06 | 그룹 표시/키보드 동일 순서 코드 및 통합 검색 ArrowUp/Down/Enter 브라우저 회귀 통과 | 실제 AT 사용자 보류; 로딩 중 그룹 변동 추가 판정 |
+| UI-07 | quick-add 오류가 modal sibling에 남는 source 경로 유지. 입력 손실·인가 확대의 증거는 없지만 오류 읽기 위치 문제는 unresolved P2 | 1.2.1 P3; 실제 AT 사용자 보류 |
+| UI-08 | B-1 모바일 320/360/390/430px×양 테마 문서 끝 nav/FAB 겹침 0·hit-test 8조합 PASS | 실제 safe area/키보드 사용자 보류; 1.2.0 코발트 배치 별개 |
+| OPS-01 | KILL/동시 잠금 shell 22 PASS, 일회용 암호화 backup/restore·RPO/손상/key 거부 PASS | 실제 timer/운영 전환·최종 CI |
+| OPS-02 | 적용 개발 경로 Cloudflare Tunnel→loopback web 확인, 고정 CF-IP/변동 XFF HTTP 30+20회 뒤 429 | 공개 edge에서 spoof/rewrite·배포 SHA 확인 전 조건부 P1 open |
+| OPS-03 | Caddy 예시 일반/사진 상한 분리와 `adapt --validate` PASS. 개발 경로에는 Caddy 미적용 | 실제 개발 업로드 경계·릴리스 경로는 별도 판정 |
+
+특히 UI-04/05/07을 전체 b 해결로 쓰지 않는다. UI-04/05 재현은 합성 계정·일회용 DB의 원문을 바꾸거나 권한을 확대하지 않았고 원래 P2의 탐색·중복/오류 안내 영향이 확인됐다. 입력 손실·인가 확대·복구 불능으로 확대된 근거는 없으므로 1.2.5 후속 해결 배정은 유지하되, 새 근거가 나오면 P4 차단으로 승격한다. 이 진단 1건은 제품 통과 시험이 아니며 실행 후 합성 계정을 삭제하고 임시 시험 파일을 제거했다. 나머지 실제 proxy·서비스/PWA·CI/개발 인수 전에는 22행 최종 봉인이나 P5 진입을 선언하지 않는다.
