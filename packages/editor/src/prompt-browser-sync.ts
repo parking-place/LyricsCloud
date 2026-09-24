@@ -86,6 +86,7 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
   let projectionPending = false;
   let halted: "error" | "unavailable" | "conflict" | undefined;
   let state: LocalSyncState = "loading";
+  let reportSequence = 0;
   let retryDelay = 500;
   let retryTimer: ReturnType<typeof setTimeout> | undefined;
   let ackTimer: ReturnType<typeof setTimeout> | undefined;
@@ -112,6 +113,7 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
     emit(reason ?? "error");
   }
   async function report() {
+    const sequence = ++reportSequence;
     if (destroyed) return;
     if (halted) return emit(halted);
     if (!initialized) return emit("loading");
@@ -119,7 +121,7 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
     if (!navigator.onLine) return emit("offline");
     if (!connected) return emit("local");
     const queued = await storage.updates.where("documentKey").equals(documentKey).count();
-    if (destroyed || halted || pendingWrites || !connected) return;
+    if (sequence !== reportSequence || destroyed || halted || pendingWrites || !connected) return;
     emit(queued ? "syncing" : projectionPending ? "projection" : "ready");
   }
   function persist(update?: Uint8Array) {
@@ -181,6 +183,7 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
     } else if (message.type === "ack" && message.updateId === inFlight) {
       clearTimeout(ackTimer);
       await storage.updates.where("updateId").equals(message.updateId!).delete();
+      channel?.postMessage({ type: "outbox-changed" });
       inFlight = undefined;
       projectionPending = message.projection === "pending";
       await pump();
@@ -212,8 +215,10 @@ export async function createBrowserPromptSync(options: BrowserPromptSyncOptions)
       documentKey = result.documentKey;
       if (!channel) {
         channel = new BroadcastChannel(`${prefix}${documentKey}`);
-        channel.onmessage = (event: MessageEvent<Uint8Array>) => {
-          if (event.data instanceof Uint8Array && !halted) applyRemote(event.data);
+        channel.onmessage = (event: MessageEvent<Uint8Array | { type: string }>) => {
+          if (halted) return;
+          if (event.data instanceof Uint8Array) applyRemote(event.data);
+          else if (event.data?.type === "outbox-changed") void report().catch(() => fail("error"));
         };
       }
       const url = new URL(`/collaboration/sync/${documentKey}`, location.origin);

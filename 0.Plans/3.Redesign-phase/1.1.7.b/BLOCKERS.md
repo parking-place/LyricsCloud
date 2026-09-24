@@ -74,10 +74,16 @@ OPS-01의 위 **수정 전 재현** 뒤 kernel `flock`+영구 구/신 fence 후�
 
 ### 2026-09-24 UI/세션 추가 판정 — 최종 resolved 아님
 
+- 최신 추가 후보: 프롬프트 두 탭에서 서버 원문은 정확히 저장됐지만 두 번째 탭이 ACK로 비워진 공동 outbox를 알지 못해 `동기화 중`에 남는 간헐 상태를 재현했다. ACK 삭제 BroadcastChannel 통지와 오래된 상태 조회 폐기 뒤 집중 40회와 전체 Chromium 430 PASS/54 조건부 skip/0 FAIL이다. 이는 `ES-03` 원문·저장 표시 수용의 추가 근거이며 최종 SHA/CI/개발 인수 전에는 resolved가 아니다.
+- `ES-05` 추가: 지연된 라임 metadata 저장과 프롬프트 로컬 quota 실패에서 PWA 적용·unload 차단, 메모리 원문 및 서버 미반영을 PC/mobile 2 PASS로 확인했다. 첫 2 FAIL은 GET에 소모된 일회성 test route fixture를 보정한 결과와 구분한다.
+- `UI-03`/합성 IME 교차: 연결 관리 역순 HTTP와 문장·제목 조합 회귀를 포함한 5-project 20 PASS. 첫 Firefox 2 FAIL은 `fill()`의 자동 조합 종료로 시험 전제 위반을 이벤트 로그로 확인한 뒤 조합 유지 입력 이벤트로 수정했다. 실제 Firefox/OS IME 입력이나 물리 기기 검증은 아니다. 나머지 22행 최종 판정 및 실제 proxy/CI/개발 인수는 계속 남는다.
+
 - `ES-07`: owner 첫 화면을 선행하던 기존 검사에서는 숨겨졌으나, 새 공유 가사에 작성자가 먼저 들어오면 협업 문서가 아직 없어 편집이 무기한 준비 상태인 것을 PC/mobile에서 재현했다. 활성 grant·가사/삭제 상태를 actor RLS로 확인→owner 문서 생성→actor grant 재확인 후보로 격리 DB 1 PASS, 선진입 브라우저 2 PASS. 최종 SHA·CI·개발 인수 전에는 `resolved`가 아니다.
 - `ES-06`: 선택 작성자/공개 게스트 각각 PC/mobile IndexedDB quota 실패 실제 주입 2+2 PASS. 입력 복구·서버 미반영·복원 후 재시도 반영을 확인했다. 첫 게스트 검사 2 FAIL은 화면별 안내 문구 기대 오류이며 수정한 동일 입력 2 PASS다. 실제 기기 저장소 실패는 사용자 보류·미실행이다.
 - `OPS-02`: 개발의 실제 경로는 Cloudflare Tunnel→loopback web이고 Caddy는 적용되지 않는다. 공개 읽기/게스트 세션 API의 임의 XFF 첫 값 우선 사용을 공통 Cloudflare IP 우선순위로 보정하고, 격리 HTTP 30+20 요청 뒤 429를 desktop 1 PASS로 확인했다. Cloudflare 실제 edge header와 릴리스 proxy의 적용 여부는 아직 확인하지 않았으며 이 결과로 최종 `resolved` 처리하지 않는다.
-- `OPS-01/02/03` 환경 경계: 일회용 암호화 backup/restore PASS와 개발 proxy의 loopback web/tunnel 구성 확인은 운영 timer·실제 위조 헤더 rewrite PASS가 아니다. b→a 일회용 웹 application rollback PASS이나 native 포함 PC image rollback은 미실행이다. 실제 개발 DB native 1150+1151의 31 migration·객체/역할·RLS는 읽기 전용 확인했으며 세 환경 앱 수용은 계속 남는다.
+- `UI-03`: 연결 관리의 늦은 라임 HTTP 응답→프롬프트 전환을 PC/mobile Chromium에서 2 PASS로 확인했다. 오래된 목록·총수·오류가 표시되지 않는다. 전체 최종 SHA CI/개발 인수 전에는 최종 `resolved`가 아니다.
+- native rollback/DB: 별도 일회용 native 1150+1151 DB에 31 migrations→b migrator 반복 PASS; b 합성 가사·export·사진을 이전 1.1.8 C3 웹 image가 보존했고 native session 200/b native route 404 및 사진 owner 200/타 계정 404를 확인했다. synthetic 계정·자료 0건 정리. 첫 beta key 누락 503·시험 해시 오류 401은 PASS 아님. 실제 PC 설치물/개발 배포 rollback과 공개 edge는 별도 미실행이다.
+- `OPS-01/02/03` 환경 경계: 일회용 암호화 backup/restore PASS와 개발 proxy의 loopback web/tunnel 구성 확인은 운영 timer·실제 위조 헤더 rewrite PASS가 아니다. b→a 및 위 native 포함 이전 웹 image 일회용 rollback은 PASS이나 실제 PC 설치물·개발 서버 전환은 미실행이다. 실제 개발 DB native 1150+1151의 31 migration·객체/역할·RLS는 읽기 전용 확인했으며 세 환경 앱 수용은 계속 남는다.
 
 - `BE-02`: 실제 SSR `/songs` 조회에서 renewal cookie와 DB 만료 갱신이 없고, 뒤이은 `/api/songs`에서 cookie·DB 만료가 함께 갱신됨을 격리 HTTP/DB desktop 1 PASS로 확인했다. 전체 후보 브라우저와 최종 CI/개발 인수 전까지 확정 아님.
 - `UI-03`: 기존 네 목록의 세대 회귀 외에 남았던 연결 관리의 유형/필터/검색 debounce 경합을 최소 보정하고 컴포넌트 단위 3 PASS. 연결 관리 실브라우저 HTTP 역순 주입과 최종 CI는 남는다.

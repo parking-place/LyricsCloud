@@ -39,15 +39,25 @@ AC-RD-117B-19~24 및 WC별 기존 수용. 입력 손실·거짓 저장·인가 �
 
 다음: [P5](5phase.md).
 
+## 2026-09-24 최신 로컬 회귀·잔여 (최종 인수 아님)
+
+- `ES-03`/동시 탭 상태: 서버의 정확한 문장 원문 반영 뒤에도 다른 탭이 공유 IndexedDB outbox 삭제를 통지받지 못해 `동기화 중`에 머무는 간헐 실패를 재현했다. prompt 문서 채널의 ACK 삭제 통지와 비동기 `report()` 세대 검사를 추가한 뒤 desktop/mobile 집중 40회 PASS. 최신 제품 코드의 전체 production Chromium은 **430 PASS/54 조건부 skip/0 FAIL**(484건)이다.
+- `ES-05`: 가로챈 라임 metadata PATCH가 완료될 때까지 업데이트 적용·beforeunload를 막고 회복 뒤 재허용, 프롬프트 IndexedDB quota 오류 뒤 메모리 원문/실패 표시·업데이트 적용·beforeunload 차단·서버 원문 불변을 PC/mobile **2 PASS**로 확인했다. 첫 실행 2 FAIL은 `times: 1` 가로채기가 GET에 소모된 시험 fixture 오류이며 제품 FAIL로 판정하지 않는다.
+- `UI-03` 연결 관리 지연 HTTP와 위 두 회귀를 포함한 Chromium/Firefox/WebKit PC·모바일 대리 **5-project 20 PASS**. 첫 매트릭스의 Firefox 합성 조합 2 FAIL은 Playwright `fill()`이 `compositionend`를 자동 발생시켜 조합 유지 조건이 깨진 것으로 이벤트 로그에서 확인했다. 원격 조합 경쟁을 유지하는 input 이벤트 fixture로 바꿔 동일 기대값 20 PASS했다. 물리 기기·실제 OS IME·AT PASS가 아니다.
+- 최신 제품 후보의 Docker 격리 DB 전체 Vitest **509 PASS/8 조건부 skip**, check·production build PASS. PWA 신규 검사와 합성 IME fixture를 포함한 최종 정확한 tree의 원격 전체 CI·서명 image·개발 공개 인수는 미실행이다. 22행 최종 판정, 세 DB의 전체 앱 계약, 실제 proxy·서비스 재시작/두 build/PWA/rollback이 남아 P4 `review`다.
+
 ## 2026-09-24 추가 구현 후보·검증 경계
 
 ### 2026-09-24 공동 작성 선진입·저장 실패·환경 rollback 추가
+
+- native 1150+1151 일회용 DB는 1.1.8 C3 migrator 31건 적용→b migrator 반복이 PASS했다. b `7da5235` 웹 image에서 만든 합성 가사를 native 포함 이전 웹 image `0375825`가 그대로 조회·export했고 native session API 200/b native route 404를 확인했다. b의 합성 프로필 사진도 이전 웹 image owner 200/외부 계정 404·프로필 참조 보존 PASS. 합성 계정·session·photo 0건으로 정리하고 시험 컨테이너를 중지했다. 첫 시도의 beta key 파일 누락 503과 두 번째 시험 토큰 해시 인코딩 401은 fixture/환경 오류이며 최종 성공으로 소급하지 않는다. 실제 PC 설치물 rollback·개발 서버 이전 image 전환은 미실행이다.
+- `UI-03`: 연결 관리에서 라임 HTTP 응답을 늦춘 뒤 프롬프트로 전환한 PC/mobile production Chromium 2 PASS; 오래된 목록·결과 수·오류가 새 유형에 침입하지 않았다. 기존 컴포넌트 단위 역순/페이지 경계 3 PASS와 별도 증거다.
 
 - `OPS-02`: 개발 proxy는 Caddy가 아니라 Cloudflare Tunnel→loopback web임을 확인했다. 공개 읽기·게스트 세션 IP 제한의 `X-Forwarded-For` 우선순위를 기존 공통 함수의 `CF-Connecting-IP` 우선순위로 정렬했다. 임의 XFF/고정 CF-IP 30+20회 뒤 429인 격리 HTTP desktop 1 PASS(모바일 조건부 skip), production web build와 check PASS. [Cloudflare 헤더 문서](https://developers.cloudflare.com/fundamentals/reference/http-headers/)의 edge 값 계약에 의존하며 실제 공개 edge의 header rewrite·운영 proxy는 미검증이다.
 
 - `ES-07`: 소유자가 `/lyrics`를 먼저 열지 않은 신규 공유 가사에서 작성자가 선진입하면 협업 문서 미생성으로 편집 준비가 끝나지 않는 실제 PC/mobile 재현을 확인했다. 유효 grant·가사/삭제 상태를 actor RLS로 먼저 확인하고 owner 문서를 생성한 후 actor 권한을 재검사하도록 최소 보정했다. 격리 PostgreSQL의 grant 전/후/회수 후·원문 snapshot 1 PASS, 선진입 브라우저 PC/mobile 2 PASS다. 최종 동일 tree 전체 인수 전에는 해결 완료로 표시하지 않는다.
 - `ES-06`: IndexedDB `put` quota 오류를 선택 작성자 PC/mobile 2건과 공개 게스트 PC/mobile 2건에 실제 주입했다. 서버 원문 미변경·복구 내용/복사 버튼·편집 잠금·저장소 복원 후 재시도 반영을 확인했다. 첫 게스트 2건은 선택 작성자 문구를 게스트 화면에 적용한 검사 기대 오류로 FAIL, 게스트 고유 실패 문구를 검증하도록 수정한 후 2 PASS다. 실제 OS/기기 저장소 오류는 미실행이다.
-- b 웹 image에서 만든 합성 가사를 a 웹 image로 읽은 일회용 DB의 application-first rollback은 동일 원문 조회·export PASS, 합성 계정/자료 0건 정리했다. native 포함 PC 이전 image rollback은 미실행이며 개발/운영 서버 전환이 아니다. 개발 DB의 31 migration 지문/native 객체·FK/RLS/역할은 읽기 전용 확인했지만 세 DB 유형의 전체 앱 수용, 실제 proxy 위조 헤더, 최종 CI/서명 image/동일 SHA 개발 공개 인수는 남는다.
+- b 웹 image에서 만든 합성 가사를 a 웹 image로 읽은 일회용 DB의 application-first rollback은 동일 원문 조회·export PASS, 합성 계정/자료 0건 정리했다. native 포함 이전 웹 image 검사는 위 추가 결과와 같고 실제 PC 설치물/개발·운영 서버 전환은 미실행이다. 개발 DB의 31 migration 지문/native 객체·FK/RLS/역할은 읽기 전용 확인했지만 세 DB 유형의 전체 앱 수용, 실제 proxy 위조 헤더, 최종 CI/서명 image/동일 SHA 개발 공개 인수는 남는다.
 
 - 사용자는 1.2.0까지 진행하고 **실제 기기 검증만 후속으로 보류**하도록 지시했다. Windows/iOS/Android 물리 기기·OS IME·AT는 미실행으로 남기고 자동화 브라우저를 대체 PASS로 기록하지 않는다. 다른 필수 gate는 그대로다.
 - `OPS-01`: 백업의 stale `mkdir` 잠금을 kernel `flock`으로 전환하고 영구 `.backup.lock` symlink로 구/신 실행을 상호 배제했다. legacy 잠금 디렉터리가 이미 존재하면 자동 제거 없이 fail closed·운영 사전 확인을 요구한다. SIGKILL/동시 시도/회복 및 백업 shell **22 PASS**, 이미지 안 `flock` 존재 확인. 실제 암호화 backup/restore와 운영 환경 전환은 미실행이다.

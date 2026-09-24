@@ -443,3 +443,7 @@ Git tracked와 hidden/untracked 공개 탐색에서 Future 관련 문서는 같�
 ## 2026-09-24 — 1.1.7b P4 공유 선진입·proxy 경계 중간 push 전 검수
 
 Git tracked·hidden/untracked 공개 탐색에서 Future 관련 문서는 동일 4개다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`은 직전 P4 SHA `2d6e2599b8fc4a9b397d9481de405d648af079fe`와 같고 129개 FF ID·체크·본문, 신규·이동·삭제가 없다. 다른 세 문서는 이 검수 기록 외 후보 범위 변경이 없다. 새 후보 재배정 없이 P4의 공유 선진입·저장소 실패·공개 API 신뢰 proxy 경계와 격리 rollback 결과만 `review`로 기록하며 P5/1.2.0을 선소비하지 않는다. private/ignored 자료 자동 공개, 보호 계획·native·main·정식 tag/image·릴리스 서버 변경은 없다. 직전 검수의 동일 입력을 재참조한다.
+
+## 2026-09-24 — 1.1.7b P4 동시 탭·PWA guard 중간 push 전 검수
+
+Git tracked와 hidden/untracked 공개 경로에서 Future 관련 문서는 기존 4개뿐이다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`은 직전 P4 SHA `7da5235012264c5a72afea96a72108a72515f5a3`와 같고 129개 FF ID·체크·본문에 변경·이동·삭제가 없다. 다른 세 문서는 검수 절차·scope·mapping이며 이 문단 외에 신규 후보 변경이 없다. 새 배정 없이 현재 P4의 동시 탭 ACK 상태·PWA 휘발 입력·연결 관리 및 합성 browser 교차만 검증했다. 실제 기기/OS IME/AT는 사용자 보류로 미실행, 나머지 P4 필수 gate도 `review`로 남긴다. private/ignored 원본 자동 공개, 보호 계획·native·main·정식 tag/image·릴리스 서버 변경은 없다. 동일 Future 입력은 직전 기록을 재참조한다.

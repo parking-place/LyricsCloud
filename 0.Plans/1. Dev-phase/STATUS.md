@@ -14,13 +14,23 @@ next_action: "1.1.7b P4 나머지 필수 차단·HTTP/브라우저·세 DB 유�
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
 
+### 2026-09-24 — P4 최신 로컬 통합·교차 엔진 후보
+
+프롬프트 두 탭의 원격 문장 병합 뒤 두 번째 탭이 공동 IndexedDB outbox의 ACK 삭제를 통지받지 못해 `동기화 중`에 머무는 간헐 오류를 재현했다. ACK 뒤 문서별 BroadcastChannel 알림과 오래된 비동기 상태 조회 결과 폐기를 보정했다. 서버의 정확한 원문 저장을 확인한 뒤 두 탭 모두 `방금 저장됨`이 되는 집중 desktop/mobile 40회 PASS, 같은 제품 코드의 전체 production Chromium **430 PASS/54 조건부 skip/0 FAIL**(484건)이다. 그 뒤 추가한 테스트 전용 PWA 휘발 입력 guard의 첫 실행은 GET이 일회성 요청 가로채기를 소비한 fixture 오류로 2 FAIL; 조건 수정 뒤 desktop/mobile **2 PASS**다. Firefox의 합성 IME 첫 매트릭스는 `fill()`이 조합 종료 이벤트를 자동 발생시켜 2 FAIL/18 PASS였고, 조합을 유지하는 입력 이벤트 fixture로 수정한 동일 5-project 매트릭스는 **20 PASS**다. 실제 OS IME/기기는 사용자 지시로 미실행이다.
+
+최신 제품 후보의 Docker 전체 DB Vitest **509 PASS/8 조건부 skip**, `pnpm check`·production web build PASS. 새 시험 파일의 타입 검사와 최종 전체 CI는 별도 확인한다. 22개 원인 행별 최종 판정, 환경별 실제 proxy·세 DB의 전면 수용·서비스/PWA/rollback 교차, 필수 CI·네 signed image·동일 SHA 개발 공개 인수가 남아 있다. 따라서 P4 `review`, P5·1.2.0 미착수이며 개발 서버는 P3 SHA에 그대로 있다.
+
 ### 2026-09-24 — 공유 첫 진입·저장소 실패 주입과 rollback 추가 증거
+
+UI-03 연결 관리의 실제 지연 HTTP를 주입해 라임 요청 중 프롬프트 전환 시 오래된 응답이 목록·결과 수·오류를 덮지 않음을 PC/mobile production Chromium **2 PASS**로 확인했다. `7da5235012264c5a72afea96a72108a72515f5a3` 중간 `[skip ci]` commit은 P4 원격 브랜치 SHA 일치를 확인했으며 필수 CI는 미실행이다.
+
+native 1150+profile 1151을 포함한 별도 일회용 DB에 1.1.8 C3 migration 31건을 적용하고 현행 b migrator 반복을 PASS했다. 같은 DB에서 b 웹 image `7da5235`가 만든 합성 가사를 이전 native 포함 1.1.8 웹 image `0375825`가 원문 그대로 읽고 export했으며, native 읽기 세션 200과 b의 native API 404를 확인했다. b가 저장한 synthetic 프로필 사진도 이전 image에서 소유자 200/타 계정 404·프로필 참조 유지로 PASS했다. 합성 사용자·세션·사진은 cascade 후 0건이고 시험용 웹 컨테이너 2개를 중지했다. 최초 두 시도는 시험 환경의 beta key 파일 누락으로 API 503, 이어 시험용 토큰 해시 인코딩 오류로 401이었으며 설정/fixture를 바로잡은 최종 검사가 PASS다. 이 일회용 DB 검사는 실제 PC 앱 업데이트나 기존 개발 DB 배포가 아니다.
 
 공개 공유 읽기·게스트 세션의 IP 속도 제한은 기존에 `X-Forwarded-For` 첫 값을 `CF-Connecting-IP`보다 먼저 사용했다. 개발 경로가 Caddy 없이 Cloudflare Tunnel→loopback 앱임을 읽기 전용으로 확인하고, 두 API를 기존 공통 클라이언트 키 함수의 Cloudflare 우선순위에 맞췄다. 임의로 바뀌는 전달 체인과 고정된 Cloudflare IP를 넣은 격리 HTTP에서 읽기 30회·게스트 세션 20회 다음 요청이 429인 **1 PASS/모바일 조건부 1 skip**, production web build·`pnpm check` PASS다. 이는 애플리케이션 헤더 선택 검사이며 공개 edge의 실제 헤더 정규화·운영 proxy 구성 PASS는 아니다. [Cloudflare의 헤더 설명](https://developers.cloudflare.com/fundamentals/reference/http-headers/)에 따라 실제 edge→origin 경계의 별도 확인을 남긴다.
 
 P4의 선택 공동 작성자 선진입에서, 소유자가 편집기를 먼저 열지 않아 `sync_documents`가 아직 없는 경우 공유 화면이 편집 가능 상태로 진입하지 못하는 결함을 실제 브라우저로 재현했다. 활성 grant·가사 존재를 actor RLS로 검사한 뒤 owner 문서를 생성하고, 생성 후 actor 권한을 다시 확인하도록 보정했다. grant 전·회수 후 비공개와 최초 본문 snapshot을 일회용 PostgreSQL 통합 **1 PASS**, 작성자 선진입 PC/mobile **2 PASS**로 확인했다. 별도로 IndexedDB quota 실패를 PC/mobile 선택 작성자 **2 PASS**, 공개 게스트 **2 PASS**로 주입해 입력 복구 표시·읽기 전용 전환·서버 미반영·저장소 복원 후 재시도 반영을 확인했다. 첫 게스트 검사 2건은 선택 작성자용 상태 문구를 잘못 기대해 실패했고, 게스트 화면의 실제 실패 안내 문구로 수정한 동일 입력이 2 PASS다. 실기기·OS IME/AT 결과는 아니다.
 
-추가로 Docker Node 24의 첫 검사용 이미지에서 `pnpm check` PASS, 전체 DB Vitest **506 PASS/8 조건부 skip**을 확인했다. 이 이미지에는 최근 연결 관리 단위 검사 3건이 없어 전체 원본을 다시 이미지로 만들고 `pnpm check`와 전체 DB Vitest **509 PASS/8 조건부 skip**을 확인했다. 그 뒤 공개 API IP 우선순위 2파일은 별도 check·production build·집중 HTTP PASS이며 최종 tree의 전체 CI는 아직 필요하다. 로컬 일회용 b→a application rollback은 b가 만든 합성 가사를 기존 a 웹 image가 같은 DB에서 읽고 export함을 확인하고 합성 자료를 제거했다. 기존 native 포함 PC image rollback은 미실행이다. 개발 DB는 읽기 전용으로 31 migration·native 1150/프로필 1151 객체·RLS/역할을 확인했으나 세 유형의 전체 앱 수용과 실제 proxy 위조 헤더 검사는 남았다. 따라서 P4 `review`, P5·1.2.0 미착수다.
+추가로 Docker Node 24의 첫 검사용 이미지에서 `pnpm check` PASS, 전체 DB Vitest **506 PASS/8 조건부 skip**을 확인했다. 이 이미지에는 최근 연결 관리 단위 검사 3건이 없어 전체 원본을 다시 이미지로 만들고 `pnpm check`와 전체 DB Vitest **509 PASS/8 조건부 skip**을 확인했다. 그 뒤 공개 API IP 우선순위 2파일은 별도 check·production build·집중 HTTP PASS이며 최종 tree의 전체 CI는 아직 필요하다. 로컬 일회용 b→a application rollback은 b가 만든 합성 가사를 기존 a 웹 image가 같은 DB에서 읽고 export함을 확인하고 합성 자료를 제거했다. native 포함 이전 웹 image 검사는 위 추가 결과와 같고 실제 PC 설치물 rollback은 미실행이다. 개발 DB는 읽기 전용으로 31 migration·native 1150/프로필 1151 객체·RLS/역할을 확인했으나 세 유형의 전체 앱 수용과 실제 proxy 위조 헤더 검사는 남았다. 따라서 P4 `review`, P5·1.2.0 미착수다.
 
 ### 2026-09-24 — P4 전체 브라우저·DB 재검사와 남은 gate
 
