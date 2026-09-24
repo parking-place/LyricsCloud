@@ -28,3 +28,9 @@
 `chroma-workflows.css`로 기존 편집·자료 패널·작성 폼·설정·공유/공개 viewer·복구·인증 노드를 유지한 채 코발트 표면/반응형/모달 계층을 적용했다. CodeMirror/Yjs·draft/outbox·API/DB schema 및 권한 분기는 변경하지 않았다. `chroma-120-p3.spec.ts`는 합성 소유자/자료로 두 테마·320/390/768/1024/1440px의 편집 인스턴스/4자료 탭/본문 저장·주요 화면·새 항목/로그인을 확인한다. 공개 목업이 아니라 실제 Next 앱과 격리 DB에서 실행했다.
 
 Node 24 production build·TypeScript, 기능 대응표 207 ID 및 현행 문서 검증, 전체 Vitest/DB 통합 **511 PASS/가입 전용 조건부 8 skip**. 최종 desktop/mobile Chromium 묶음 **84 PASS/조건부 6 skip**(P3 신규 6건, 기존 편집/자료·공유/권한/프로필/복구 사례 포함). 모바일 집중 전환 시 스크롤 66px 이동과 프롬프트 기록 모달이 헤더 아래로 들어가는 두 실패는 원인을 CSS 높이/stacking으로 확인해 수정하고 동일 입력과 최종 묶음으로 재검증했다. 과거 B1 전용 레일/프로필/홈 문구 단언은 Chroma의 실제 탐색 경로를 검사하도록 분기했으며 B1 경로는 유지한다. 필수 CI·signed dev image·같은 SHA 개발 공개 smoke는 완료 전 별도 갱신한다. 실제 물리 기기·OS IME·AT는 사용자 지시로 보류/미실행이며 PASS에 합산하지 않는다.
+
+### 첫 공개 후보와 시간대 hydration 보정
+
+첫 기능 SHA `1e3552a80c86f87552701fdeba85a66257166a8e`의 push Actions `36039946057`은 verify·네 signed dev image/provenance SUCCESS, PR #160 Actions `36039975752`는 첫 시도 WebSocket DB 통합 테스트의 15초 timeout 1건 후 같은 SHA 두 번째 시도 verify SUCCESS다. 개발 서버는 해당 SHA·`1.2.0/dev/p3`·Chroma·schema 1152·네 healthy와 공개 live/ready 일치를 확인했다. 기존 P2 범위 공개 4문맥/20화면 smoke는 PASS였지만, P3 합성 자료 공개 4문맥/20화면에서는 비어 있지 않은 휴지통 hydration의 React #418이 반복되어 **첫 SHA의 P3 인수는 실패**다.
+
+같은 항목의 SSR 출력은 UTC `2026. 9. 24. 오후 7:07`, 서울 시간 브라우저 출력은 `2026. 9. 25. 오전 4:07`로 달랐다. `trash-screen.tsx`의 날짜 표기에 기존 최근/즐겨찾기 화면과 동일한 명시적 `Asia/Seoul` 시간대를 적용하고, UTC/서울 브라우저에서 비어 있지 않은 휴지통의 hydration 오류가 없는 회귀를 추가했다. 보정 기능 SHA의 CI·이미지·재배포·같은 입력 공개 smoke가 끝나기 전까지 P3는 `in_progress`다. 공개 시험의 합성 자료는 개별 삭제 및 계정 fixture 정리로 제거한다.

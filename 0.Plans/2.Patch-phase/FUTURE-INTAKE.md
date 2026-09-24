@@ -487,3 +487,7 @@ tracked 및 hidden/untracked 공개 경로의 Future 관련 파일은 4개로 �
 ## 2026-09-25 — 1.2.0 P3 기능 후보 push 전 검수
 
 Git tracked와 hidden/untracked 공개 경로를 대조한 Future 관련 파일은 위와 동일한 4개이며 새 공개 후보는 0개다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 고유 FF ID 129개는 P2 문서 인수 `f68d9a56c8be7413e0de96bd5705233ed080502a`와 같다. 본문·체크·경로의 신규/이동/삭제가 없어 재배정하지 않는다. P3는 기존 편집·자료·프로필·공유/복구·인증 흐름의 Chroma 표현과 회귀만 담당하고 기능 후보의 CI·정확한 SHA 개발 인수는 이 검수 시점에 아직 미실행이다. ignored/private 원본을 공개하지 않았으며 사용자 보류 실기기·OS IME·AT를 통과로 처리하지 않는다.
+
+## 2026-09-25 — 1.2.0 P3 공개 휴지통 hydration 보정 push 전 검수
+
+위 P3 후보와 동일한 tracked·hidden/untracked Future 관련 4개 문서를 재확인했다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`, 고유 FF ID 129개, 경로·본문·체크의 변화가 없어 재배정은 없다. 첫 P3 SHA의 실제 공개 합성 자료에서 발견한 UTC/서울 시간대 hydration 불일치를 보정하고 교차 시간대 회귀를 추가하는 범위만 이번 push에 포함한다. 첫 SHA의 CI 성공을 보정 SHA의 성공으로 대체하지 않고 재검증·같은 SHA 개발 인수를 다시 수행한다. 실기기·OS IME·AT는 사용자 보류/미실행이다.
