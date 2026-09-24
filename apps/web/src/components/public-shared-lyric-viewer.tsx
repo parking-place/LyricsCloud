@@ -210,7 +210,7 @@ export function PublicSharedLyricViewer() {
     <SharingStorageGuide audience="public-guest" writable={writable} />
     <section className={`shared-lyric-document ${writable ? "is-writable" : "is-readonly"}`}><div ref={editorParent} className="shared-lyric-editor" /></section>
     <footer><div><strong>공개된 필드</strong><span>제목 · 본문{lyric.status ? " · 상태" : ""}{lyric.ownerDisplayName ? " · 공유자" : ""}{lyric.updatedAt ? " · 수정 시각" : ""}</span>
-      <small>작업 메모, 연결 자료, 버전 기록, 계정·자료 목록은 포함되지 않습니다. {new Date(lyric.expiresAt).toLocaleString("ko-KR")}에 링크 만료</small></div>
+      <small>작업 메모, 연결 자료, 버전 기록, 계정·자료 목록은 포함되지 않습니다. {new Date(lyric.expiresAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}에 링크 만료</small></div>
       <button type="button" onClick={() => void copy.copyText(body, "공유 가사", "공유 가사를 복사했습니다")}>가사 복사</button></footer>
     {recovery}
     {writable ? <aside className="shared-viewers" aria-labelledby="public-viewers-title"><h2 id="public-viewers-title">현재 작성 중인 게스트</h2>{visibleParticipants.length ? <ul>{visibleParticipants.map((item) => <li key={item.participantId} className={`activity-${item.activity}`}><span aria-hidden="true" data-presence-color={item.color} />{item.displayName}<small>{participantDetail(item)}</small></li>)}</ul> : <p>연결된 게스트를 확인하는 중입니다.</p>}</aside> : null}

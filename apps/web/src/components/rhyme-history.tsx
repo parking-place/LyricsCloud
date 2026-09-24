@@ -116,4 +116,4 @@ function DiffPane({ title, lines, className }: { title: string; lines: RevisionD
   </div></section>;
 }
 
-function date(value: string) { return new Date(value).toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "medium" }); }
+function date(value: string) { return new Date(value).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "short", timeStyle: "medium" }); }

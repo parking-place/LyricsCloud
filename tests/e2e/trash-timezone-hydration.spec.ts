@@ -36,3 +36,34 @@ test("hydrates a nonempty trash list without changing Korean dates across time z
     expect(removed.status()).toBe(200);
   }
 });
+
+test("hydrates a populated song dashboard without changing Korean dates across time zones", async ({ browser, context, page }) => {
+  test.skip(!process.env.E2E_DATABASE_URL, "requires an isolated E2E database");
+  await context.addCookies([{ name: "lc_session", value: fixtureTokens.visual, url: origin, httpOnly: true, sameSite: "Lax" }]);
+  const title = `대시보드 시간대 ${randomUUID().slice(0, 8)}`;
+  const created = await page.request.post("/api/songs", { headers, data: { requestId: randomUUID(), title } });
+  expect(created.status()).toBe(201);
+  const songId = (await created.json()).song.id as string;
+  try {
+    for (const timezoneId of ["UTC", "Asia/Seoul"]) {
+      const isolated = await browser.newContext({ baseURL: origin, timezoneId });
+      try {
+        await isolated.addCookies([{ name: "lc_session", value: fixtureTokens.visual, url: origin, httpOnly: true, sameSite: "Lax" }]);
+        const screen = await isolated.newPage();
+        const errors: string[] = [];
+        screen.on("pageerror", (error) => errors.push(error.message));
+        await screen.goto(`/songs/${songId}`);
+        await expect(screen.getByRole("heading", { name: title })).toBeVisible();
+        await screen.waitForLoadState("networkidle");
+        expect(errors, timezoneId).toEqual([]);
+      } finally { await isolated.close(); }
+    }
+  } finally {
+    expect((await page.request.delete(`/api/songs/${songId}`, { headers })).status()).toBe(200);
+    const removed = await page.request.post("/api/trash/permanent", { headers, data: {
+      items: [{ kind: "resource", id: songId }],
+      confirmedTitles: [{ kind: "resource", id: songId, title }]
+    } });
+    expect(removed.status()).toBe(200);
+  }
+});

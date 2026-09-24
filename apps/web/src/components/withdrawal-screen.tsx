@@ -32,4 +32,4 @@ export function WithdrawalScreen({ displayName, purgeAt }: { displayName: string
   </section></main>;
 }
 
-function formatDeadline(value: string): string { return new Intl.DateTimeFormat("ko-KR", { dateStyle: "long", timeStyle: "short" }).format(new Date(value)); }
+function formatDeadline(value: string): string { return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", dateStyle: "long", timeStyle: "short" }).format(new Date(value)); }
