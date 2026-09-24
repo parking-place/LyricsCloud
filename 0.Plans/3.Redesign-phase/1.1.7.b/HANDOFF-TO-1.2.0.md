@@ -1,21 +1,21 @@
 # 1.1.7b → 1.2.0 실행 기준 인계
 
-**현재는 계획이며 실제 인수 SHA는 없다.** 1.2.0은 b P1~P5의 필수 검증과 같은 SHA 개발 서버 공개 인수가 완료된 뒤 시작한다. 리뷰·목업의 원래 기준 v1.1.7a는 출처로 유지하고, 실제 제품 구현 기준은 완료된 b SHA로 바꾼다. 코드 합병·문서 작성·원격 C3의 CI 성공만으로 이 조건을 충족하지 않는다.
+**1.1.7b P1~P5 개발 인수 완료. 1.2.0 구현 출발점은 기능 SHA `acd2bd99876740debf426c401fe7157713f8b854`이다.** P4 기능 SHA `ddc1d7c50a64f8e8467b7aee64627f2dfe13da7d`의 DB·차단 판정을 P5 전체 CI·같은 SHA 개발 공개 인수로 봉인했다. 리뷰·목업의 원래 기준 v1.1.7a는 출처로만 유지한다. 뒤따르는 문서 전용 commit은 제품 구현 기준 SHA로 바꾸지 않는다. 정식 b release 승인·운영 배포는 별도다.
 
 ## 채워야 할 인수 기록
 
 | 항목 | 현재 값 | 완료 증거 |
 |---|---|---|
-| 통합 source SHA·branch·tree | 미정/미착수 | b 최종 기능 commit. 후속 문서 전용 SHA와 구분 |
-| 원본 WC-01~18·최소 의존·제외 | 계획 배정 | source → port → 시험 → 판정 전수 맵 |
-| 22개 원인·필수 P0/P1 | 미검증 | 해소/조건 미해당 근거·미실행·후속 잔여 |
-| runtime/phase/package | 제품 b/폴더 1.1.7.b/package 1.1.7 계획 | 실제 health/build와 a/invalid 회귀 |
-| CI·서비스별 image/digest/provenance | 미실행 | 새 b 후보의 필수 job. skip은 별도 표시 |
-| 개발 대상/DB 유형·migration fingerprint | 미확인 | 비밀을 제거한 이력 집합/checksum/세 환경 호환 행렬 |
-| 배포 source·public smoke·restart | 미실행 | source 일치·사용자 관점의 기능 결과 |
-| rollback | 환경별 계획 | 이전 source/image·DB/초안·PWA 보존 검증 |
-| 물리 OS/IME/AT·외부 provider/backup | 미실행·기존 이력 참조 | 필수 항목 완료와 정당한 비필수 잔여를 구분 |
-| 정식 b release 승인/실행 | 이번 요청 범위 아님 | 별도 정식 절차의 결정과 결과만 기록 |
+| 통합 source SHA·branch·tree | 기능 `acd2bd99876740debf426c401fe7157713f8b854` / `phase/1.1.7b-p5-final-handoff` | CI source=image provenance=개발 checkout/BUILD_ID/public ready; 후속 문서 SHA와 구분 |
+| 원본 WC-01~18·최소 의존·제외 | P1 `a04bbcb`·P2 `3915a71`·P3 `1626c75`, P4 `ddc1d7c` 재검증 | [18행 source map](SOURCE-MAP.md)과 [최종 추적](../../../docs/architecture/1.1.7b-FINAL-TRACEABILITY.md); native/Windows 제외 |
+| 22개 원인·필수 P0/P1 | P4 적용 개발 경계 미해결 필수 0건; UI-04/05/07 P2 잔여 | [원인별 판정](BLOCKERS.md); 새 손실/인가 증거 시 재개 |
+| runtime/phase/package | `1.1.7b` / 계획 `1.1.7.b` / private npm `1.1.7`, 공개 `dev/p5` | P5 공개 live/ready/1002·1004·1005 개발 후보 PASS, 정식 require-release 예상 거부 |
+| CI·서비스별 image/digest/provenance | [P5 push 35997349571](https://github.com/parking-place/LyricsCloud/actions/runs/35997349571) verify/네 signed image SUCCESS; [PR 35997369606](https://github.com/parking-place/LyricsCloud/actions/runs/35997369606) verify SUCCESS | Unit/DB 509 PASS/8 skip·Chromium 432 PASS/54 skip·release matrix 10 PASS. web `65692104`, collaboration `39a93958`, worker `5ec1bbd5`, migrate `8c8b72fb` 전체 digest·서명은 [P5 기록](5phase.md) |
+| 개발 대상/DB 유형·migration fingerprint | 개발 native 1150+1151→1152, 32 migration/웹 manifest 31 checksum, native 객체 2개 | 새 웹·populated a·native DB 일회용 행렬 PASS; P5 배포 전후 재확인 |
+| 배포 source·public smoke·restart | P5 기능 SHA의 checkout/BUILD_ID/공개 live·ready 일치, 네 healthy | 공개 곡/가사/프롬프트 생성·원문·PC/mobile·타 계정 404·공유 회수 404·export/trash·SW, 서비스 재시작 뒤 곡 재조회 PASS. 합성 자료 0건 |
+| rollback | a 및 native 포함 이전 image의 일회용 application-first 원문/사진/export PASS | 실제 PC 설치물·개발 live downgrade 미실행; destructive DB rollback 금지 |
+| 물리 OS/IME/AT·외부 provider/backup | 물리 Windows/iOS/Android·OS IME·AT 사용자 보류/미실행; 외부 Google 장애·운영 backup/timer 미실행 | 자동화 대리 PASS와 구별, `OPS-100-001` 별도 |
+| 정식 b release 승인/실행 | 미승인·미실행 | `main`·annotated tag·Release/latest·릴리스 서버 변경 없음 |
 
 ## 1.2.0이 이어받을 변경
 

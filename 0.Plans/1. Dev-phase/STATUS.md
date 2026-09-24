@@ -2,17 +2,29 @@
 
 ```yaml
 current_version: "1.1.7b"
-current_phase: "../3.Redesign-phase/1.1.7.b/4phase.md"
+current_phase: "../3.Redesign-phase/1.1.7.b/5phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-24"
 next_planned_version: "1.2.0"
 next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "P4 문서 인수 후 1.1.7b P5를 전용 브랜치에서 착수한다; 실제 기기/OS IME/AT는 사용자 지시로 후속 미실행을 유지한다"
+next_action: "1.1.7b 기능 인수 SHA acd2bd99876740debf426c401fe7157713f8b854에서 1.2.0 P1 전용 브랜치를 시작한다; 실제 기기/OS IME/AT는 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-24 — 1.1.7b P5·웹 통합 완료, 1.2.0 P1 진입 대기
+
+기능 SHA `acd2bd99876740debf426c401fe7157713f8b854`에서 18 WC의 선별 통합과 22원인/24 수용의 적용 개발 경계 판정을 봉인했다. [push Actions 35997349571](https://github.com/parking-place/LyricsCloud/actions/runs/35997349571)은 Unit/DB **509 PASS/8 조건부 skip**, Chromium **432 PASS/54 조건부 skip**, release matrix **10 PASS**와 verify·네 signed dev image/provenance SUCCESS, [PR #157 Actions 35997369606](https://github.com/parking-place/LyricsCloud/actions/runs/35997369606)은 verify SUCCESS다. 서비스별 digest·실패/미실행 구분은 [P5 최종 인수](../3.Redesign-phase/1.1.7.b/5phase.md)에 있다.
+
+같은 SHA의 개발 checkout/BUILD_ID/공개 live·ready는 `1.1.7b/dev/p5`·schema 1152, 네 서비스 healthy·DB 32 migration/native 1150 이력·객체 2개 보존이다. 공개 합성 곡/가사/프롬프트 생성·원문·PC/mobile, 타 계정 404, 선택 공유 200→회수 404, export/trash/SW 200, 서비스 재시작 뒤 곡 원문 재조회 PASS다. 합성 두 계정·session/resource/prompt는 삭제 후 0건, 임시 검사 스크립트는 제거했다. 로컬 Docker `pnpm check`는 의존성 저장소 불일치로 시험 시작 전 중단됐고 원격 동일 SHA verify가 이를 대체 실행했다. 첫 DB 확인 SQL 형변환 오류도 수정한 읽기 전용 재조회 결과와 구분한다.
+
+사용자 지시로 실제 Windows/iOS/Android 기기·OS IME·AT는 **미실행/후속 보류**다. UI-04/05/07 P2, 외부 Google 장애·운영 backup/timer·릴리스 proxy·실제 PC 설치물 rollback·`OPS-100-001`도 정식 발행 PASS가 아니다. `main`·annotated b tag·Release/latest·릴리스 서버는 변경하지 않았다. 1.2.0의 구현 시작점은 [HANDOFF](../3.Redesign-phase/1.1.7.b/HANDOFF-TO-1.2.0.md)의 위 기능 SHA이며, 뒤따르는 문서 전용 SHA는 구별한다.
+
+### 2026-09-24 — 1.1.7b P5 착수
+
+P4 문서 인수 `53ed14f45f063919d87cc59e8e4213863222c7e4`의 깨끗한 worktree에서 `phase/1.1.7b-p5-final-handoff`를 분기했다. 담당 Codex, 작업 `LC-RD-117B-P5-01~08`. P4 기능 SHA `ddc1d7c50a64f8e8467b7aee64627f2dfe13da7d`와 개발 배포를 기준으로 18 WC·22 원인·24 수용의 최종 증거, dev 후보/정식 미승인, release 문서·manifest와 1.2.0 인계를 검토한다. P5 코드/문서·필수 CI/서명 image·동일 SHA 개발 인수 전에는 b 완료 또는 1.2.0 착수로 표시하지 않는다. 사용자 보류 실제 기기/OS IME/AT와 `main`·정식 tag/image·릴리스 서버 비변경을 유지한다.
 
 ### 2026-09-24 — 1.1.7b P4 완료·P5 인계
 
@@ -322,11 +334,13 @@ P5 당시 STATUS 전체는 [STATUS-1.0.0-P5.md](./STATUS-1.0.0-P5.md)에 **원�
 | 1.1.7b P2 | complete | 기능 `3915a71`, PR `35866450768` verify·push `35866445486` verify/네 signed dev image PASS, 동일 SHA 개발 공개 live/ready·PC/mobile 가사/Suno/PWA smoke와 합성 계정 정리 완료. P3 착수 전 사용자 요청으로 일시 중단 |
 | 1.1.7b P3 | complete | 기능 `1626c75`, PR/push Actions `35876265426`/`35876233972` verify·네 signed image PASS, 동일 SHA 개발 공개 PC/mobile·DB 1151 인수 |
 | 1.1.7b P4 | complete | 기능 `ddc1d7c`, PR/push Actions `35991662815`/`35990242886` verify·네 signed image PASS, 1152/rollback·같은 SHA 개발 공개 저장/격리/재시작 인수; 실기기 사용자 보류 |
+| 1.1.7b P5 | complete | 기능 `acd2bd9`, PR/push Actions `35997369606`/`35997349571` verify·네 signed image PASS, 같은 SHA 개발 공개 저장/공유 회수/export/trash·재시작 영속 인수, 합성 자료 0건; 정식 발행 미승인 |
 
 ## 활성 작업
 
 | 담당자 | 버전/Phase | 작업 ID | 수정 경로 | 의존성 | 시작 시각 | 상태 |
 |---|---|---|---|---|---|---|
+| Codex | 1.1.7b/P5 | LC-RD-117B-P5-01~08 | 18 WC·22원인/24수용 봉인, 문서/validator·최종 CI·개발 인수·1.2.0 인계 | P4 문서 `53ed14f`, 기능 `acd2bd9`/Actions `35997349571`·`35997369606`; 실기기 사용자 보류 | 2026-09-24 | complete |
 | Codex | 1.1.7b/P4 | LC-RD-117B-P4-01~08 | 회귀·차단·1152 DB 호환·application rollback·공개 개발 인수 | P3 문서 `cc4fc56`, 기능 `ddc1d7c`/Actions `35990242886`·`35991662815`; 실기기 사용자 보류 | 2026-09-24 | complete |
 | Codex | 1.1.7b/P3 | LC-RD-117B-P3-01~09 | apps/collaboration, packages/auth/database/domain/editor copy, web list/search/song/trash/dialog/style와 대응 시험 | P2 인수 `dcfa2b8`, source head `c230c02`/기능 `0375825`; 기능 `1626c75` 동일 SHA 개발 인수 | 2026-09-23 | complete |
 | Codex | 1.1.7b/P2 | LC-RD-117B-P2-01~09 | 편집·저장·탐색·PWA 코드/호출자/시험 통합 | P1 기능 `a04bbcb`, source `c230c02`/기능 `0375825`, 완료 기능 `3915a71`·동일 SHA 개발 공개 인수; 보호 계획 문서 불변 | 2026-09-23 | complete; P3 전 사용자 요청 일시 중단 |

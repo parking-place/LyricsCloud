@@ -459,3 +459,11 @@ Git tracked 및 hidden/untracked 공개 경로의 Future 관련 문서는 여전
 ## 2026-09-24 — 1.1.7b P4 완료 문서 push·Phase 완료 검수
 
 Git tracked와 hidden/untracked 공개 경로에서 Future 관련 문서는 동일한 4개다. `Future_Feature.md`의 현행 blob `8f42d20b638e245eb775415ccfdabef56a96f694`·고유 FF ID 129개는 직전 P4 기능 SHA `ddc1d7c50a64f8e8467b7aee64627f2dfe13da7d`와 같고 본문·체크·이동·삭제·신규 후보가 없다. 나머지 세 문서는 이 검수 절차와 기존 scope/mapping이며 후보로 중복 배정하지 않는다. 이번 문서-only `[skip ci]` push는 P4 기능 SHA의 CI·서명 image·동일 SHA 개발 공개 인수와 사용자 보류 실기기 경계를 기록할 뿐 Future 작업을 재선정하지 않는다. UI-04/05/07 P2 배정, 1.2.0 코발트 계획과 native 보류를 유지한다. private/ignored 자료를 공개하거나 보호 계획·main·정식 tag/image·릴리스 서버를 변경하지 않는다.
+
+## 2026-09-24 — 1.1.7b P5 최종 후보 push 전 검수
+
+Git tracked·hidden/untracked 공개 경로의 Future 관련 문서는 직전과 동일한 4개다. `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 고유 FF ID 129개는 P4 문서 인수 `53ed14f45f063919d87cc59e8e4213863222c7e4`와 같고 새 내용·체크·이동·삭제가 없다. 나머지 세 문서는 검수 절차·기존 scope/mapping이며 새 후보가 아니다. P5는 b의 추적·정식 미승인 문서와 개발 후보/정식 release validator 분리만 다루고 Future 후보를 재선정하지 않는다. UI-04/05/07 후속 P2, 1.2.0 코발트 설계, native 1.1.8~1.1.14 보류를 유지한다. ignored/private 자료 자동 공개나 보호 계획·main·정식 tag/image·릴리스 서버 변경은 없다.
+
+## 2026-09-24 — 1.1.7b P5 완료 문서 push·Phase 완료 검수
+
+Git tracked·hidden/untracked 공개 경로에서 Future 관련 문서는 그대로 4개다. `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 고유 FF ID 129개는 P5 기능 SHA `acd2bd99876740debf426c401fe7157713f8b854`와 같고 내용·체크·이동·삭제·신규 후보가 없다. 나머지 세 파일은 절차·과거 scope/mapping이고 후보를 중복 배정하지 않는다. 이 문서-only `[skip ci]` push는 같은 기능 SHA의 CI/네 signed image·개발 공개 인수와 실제 기기 미실행을 기록하고 1.2.0 P1의 출발 SHA를 고정한다. b에서 해결된 부분은 후속 작업에서 증거 인수·코발트 회귀로 재사용하되 UI-04/05/07 P2와 `OPS-100-001`은 미해결로 유지한다. native 보류·보호 목업·private/ignored 원본·main·정식 tag/image·릴리스 서버는 변경하지 않는다.

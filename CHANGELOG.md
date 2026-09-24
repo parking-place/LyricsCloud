@@ -2,6 +2,9 @@
 
 ## [1.1.7b] - 개발 중
 
+- P4 기능 SHA `ddc1d7c`에서 백업 잠금 회복, 공개 IP 제한, 원문/권한/복구 경쟁, `1152` 순방향 DB 호환을 인수했다. 격리 DB 509 PASS/8 조건부 skip, production Chromium 432 PASS/54 조건부 skip, 필수 CI·네 signed dev image와 동일 SHA 개발 공개 저장·계정 격리·서비스 재시작 뒤 재조회 PASS다. UI-04/05/07 P2 UX는 미해결이고 실제 기기·OS IME·AT는 사용자 보류로 미실행이다. P5 최종 SHA와 정식 운영 승인은 별개다.
+- P5 기능 SHA `acd2bd9`의 원격 Unit/DB 509 PASS/8 조건부 skip·Chromium 432 PASS/54 조건부 skip·네 signed dev image와 동일 SHA 개발 공개 곡/프롬프트·공유 회수/export/trash·서비스 재시작 영속을 인수했다. 18 WC/22원인/24수용을 [1.2.0 인계](./0.Plans/3.Redesign-phase/1.1.7.b/HANDOFF-TO-1.2.0.md)에 연결했다. b의 정식 main/tag/릴리스 서버는 미승인·미실행이다.
+
 - P1 후보에서 제품·health 버전을 `1.1.7b`로 정렬하고 기존 private package 버전 `1.1.7`을 유지한다. 1.1.8 웹 안정화 수정의 통합은 P2~P4에 배정했다.
 - 환경 값과 allowlist 날짜 도구를 보강하고 개발 후보 검사와 정식 tag 승인 검사를 분리했다. P1 기능 SHA `a04bbcb`는 PR/push 전체 CI·네 signed dev image와 동일 SHA 개발 공개 live/ready·auth/CSS 인수를 완료했다. DB의 기존 native 1150/profile 1151 이력은 보존했으며 P2~P5의 웹 통합·차단 해소와 정식 출시는 아직 미완료다.
 - P2에서 가사·라임·프롬프트 초안/IME/자동 저장, 안전한 화면 이동, 표시 설정의 늦은 저장 응답, Suno 수동 모델 초안, 가사 복제, 템플릿 원문과 PWA 다중 build/업데이트 보호를 통합했다. 프로필 미저장 상태에서 강제 PWA 갱신을 막는다.
