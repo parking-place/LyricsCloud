@@ -44,10 +44,10 @@ jobs:
       NODE_ENV: test
       DATABASE_URL: postgresql://lyricscloud_test:lyricscloud_test_only@127.0.0.1:5432/lyricscloud_test
       AUTH_DATABASE_INTEGRATION: "true"
-      APP_VERSION: 1.1.7b
+      APP_VERSION: 1.2.0
       BUILD_ID: ${{ github.sha }}
       APP_CHANNEL: dev
-      APP_PHASE: p4
+      APP_PHASE: p1
       APP_FINAL_PHASE: p5
     steps:
       - uses: actions/checkout@v7
@@ -76,6 +76,8 @@ jobs:
         run: node --test scripts/tests/p6-*.mjs
       - name: Approved suffix version boundary regression
         run: node --test scripts/tests/oneoff-117a-version.mjs
+      - name: Verify 1.2.0 mockup feature coverage map
+        run: node scripts/validate-120-feature-map.mjs
       - name: P6 whole-tree codebase inventory and syntax audit
         run: node scripts/audit-p6-codebase.mjs
       - name: Audit production dependencies

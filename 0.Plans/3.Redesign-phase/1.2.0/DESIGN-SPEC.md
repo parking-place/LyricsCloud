@@ -18,6 +18,22 @@
 
 색상 값과 실제 혼합식은 목업의 [palette.js](mockup/palette.js), [color-core.js](mockup/color-core.js), [color-layer.css](mockup/color-layer.css)에 있다. P1은 실제 앱의 기존 토큰 이름과 대응표를 작성하고 P2부터 공통 스타일로 옮긴다. 개별 화면마다 별도 파랑·회색을 추가하지 않는다.
 
+### P1 기존 토큰 → 코발트 의미 토큰 계약
+
+현행 `apps/web/src/app/styles.css`는 `--ink`, `--muted`, `--canvas`, `--panel`, `--surface`, `--line`, `--acid`, `--danger`, `--focus`를 소비한다. P2는 이 소비자를 유지하고 `html[data-ui-variant="chroma"]`에 한정해 다음 의미를 공급한다. `--lc-b1-*` 값과 `classic` 경로는 변경하지 않는다.
+
+| 기존 소비 토큰 | 코발트 의미 | 라이트 / 다크 기준 | P2 적용 조건 |
+|---|---|---|---|
+| `--canvas` | 페이지 바탕 | `#EFF4FC` / `#142238` | 배경 광원과 별도 불투명 기본색 |
+| `--ink` | 본문 | `#203751` / `#EDF4FF` | 본문·입력은 반드시 불투명 표면에서 판독 |
+| `--muted`, `--subtle` | 보조 본문 | `#4B627B` / `#ACC1DD` | 작은 본문은 실제 합성 배경 대비 확인 |
+| `--panel`, `--surface`, `--surface-raised` | 고밀도/일반/떠 있는 표면 | 바탕보다 불투명한 표면 | 입력·편집·검색·모달에는 블러 의존 금지 |
+| `--line`, `--focus` | 경계·키보드 초점 | 각 표면에서 3:1 이상 | 색만으로 focus/선택을 구별하지 않음 |
+| `--acid`, `--acid-hover`, `--acid-ink` | 주요 액션·hover·액션 위 글자 | `#285CB0` / `#99BDF9`가 출발값 | `#568DF0` 광원 위 흰 작은 글자 금지; 상태별 대비 재측정 |
+| `--danger`, `--danger-bg` | 오류·위험 | 코발트 강조색과 독립 | 텍스트/아이콘/문장 병행; 성공/대기와 혼용 금지 |
+
+`#568DF0`·민트·살구는 광원/장식 원색이며 입력 상태의 의미색이 아니다. typography는 기존 Noto Sans KR 계정 선택과 system fallback을 유지하고, 제목/본문/보조 글자의 위계만 조정한다. spacing/density는 기존 44px 터치 목표와 `--lc-safe-*` safe-area 토큰을 유지한다. CSS 값을 확정하기 전에 Playwright 양 테마×정상/hover/focus/disabled×320/390/768/1024/1440px에서 합성 배경의 최소 대비를 측정한다. 작은 글자 4.5:1, 큰 글자 3:1, 비텍스트 경계/초점 3:1을 최저 수용선으로 삼고 불충족 시 불투명 표면으로 보정한다.
+
 ## 유리·배경·입체감
 
 - 바깥 배경에 넓고 부드러운 코발트·민트·살구 그라데이션을 두고, 카드는 바탕보다 더 불투명하게 올린다.
@@ -26,6 +42,8 @@
 - GSAP의 등장·hover/press·도크 반응은 시각 피드백으로 사용한다. 애니메이션 완료를 저장·탐색·복사 성공 조건으로 삼지 않는다.
 - `prefers-reduced-motion`, 기존 투명도 감소 설정, forced-colors, backdrop-filter 미지원에서 불투명 면·명확한 경계·정적인 피드백으로 대체한다.
 - 목업의 GSAP/Draggable 포함은 디자인 재현용이다. 제품 의존성 채택·번들 크기·라이선스·기존 CSP 및 정리 lifecycle은 P1/P2에서 검토한다. CDN 의존을 새로 만들지 않는다.
+
+P1 결정: GSAP/Draggable을 제품에 추가하지 않는다. 현재 제품의 버튼·키보드 순서 이동과 CSS transition으로 P2/P3의 필수 동작을 충족할 수 있고, 신규 런타임은 CSP·번들·React lifecycle/CodeMirror remount 위험만 늘린다. 효과가 기능적 요구로 증명되면 별도 결정·라이선스·번들 전후값·정리/재진입 시험 후 재검토한다. 기본은 정적 fallback이다.
 
 ## 구조와 반응형
 
@@ -42,6 +60,12 @@ PC는 상단 브랜드/현재 위치/프로필, 작업별 모듈, 하단 도크�
 - 프로필/표시 설정은 초안·미리보기·저장·취소의 범위를 보존한다. 테마 변경으로 입력 중 닉네임이나 사진 미리보기를 잃지 않는다.
 - 모달은 이름, 열기/닫기, Escape, 초점 회수, 배경 접근 제한, 긴 내용 스크롤을 제공한다. 저장 실패나 권한 종료는 색 변화만으로 안내하지 않는다.
 - 테마 설정 이행과 이전 UI 복귀 방법은 P1에서 확정한다. rollout/rollback 때문에 창작물·계정 설정·수정 기록을 삭제하는 구조는 허용하지 않는다.
+
+### P1 전환·되돌림 경계
+
+P2에서 `LC_UI_VARIANT=chroma`를 명시적으로 추가할 때까지 현행 기본 `b1`을 유지한다. P2의 첫 배포는 `chroma`를 opt-in 후보로 검증하고, 기능/대비/입력 회귀가 닫힌 뒤에만 기본값 전환을 판단한다. 문제 발생 시 개발 환경의 설정만 `LC_UI_VARIANT=b1`로 되돌려 같은 DB·route·API·계정 설정·local draft를 유지한다. `classic`도 기존 허용값으로 남긴다. 되돌림은 앱 image/config 교체이며 migration 역방향 실행이나 데이터 삭제가 아니다. 이전 build 탭과 서비스워커 캐시는 새 asset 준비·명시 갱신·dirty guard 확인 전 강제 교체하지 않는다.
+
+테마 값은 현재 `light`/`dark`/`system`을 그대로 소비하고 신규 영속 키를 만들지 않는다. 셸/도크/자료 패널의 열림 상태는 편집기 밖에서 관리하며 CodeMirror/Yjs provider, document key, undo manager와 로컬 draft/outbox를 재생성하지 않는다. 저장 중 route 이동·모달·프로필 미리보기·계정 전환은 기존 guard/권한 검사보다 약화시키지 않는다. WC-02/03/11/12 및 b의 설정 ACK·PWA build 수명 회귀를 P3/P4 수용에 묶는다.
 
 ## 검증 원칙
 

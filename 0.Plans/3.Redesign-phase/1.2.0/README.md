@@ -1,6 +1,6 @@
 # 1.2.0 — Chroma Dock · Cobalt Blue 리디자인
 
-상태: **계획 준비 완료 / 제품 구현 미착수**. 2026-09-22 사용자 선택을 반영한 리디자인 계획이다. 목업/원 리뷰의 출처는 `v1.1.7a` / `fc2463cdb47d9fd7d0042779f602c6ddb7d734cf`다. **실제 구현은 [1.1.7b 웹 통합](../1.1.7.b/README.md)의 P5 인수 SHA에서 시작한다.** native 1.1.8~1.1.14를 먼저 완료할 필요는 없으며 웹 수정은 b에서 선별 통합한다. [전환 결정](../PLAN-CHANGE.md)과 [계획 상태](../STATUS.md)를 함께 읽는다.
+상태: **P1 계약·버전 전환 완료 / P2~P5 미착수**. 2026-09-22 사용자 선택을 반영한 리디자인 계획이다. 목업/원 리뷰의 출처는 `v1.1.7a` / `fc2463cdb47d9fd7d0042779f602c6ddb7d734cf`다. 실제 구현 출발점은 [1.1.7b 웹 통합](../1.1.7.b/HANDOFF-TO-1.2.0.md)의 P5 기능 SHA `acd2bd99876740debf426c401fe7157713f8b854`다. native 1.1.8~1.1.14는 보류하며 웹 수정은 b에서 선별 통합했다. [전환 결정](../PLAN-CHANGE.md)과 [실행 상태](<../../1. Dev-phase/STATUS.md>)를 함께 읽는다.
 
 ## 선택한 목업
 
@@ -37,6 +37,7 @@ UI 교체를 이유로 DB schema/API/protocol을 재설계하거나 실제 기�
 
 - [DESIGN-SPEC.md](DESIGN-SPEC.md): 색·표면·도크·반응형·동작과 제품 이식 기준.
 - [ACCEPTANCE.md](ACCEPTANCE.md): 화면 범위, `RD-REQ-*`와 `AC-RD-120-*`, Phase별 소유권과 실패 조건.
+- [FEATURE-MAP.md](FEATURE-MAP.md): 목업의 207개 고유 ID를 현행 route/컴포넌트와 담당 Phase에 연결한 P1 대응표. 대응은 동작 PASS가 아니다.
 - [목업 기능 데이터](mockup/base/feature-data.js): 기존 E의 207개 기능 설명을 보존한 시연 인벤토리. 제품의 실제 구현 증거는 P1에서 원본 코드와 다시 대조한다.
 - [계획·목업 검증 기록](../VERIFICATION.md): 이번 문서 작업의 확인 결과와 실제 제품 구현에서 남은 검사.
 

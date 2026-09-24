@@ -1,18 +1,28 @@
 # LyricsCloud 개발 상태
 
 ```yaml
-current_version: "1.1.7b"
-current_phase: "../3.Redesign-phase/1.1.7.b/5phase.md"
+current_version: "1.2.0"
+current_phase: "../3.Redesign-phase/1.2.0/1phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-24"
 next_planned_version: "1.2.0"
-next_planned_phase: "../3.Redesign-phase/1.2.0/1phase.md"
-next_action: "1.1.7b 기능 인수 SHA acd2bd99876740debf426c401fe7157713f8b854에서 1.2.0 P1 전용 브랜치를 시작한다; 실제 기기/OS IME/AT는 후속 미실행"
+next_planned_phase: "../3.Redesign-phase/1.2.0/2phase.md"
+next_action: "1.2.0 P2 공통 코발트 토큰·셸/홈/목록을 구현하고 실제 브라우저·CI·동일 SHA 개발 인수를 수행한다; 실제 기기/OS IME/AT는 사용자 지시로 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-24 — 1.2.0 P1 완료·P2 인계
+
+기능·계약 SHA `84761ae1ca25f1b5e5dd808e772d1a062066cd57`의 [push Actions 36004281225](https://github.com/parking-place/LyricsCloud/actions/runs/36004281225)는 verify·네 signed dev image/provenance PASS, [PR #158 Actions 36004313192](https://github.com/parking-place/LyricsCloud/actions/runs/36004313192)는 verify PASS다. Unit/DB **509 PASS/8 조건부 skip**, owner Chromium **432 PASS/54 조건부 skip**, release browser matrix **10 PASS**. 207개 목업 기능 ID의 route/기존 컴포넌트 매핑, 코발트 토큰/전환/복귀 계약과 실제 제품/runtime/private package `1.2.0` 전환을 인수했다. 최종 P5 릴리스 문서 validator 1005는 아직 미통과이며 P1 PASS로 대체하지 않는다.
+
+개발 서버의 배포 스크립트가 같은 SHA로 정상 종료했다. checkout/BUILD_ID/공개 live·ready `1.2.0/dev/p1`, schema 1152, 네 서비스 healthy, 공개 `/auth`·production CSS·build label PASS다. 첫 CSS 시험은 첫 asset만 검사하는 probe 문제로 FAIL이었고 전체 CSS를 대상으로 고친 재검사는 PASS했다. DB·volume·secret 및 기존 화면/저장/권한 계약을 변경하지 않았다. P2/P3의 코발트 실제 UI, P4 회귀/접근성/성능, P5 최종 인수는 아직 완료가 아니다. 실제 Windows/iOS/Android 기기·OS IME·AT는 사용자 보류/미실행이며 자동화 대리를 실기기 통과로 적지 않는다. main·정식 tag/image·릴리스 서버 변경 없음.
+
+### 2026-09-24 — 1.2.0 P1 착수
+
+1.1.7b 문서 인수 `e8ce777fcee83396166d0afcf76ecbd932440406`의 깨끗한 worktree에서 `phase/1.2.0-p1-contract-baseline`을 분기했다. 제품 동작 출발점은 [b HANDOFF](../3.Redesign-phase/1.1.7.b/HANDOFF-TO-1.2.0.md)의 기능 SHA `acd2bd99876740debf426c401fe7157713f8b854`이고 v1.1.7a/원격 C3는 출처로만 유지한다. 담당 Codex, 작업 `LC-RD-120-P1-01~06`; route/기능 207 ID 대응·코발트 토큰/셸 전환·입력/rollback·버전/Phase/manifest의 실제 1.2.0 전환을 담당한다. P1 CI/네 signed image/동일 SHA 개발 공개 인수 전에는 완료나 P2 착수로 기록하지 않는다. 실제 물리 기기·OS IME·AT는 사용자 지시로 미실행/후속 보류, native 1.1.8~1.1.14와 main·정식 tag/image·릴리스 서버는 변경하지 않는다.
 
 ### 2026-09-24 — 1.1.7b P5·웹 통합 완료, 1.2.0 P1 진입 대기
 

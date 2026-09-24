@@ -1,6 +1,6 @@
 # 1.2.0 요구·화면 보존·수용 기준
 
-이 표는 **구현 시 확인할 계약**이다. 현재 모든 제품 인수 항목은 미실행이며, [목업 검증](mockup/README.md)과 구분한다. 기준은 실제 1.1.7a 코드/동작과 선택된 코발트 목업이다.
+이 표는 **구현 시 확인할 계약**이다. P1 기준 인수는 실제 1.1.7b 기능 SHA `acd2bd99876740debf426c401fe7157713f8b854`이며 1.1.7a/목업은 디자인 출처다. P2~P5 제품 수용은 미실행이며 [목업 검증](mockup/README.md)과 구분한다.
 
 ## 요구와 책임
 
@@ -58,3 +58,17 @@
 [0922 추적표](../REVIEW-TRACEABILITY.md)와 [원격 웹 안정화 비교](../BRANCH-COMPARISON-118-P4.md)를 기존 AC-RD-120의 보존/전환 gate에 연결한다. 원격 후보 존재·1.2.1 이후 배정은 차단 결함 해소가 아니다. 필요한 범위 변경을 P1에서 기록하고 P4/P5에서 새 통합 SHA의 증거로 인수한다. 서비스워커의 구 build tab/unknown client·명시 업데이트, metadata 원문 복구·권한·IME·modal focus의 선별 인수도 포함한다.
 
 2026-09-23 선행조건: [1.1.7b 인계](../1.1.7.b/HANDOFF-TO-1.2.0.md)의 실제 SHA·통합 목록·필수 gate 완료를 먼저 확인한다. 원본 목업은 바꾸지 않고 b에서 추가/보강된 웹 동작도 기능 대응표에 포함한다.
+
+## P1 고정 fixture·담당·예산
+
+207개 ID의 원본/제품 대응은 [FEATURE-MAP.md](FEATURE-MAP.md)와 `node scripts/validate-120-feature-map.mjs`로 전수 확인한다. 자동 검사 결과는 **대응표 무결성**이지 207개 동작 검증 PASS가 아니다. P2 담당은 셸/홈/목록/검색/반응형과 `chroma` opt-in 토큰, P3 담당은 편집기/자료 4탭/설정/공유/복구다. P4는 해당 두 Phase 결과를 독립 fixture로 통합 회귀하고 P5는 최종 동일 SHA·개발 공개·문서를 담당한다.
+
+| fixture | 자동화 입력·기대 | 물리 환경 경계 |
+|---|---|---|
+| `RD-UI` | 합성 계정의 빈/채운 곡·라임·프롬프트, 한글 장문/이모지/긴 제목; 양 테마×320/390/768/1024/1440px, 정상/빈/오류/권한 없음 | Linux Chromium/Firefox/WebKit 대리는 실제 OS 결과가 아님 |
+| `RD-EDIT` | 한글 조합 중 본문·selection·undo·scroll, 4탭/도크/테마/시트/집중 전환, offline·응답 유실·구 build 탭·서비스워커 갱신 | 실제 Windows/iOS/Android IME·가상 키보드는 사용자 보류/미실행 |
+| `RD-AUTH` | owner/writer/reader/guest 두 합성 계정, 공유 만료/회수·계정 전환, 새 UI와 b1 복귀 전후 원문/설정/권한 | 운영 자료 사용 금지; 합성 자료 삭제 후 0건 확인 |
+| `RD-A11Y` | 키보드-only·axe 대리·200% 브라우저 확대·forced-colors·reduced motion/transparency·focus 회수·44px 목표·대비 | 실제 screen reader/OS 확대/보조기술은 사용자 보류/미실행 |
+| `RD-PERF` | 1.1.7b와 동일 장비·fixture에서 첫 화면·편집 입력·목록 스크롤·도크/시트 전환을 5회 측정; 중앙값/p95 및 CSS 효과 on/off 비교 | 측정 전 새 효과 예산을 임의 PASS로 기재하지 않음 |
+
+P4의 성능 예산은 기존 `QUALITY-GATES.md`의 절대 p95·오류 예산을 하향하지 않는다. 새 장식 효과는 같은 환경 b 기준 대비 입력 p95와 전환 p95가 10% 넘게 악화하거나 긴 프레임(50ms 이상)이 증가하면 효과를 기본 정적으로 낮추고 재측정한다. 실측 기준값과 계측 명령은 P2 첫 구현 전 기록한다. 사용자 보류인 물리 기기·OS IME·AT는 P4/P5에서 PASS로 승격하지 않고 남은 출시 위험으로 인계한다.
