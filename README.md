@@ -15,7 +15,7 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 
 [1.1.7a release notes](./docs/releases/1.1.7a.md)와 [CHANGELOG.md](./CHANGELOG.md)에 사용자 변화·호환성·미실행 gate를 기록한다.
 
-> **현재 개발 (2026-09-24):** [1.1.7b Phase 5](0.Plans/3.Redesign-phase/1.1.7.b/5phase.md)의 기능 SHA `acd2bd9`는 CI·서명 image·동일 SHA 개발 공개 인수를 마쳤습니다. 그 인수에서 [1.2.0 Phase 1](0.Plans/3.Redesign-phase/1.2.0/1phase.md) 코발트 Chroma Dock 계약·버전 전환을 시작했습니다. Phase 1은 기능 SHA `84761ae`의 CI·네 signed image·동일 SHA 개발 공개 인수를 완료했고, P2~P5 실제 코발트 화면·회귀·최종 인수는 아직 미완료입니다. 1.2.0 Phase 5 최종 통합·정식 발행은 별도 gate이며, 운영 릴리스는 여전히 `v1.1.7a`입니다. 실제 기기·OS IME·AT는 사용자 보류/미실행입니다.
+> **현재 개발 (2026-09-25):** [1.2.0 Phase 5](0.Plans/3.Redesign-phase/1.2.0/5phase.md)까지 코발트 Chroma Dock의 필수 CI·네 signed Dev image·동일 기능 SHA `125ab02` 개발 공개 인수를 완료했습니다. 운영 정식판은 여전히 `v1.1.7a`이고 `main`·정식 tag/image·릴리스 서버는 변경하지 않았습니다. 실제 기기·OS IME·AT는 사용자 지시로 후속 미실행입니다. [1.2.0 release notes](./docs/releases/1.2.0.md)와 [CHANGELOG.md](./CHANGELOG.md)에 개발 완료와 정식 발행 경계를 구분합니다.
 
 ## 주요 기능
 
@@ -47,10 +47,10 @@ AI 생성·음원 업로드는 1.1.7a 범위가 아니다. 계정 사진 파일�
 | 항목 | 상태 |
 |---|---|
 | 소스·runtime version | 개발 후보 `1.2.0`; private npm package SemVer도 `1.2.0` |
-| 현재 Phase | [1.2.0 Phase 1 — 기준·기능 보존·전환 계약](./0.Plans/3.Redesign-phase/1.2.0/1phase.md) 진행 중; P2~P5 미착수, native 보류 |
+| 현재 Phase | [1.2.0 Phase 5 — 문서·최종 통합·개발 인수](./0.Plans/3.Redesign-phase/1.2.0/5phase.md)까지 개발 인수 완료; native 보류 |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.1.7a`, tag/운영 `fc2463c`, Actions `35052520619`, exact signed digest 운영 배포·공개 인수 PASS |
-| 개발 인수 | 1.1.7b P1~P5 완료; 1.2.0 P1의 원격 CI·동일 SHA 개발 공개 인수 대기 |
+| 개발 인수 | 1.1.7b와 1.2.0 P1~P5 완료; 기능 SHA `125ab02`의 CI·서명·동일 SHA 개발 공개 인수 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.
@@ -125,7 +125,7 @@ LyricsCloud betacode refresh
 | 인증·베타 운영자 | [Google OAuth](./docs/runbooks/google-oauth-setup.md), [초대 코드 CLI](./docs/runbooks/1.0.1-phase2-beta-admin.md), [HMAC allowlist](./docs/runbooks/1.0.1-phase3-hmac-allowlist.md) |
 | 복구·배포 담당자 | [backup·restore·upgrade·rollback](./docs/runbooks/backup-restore-upgrade.md), [개발 배포](./docs/runbooks/development-deploy.md), [Docker Hub 발행](./docs/runbooks/dockerhub-publish.md) |
 | 보안·장애 담당자 | [Security policy](./SECURITY.md), [경보 대응](./docs/runbooks/observability-alerts.md), [사고 기록 양식](./docs/runbooks/incident-record-template.md) |
-| 릴리스 검토자 | [1.1.6 release notes](./docs/releases/1.1.6.md), [1.1.6 Phase 5](./docs/runbooks/1.1.6-phase5-final-acceptance.md), [1.1.6 추적](./docs/architecture/1.1.6-FINAL-TRACEABILITY.md), [CHANGELOG.md](./CHANGELOG.md) |
+| 릴리스 검토자 | [1.2.0 release notes](./docs/releases/1.2.0.md), [1.2.0 Phase 5](./0.Plans/3.Redesign-phase/1.2.0/5phase.md), [최종 요구 추적](./docs/architecture/1.2.0-FINAL-TRACEABILITY.md), [CHANGELOG.md](./CHANGELOG.md) |
 | 기여자 | [Agent 지침](./Agent.md), [후속 계획](./0.Plans/2.Patch-phase/README.md), [ADR 색인](./docs/adr/README.md) |
 
 ## 저장소 구조

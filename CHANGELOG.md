@@ -2,10 +2,13 @@
 
 ## [1.2.0] - 개발 중
 
+P1~P5 개발 후보 인수는 완료했으며 정식 발행은 승인되지 않았다.
+
 - P1에서 1.1.7b 기능 SHA `acd2bd9`를 출발점으로 207개 목업 기능의 현행 route/컴포넌트 대응표와 코발트 토큰·입력 보존·b1/classic 복귀 계약을 작성하고 제품/runtime/private package 버전을 `1.2.0`으로 전환했다. 기능 SHA `84761ae`의 Unit/DB 509 PASS·Chromium 432 PASS·네 signed image 및 동일 SHA 개발 공개 live/ready·auth/CSS 인수를 완료했다. 당시 P2~P5 화면 구현·최종 통합은 미완료였다.
 - P2에서 `LC_UI_VARIANT=chroma`를 명시하면 코발트 light/dark 토큰, PC 도크·모바일 더보기, 실제 자료 홈, 곡·라임·프롬프트 목록과 검색의 새 화면을 사용한다. 기본 B1과 classic 복귀는 유지했다. 기능 SHA `f4c9588`의 Unit/DB 511 PASS·B1 Chromium 432 PASS·Chroma 집중 12 PASS, 필수 CI/네 signed 개발 image와 동일 SHA 공개 PC/mobile×두 테마 20개 경로 인수를 완료했다. 구 B1 높이 단언의 Chroma 선택 실패와 P4 상대 성능 비교는 별도 잔여이며 P3~P5는 미완료다.
 - P3에서 Chroma 편집기·자료 4탭·곡 대시보드·설정·공유·복구 표현을 인수했고 기능 SHA `a315c07`의 필수 CI/네 signed dev image와 동일 SHA 공개 서울·UTC 본문 저장·52경로 검증을 마쳤다.
 - P4에서 세 브라우저 엔진·양 테마·다섯 너비와 입력/권한/복구/이전 B1 복귀를 교차 검증했다. 첫 공개 후보의 모바일 강제 색상 로그아웃 버튼 대비 결함은 불투명 시스템 버튼 색상으로 고쳤고, 최종 기능 SHA `c380a59`의 전체 CI/네 signed dev image 및 같은 SHA 개발 공개 빠른 전환 20회 검증을 마쳤다. 첫 화면 상대 성능의 소표본 위험과 조건부 미실행은 P5 인계다.
+- P5 최종 기능 SHA `125ab02`의 push/PR 전체 verify·네 signed Dev image/provenance와 같은 SHA 개발 `1.2.0/dev/p5`·schema 1152·네 healthy를 인수했다. 공개 PC/mobile×양 테마 20+52 route/16 자료 탭, 본문 저장·삭제 복원·공유 회수·강제 색상 접근성을 검증하고 합성 계정을 제거했다. 첫 공유 DB CI 실패와 검사 도구 경로 중단은 PASS로 합산하지 않았다.
 - 실제 물리 Windows/iOS/Android 기기·OS IME·AT는 사용자 보류/미실행이며 자동화 브라우저 대리를 실기기 PASS로 기록하지 않는다. `main`·정식 tag/image·릴리스 서버는 변경하지 않는다.
 
 ## [1.1.7b] - 개발 중

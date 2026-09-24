@@ -44,3 +44,4 @@
 - [`1.1.6 편집·자료·가입·공유·복구 B-1 최종 추적`](./1.1.6-FINAL-TRACEABILITY.md)
 - [`1.1.7 UI/UX 동선 개선 최종 추적`](./1.1.7-FINAL-TRACEABILITY.md)
 - [`1.1.7 웹 동선·플랫폼 개발안 인계`](./1.1.7-PLATFORM-HANDOFF.md)
+- [`1.2.0 Chroma 최종 요구 추적`](./1.2.0-FINAL-TRACEABILITY.md)

@@ -2,17 +2,33 @@
 
 ```yaml
 current_version: "1.2.0"
-current_phase: "../3.Redesign-phase/1.2.0/4phase.md"
+current_phase: "../3.Redesign-phase/1.2.0/5phase.md"
 state: "complete"
 owner: "Codex"
 started_at: "2026-09-23"
 updated_at: "2026-09-25"
-next_planned_version: "1.2.0"
-next_planned_phase: "../3.Redesign-phase/1.2.0/5phase.md"
-next_action: "완료된 1.2.0 P4를 인수해 P5 최종 문서·CI·같은 SHA 개발 공개 인수를 시작한다; 실제 기기/OS IME/AT는 후속 미실행"
+next_planned_version: "1.2.1"
+next_planned_phase: "../3.Redesign-phase/1.2.1/1phase.md"
+next_action: "1.2.0 개발 후보 P1~P5 완료; 1.2.1은 사용자 지시 전 미착수, 정식 main/tag/image/릴리스 서버는 별도 승인 대기; 실제 기기/OS IME/AT 후속 미실행"
 ```
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
+
+### 2026-09-25 — 1.2.0 P5·개발 후보 완료
+
+최종 기능 SHA `125ab029ef09cee724ef8005139bdff11569d29e`의 원격 `phase/1.2.0-p5-final-handoff`와 [push Actions 36070155034](https://github.com/parking-place/LyricsCloud/actions/runs/36070155034) verify·네 signed Dev image/provenance SUCCESS, [PR #162 Actions 36070158441](https://github.com/parking-place/LyricsCloud/actions/runs/36070158441) verify SUCCESS를 확인했다. 격리 DB Unit **511 PASS/8 조건부 skip**, Chromium **436 PASS/80 조건부 skip**, Chroma **21 PASS/1 조건부 skip**, release browser matrix **10 PASS**, 보안·license·production build·migration·backup/rollback·최종 validator PASS. 첫 `5b28120` CI의 1 FAIL은 독립 실패로 남기고 공유 DB 시험 순차화 뒤 새 SHA에서 전체 검증했다.
+
+같은 SHA 개발 서버의 checkout/BUILD_ID/공개 live·ready `1.2.0/dev/p5`·schema `1152_prompt_dictionary_cascade.sql`과 네 서비스 healthy를 확인했다. 공개 합성 계정으로 PC/mobile×light/dark 20 route·52 route/16 자료 탭, 본문 저장·삭제 복원·public read link·회수, 320px forced-colors axe serious 0·초점 복귀 PASS, pageerror/5xx/가로 넘침 0을 확인하고 합성 계정의 사후 부재를 검증했다. 첫 두 공개 도구 실행은 모듈 경로 문제로 검사 전 중단되어 PASS로 합산하지 않았다. [P5 최종 기록](../3.Redesign-phase/1.2.0/5phase.md)에 네 image digest와 잔여 위험을 연결한다.
+
+1.2.0 P1~P5의 **개발 후보 인수만** 완료했다. 실기기 Windows/iOS/Android·OS IME/가상 키보드·AT는 사용자 요청으로 후속 **미실행**이며 첫 화면 성능 소표본·`OPS-100-001` 예외를 유지한다. `main`·정식 tag/Release/latest·릴리스 서버는 변경하지 않았다. 1.2.1 구현 및 정식 발행은 별도 요청·승인 전 착수하지 않는다.
+
+### 2026-09-25 — 1.2.0 P5 착수
+
+P4 완료 문서 SHA `e1c0cd7275fabc2e5e526774eb5f1601a99698c9`의 깨끗한 worktree와 동일 원격 branch를 확인한 뒤 `phase/1.2.0-p5-final-handoff`를 분기했다. 담당 Codex, 작업 `LC-RD-120-P5-01~06`. P4 기능 SHA `c380a598ad4bd5ccd38b6aa3f3ceb77040cf1986`의 CI·같은 SHA 개발 인수를 기준으로 최종 추적·사용자/운영 문서·버전/manifest/CI 도구·회귀와 공개 인계를 봉인한다. P5 최종 CI·네 signed image·같은 SHA 개발 공개 인수 전에는 P5/1.2.0 완료로 기록하지 않는다. 실기기·OS IME·AT는 사용자 지시로 후속 미실행이며 main·정식 tag/image·릴리스 서버는 변경하지 않는다.
+
+### 2026-09-25 — 1.2.0 P5 공유 DB 시험 교착 보정 후보
+
+P5 SHA `5b281201be61def42dde0ca3079e7b70bdd829bb`의 push Actions `36069343350`은 Unit **510 PASS/1 FAIL/8 조건부 skip**으로 중단됐다. `export-safety` 합성 pending projection과 별도 전역 retry 시험이 병렬로 같은 임시 DB를 사용하면서 PostgreSQL 교착이 발생했다. `AUTH_DATABASE_INTEGRATION=true`에서 Vitest 파일 간 실행만 순차화해 합성 fixture의 소유권을 분리했고, assertion·제품 코드·DB schema는 변경하지 않았다. Node 24/격리 DB 전체 **511 PASS/8 조건부 skip**(65.32초). 첫 실패는 PASS가 아니며 새 SHA의 전체 CI·네 signed image·동일 SHA 개발 공개 인수를 기다린다. 개발 서버는 깨끗한 P4 `c380a59`, 네 healthy 상태로 유지 중이다.
 
 ### 2026-09-25 — 1.2.0 P4 완료·P5 진입 대기
 

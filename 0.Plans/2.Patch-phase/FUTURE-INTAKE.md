@@ -515,3 +515,15 @@ Git tracked와 hidden/untracked 공개 경로의 Future 관련 문서는 동일�
 ## 2026-09-25 — 1.2.0 P4 완료 문서 push 전 검수
 
 Git tracked·hidden/untracked 공개 경로에서 Future 관련 네 문서(`FUTURE-INTAKE.md`, `Future_Feature.md`, `future-idea-scope.md`, `mandatory-future-mapping.md`)를 확인했다. 현행 `Future_Feature.md`는 마지막 변경 commit `0df4c368076cda98e6d05fcb21c56e16e33bac63`의 blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 동일하며 고유 FF ID 129개, 신규·이동·삭제·본문·체크 변화가 없다. 원본·백업·ignored/private를 공개 후보로 추가하지 않고 기존 배정·보류를 유지한다. 이번 변경은 최종 P4 SHA `c380a598ad4bd5ccd38b6aa3f3ceb77040cf1986`의 CI·같은 SHA 공개 개발 인수와 실기기 미실행을 문서화한다. 제품 재배정이나 main·정식 릴리스 작업은 없다.
+
+## 2026-09-25 — 1.2.0 P5 최종 후보 push 전 검수
+
+Git tracked·hidden/untracked 공개 검색의 Future 관련 네 경로는 P4 완료와 동일하다. 현행 `Future_Feature.md`의 `0df4c368076cda98e6d05fcb21c56e16e33bac63`/blob `8f42d20b638e245eb775415ccfdabef56a96f694`, 고유 FF ID 129개와 경로·체크·본문은 변경되지 않았다. 재배정·중복 처리 없음; ignored/private 자료는 공개하지 않는다. 이번 후보는 1.2.0 P5 문서·CI Phase 정렬만 포함하고 `apps/windows`·보류 native·1.2.1 이후 계획·main·정식 tag/image·릴리스 서버는 변경하지 않는다. 전체 CI·네 signed dev image·동일 SHA 개발 인수 전에는 P5 완료로 표시하지 않는다.
+
+같은 날 P5 추적표의 레거시 validator `AC-1.2.0-01/04` 표기가 실제 별도 수용 사례로 오인되지 않도록 현행 `AC-RD-120-01/04` 대응을 명시한 후 재후보 push 직전 검수했다. tracked·hidden/untracked 네 Future 경로와 기준 blob `8f42d20b638e245eb775415ccfdabef56a96f694`·고유 FF ID 129개는 변함없다. 새 범위·체크·배정은 없고 첫 후보의 진행 중 CI를 새 SHA 완료 근거로 소급하지 않는다.
+
+같은 날 P5 Unit CI의 공유 임시 DB 파일 간 교착 보정 재후보 push 전 검수도 수행했다. 네 Future 관련 공개 경로, 현행 `Future_Feature.md`의 마지막 변경 `0df4c368076cda98e6d05fcb21c56e16e33bac63`/blob `8f42d20b638e245eb775415ccfdabef56a96f694`, 129개 고유 FF ID와 체크/본문은 동일하다. 이번 변경은 `AUTH_DATABASE_INTEGRATION=true` 시험 파일의 순차 실행과 실패/재검증 기록뿐이고 후보 재배정·ignored/private 자료 공개·보호 계획 변경은 없다. 첫 실패한 CI를 새 SHA의 PASS로 기록하지 않는다.
+
+## 2026-09-25 — 1.2.0 P5 완료 문서 push 전·Phase 완료 검수
+
+Git tracked와 hidden/untracked 공개 경로를 재검색해 Future 관련 네 문서(`FUTURE-INTAKE.md`, `Future_Feature.md`, `future-idea-scope.md`, `mandatory-future-mapping.md`)만 확인했다. staged/unstaged·untracked 이름·이동/삭제를 대조했으며 Future 관련 변경은 이 인수 기록뿐이다. 현행 `Future_Feature.md`의 마지막 변경 commit `0df4c368076cda98e6d05fcb21c56e16e33bac63`/blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 현재 blob이 같고 고유 FF ID는 129개, 체크·본문·경로 변경은 없다. 원본/백업과 ignored/private는 공개 입력으로 추가하지 않고 기존 필수 이관·선택 보류를 유지한다. 이번 문서-only push는 기능 SHA `125ab029ef09cee724ef8005139bdff11569d29e`의 필수 CI·네 signed Dev image·같은 SHA 공개 개발 인수를 기록하는 것이며 새 아이디어 배정, 1.2.1 구현, main·정식 tag/image·릴리스 서버 변경은 없다. 완료 시에도 같은 무변경 blob을 재확인하고 이 기록을 참조한다.
