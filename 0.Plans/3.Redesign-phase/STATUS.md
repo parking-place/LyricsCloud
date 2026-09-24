@@ -1,28 +1,28 @@
 # 리디자인 계획 상태
 
 ```yaml
-plan_state: "ready"
+plan_state: "in_progress"
 plan_owner: "Codex"
 prepared_at: "2026-09-22"
-updated_at: "2026-09-23"
+updated_at: "2026-09-24"
 planned_sequence: "1.1.7b -> 1.2.0 -> 1.2.1 through 1.2.8"
 planning_root: "0.Plans/3.Redesign-phase"
 baseline_version: "1.1.7a"
 baseline_sha: "fc2463cdb47d9fd7d0042779f602c6ddb7d734cf"
-next_planned_version: "1.1.7b"
-next_planned_phase: "1.1.7.b/1phase.md"
+next_planned_version: "1.2.0"
+next_planned_phase: "1.2.0/2phase.md"
 selected_design: "Chroma Dock / Cobalt Blue (color study 04)"
 deferred_patch_versions: "1.1.8 through 1.1.14"
-implementation_state: "not_started"
+implementation_state: "1.2.0 P1 in_progress; P2-P5 not_started"
 execution_authorized_by_this_file: false
 runtime_status_source: "0.Plans/1. Dev-phase/STATUS.md"
 ```
 
-현재 다음 계획은 [1.1.7b 통합](1.1.7.b/README.md)이며 5 Phase·42개 작업은 모두 planned다. P1 계약/버전 도구 → P2 편집·저장·PWA → P3 API·DB·목록·UI → P4 회귀/차단·DB 호환 → P5 동일 SHA 개발 인수 후 1.2.0으로 이어진다. 사용자 선택인 코발트 디자인과 native 보류는 유지한다. 아래 표는 b 다음에 진행할 1.2.0 계획이다. 이번 산출물은 계획·목업 정리이며 제품 구현 착수·완료나 배포 승인을 기록하지 않는다.
+1.1.7b 통합 5 Phase는 [실행 STATUS](<../1. Dev-phase/STATUS.md>)의 기능 SHA `acd2bd9`로 개발 인수 완료다. 1.2.0은 P1 계약·버전 전환 중이고 P2~P5 화면/회귀/최종 인수는 미착수다. 사용자 선택인 코발트 디자인과 native 보류는 유지한다. 다음 표의 진행 표시는 제품 완료 증거가 아니다.
 
 | Phase | 계획 | 구현 상태 | 완료 증거 |
 |---|---|---|---|
-| P1 | [기준·기능 보존·전환 계약](1.2.0/1phase.md) | planned / 미착수 | 없음 |
+| P1 | [기준·기능 보존·전환 계약](1.2.0/1phase.md) | in_progress | 207 ID 대응표·버전 전환 로컬 검토 중; 원격 CI/개발 인수 없음 |
 | P2 | [색상 토큰·공통 셸·탐색과 목록](1.2.0/2phase.md) | planned / 미착수 | 없음 |
 | P3 | [편집·자료·설정·공유와 복구](1.2.0/3phase.md) | planned / 미착수 | 없음 |
 | P4 | [교차 회귀·접근성·성능](1.2.0/4phase.md) | planned / 미착수 | 없음 |

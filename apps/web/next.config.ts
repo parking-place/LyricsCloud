@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 const config: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["yjs"],
-  generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-1.1.7b",
+  generateBuildId: async () => process.env.NEXT_BUILD_ID ?? "lyricscloud-1.2.0",
   outputFileTracingRoot: fileURLToPath(new URL("../../", import.meta.url)),
   transpilePackages: ["@lyricscloud/auth", "@lyricscloud/config", "@lyricscloud/database", "@lyricscloud/domain", "@lyricscloud/ui"],
   async rewrites() {

@@ -82,7 +82,7 @@ for (const marker of ["target: migrate", "target: collaboration", "target: worke
   assert(selfHostCompose.includes(marker), `compose.selfhost.yaml missing runtime contract: ${marker}`);
 }
 
-assert(new RegExp(`^## \\[${currentVersion.replaceAll(".", "\\.")}\\] - (?:\\d{4}-\\d{2}-\\d{2}${currentVersion === "1.1.7b" ? "|개발 중" : ""})$`, "mu").test(changelog),
+assert(new RegExp(`^## \\[${currentVersion.replaceAll(".", "\\.")}\\] - (?:\\d{4}-\\d{2}-\\d{2}${["1.1.7b", "1.2.0"].includes(currentVersion) ? "|개발 중" : ""})$`, "mu").test(changelog),
   `CHANGELOG current version heading missing: ${currentVersion}`);
 
 for (const [document, markers] of [

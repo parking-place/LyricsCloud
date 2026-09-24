@@ -145,7 +145,7 @@ assert(formalEnvironment.properties.APP_VERSION.const === formalVersion && forma
   `${formalVersion} formal environment boundary invalid`);
 assert(formalMigrations.productVersion === formalVersion && formalMigrations.maximumCompatibleApplicationVersion === formalVersion,
   `${formalVersion} formal migration compatibility invalid`);
-assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === (formalVersion === "1.1.7b" ? "1152_prompt_dictionary_cascade.sql" : formalVersion === "1.1.7a" ? "1151_profile_customization.sql" : "1140_sharing_stability.sql"),
+assert(formalMigrations.applyOrder.length <= migrationFiles.length && formalMigrations.latestSchema === (["1.1.7b", "1.2.0"].includes(formalVersion) ? "1152_prompt_dictionary_cascade.sql" : formalVersion === "1.1.7a" ? "1151_profile_customization.sql" : "1140_sharing_stability.sql"),
   `${formalVersion} sealed migration manifest is invalid`);
 for (const entry of formalMigrations.applyOrder) {
   assert(hash(await read(`packages/database/migrations/${entry.name}`)) === entry.sha256, `${entry.name} ${formalVersion} checksum changed`);

@@ -15,7 +15,7 @@ LyricsCloud는 곡, 여러 가사 버전, 라임 노트와 Suno 프롬프트를 
 
 [1.1.7a release notes](./docs/releases/1.1.7a.md)와 [CHANGELOG.md](./CHANGELOG.md)에 사용자 변화·호환성·미실행 gate를 기록한다.
 
-> **현재 개발 (2026-09-24):** [1.1.7b Phase 5](0.Plans/3.Redesign-phase/1.1.7.b/5phase.md)의 최종 기능 SHA `acd2bd9`가 CI·서명 image·동일 SHA 개발 공개 인수를 완료했습니다. 정식 운영 릴리스는 여전히 `1.1.7a`이고 b의 main/tag/운영 배포는 미승인입니다. [1.1.7b release notes](./docs/releases/1.1.7b.md)·[CHANGELOG.md](./CHANGELOG.md)에서 미실행 경계를 확인할 수 있습니다. b의 [인계된 기능 SHA](0.Plans/3.Redesign-phase/1.1.7.b/HANDOFF-TO-1.2.0.md)에서 [1.2.0 코발트 Chroma Dock](0.Plans/3.Redesign-phase/1.2.0/README.md)을 시작하며 [후속 1.2.1~1.2.8](0.Plans/3.Redesign-phase/ROADMAP.md)과 native 보류를 유지합니다.
+> **현재 개발 (2026-09-24):** [1.1.7b Phase 5](0.Plans/3.Redesign-phase/1.1.7.b/5phase.md)의 기능 SHA `acd2bd9`는 CI·서명 image·동일 SHA 개발 공개 인수를 마쳤습니다. 그 인수에서 [1.2.0 Phase 1](0.Plans/3.Redesign-phase/1.2.0/1phase.md) 코발트 Chroma Dock 계약·버전 전환을 시작했습니다. 현재 1.2.0 화면 구현과 Phase 1 원격 CI/개발 인수는 아직 미완료입니다. 1.2.0 Phase 5 최종 통합·정식 발행은 별도 gate이며, 운영 릴리스는 여전히 `v1.1.7a`입니다. 실제 기기·OS IME·AT는 사용자 보류/미실행입니다.
 
 ## 주요 기능
 
@@ -46,11 +46,11 @@ AI 생성·음원 업로드는 1.1.7a 범위가 아니다. 계정 사진 파일�
 
 | 항목 | 상태 |
 |---|---|
-| 소스·runtime version | 개발 후보 `1.1.7b`; private npm package SemVer는 `1.1.7` 유지 |
-| 현재 Phase | [1.1.7b Phase 1 — 기준 동결·통합 계약](./0.Plans/3.Redesign-phase/1.1.7.b/1phase.md) 진행 중; P2~P5 미착수, native 보류 |
+| 소스·runtime version | 개발 후보 `1.2.0`; private npm package SemVer도 `1.2.0` |
+| 현재 Phase | [1.2.0 Phase 1 — 기준·기능 보존·전환 계약](./0.Plans/3.Redesign-phase/1.2.0/1phase.md) 진행 중; P2~P5 미착수, native 보류 |
 | 실행 상태 원본 | [STATUS.md](<./0.Plans/1. Dev-phase/STATUS.md>) |
 | 정식 릴리스 | `v1.1.7a`, tag/운영 `fc2463c`, Actions `35052520619`, exact signed digest 운영 배포·공개 인수 PASS |
-| 개발 인수 | 1.1.7a P1~P5 완료; 1.1.7b P1 후보의 원격 CI·동일 SHA 개발 공개 인수 대기 |
+| 개발 인수 | 1.1.7b P1~P5 완료; 1.2.0 P1의 원격 CI·동일 SHA 개발 공개 인수 대기 |
 | 운영 제한 | 외부 암호화 backup·24시간 RPO·복원 훈련은 사용자 승인 예외로 아직 미구축 |
 
 1.1.1 공개 링크는 raw capability를 fragment에서 즉시 제거하고 서버에는 digest만 저장한다. 익명 reader는 지정 가사의 승인 필드만 보며 workspace·메모·연결 자료·revision·export·presence·write는 사용할 수 없다. 회수·만료는 열린 연결과 이후 API를 함께 차단한다.

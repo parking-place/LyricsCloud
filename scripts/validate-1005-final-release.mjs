@@ -140,7 +140,7 @@ for (const marker of ["main", `annotated \`v${currentVersion}\``, "exact digest"
   assert(formalReleaseChecklist.includes(marker), `${currentVersion} release checklist marker missing: ${marker}`);
 }
 assert(formalManifest.releaseVersion === currentVersion && formalManifest.releaseChannel === "release"
-  && formalManifest.productionAuthorized === requireRelease && formalManifest.database.requiredLatestSchema === (currentVersion === "1.1.7b" ? "1152_prompt_dictionary_cascade.sql" : currentVersion === "1.1.7a" ? "1151_profile_customization.sql" : "1140_sharing_stability.sql"),
+  && formalManifest.productionAuthorized === requireRelease && formalManifest.database.requiredLatestSchema === (["1.1.7b", "1.2.0"].includes(currentVersion) ? "1152_prompt_dictionary_cascade.sql" : currentVersion === "1.1.7a" ? "1151_profile_customization.sql" : "1140_sharing_stability.sql"),
   `${currentVersion} formal release manifest boundary invalid`);
 const formalReleaseTags = getImagePublication({ eventName: "workflow_dispatch", refType: "tag", refName: `v${currentVersion}`,
   sha: "c".repeat(40), version: currentVersion, release: true }).tags;

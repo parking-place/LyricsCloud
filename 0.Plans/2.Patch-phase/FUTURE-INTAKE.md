@@ -467,3 +467,7 @@ Git tracked·hidden/untracked 공개 경로의 Future 관련 문서는 직전과
 ## 2026-09-24 — 1.1.7b P5 완료 문서 push·Phase 완료 검수
 
 Git tracked·hidden/untracked 공개 경로에서 Future 관련 문서는 그대로 4개다. `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 고유 FF ID 129개는 P5 기능 SHA `acd2bd99876740debf426c401fe7157713f8b854`와 같고 내용·체크·이동·삭제·신규 후보가 없다. 나머지 세 파일은 절차·과거 scope/mapping이고 후보를 중복 배정하지 않는다. 이 문서-only `[skip ci]` push는 같은 기능 SHA의 CI/네 signed image·개발 공개 인수와 실제 기기 미실행을 기록하고 1.2.0 P1의 출발 SHA를 고정한다. b에서 해결된 부분은 후속 작업에서 증거 인수·코발트 회귀로 재사용하되 UI-04/05/07 P2와 `OPS-100-001`은 미해결로 유지한다. native 보류·보호 목업·private/ignored 원본·main·정식 tag/image·릴리스 서버는 변경하지 않는다.
+
+## 2026-09-24 — 1.2.0 P1 계약·버전 후보 push 전 검수
+
+Git tracked와 hidden/untracked 공개 탐색에서 Future 관련 파일은 동일한 4개다. 현행 `Future_Feature.md` blob `8f42d20b638e245eb775415ccfdabef56a96f694`와 고유 FF ID 129개는 직전 b P5 문서 인수 `e8ce777fcee83396166d0afcf76ecbd932440406`와 같으며 본문·체크·이동·삭제·신규 후보가 없다. 다른 세 파일은 이 절차와 기존 scope/mapping으로, 새 기능으로 중복 배정하지 않는다. 1.2.0 P1은 b의 완료된 웹 동작을 207개 목업 ID·실제 컴포넌트에 대응하고 버전/전환/되돌림 계약을 기록할 뿐 Future 작업을 선행 구현하지 않는다. 실제 기기·OS IME·AT는 사용자 보류/미실행이며 P1 CI·같은 SHA 개발 공개 인수 전에는 완료로 분류하지 않는다. 보호 계획·native 이력·private/ignored 원본·main·정식 tag/image·릴리스 서버는 변경하지 않는다.

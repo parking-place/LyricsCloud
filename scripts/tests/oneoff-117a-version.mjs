@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { getImagePublication } from '../image-publication-plan.mjs';
 import { validateReleasePhase } from '../release-phase-state.mjs';
+import { getReleaseVersionContract } from '../release-version-contract.mjs';
 
 const sha = 'a'.repeat(40);
 const base = { eventName: 'push', refType: 'branch', refName: 'phase/1.1.7a-p1-profile-contract', sha,
@@ -43,25 +44,37 @@ test('STATUS accepts a and b only with their exact product-to-plan mapping', () 
   assert.throws(() => validateReleasePhase(status('1.1.7b', '2.Patch-phase', '1.1.7.b')), /RELEASE_PHASE_PATH_INVALID/);
   assert.throws(() => validateReleasePhase(status('1.1.7b', '3.Redesign-phase', '1.1.7.a')), /RELEASE_PHASE_PATH_INVALID/);
   assert.throws(() => validateReleasePhase(status('1.1.7c', '3.Redesign-phase', '1.1.7.c')), /RELEASE_PHASE_VERSION_INVALID/);
+  assert.equal(validateReleasePhase(status('1.2.0', '3.Redesign-phase', '1.2.0')), 1);
+  assert.equal(validateReleasePhase(status('1.2.0', '3.Redesign-phase', '1.2.0', 5, 'complete')),
+    5);
+  assert.equal(validateReleasePhase(status('1.2.2', '3.Redesign-phase', '1.2.2', 6, 'complete')),
+    6);
+  assert.throws(() => validateReleasePhase(status('1.2.0', '2.Patch-phase', '1.2.0')), /RELEASE_PHASE_PATH_INVALID/);
+  assert.throws(() => validateReleasePhase(status('1.2.0', '3.Redesign-phase', '1.1.7.b')), /RELEASE_PHASE_PATH_INVALID/);
+  assert.throws(() => validateReleasePhase(status('1.2.0', '3.Redesign-phase', '1.2.0', 6)), /RELEASE_PHASE_(?:COUNT|PATH)_INVALID/);
+  assert.equal(getReleaseVersionContract('1.2.0').packageVersion, '1.2.0');
+  assert.equal(getReleaseVersionContract('1.2.2').phaseCount, 6);
 });
 
 test('shell publication guard enforces exact branch and tag without moving old v1.1.7', () => {
   const run = (refType, refName, channel) => spawnSync('bash', ['scripts/docker-image-tag.sh',
     refType, refName, sha, 'web', channel], { encoding: 'utf8' });
-  assert.equal(run('branch', b.refName, 'dev').stdout.trim(), '1.1.7b');
-  assert.equal(run('tag', 'v1.1.7b', 'release').stdout.trim(), '1.1.7b');
+  assert.equal(run('branch', 'phase/1.2.0-p1-contract-baseline', 'dev').stdout.trim(), '1.2.0');
+  assert.equal(run('tag', 'v1.2.0', 'release').stdout.trim(), '1.2.0');
+  assert.notEqual(run('branch', b.refName, 'dev').status, 0);
+  assert.notEqual(run('tag', 'v1.1.7b', 'release').status, 0);
   assert.notEqual(run('tag', 'v1.1.7', 'release').status, 0);
   assert.notEqual(run('branch', 'phase/1.1.7a-p1-invalid', 'dev').status, 0);
   assert.notEqual(run('branch', 'phase/1.1.7b-p6-over-limit', 'dev').status, 0);
   assert.notEqual(run('branch', 'phase/1.1.7b-p1', 'dev').status, 0);
 });
 
-test('production browser fixture and health assertion use the b product version', () => {
+test('production browser fixture and health assertion use the 1.2.0 product version', () => {
   const browserConfig = readFileSync('playwright.config.ts', 'utf8');
   const healthSpec = readFileSync('tests/e2e/new-feature-1.1.5.spec.ts', 'utf8');
   const baselineSpec = readFileSync('tests/e2e/baseline.spec.ts', 'utf8');
-  assert.match(browserConfig, /APP_VERSION: process\.env\.APP_VERSION \?\? "1\.1\.7b"/);
-  assert.match(browserConfig, /APP_PHASE: process\.env\.APP_PHASE \?\? "p2"/);
-  assert.match(healthSpec, /health\.build\.version\)\.toBe\(process\.env\.APP_VERSION \?\? "1\.1\.7b"\)/);
-  assert.match(baselineSpec, /version: process\.env\.APP_VERSION \?\? "1\.1\.7b"/);
+  assert.match(browserConfig, /APP_VERSION: process\.env\.APP_VERSION \?\? "1\.2\.0"/);
+  assert.match(browserConfig, /APP_PHASE: process\.env\.APP_PHASE \?\? "p1"/);
+  assert.match(healthSpec, /health\.build\.version\)\.toBe\(process\.env\.APP_VERSION \?\? "1\.2\.0"\)/);
+  assert.match(baselineSpec, /version: process\.env\.APP_VERSION \?\? "1\.2\.0"/);
 });
