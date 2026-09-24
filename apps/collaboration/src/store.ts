@@ -139,13 +139,21 @@ export class CollaborationStore {
   }
 
   async findSharedDocument(actorId: string, resourceId: string) {
-    return this.#owned(actorId, async (client) => {
-      const row = (await client.query<{ document_key: string }>(`select d.document_key
-        from sync_documents d join lyric_read_grants g on g.resource_id=d.resource_id and g.owner_id=d.owner_id
-        where d.resource_id=$1 and g.grantee_id=$2 and g.state='active'
-          and (g.expires_at is null or g.expires_at>statement_timestamp())`, [resourceId, actorId])).rows[0];
-      return row ? this.loadDocumentForActor(actorId, row.document_key) : null;
+    const ownerId = await this.#owned(actorId, async (client) => {
+      const row = (await client.query<{ owner_id: string }>(`select g.owner_id
+        from lyric_read_grants g join resources r on r.id=g.resource_id and r.owner_id=g.owner_id
+        join lyrics l on l.resource_id=r.id and l.owner_id=r.owner_id
+        where g.resource_id=$1 and g.grantee_id=$2 and g.state='active'
+          and (g.expires_at is null or g.expires_at>statement_timestamp())
+          and r.type='lyrics' and r.deleted_at is null`, [resourceId, actorId])).rows[0];
+      return row?.owner_id ?? null;
     });
+    if (!ownerId) return null;
+    // A recipient may open the share before the owner ever opens the editor.
+    // Creating the owner document is safe only after an active grant is found;
+    // loadDocumentForActor rechecks that grant after creation, including revocation races.
+    const document = await this.ensureDocument(ownerId, resourceId);
+    return document ? this.loadDocumentForActor(actorId, document.document_key) : null;
   }
 
   async loadPublicDocument(tokenDigest: string, linkId: string): Promise<PublicDocumentAccess | null> {

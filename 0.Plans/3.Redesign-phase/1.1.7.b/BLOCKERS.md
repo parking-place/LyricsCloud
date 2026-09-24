@@ -74,6 +74,11 @@ OPS-01의 위 **수정 전 재현** 뒤 kernel `flock`+영구 구/신 fence 후�
 
 ### 2026-09-24 UI/세션 추가 판정 — 최종 resolved 아님
 
+- `ES-07`: owner 첫 화면을 선행하던 기존 검사에서는 숨겨졌으나, 새 공유 가사에 작성자가 먼저 들어오면 협업 문서가 아직 없어 편집이 무기한 준비 상태인 것을 PC/mobile에서 재현했다. 활성 grant·가사/삭제 상태를 actor RLS로 확인→owner 문서 생성→actor grant 재확인 후보로 격리 DB 1 PASS, 선진입 브라우저 2 PASS. 최종 SHA·CI·개발 인수 전에는 `resolved`가 아니다.
+- `ES-06`: 선택 작성자/공개 게스트 각각 PC/mobile IndexedDB quota 실패 실제 주입 2+2 PASS. 입력 복구·서버 미반영·복원 후 재시도 반영을 확인했다. 첫 게스트 검사 2 FAIL은 화면별 안내 문구 기대 오류이며 수정한 동일 입력 2 PASS다. 실제 기기 저장소 실패는 사용자 보류·미실행이다.
+- `OPS-02`: 개발의 실제 경로는 Cloudflare Tunnel→loopback web이고 Caddy는 적용되지 않는다. 공개 읽기/게스트 세션 API의 임의 XFF 첫 값 우선 사용을 공통 Cloudflare IP 우선순위로 보정하고, 격리 HTTP 30+20 요청 뒤 429를 desktop 1 PASS로 확인했다. Cloudflare 실제 edge header와 릴리스 proxy의 적용 여부는 아직 확인하지 않았으며 이 결과로 최종 `resolved` 처리하지 않는다.
+- `OPS-01/02/03` 환경 경계: 일회용 암호화 backup/restore PASS와 개발 proxy의 loopback web/tunnel 구성 확인은 운영 timer·실제 위조 헤더 rewrite PASS가 아니다. b→a 일회용 웹 application rollback PASS이나 native 포함 PC image rollback은 미실행이다. 실제 개발 DB native 1150+1151의 31 migration·객체/역할·RLS는 읽기 전용 확인했으며 세 환경 앱 수용은 계속 남는다.
+
 - `BE-02`: 실제 SSR `/songs` 조회에서 renewal cookie와 DB 만료 갱신이 없고, 뒤이은 `/api/songs`에서 cookie·DB 만료가 함께 갱신됨을 격리 HTTP/DB desktop 1 PASS로 확인했다. 전체 후보 브라우저와 최종 CI/개발 인수 전까지 확정 아님.
 - `UI-03`: 기존 네 목록의 세대 회귀 외에 남았던 연결 관리의 유형/필터/검색 debounce 경합을 최소 보정하고 컴포넌트 단위 3 PASS. 연결 관리 실브라우저 HTTP 역순 주입과 최종 CI는 남는다.
 - `UI-08`: 현재 B-1 여섯 칸의 네 번째 예약 위치에 FAB를 맞춘 뒤 production Chromium 모바일 320/360/390/430px×양 테마에서 최하단 scroll·겹침 면적 0·프롬프트 오른쪽 hit-test 8조합 PASS. nav를 viewport 고정으로 바꾸는 코발트 설계가 아니며 실제 OS/키보드/safe-area는 사용자 보류·미실행이다.

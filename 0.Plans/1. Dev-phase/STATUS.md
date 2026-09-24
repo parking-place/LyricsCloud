@@ -14,6 +14,14 @@ next_action: "1.1.7b P4 나머지 필수 차단·HTTP/브라우저·세 DB 유�
 
 ## 2026-09-23 현재 순서 — 1.1.7b 선행 통합
 
+### 2026-09-24 — 공유 첫 진입·저장소 실패 주입과 rollback 추가 증거
+
+공개 공유 읽기·게스트 세션의 IP 속도 제한은 기존에 `X-Forwarded-For` 첫 값을 `CF-Connecting-IP`보다 먼저 사용했다. 개발 경로가 Caddy 없이 Cloudflare Tunnel→loopback 앱임을 읽기 전용으로 확인하고, 두 API를 기존 공통 클라이언트 키 함수의 Cloudflare 우선순위에 맞췄다. 임의로 바뀌는 전달 체인과 고정된 Cloudflare IP를 넣은 격리 HTTP에서 읽기 30회·게스트 세션 20회 다음 요청이 429인 **1 PASS/모바일 조건부 1 skip**, production web build·`pnpm check` PASS다. 이는 애플리케이션 헤더 선택 검사이며 공개 edge의 실제 헤더 정규화·운영 proxy 구성 PASS는 아니다. [Cloudflare의 헤더 설명](https://developers.cloudflare.com/fundamentals/reference/http-headers/)에 따라 실제 edge→origin 경계의 별도 확인을 남긴다.
+
+P4의 선택 공동 작성자 선진입에서, 소유자가 편집기를 먼저 열지 않아 `sync_documents`가 아직 없는 경우 공유 화면이 편집 가능 상태로 진입하지 못하는 결함을 실제 브라우저로 재현했다. 활성 grant·가사 존재를 actor RLS로 검사한 뒤 owner 문서를 생성하고, 생성 후 actor 권한을 다시 확인하도록 보정했다. grant 전·회수 후 비공개와 최초 본문 snapshot을 일회용 PostgreSQL 통합 **1 PASS**, 작성자 선진입 PC/mobile **2 PASS**로 확인했다. 별도로 IndexedDB quota 실패를 PC/mobile 선택 작성자 **2 PASS**, 공개 게스트 **2 PASS**로 주입해 입력 복구 표시·읽기 전용 전환·서버 미반영·저장소 복원 후 재시도 반영을 확인했다. 첫 게스트 검사 2건은 선택 작성자용 상태 문구를 잘못 기대해 실패했고, 게스트 화면의 실제 실패 안내 문구로 수정한 동일 입력이 2 PASS다. 실기기·OS IME/AT 결과는 아니다.
+
+추가로 Docker Node 24의 첫 검사용 이미지에서 `pnpm check` PASS, 전체 DB Vitest **506 PASS/8 조건부 skip**을 확인했다. 이 이미지에는 최근 연결 관리 단위 검사 3건이 없어 전체 원본을 다시 이미지로 만들고 `pnpm check`와 전체 DB Vitest **509 PASS/8 조건부 skip**을 확인했다. 그 뒤 공개 API IP 우선순위 2파일은 별도 check·production build·집중 HTTP PASS이며 최종 tree의 전체 CI는 아직 필요하다. 로컬 일회용 b→a application rollback은 b가 만든 합성 가사를 기존 a 웹 image가 같은 DB에서 읽고 export함을 확인하고 합성 자료를 제거했다. 기존 native 포함 PC image rollback은 미실행이다. 개발 DB는 읽기 전용으로 31 migration·native 1150/프로필 1151 객체·RLS/역할을 확인했으나 세 유형의 전체 앱 수용과 실제 proxy 위조 헤더 검사는 남았다. 따라서 P4 `review`, P5·1.2.0 미착수다.
+
 ### 2026-09-24 — P4 전체 브라우저·DB 재검사와 남은 gate
 
 `1.1.7b` P4의 일회용 PostgreSQL/production Chromium 전체 검사는 첫 **421 PASS/49 조건부 skip/2 FAIL**(새 템플릿 취소 확인을 기존 테스트가 승인하지 않음) 후 현재 계약에 맞는 PC·모바일 집중 2 PASS, 수정 후보 전체 **424 PASS/50 조건부 skip/0 FAIL**로 확인했다. UI-03 남은 연결 관리의 역순 응답 단위 3 PASS, UI-08 모바일 320/360/390/430px×양 테마 하단 nav/FAB 실제 브라우저 겹침·hit-test 8조합 PASS, BE-02 SSR page→API 세션 갱신 HTTP/DB 1 PASS다. 최신 worktree의 격리 DB 전체 Vitest **508 PASS/8 조건부 skip**, `pnpm check`·production web build PASS. 전체 브라우저 build 뒤 UI-03 unmount 정리 1줄이 추가됐으므로 최종 동일 tree CI/이미지 인수를 대체하지 않는다. 기존 native 1150+1151 DB·실제 proxy·공유 실패 주입·22원인 최종 판정·rollback·최종 CI/네 signed image/동일 SHA 개발 인수가 남아 `review`, P5·1.2.0 미착수다. 물리 기기/OS IME/AT는 사용자 보류의 미실행이다. `main`·릴리스 서버·개발 P3 배포는 유지한다. [P4 기록](../3.Redesign-phase/1.1.7.b/4phase.md)을 따른다.

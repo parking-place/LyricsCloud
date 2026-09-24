@@ -41,6 +41,14 @@ AC-RD-117B-19~24 및 WC별 기존 수용. 입력 손실·거짓 저장·인가 �
 
 ## 2026-09-24 추가 구현 후보·검증 경계
 
+### 2026-09-24 공동 작성 선진입·저장 실패·환경 rollback 추가
+
+- `OPS-02`: 개발 proxy는 Caddy가 아니라 Cloudflare Tunnel→loopback web임을 확인했다. 공개 읽기·게스트 세션 IP 제한의 `X-Forwarded-For` 우선순위를 기존 공통 함수의 `CF-Connecting-IP` 우선순위로 정렬했다. 임의 XFF/고정 CF-IP 30+20회 뒤 429인 격리 HTTP desktop 1 PASS(모바일 조건부 skip), production web build와 check PASS. [Cloudflare 헤더 문서](https://developers.cloudflare.com/fundamentals/reference/http-headers/)의 edge 값 계약에 의존하며 실제 공개 edge의 header rewrite·운영 proxy는 미검증이다.
+
+- `ES-07`: 소유자가 `/lyrics`를 먼저 열지 않은 신규 공유 가사에서 작성자가 선진입하면 협업 문서 미생성으로 편집 준비가 끝나지 않는 실제 PC/mobile 재현을 확인했다. 유효 grant·가사/삭제 상태를 actor RLS로 먼저 확인하고 owner 문서를 생성한 후 actor 권한을 재검사하도록 최소 보정했다. 격리 PostgreSQL의 grant 전/후/회수 후·원문 snapshot 1 PASS, 선진입 브라우저 PC/mobile 2 PASS다. 최종 동일 tree 전체 인수 전에는 해결 완료로 표시하지 않는다.
+- `ES-06`: IndexedDB `put` quota 오류를 선택 작성자 PC/mobile 2건과 공개 게스트 PC/mobile 2건에 실제 주입했다. 서버 원문 미변경·복구 내용/복사 버튼·편집 잠금·저장소 복원 후 재시도 반영을 확인했다. 첫 게스트 2건은 선택 작성자 문구를 게스트 화면에 적용한 검사 기대 오류로 FAIL, 게스트 고유 실패 문구를 검증하도록 수정한 후 2 PASS다. 실제 OS/기기 저장소 오류는 미실행이다.
+- b 웹 image에서 만든 합성 가사를 a 웹 image로 읽은 일회용 DB의 application-first rollback은 동일 원문 조회·export PASS, 합성 계정/자료 0건 정리했다. native 포함 PC 이전 image rollback은 미실행이며 개발/운영 서버 전환이 아니다. 개발 DB의 31 migration 지문/native 객체·FK/RLS/역할은 읽기 전용 확인했지만 세 DB 유형의 전체 앱 수용, 실제 proxy 위조 헤더, 최종 CI/서명 image/동일 SHA 개발 공개 인수는 남는다.
+
 - 사용자는 1.2.0까지 진행하고 **실제 기기 검증만 후속으로 보류**하도록 지시했다. Windows/iOS/Android 물리 기기·OS IME·AT는 미실행으로 남기고 자동화 브라우저를 대체 PASS로 기록하지 않는다. 다른 필수 gate는 그대로다.
 - `OPS-01`: 백업의 stale `mkdir` 잠금을 kernel `flock`으로 전환하고 영구 `.backup.lock` symlink로 구/신 실행을 상호 배제했다. legacy 잠금 디렉터리가 이미 존재하면 자동 제거 없이 fail closed·운영 사전 확인을 요구한다. SIGKILL/동시 시도/회복 및 백업 shell **22 PASS**, 이미지 안 `flock` 존재 확인. 실제 암호화 backup/restore와 운영 환경 전환은 미실행이다.
 - `ES-01`: raw Y.Array 동시 이동/이동-삭제의 first-occurrence projection을 화면·서버에서 공유하고 실제 PostgreSQL store ACK/projection 테스트를 추가했다. `ES-03`은 문장 조합 종료를 제목과 같이 기준 문자열+원격 queue의 delta 병합으로 변경했다. `ES-06/07`은 selected/guest 저장 실패 latch·메모리 복구 표시와 선택 공유 첫 snapshot 전 편집 불허 후보를 추가했다. 단위·DB 수렴은 통과했으나 실제 브라우저/재연결/권한 경쟁의 최종 수용 전이다.

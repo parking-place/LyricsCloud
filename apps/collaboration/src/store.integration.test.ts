@@ -311,6 +311,27 @@ describe.runIf(enabled)("durable owner-only collaboration state", () => {
     refreshedDoc.destroy();
     writerDoc.destroy();
   });
+
+  it("bootstraps an authorized shared lyric before its owner opens the editor", async () => {
+    const [owner, reader] = users as [string, string];
+    const sharingId = (await pool!.query<{ sharing_id: string }>(
+      "select sharing_id from user_profiles where owner_id=$1", [reader])).rows[0]!.sharing_id;
+    const song = (await songs!.createSong(owner, parseCreateSongInput({ title: "선진입 곡", requestId: randomUUID() }))).song;
+    const lyric = (await lyrics!.createLyric(owner, parseCreateLyricInput({ title: "선진입 가사", body: "서버 원문", requestId: randomUUID() }, song.id)))!.lyric;
+    expect(await sync!.findSharedDocument(reader, lyric.id)).toBeNull();
+    expect((await pool!.query("select count(*)::int count from sync_documents where resource_id=$1", [lyric.id])).rows[0]!.count).toBe(0);
+
+    const grant = (await sharing!.grantRead(owner, lyric.id, sharingId, randomUUID()))!.grant;
+    const discovered = (await sync!.findSharedDocument(reader, lyric.id))!;
+    expect(discovered.access).toMatchObject({ ownerId: owner, actorId: reader, accessMode: "read", grantId: grant.id });
+    const snapshot = materialize(discovered.snapshot, discovered.updates);
+    expect(snapshot.getText("body").toString()).toBe("서버 원문");
+    snapshot.destroy();
+    expect((await sync!.ensureDocument(owner, lyric.id))!.document_key).toBe(discovered.documentKey);
+    expect(await sharing!.revokeRead(owner, lyric.id, grant.id)).toBe(true);
+    expect(await sync!.findSharedDocument(reader, lyric.id)).toBeNull();
+    expect(await sync!.loadDocumentForActor(reader, discovered.documentKey)).toBeNull();
+  });
 });
 
 afterAll(async () => {
